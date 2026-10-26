@@ -3,8 +3,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Icon } from "@/components/icons";
+import { StreakTile } from "@/components/Streak";
 import { startDailySession } from "@/lib/daily";
 import { kstDay } from "@/lib/daily-pick";
+import { loadStudy } from "@/lib/study";
 import { createClient } from "@/lib/supabase/server";
 import s from "../interview.module.css";
 import { TurnRows } from "../TurnRows";
@@ -12,7 +14,7 @@ import { TurnRows } from "../TurnRows";
 export const metadata: Metadata = { title: "오늘의 결과 · TailQ" };
 
 // 오늘의 결과(docs/07 "오늘의 결과"). 세션이 끝난 뒤 페이지 이동으로 그린다(08 설계 "스트리밍 프로토콜").
-// 꼬리잇기 칸은 꼬리잇기 계산(#36), 공유는 결과 공유 카드(#41)에서 붙인다.
+// 공유는 결과 공유 카드(#41)에서 붙인다.
 export default function ResultPage() {
   return (
     <Suspense>
@@ -32,7 +34,7 @@ async function TodayResult() {
   // 아직 진행 중이면 멈춘 곳으로
   if (session.status === "open") redirect("/interview");
 
-  const [{ data: turns }, { data: review }] = await Promise.all([
+  const [{ data: turns }, { data: review }, study] = await Promise.all([
     supabase
       .from("turns")
       .select("idx, status, score, verdict, follow_up_prompt")
@@ -43,7 +45,10 @@ async function TodayResult() {
       .select("box, due_day")
       .eq("question_id", session.question.id)
       .maybeSingle(),
+    // 꼬리잇기를 못 읽어도 결과와 복습은 보여준다
+    loadStudy().catch(() => null),
   ]);
+  const streak = study?.streak.current;
   const q = session.question;
   const followed = (turns ?? []).some(
     (t) => t.idx > 0 && t.status === "graded",
@@ -76,14 +81,20 @@ async function TodayResult() {
 
       <TurnRows turns={turns ?? []} prompt={q.prompt} />
 
-      {review && (
-        <section className={s.tiles}>
+      <section className={s.tiles}>
+        {streak !== undefined && (
+          <StreakTile
+            days={streak}
+            note={streak > 1 ? "하루 더 이어졌어요" : undefined}
+          />
+        )}
+        {review && (
           <div className={`glass ${s.tile}`}>
             <span>다음 복습</span>
             <strong>{review.box ? `${days}일 뒤` : "익힌 질문이에요"}</strong>
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
       <div className={s.actions}>
         {/* 공유 카드는 결과 공유 이슈(#41)에서 붙인다. 그때까지 비활성 */}

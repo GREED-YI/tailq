@@ -32,6 +32,12 @@ export const TOKENS = {
     danger: "#FF8A7A",
     well: "rgba(0,0,0,0.22)",
     scrim: "rgba(3,8,7,0.55)",
+    // 학습 잔디 5단계(docs/07 "학습 잔디")
+    "grass-0": "rgba(255,255,255,0.06)",
+    "grass-1": "rgba(52,199,154,0.30)",
+    "grass-2": "rgba(52,199,154,0.55)",
+    "grass-3": "#34C79A",
+    "grass-4": "#7CF2CD",
   },
   light: {
     bg: "#EAF1EE",
@@ -63,6 +69,11 @@ export const TOKENS = {
     danger: "#B3261E",
     well: "rgba(15,26,23,0.05)",
     scrim: "rgba(15,26,23,0.32)",
+    "grass-0": "rgba(15,26,23,0.07)",
+    "grass-1": "rgba(18,162,127,0.30)",
+    "grass-2": "rgba(18,162,127,0.55)",
+    "grass-3": "#12A27F",
+    "grass-4": "#0E7C66",
   },
 } as const satisfies Record<ThemeName, Record<string, string>>;
 

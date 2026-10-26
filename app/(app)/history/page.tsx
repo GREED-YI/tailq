@@ -3,17 +3,19 @@ import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { createClient } from "@/lib/supabase/server";
 import { HistoryList } from "./HistoryList";
+import { HistoryTabs } from "./HistoryTabs";
 import s from "./history.module.css";
 
 export const metadata: Metadata = { title: "기록 · TailQ" };
 
 // 학습 기록 목록(04 기능 명세 E-1, S19). 끝난 세션을 날짜 역순으로 본다.
-// 북마크만 보기(E-4)·월 선택·리포트 탭은 각 이슈에서 붙인다.
+// 북마크만 보기(E-4)·월 선택은 각 이슈에서 붙인다.
 export default function HistoryPage() {
   return (
     <>
       <AppHeader />
       <h1 className={s.title}>기록</h1>
+      <HistoryTabs current="list" />
       <Suspense>
         <Sessions />
       </Suspense>

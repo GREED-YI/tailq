@@ -2,7 +2,9 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { FloatingQ } from "@/components/FloatingQ";
+import { StreakTile } from "@/components/Streak";
 import { startDailySession } from "@/lib/daily";
+import { loadStudy } from "@/lib/study";
 import { createClient } from "@/lib/supabase/server";
 
 // 홈 뼈대. 오늘의 질문 카드에서 면접 화면으로 들어간다. 통계·인사는 각 이슈에서 채운다.
@@ -45,8 +47,30 @@ export default function HomePage() {
           <TodayQuestion />
         </Suspense>
       </section>
+      {/* 3칸 통계(docs/07 "홈"). 다시 나올 질문·약한 주제 칸은 각 이슈에서 붙인다 */}
+      <section
+        aria-label="통계"
+        style={{
+          marginTop: 12,
+          display: "grid",
+          gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+          gap: 10,
+        }}
+      >
+        <Suspense
+          fallback={<div className="glass" style={{ borderRadius: 22 }} />}
+        >
+          <HomeStreak />
+        </Suspense>
+      </section>
     </>
   );
+}
+
+// 꼬리잇기를 못 읽어도 홈의 오늘의 질문은 보여준다
+async function HomeStreak() {
+  const study = await loadStudy().catch(() => null);
+  return study && <StreakTile days={study.streak.current} />;
 }
 
 // 홈을 열면 오늘의 세션을 연다(08 설계 "오늘의 질문 세션")
