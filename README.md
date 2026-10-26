@@ -28,6 +28,8 @@ npm run dev                  # http://localhost:3000
 | `npm run db:types` | 로컬 DB에서 `lib/database.types.ts`를 다시 만든다. 마이그레이션을 바꾸면 같이 커밋한다 |
 | `npm run db:test` | RLS·함수 권한 테스트 (`supabase/tests/`, pgTAP) |
 
+PR마다 CodeRabbit이 한국어로 코드 리뷰를 단다(`.coderabbit.yaml`). 지적은 반영하거나, 반영하지 않으면 이유를 답글로 남기고 대화를 닫는다. 리뷰는 머지를 막지 않는다.
+
 PR마다 GitHub Actions가 `verify`(린트·포맷·타입·단위 테스트·커버리지·빌드), `db`(마이그레이션·RLS 테스트·DB 타입 일치), `e2e`(Playwright)를 돌린다. 셋 다 통과해야 main에 합칠 수 있다.
 
 새 마이그레이션은 `npx supabase migration new <이름>`으로 만든다. DB 구조는 대시보드에서 손으로 바꾸지 않는다.
