@@ -54,6 +54,17 @@ if (problems.length) {
   process.exit(1);
 }
 
+// 공개 샘플(id 90000번대)은 실제 은행에 넣지 않는다(08 설계 5장). 로컬 DB에만 허용한다.
+const isLocal = ["localhost", "127.0.0.1", "[::1]"].includes(
+  new URL(url).hostname,
+);
+if (ids.some((id) => id >= 90000) && !isLocal) {
+  console.error(
+    "샘플 질문(id 90000번대)은 로컬 DB에만 넣을 수 있어요. 운영 DB에는 비공개 콘텐츠 경로를 지정해 주세요.",
+  );
+  process.exit(1);
+}
+
 const db = createClient(url, key, { auth: { persistSession: false } });
 
 const { error: qErr } = await db.from("questions").upsert(
