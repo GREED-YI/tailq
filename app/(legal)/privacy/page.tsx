@@ -141,8 +141,8 @@ export default function PrivacyPage() {
           <a href="mailto:tronysh@gmail.com">tronysh@gmail.com</a>
         </li>
         <li>
-          열람·정정·삭제 같은 개인정보 요청은 위 이메일로 보내 주세요. 본인
-          확인 뒤 10일 안에 처리해요.
+          열람·정정·삭제 같은 개인정보 요청은 위 이메일로 보내 주세요. 본인 확인
+          뒤 10일 안에 처리해요.
         </li>
         <li>
           그 밖의 의견은{" "}
