@@ -1,7 +1,12 @@
 import { after } from "next/server";
 import { z } from "zod";
-import { grade, GradingError } from "@/lib/ai";
-import { toGrading, type Rubric } from "@/lib/grading";
+import { grade, gradeFollowUp, GradingError } from "@/lib/ai";
+import {
+  toFollowUpGrading,
+  toGrading,
+  type FollowUpInput,
+  type Rubric,
+} from "@/lib/grading";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { dbErrorResponse, errorResponse, turnResult } from "@/lib/turn";
@@ -47,21 +52,13 @@ export async function PUT(
   const { data: turn } = await db
     .from("turns")
     .select(
-      "idx, sessions(user_id, questions(prompt, level, topics(name, field), question_keys(rubric, model_answer)))",
+      "idx, session_id, sessions(user_id, questions(prompt, level, topics(name, field), question_keys(rubric, model_answer)))",
     )
     .eq("id", id)
     .maybeSingle();
   if (!turn) return errorResponse(404, "NOT_FOUND", "질문을 찾을 수 없어요.");
   if (turn.sessions.user_id !== userId) {
     return errorResponse(403, "NOT_OWNER", "내 질문이 아니에요.");
-  }
-  // 꼬리질문 답변과 판정은 꼬리질문 세션에서 붙인다
-  if (turn.idx !== 0) {
-    return errorResponse(
-      400,
-      "VALIDATION",
-      "꼬리질문 답변은 아직 받지 않아요.",
-    );
   }
 
   try {
@@ -102,10 +99,10 @@ export async function PUT(
     }
   };
 
-  // 사용자가 떠나 스트림이 끊겨도 채점과 저장은 끝까지 한다(08 설계 "사용자가 떠나도 저장한다")
-  const job = (async () => {
-    let saved = false;
-    try {
+  const onText = (delta: string) => send("delta", { text: delta });
+  // 본 질문은 점수(Sonnet), 꼬리질문은 판정(Haiku). 둘 다 다음 꼬리질문을 함께 만든다(08 설계 "핵심 흐름")
+  const gradeTurn = async () => {
+    if (turn.idx === 0) {
       const out = await grade(
         {
           question: q.prompt,
@@ -116,9 +113,24 @@ export async function PUT(
           modelAnswer: keys.model_answer,
           answer: text,
         },
-        (delta) => send("delta", { text: delta }),
+        onText,
       );
-      const result = toGrading(out, rubric.keywords);
+      return toGrading(out, rubric.keywords);
+    }
+    const input: FollowUpInput = {
+      question: q.prompt,
+      rubric,
+      modelAnswer: keys.model_answer,
+      ...(await sessionTurns(db, turn.session_id, turn.idx, text)),
+    };
+    return toFollowUpGrading(await gradeFollowUp(input, onText), turn.idx);
+  };
+
+  // 사용자가 떠나 스트림이 끊겨도 채점과 저장은 끝까지 한다(08 설계 "사용자가 떠나도 저장한다")
+  const job = (async () => {
+    let saved = false;
+    try {
+      const result = await gradeTurn();
       if (!result) throw new GradingError("schema_invalid");
       await db
         .rpc("save_grading", { p_turn_id: id, p_result: result })
@@ -166,4 +178,45 @@ async function gradingFailedJson(
     "AI_FAILED",
     "채점하지 못했어요. 다시 채점해 주세요.",
   );
+}
+
+// 꼬리질문 채점에 넣을 지금까지의 턴(docs/09 "꼬리질문 채점 사용자 메시지"의 <history>·<current>)
+async function sessionTurns(
+  db: ReturnType<typeof createAdminClient>,
+  sessionId: string,
+  idx: number,
+  answer: string,
+): Promise<Pick<FollowUpInput, "main" | "previous" | "current">> {
+  const { data } = await db
+    .from("turns")
+    .select(
+      "idx, follow_up_prompt, answer, score, verdict, feedback, turn_keys(expected_answer)",
+    )
+    .eq("session_id", sessionId)
+    .lte("idx", idx)
+    .order("idx")
+    .throwOnError();
+  const asTurn = (t: (typeof data)[number]) => ({
+    question: t.follow_up_prompt ?? "",
+    expectedAnswer: t.turn_keys?.expected_answer ?? "",
+    answer: t.answer ?? "",
+  });
+  const [main, ...rest] = data;
+  const current = rest.pop();
+  if (main?.idx !== 0 || current?.idx !== idx || !current.turn_keys) {
+    throw new Error(`session turns missing: ${sessionId} ${idx}`);
+  }
+  return {
+    main: {
+      answer: main.answer ?? "",
+      score: main.score ?? 0,
+      improve: (main.feedback as { improve?: string[] } | null)?.improve ?? [],
+    },
+    previous: rest.map((t) => ({
+      ...asTurn(t),
+      verdict: t.verdict ?? "",
+      feedback: (t.feedback as { summary?: string } | null)?.summary ?? "",
+    })),
+    current: { idx, ...asTurn(current), answer },
+  };
 }

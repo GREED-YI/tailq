@@ -8,9 +8,11 @@ import { Icon } from "@/components/icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import type { TurnResult } from "@/lib/turn";
 import s from "./interview.module.css";
+import { VERDICTS } from "./verdict";
 
 export type InterviewStatus = "answering" | "grading" | "graded" | "failed";
 type Phase = "answer" | "grading" | "result" | "failed";
+type Turn = { id: string; idx: number; prompt: string };
 
 const MIN = 30;
 const MAX = 2000;
@@ -33,14 +35,14 @@ const PHASE_OF: Record<InterviewStatus, Phase> = {
 };
 
 export function Interview({
-  turnId,
+  initialTurn,
   question,
   nickname,
   initialStatus,
   initialAnswer,
   initialResult,
 }: {
-  turnId: string;
+  initialTurn: Turn;
   question: { id: number; prompt: string; topicId: string; field: string };
   nickname: string;
   initialStatus: InterviewStatus;
@@ -48,6 +50,7 @@ export function Interview({
   initialResult: TurnResult | null;
 }) {
   const router = useRouter();
+  const [turn, setTurn] = useState(initialTurn);
   const [phase, setPhase] = useState<Phase>(PHASE_OF[initialStatus]);
   const [answer, setAnswer] = useState(initialAnswer);
   const [streamed, setStreamed] = useState("");
@@ -77,7 +80,7 @@ export function Interview({
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), CLIENT_TIMEOUT_MS);
     try {
-      const res = await fetch(`/api/turns/${turnId}/answer`, {
+      const res = await fetch(`/api/turns/${turn.id}/answer`, {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
@@ -119,7 +122,21 @@ export function Interview({
     }
   }
 
-  const tag = `Q.${String(question.id).padStart(3, "0")} · ${question.field} / ${question.topicId}`;
+  // 다음 꼬리질문으로: 질문이 바뀌며 페이드되고(0.45초) 시트는 답변 입력으로 돌아간다
+  function goNext(next: Turn) {
+    setTurn(next);
+    setPhase("answer");
+    setAnswer("");
+    setStreamed("");
+    setResult(null);
+    setError("");
+    window.scrollTo(0, 0);
+  }
+
+  const tag =
+    turn.idx === 0
+      ? `Q.${String(question.id).padStart(3, "0")} · ${question.field} / ${question.topicId}`
+      : `↳ 꼬리질문 ${turn.idx}`;
   const showResultSheet =
     phase === "result" || (phase === "grading" && streamed);
 
@@ -134,10 +151,21 @@ export function Interview({
           <Icon name="close" />
         </Link>
         <div className={s.steps}>
-          <span className={s.stepLabel}>본 질문</span>
-          <div className={s.dots} role="img" aria-label="4단계 중 1단계">
+          <span className={`mono ${s.stepLabel}`}>
+            {turn.idx === 0 ? "본 질문" : `꼬리질문 ${turn.idx} / 3`}
+          </span>
+          <div
+            className={s.dots}
+            role="img"
+            aria-label={`4단계 중 ${turn.idx + 1}단계`}
+          >
             {[0, 1, 2, 3].map((i) => (
-              <span key={i} className={i === 0 ? s.dotOn : s.dot} />
+              <span
+                key={i}
+                className={
+                  i === turn.idx ? s.dotOn : i < turn.idx ? s.dotDone : s.dot
+                }
+              />
             ))}
           </div>
         </div>
@@ -158,9 +186,9 @@ export function Interview({
         </p>
       </div>
 
-      <div className={s.question}>
+      <div key={turn.id} className={`fade ${s.question}`}>
         <span className={`mono ${s.tag}`}>{tag}</span>
-        <h1 className={s.prompt}>{question.prompt}</h1>
+        <h1 className={s.prompt}>{turn.prompt}</h1>
       </div>
 
       <section
@@ -178,8 +206,10 @@ export function Interview({
       >
         {showResultSheet ? (
           <ResultView
+            followUp={turn.idx > 0}
             result={phase === "result" ? result : null}
             streamed={streamed}
+            onNext={goNext}
           />
         ) : (
           <>
@@ -254,13 +284,22 @@ export function Interview({
 const RING = 2 * Math.PI * 40;
 
 function ResultView({
+  followUp,
   result,
   streamed,
+  onNext,
 }: {
+  followUp: boolean;
   result: TurnResult | null;
   streamed: string;
+  onNext: (next: Turn) => void;
 }) {
-  const shown = useCountUp(result?.score ?? 0, Boolean(result));
+  const shown = useCountUp(result?.score ?? 0, Boolean(result) && !followUp);
+  if (followUp) {
+    return (
+      <FollowUpResult result={result} streamed={streamed} onNext={onNext} />
+    );
+  }
   if (!result) {
     // 채점 중: 점수는 아직 없고, 피드백 글이 생기는 대로 보인다
     return (
@@ -336,17 +375,76 @@ function ResultView({
 
       {!unknown && <Rating turnId={result.turnId} initial={result.rating} />}
 
-      {result.nextTurn ? (
-        // 꼬리질문 답변은 다음 단계에서 붙인다. 그때까지 버튼은 비활성
-        <button type="button" className="btn btn-primary" disabled>
-          꼬리질문 받기 · 1/3
-        </button>
-      ) : (
-        <Link href="/home" className="btn btn-secondary glass press">
-          홈으로
-        </Link>
-      )}
+      <NextButton result={result} onNext={onNext} />
     </div>
+  );
+}
+
+// 꼬리질문 결과: 점수 대신 판정과 한 줄 피드백. "모르겠어요"면 기대 답안을 보여준다(docs/04 C-7)
+function FollowUpResult({
+  result,
+  streamed,
+  onNext,
+}: {
+  result: TurnResult | null;
+  streamed: string;
+  onNext: (next: Turn) => void;
+}) {
+  if (!result) {
+    return (
+      <div className={s.result}>
+        <p className={s.streaming}>{streamed}</p>
+      </div>
+    );
+  }
+  const verdict = VERDICTS[result.verdict ?? ""] ?? VERDICTS.unknown;
+  const unknown = result.verdict === "unknown";
+  return (
+    <div className={s.result}>
+      <div className={s.verdict}>
+        <span
+          className={s.verdictDot}
+          style={{ background: verdict.color }}
+          aria-hidden="true"
+        />
+        <strong>{verdict.label}</strong>
+      </div>
+      {result.feedback?.summary && (
+        <p className={s.feedbackLine}>{result.feedback.summary}</p>
+      )}
+      {unknown && (
+        <div className={s.block}>
+          <span className={s.label}>기대 답안</span>
+          <p className={s.well}>{result.modelAnswer}</p>
+        </div>
+      )}
+      {!unknown && <Rating turnId={result.turnId} initial={result.rating} />}
+      <NextButton result={result} onNext={onNext} />
+    </div>
+  );
+}
+
+// 다음 꼬리질문이 있으면 이어서, 없으면(세션이 끝남) 오늘의 결과로
+function NextButton({
+  result,
+  onNext,
+}: {
+  result: TurnResult;
+  onNext: (next: Turn) => void;
+}) {
+  const next = result.nextTurn;
+  return next ? (
+    <button
+      type="button"
+      className="btn btn-primary press"
+      onClick={() => onNext(next)}
+    >
+      꼬리질문 받기 · {next.idx}/3
+    </button>
+  ) : (
+    <Link href="/interview/result" className="btn btn-primary press">
+      오늘의 결과 보기
+    </Link>
   );
 }
 

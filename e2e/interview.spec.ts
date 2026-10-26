@@ -7,6 +7,11 @@ test("로그인하지 않으면 면접 화면 대신 로그인으로 간다", as
   await expect(page).toHaveURL("/login?next=%2Finterview");
 });
 
+test("로그인하지 않으면 오늘의 결과 대신 로그인으로 간다", async ({ page }) => {
+  await page.goto("/interview/result");
+  await expect(page).toHaveURL("/login?next=%2Finterview%2Fresult");
+});
+
 test("로그인하지 않고 답변을 채점받을 수 없다", async ({ request }) => {
   const res = await request.put(`/api/turns/${turn}/answer`, {
     data: { text: "가".repeat(40) },
