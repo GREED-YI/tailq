@@ -34,6 +34,79 @@ export type Database = {
   };
   public: {
     Tables: {
+      question_keys: {
+        Row: {
+          links: Json | null;
+          model_answer: string;
+          question_id: number;
+          rubric: NonNullable<Json>;
+        };
+        ComputedFields: never;
+        Insert: {
+          links?: Json | null;
+          model_answer: string;
+          question_id: number;
+          rubric: NonNullable<Json>;
+        };
+        Update: {
+          links?: Json | null;
+          model_answer?: string;
+          question_id?: number;
+          rubric?: NonNullable<Json>;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_keys_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: true;
+            referencedRelation: "bank_questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_keys_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: true;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      questions: {
+        Row: {
+          id: number;
+          is_hidden: boolean;
+          level: string;
+          prompt: string;
+          topic_id: string;
+          trial_field: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          id?: number;
+          is_hidden?: boolean;
+          level: string;
+          prompt: string;
+          topic_id: string;
+          trial_field?: string | null;
+        };
+        Update: {
+          id?: number;
+          is_hidden?: boolean;
+          level?: string;
+          prompt?: string;
+          topic_id?: string;
+          trial_field?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "questions_topic_id_fkey";
+            columns: ["topic_id"];
+            isOneToOne: false;
+            referencedRelation: "topics";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       topics: {
         Row: {
           field: string;
@@ -58,10 +131,32 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      bank_questions: {
+        Row: {
+          field: string;
+          id: number;
+          level: string;
+          prompt: string;
+          topic_id: string;
+          trial_field: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [
+          {
+            foreignKeyName: "questions_topic_id_fkey";
+            columns: ["topic_id"];
+            isOneToOne: false;
+            referencedRelation: "topics";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Functions: {
-      [_ in never]: never;
+      sync_question_id_seq: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
     };
     Enums: {
       [_ in never]: never;
