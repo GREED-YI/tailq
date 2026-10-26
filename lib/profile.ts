@@ -17,7 +17,7 @@ export const LEVELS = [
 export type Level = (typeof LEVELS)[number]["id"];
 
 export function hourLabel(hour: number) {
-  return `${hour < 12 ? "오전" : "오후"} ${hour % 12 || 12}시`;
+  return `${hour < 12 ? "오전" : "오후"} ${hour % 12 || 12}:00`;
 }
 
 const unique = <T>(list: T[]) => [...new Set(list)];

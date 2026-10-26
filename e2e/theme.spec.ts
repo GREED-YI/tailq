@@ -5,7 +5,7 @@ test.use({ viewport: { width: 390, height: 844 }, colorScheme: "dark" });
 test("기기 설정을 따르고, 바꾼 테마는 새로고침 뒤에도 유지된다", async ({
   page,
 }) => {
-  await page.goto("/login");
+  await page.goto("/");
   const html = page.locator("html");
   await expect(html).toHaveAttribute("data-theme", "dark");
 

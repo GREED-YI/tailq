@@ -1,8 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { z } from "zod";
+import { BackButton } from "@/components/BackButton";
+import f from "@/components/Flow.module.css";
+import { Icon } from "@/components/icons";
 import {
   FIELDS,
   hourLabel,
@@ -10,34 +13,38 @@ import {
   type Level,
   type MeUpdate,
 } from "@/lib/profile";
+import s from "./onboarding.module.css";
 
 type Topic = { id: string; field: string; name: string };
 type Body = z.input<typeof MeUpdate>;
 type Save = (body: Body) => Promise<boolean>;
 
-const STEPS = [
+const STEPS: { title: ReactNode; desc: ReactNode }[] = [
   {
-    title: "약관에 동의해 주세요",
-    desc: "TailQ를 쓰려면 아래 항목에 모두 동의해야 해요.",
+    title: "서비스 이용에 동의해주세요",
+    desc: "세 가지 모두 동의하면 시작할 수 있어요",
   },
   {
-    title: "무엇을 연습할까요?",
-    desc: "분야를 고르면 세부 주제가 모두 선택돼요. 하나씩 뺄 수 있어요.",
+    title: "연습할 범위를 골라주세요",
+    desc: "여러 개 고를 수 있고, 나중에 MY에서 바꿀 수 있어요",
   },
   {
-    title: "언제 질문을 받을까요?",
-    desc: "정한 시각에 오늘의 질문을 알려 드려요. 나중에 MY에서 바꿀 수 있어요.",
+    title: (
+      <>
+        매일 질문을 알림으로
+        <br />
+        받을까요?
+      </>
+    ),
+    desc: (
+      <>
+        정한 시각에 오늘의 질문을 알려드려요.
+        <br />
+        이미 푼 날은 보내지 않아요.
+      </>
+    ),
   },
 ];
-
-const card: CSSProperties = {
-  borderRadius: 24,
-  padding: 20,
-  display: "flex",
-  flexDirection: "column",
-  gap: 16,
-};
-const label: CSSProperties = { fontSize: 13, fontWeight: 700 };
 
 export function OnboardingFlow(props: {
   initialStep: number;
@@ -45,10 +52,12 @@ export function OnboardingFlow(props: {
   initialTopics: string[];
   initialLevels: Level[];
   initialHour: number;
+  nickname: string;
 }) {
   const router = useRouter();
   const [step, setStep] = useState(props.initialStep);
   const [failed, setFailed] = useState(false);
+  const [hour, setHour] = useState(props.initialHour);
   const heading = useRef<HTMLHeadingElement>(null);
   const firstStep = useRef(step);
 
@@ -69,40 +78,34 @@ export function OnboardingFlow(props: {
   };
 
   return (
-    <section
-      style={{
-        marginTop: 16,
-        display: "flex",
-        flexDirection: "column",
-        gap: 24,
-      }}
-    >
-      <div>
-        <p
-          className="mono"
-          style={{ fontSize: 13, color: "var(--accent)" }}
-          aria-label={`3단계 중 ${step + 1}단계`}
-        >
-          0{step + 1} / 03
-        </p>
-        <h1
-          ref={heading}
-          tabIndex={-1}
-          style={{
-            marginTop: 8,
-            fontSize: 26,
-            lineHeight: "34px",
-            fontWeight: 700,
-            letterSpacing: -0.6,
-            outline: "none",
-          }}
-        >
-          {STEPS[step].title}
-        </h1>
-        <p style={{ marginTop: 8, fontSize: 15, color: "var(--sub)" }}>
-          {STEPS[step].desc}
-        </p>
-      </div>
+    <>
+      <header className={f.top}>
+        {/* 첫 단계는 돌아갈 곳이 없어 자리만 둔다 */}
+        {step > 0 && (
+          <BackButton className={f.back} onClick={() => setStep(step - 1)} />
+        )}
+        <div className={s.steps}>
+          <p className="mono" aria-label={`3단계 중 ${step + 1}단계`}>
+            {step + 1} / 3
+          </p>
+          <div className={s.dots} aria-hidden>
+            {STEPS.map((_, i) => (
+              <span
+                key={i}
+                data-on={i <= step || undefined}
+                data-now={i === step || undefined}
+              />
+            ))}
+          </div>
+        </div>
+      </header>
+
+      {step === 2 && <NotifyPreview nickname={props.nickname} hour={hour} />}
+
+      <h1 ref={heading} tabIndex={-1} className={f.title}>
+        {STEPS[step].title}
+      </h1>
+      <p className={f.sub}>{STEPS[step].desc}</p>
 
       {step === 0 && (
         <AgreeStep
@@ -119,7 +122,8 @@ export function OnboardingFlow(props: {
       )}
       {step === 2 && (
         <NotifyStep
-          initialHour={props.initialHour}
+          hour={hour}
+          setHour={setHour}
           onDone={async (body) => {
             if (await save({ ...body, onboarded: true })) {
               router.replace("/home");
@@ -131,14 +135,11 @@ export function OnboardingFlow(props: {
       )}
 
       {failed && (
-        <p
-          role="alert"
-          style={{ fontSize: 14, color: "var(--danger)", textAlign: "center" }}
-        >
+        <p role="alert" className={s.alert}>
           저장하지 못했어요. 다시 시도해 주세요.
         </p>
       )}
-    </section>
+    </>
   );
 }
 
@@ -152,12 +153,35 @@ function useBusy() {
   return [busy, run] as const;
 }
 
+// 둥근 체크(Figma Checkbox). 실제 입력은 감춘 checkbox라 행 전체를 눌러도 된다
+function Check(props: {
+  checked: boolean;
+  onChange: (on: boolean) => void;
+  label: ReactNode;
+}) {
+  return (
+    <label className={s.check}>
+      <input
+        type="checkbox"
+        className="sr-only"
+        checked={props.checked}
+        onChange={(e) => props.onChange(e.target.checked)}
+      />
+      <span className={s.box} aria-hidden>
+        <Icon name="check" size={14} bold />
+      </span>
+      {props.label}
+    </label>
+  );
+}
+
+// 국외 이전은 따로 알려야 해서(03 요구사항 "개인정보") 개인정보처리방침 줄 아래에 적는다
 const AGREEMENTS = [
-  { id: "terms", text: "이용약관에 동의해요", href: "/terms" },
+  { id: "terms", text: "이용약관", href: "/terms" },
   {
     id: "privacy",
-    text: "개인정보 수집·이용과 국외 이전에 동의해요",
-    note: "답변은 AI 채점을 위해 미국의 AI 서비스(Anthropic)로 전송돼요.",
+    text: "개인정보처리방침",
+    note: "국외 이전 포함. 답변은 AI 채점을 위해 미국의 AI 서비스(Anthropic)로 전송돼요.",
     href: "/privacy",
   },
   { id: "age", text: "만 14세 이상이에요" },
@@ -170,62 +194,53 @@ function AgreeStep({ onNext }: { onNext: () => Promise<boolean | void> }) {
 
   return (
     <>
-      <div className="glass" style={card}>
+      <div className={`glass ${s.allRow}`}>
+        <Check
+          checked={all}
+          onChange={(on) => setChecked(on ? AGREEMENTS.map((a) => a.id) : [])}
+          label={<strong>전체 동의</strong>}
+        />
+      </div>
+      <ul className={`glass ${f.rows} ${s.agreements}`}>
         {AGREEMENTS.map((a) => (
-          <div key={a.id} style={{ display: "flex", gap: 12 }}>
-            <input
-              id={`agree-${a.id}`}
-              type="checkbox"
+          <li key={a.id} className={f.row}>
+            <Check
               checked={checked.includes(a.id)}
-              onChange={(e) =>
+              onChange={(on) =>
                 setChecked((list) =>
-                  e.target.checked
-                    ? [...list, a.id]
-                    : list.filter((id) => id !== a.id),
+                  on ? [...list, a.id] : list.filter((id) => id !== a.id),
                 )
               }
-              style={{
-                width: 20,
-                height: 20,
-                marginTop: 2,
-                flexShrink: 0,
-                accentColor: "var(--accent-fill)",
-              }}
+              label={
+                <span>
+                  <span className={s.required}>(필수)</span> {a.text}
+                  {a.note && <small className={s.note}>{a.note}</small>}
+                </span>
+              }
             />
-            <div style={{ flex: 1 }}>
-              <label
-                htmlFor={`agree-${a.id}`}
-                style={{ fontSize: 15, cursor: "pointer" }}
-              >
-                <span style={{ color: "var(--accent)" }}>[필수]</span> {a.text}
-              </label>
-              {a.note && (
-                <p style={{ marginTop: 4, fontSize: 13, color: "var(--sub)" }}>
-                  {a.note}
-                </p>
-              )}
-            </div>
             {a.href && (
               <a
                 href={a.href}
                 target="_blank"
                 rel="noopener"
-                style={{ fontSize: 13, color: "var(--sub)", flexShrink: 0 }}
+                className={`glass press ${s.pill}`}
               >
                 보기
               </a>
             )}
-          </div>
+          </li>
         ))}
+      </ul>
+      <div className={f.bottom}>
+        <button
+          type="button"
+          className="btn btn-primary press"
+          disabled={!all || busy}
+          onClick={() => run(onNext)}
+        >
+          다음
+        </button>
       </div>
-      <button
-        type="button"
-        className="btn btn-primary press"
-        disabled={!all || busy}
-        onClick={() => run(onNext)}
-      >
-        동의하고 계속하기
-      </button>
     </>
   );
 }
@@ -242,6 +257,7 @@ function RangeStep(props: {
   const [topics, setTopics] = useState(props.initialTopics);
   const [levels, setLevels] = useState(props.initialLevels);
   const [busy, run] = useBusy();
+  const empty = topics.length === 0 || levels.length === 0;
 
   return (
     <>
@@ -251,29 +267,31 @@ function RangeStep(props: {
           .map((t) => t.id);
         const allOn = ids.every((id) => topics.includes(id));
         return (
-          <div
+          <section
             key={field.id}
             role="group"
-            aria-label={field.label}
-            className="glass"
-            style={card}
+            aria-labelledby={`field-${field.id}`}
+            className={s.field}
           >
-            <button
-              type="button"
-              className="chip glass press"
-              aria-pressed={allOn}
-              style={{ alignSelf: "flex-start" }}
-              onClick={() =>
-                setTopics((list) =>
-                  allOn
-                    ? list.filter((id) => !ids.includes(id))
-                    : [...new Set([...list, ...ids])],
-                )
-              }
-            >
-              {field.label} 전체
-            </button>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <div className={s.fieldHead}>
+              <h2 id={`field-${field.id}`}>{field.label}</h2>
+              <button
+                type="button"
+                className={`chip glass press ${s.pill}`}
+                aria-pressed={allOn}
+                aria-label={`${field.label} 전체 선택`}
+                onClick={() =>
+                  setTopics((list) =>
+                    allOn
+                      ? list.filter((id) => !ids.includes(id))
+                      : [...new Set([...list, ...ids])],
+                  )
+                }
+              >
+                전체 선택
+              </button>
+            </div>
+            <div className={s.chips}>
               {props.topics
                 .filter((t) => t.field === field.id)
                 .map((t) => (
@@ -288,20 +306,13 @@ function RangeStep(props: {
                   </button>
                 ))}
             </div>
-          </div>
+          </section>
         );
       })}
 
-      <div
-        role="group"
-        aria-labelledby="levels-label"
-        className="glass"
-        style={card}
-      >
-        <p id="levels-label" style={label}>
-          난이도
-        </p>
-        <div style={{ display: "flex", gap: 8 }}>
+      <section role="group" aria-labelledby="levels-label" className={s.field}>
+        <h2 id="levels-label">난이도</h2>
+        <div className={s.chips}>
           {LEVELS.map((l) => (
             <button
               key={l.id}
@@ -314,37 +325,61 @@ function RangeStep(props: {
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      <button
-        type="button"
-        className="btn btn-primary press"
-        disabled={topics.length === 0 || levels.length === 0 || busy}
-        onClick={() => run(() => props.onNext({ topics, levels }))}
-      >
-        다음
-      </button>
-      {(topics.length === 0 || levels.length === 0) && (
-        <p
-          style={{
-            marginTop: -12,
-            fontSize: 13,
-            color: "var(--muted)",
-            textAlign: "center",
-          }}
+      <div className={f.bottom}>
+        <button
+          type="button"
+          className="btn btn-primary press"
+          disabled={empty || busy}
+          onClick={() => run(() => props.onNext({ topics, levels }))}
         >
-          주제와 난이도를 하나 이상 골라 주세요.
-        </p>
-      )}
+          다음 (주제 {topics.length}개 · 난이도 {levels.length}개)
+        </button>
+        {empty && (
+          <p className={s.hint}>주제와 난이도를 하나 이상 골라 주세요.</p>
+        )}
+      </div>
     </>
   );
 }
 
+// 받게 될 알림 모양(S08). 시각은 고른 값을 따라간다
+function NotifyPreview({ nickname, hour }: { nickname: string; hour: number }) {
+  return (
+    <div className={s.previewWrap} aria-hidden>
+      <div className={`glass ${s.preview}`}>
+        <span className={s.symbol} />
+        <div className={s.previewText}>
+          <p className={s.previewHead}>
+            <strong>TailQ</strong>
+            <span className="num">{hourLabel(hour)}</span>
+          </p>
+          <strong>오늘의 질문이 도착했어요</strong>
+          <p>{nickname}님, 오늘도 한 문제 풀어볼까요?</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 아이폰은 홈 화면에 추가해야 알림을 받을 수 있다(03 요구사항 B-8, iOS 16.4 이상)
+const GUIDES = [
+  {
+    title: "아이폰 알림 설정 방법 보기",
+    body: "Safari에서 공유 버튼 → '홈 화면에 추가'를 누르고, 홈 화면의 TailQ로 들어와 알림을 켜 주세요. iOS 16.4 이상에서 돼요.",
+  },
+  {
+    title: "안드로이드 알림 설정 방법 보기",
+    body: "'알림 켜기'를 누른 뒤 브라우저 창에서 '허용'을 눌러 주세요. 막아 두었다면 주소창 왼쪽 아이콘 → 권한 → 알림에서 허용으로 바꿔요.",
+  },
+];
+
 function NotifyStep(props: {
-  initialHour: number;
+  hour: number;
+  setHour: (hour: number) => void;
   onDone: (body: Body) => Promise<boolean>;
 }) {
-  const [hour, setHour] = useState(props.initialHour);
   const [busy, run] = useBusy();
 
   // 웹 푸시 구독은 알림 발송 작업에서 붙인다. 여기서는 권한을 받고 설정만 저장한다.
@@ -356,30 +391,21 @@ function NotifyStep(props: {
         : "denied";
     return props.onDone({
       notifyOn: permission === "granted",
-      notifyHour: hour,
+      notifyHour: props.hour,
     });
   };
 
   return (
     <>
-      <div className="glass" style={card}>
-        <label htmlFor="notify-hour" style={label}>
-          알림 시각
-        </label>
+      {/* 화면엔 글자로 보이고, 누르면 기기의 선택 창이 열린다 */}
+      <label className={`glass ${s.hourRow}`}>
+        <span className={s.hourLabel}>알림 시각</span>
+        <span className="num">{hourLabel(props.hour)}</span>
+        <Icon name="chevronRight" size={18} />
         <select
-          id="notify-hour"
-          className="glass num"
-          value={hour}
-          onChange={(e) => setHour(Number(e.target.value))}
-          style={{
-            height: 52,
-            borderRadius: 16,
-            padding: "0 16px",
-            border: 0,
-            font: "inherit",
-            fontSize: 16,
-            color: "var(--text)",
-          }}
+          aria-label="알림 시각"
+          value={props.hour}
+          onChange={(e) => props.setHour(Number(e.target.value))}
         >
           {Array.from({ length: 24 }, (_, h) => (
             <option key={h} value={h}>
@@ -387,15 +413,28 @@ function NotifyStep(props: {
             </option>
           ))}
         </select>
+      </label>
+
+      <div className={`glass ${f.rows} ${s.guides}`}>
+        {GUIDES.map((g) => (
+          <details key={g.title}>
+            <summary className={f.row}>
+              <strong>{g.title}</strong>
+              <Icon name="chevronRight" size={18} />
+            </summary>
+            <p>{g.body}</p>
+          </details>
+        ))}
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+
+      <div className={f.bottom}>
         <button
           type="button"
           className="btn btn-primary press"
           disabled={busy}
           onClick={() => run(allow)}
         >
-          알림 받기
+          알림 켜기
         </button>
         <button
           type="button"
@@ -403,7 +442,7 @@ function NotifyStep(props: {
           disabled={busy}
           onClick={() => run(() => props.onDone({}))}
         >
-          건너뛰기
+          나중에 할게요
         </button>
       </div>
     </>

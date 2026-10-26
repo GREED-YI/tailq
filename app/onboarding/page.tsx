@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import f from "@/components/Flow.module.css";
 import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { LEVELS, type Level } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingFlow } from "./OnboardingFlow";
@@ -13,27 +13,10 @@ export const metadata: Metadata = { title: "시작하기 · TailQ" };
 // 로그인·온보딩 여부에 따른 이동은 proxy.ts가 한다.
 export default function OnboardingPage() {
   return (
-    <main
-      style={{
-        minHeight: "100dvh",
-        padding: "0 20px 40px",
-        maxWidth: 520,
-        margin: "0 auto",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <header
-        style={{
-          height: 64,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
+    <main className={f.main}>
+      <span className={f.pcLogo}>
         <Logo />
-        <ThemeToggle />
-      </header>
+      </span>
       <Suspense>
         <Onboarding />
       </Suspense>
@@ -47,7 +30,7 @@ async function Onboarding() {
   const [{ data: profile }, { data: topics }] = await Promise.all([
     supabase
       .from("profiles")
-      .select("agreed_at, topics, levels, notify_hour")
+      .select("agreed_at, topics, levels, notify_hour, nickname")
       .maybeSingle(),
     supabase.from("topics").select("id, field, name").order("sort"),
   ]);
@@ -68,6 +51,7 @@ async function Onboarding() {
           : LEVELS.map((l) => l.id)
       }
       initialHour={profile.notify_hour}
+      nickname={profile.nickname}
     />
   );
 }
