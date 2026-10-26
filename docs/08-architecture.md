@@ -440,6 +440,16 @@ CI는 샘플 질문만으로 돈다. 비공개 저장소는 콘텐츠 작업(#9 
 
 ## 6. 마이그레이션·테스트
 
+폴더 구조 (#11에서 정함, 2026-10-26):
+
+| 폴더 | 내용 |
+|---|---|
+| `app/` | 화면(서버 컴포넌트)과 Route Handler(`app/api/**/route.ts`) |
+| `lib/` | 서버·공용 코드. `lib/ai.ts`(모델 호출), `lib/database.types.ts`(생성 타입, 손으로 고치지 않는다) |
+| `supabase/migrations/` · `supabase/seed.sql` | DB 구조와 공개 시드(주제 15개) |
+| `tests/` | Vitest 단위·API 테스트. `tests/mocks/`에 MSW 핸들러(Claude API 가짜 응답) |
+| `e2e/` | Playwright E2E |
+
 - **마이그레이션**: Supabase CLI(`supabase/migrations/<timestamp>_<이름>.sql`). 로컬은 `supabase start`(Docker) + `supabase db reset`, 운영은 `supabase db push`. 테이블·정책·함수·권한·`pg_cron` 등록이 전부 마이그레이션에 있어야 한다(대시보드에서 손으로 바꾸지 않는다).
 - **타입**: `supabase gen types typescript`로 만든 타입을 저장소에 둔다. 마이그레이션이 바뀌면 다시 만든다(#11).
 - **DB 함수 테스트**: CI에서 `supabase start`를 띄우고(1~2분) 함수를 직접 부른다. 꼭 있어야 하는 것: 하루 1세션(동시 호출 2개 → 세션 1개), 전날 세션 정리(`expired`·`done`+`skipped`), 질문 고르기 순서(복습 → 새 질문 → 앞당기기), `submit_answer` 전이(graded면 거부, 멈춘 grading은 통과, 횟수 제한), 복습 칸 이동, 체험 IP 20번, 프로젝트 삭제 거부. **권한 검사** 1개: `information_schema.routine_privileges`에서 `grantee in ('anon','authenticated')`인 `public` 함수가 0건.
