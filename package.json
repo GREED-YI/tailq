@@ -2,6 +2,7 @@
   "name": "tailq",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -19,10 +20,12 @@
     "db:types": "supabase gen types typescript --local > lib/database.types.ts && prettier --write lib/database.types.ts",
     "test:coverage": "vitest run --coverage",
     "db:test": "supabase test db",
-    "eval": "node --env-file=.env.local eval/grading.mjs"
+    "eval": "node --env-file=.env.local eval/grading.mjs",
+    "seed:questions": "node --env-file=.env.local scripts/seed-questions.mts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",
+    "@supabase/supabase-js": "^2.118.0",
     "geist": "^1.8.2",
     "next": "16.4.3",
     "pretendard": "^1.3.9",
