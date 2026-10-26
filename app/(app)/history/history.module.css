@@ -176,3 +176,96 @@
   color: var(--accent);
   font-weight: 500;
 }
+
+/* 기록 / 리포트 탭(04 기능 명세 "하단 탭 5개") */
+.tabs {
+  margin-top: 16px;
+  display: flex;
+  gap: 8px;
+}
+
+/* 리포트(S21): 꼬리잇기와 학습 잔디 */
+.report {
+  margin-top: 20px;
+  border-radius: 28px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reportHead {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.reportHead svg {
+  color: var(--accent);
+}
+.reportHead .sub {
+  font-weight: 500;
+  color: var(--sub);
+}
+.caption {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--sub);
+}
+
+/* 잔디는 모바일에서도 52주 전부, 가로 스크롤. rtl로 처음엔 최근 주(오른쪽 끝)가 보이고 왼쪽 끝은 흐리게(docs/07) */
+.grassScroll {
+  direction: rtl;
+  overflow-x: auto;
+  padding: 4px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll) transparent;
+  mask-image: linear-gradient(to right, transparent, #000 28px);
+}
+/* 52주가 다 들어가는 넓은 PC(내용 폭 = 화면 - 312)는 왼쪽부터 놓는다 */
+@media (min-width: 1200px) {
+  .grassScroll {
+    direction: ltr;
+    mask-image: none;
+  }
+}
+.grass {
+  direction: ltr;
+  width: max-content;
+  display: grid;
+  grid-template-rows: repeat(7, 12px);
+  grid-auto-columns: 12px;
+  grid-auto-flow: column;
+  gap: 3px;
+}
+.grass span {
+  border-radius: 3px;
+}
+.grass [data-level="0"] {
+  background: var(--grass-0);
+}
+.grass [data-level="1"] {
+  background: var(--grass-1);
+}
+.grass [data-level="2"] {
+  background: var(--grass-2);
+}
+.grass [data-level="3"] {
+  background: var(--grass-3);
+}
+.grass [data-level="4"] {
+  background: var(--grass-4);
+}
+/* 휴식권 쓴 날은 빗금 */
+.grass [data-rest] {
+  background:
+    repeating-linear-gradient(
+      135deg,
+      var(--grass-2) 0 2px,
+      transparent 2px 4px
+    ),
+    var(--grass-0);
+}
+.grass [data-future] {
+  visibility: hidden;
+}
