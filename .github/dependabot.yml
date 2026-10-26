@@ -1,0 +1,58 @@
+# 의존성 업데이트 PR을 주 1회(월요일 오전 9시, 한국 시간) 올린다.
+# 같이 올라가야 하는 것끼리 묶어서 PR 수를 줄인다. 모든 PR은 CI(verify·db·e2e)를 통과해야 합칠 수 있다.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Seoul
+    open-pull-requests-limit: 5
+    labels: [chore]
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      next-react:
+        patterns:
+          - next
+          - eslint-config-next
+          - react
+          - react-dom
+          - "@types/react"
+          - "@types/react-dom"
+      test:
+        patterns:
+          - vitest
+          - "@vitest/*"
+          - msw
+          - "@playwright/test"
+      lint-format:
+        patterns:
+          - eslint
+          - eslint-config-prettier
+          - prettier
+          - typescript
+      supabase:
+        patterns:
+          - supabase
+          - "@supabase/*"
+      anthropic:
+        patterns:
+          - "@anthropic-ai/*"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Seoul
+    labels: [ci]
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ["*"]
