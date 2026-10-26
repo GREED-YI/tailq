@@ -1,0 +1,47 @@
+/* 약점 리포트(S21): 주제마다 이름·평균 점수, 막대, 지난주 대비 변화 */
+.list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 12px;
+}
+.name {
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.avg {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}
+.bar {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
+  overflow: hidden;
+}
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+.change {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--sub);
+}
+.change[data-trend="up"] {
+  color: var(--good);
+}
+.change[data-trend="down"] {
+  color: var(--low);
+}
