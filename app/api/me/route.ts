@@ -20,10 +20,11 @@ export async function PATCH(request: Request) {
 
   const admin = createAdminClient();
   if (input.topics) {
-    const { count } = await admin
+    const { count, error: topicsError } = await admin
       .from("topics")
       .select("id", { count: "exact", head: true })
       .in("id", input.topics);
+    if (topicsError) return fail(500, "INTERNAL", "저장하지 못했어요.");
     if (count !== input.topics.length)
       return fail(400, "VALIDATION", "없는 주제가 있어요.");
   }
