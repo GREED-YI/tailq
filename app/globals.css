@@ -105,15 +105,7 @@ button {
   transition: background-color 0.5s ease;
 }
 
-/* 버튼 */
-.press {
-  transition:
-    transform 0.2s ease,
-    filter 0.2s ease;
-}
-.press:active {
-  transform: scale(0.96);
-}
+/* 버튼 (누름 축소·hover 효과는 아래 모션 구역에서만 켠다) */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -209,6 +201,9 @@ button {
   }
   .press:hover {
     filter: brightness(1.06);
+  }
+  .press:active {
+    transform: scale(0.96);
   }
 }
 /* 모바일은 배경을 느리게 */

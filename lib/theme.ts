@@ -80,4 +80,5 @@ export const THEME_STORAGE_KEY = "tailq-theme";
 
 // 첫 그림 전에 테마를 정해 깜박임을 막는다. 저장값(light·dark)이 없으면 기기 설정을 따르고,
 // 기기 설정이 바뀌면 같이 바꾼다.
-export const themeScript = `(()=>{var d=document.documentElement,k="${THEME_STORAGE_KEY}";try{var q=matchMedia("(prefers-color-scheme: light)"),s=function(){return localStorage.getItem(k)},f=function(){var v=s();d.dataset.theme=v==="light"||v==="dark"?v:q.matches?"light":"dark"};f();q.addEventListener("change",function(){if(!s())f()})}catch(e){d.dataset.theme="dark"}})()`;
+// 저장소를 못 읽어도(사생활 보호 모드 등) 기기 설정은 따른다.
+export const themeScript = `(()=>{var d=document.documentElement,k="${THEME_STORAGE_KEY}",q=window.matchMedia?matchMedia("(prefers-color-scheme: light)"):null,s=function(){try{return localStorage.getItem(k)}catch(e){return null}},f=function(){var v=s();d.dataset.theme=v==="light"||v==="dark"?v:q&&q.matches?"light":"dark"};f();if(q&&q.addEventListener)q.addEventListener("change",function(){if(!s())f()})})()`;
