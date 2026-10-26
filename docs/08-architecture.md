@@ -431,12 +431,14 @@ HTTP 상태 코드에 더해 본문은 항상 `{ "error": { "code", "message" } 
 반영 절차:
 
 1. 비공개 저장소를 로컬에 체크아웃한다(경로는 환경변수 `CONTENT_DIR`).
-2. `scripts/seed-questions.ts`가 파일을 읽어 zod로 검증(`rubric`·`links` 모양, 길이)하고 `questions`·`question_keys`에 `insert … on conflict (id) do update`로 넣는다. `service_role` 키로 로컬에서 실행한다. 여러 번 돌려도 결과가 같다.
-3. 끝나면 `setval`로 `questions.id` 시퀀스를 은행 최대값 뒤로 맞춘다(프로젝트 질문이 그 뒤 번호를 쓴다).
+2. `scripts/seed-questions.mts`(`npm run seed:questions -- <파일 또는 폴더>`)가 파일을 읽어 zod로 검증(`rubric`·`links` 모양, 길이)하고 `questions`·`question_keys`에 `insert … on conflict (id) do update`로 넣는다. `service_role` 키로 로컬에서 실행한다. 여러 번 돌려도 결과가 같다.
+3. 끝나면 `sync_question_id_seq()`(service_role 전용 함수)로 `questions.id` 시퀀스를 은행 최대값 뒤로 맞춘다(프로젝트 질문이 그 뒤 번호를 쓴다).
 4. 숨기기는 파일의 `is_hidden: true`. 지우지 않는다(과거 세션이 참조한다).
 5. 질문 글을 고치면 과거 세션 상세에도 고친 글이 보인다. 뜻이 바뀌는 수정은 새 `id`로 추가하고 옛 것은 숨긴다.
 
 CI는 샘플 질문만으로 돈다. 비공개 저장소는 콘텐츠 작업(#9 등)에서만 쓴다.
+
+출제 후보는 뷰 `bank_questions`(숨기지 않은 은행 질문 + 분야)에서 고른다. `security_invoker`라 RLS를 그대로 따르고, 브라우저(anon·authenticated)에는 권한을 주지 않는다. `questions`의 "내 세션·복습·북마크의 질문만" 읽기 정책은 그 테이블이 생기는 #30에서 더하고, 그전까지 질문은 서버만 읽는다(#28).
 
 ## 6. 마이그레이션·테스트
 

@@ -27,6 +27,7 @@ npm run dev                  # http://localhost:3000
 | `npm run lint` · `npm run typecheck` · `npm run format:check` | 린트 · 타입 · 포맷 검사 |
 | `npm run db:types` | 로컬 DB에서 `lib/database.types.ts`를 다시 만든다. 마이그레이션을 바꾸면 같이 커밋한다 |
 | `npm run db:test` | RLS·함수 권한 테스트 (`supabase/tests/`, pgTAP) |
+| `npm run seed:questions` | 샘플 질문 3개를 로컬 DB에 넣는다. 실제 질문은 `npm run seed:questions -- <비공개 콘텐츠 저장소>/questions`. 고치거나 숨기려면(`is_hidden: true`) 파일을 고치고 다시 돌린다 |
 | `npm run eval` | AI 채점 평가 (`eval/`). 실제 Claude API를 불러 비용이 들어서 프롬프트를 바꿀 때만 돌린다 ([docs/09](docs/09-grading.md) 6장) |
 
 PR마다 CodeRabbit이 한국어로 코드 리뷰를 단다(`.coderabbit.yaml`). 지적은 반영하거나, 반영하지 않으면 이유를 답글로 남기고 대화를 닫는다. 리뷰는 머지를 막지 않는다.
