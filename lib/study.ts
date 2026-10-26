@@ -1,11 +1,5 @@
 import { kstDay } from "@/lib/daily-pick";
-import {
-  addDays,
-  computeStreak,
-  grassStart,
-  studyDay,
-  type Streak,
-} from "@/lib/streak";
+import { computeStreak, grassStart, studyDay, type Streak } from "@/lib/streak";
 import { createClient } from "@/lib/supabase/server";
 
 export type Study = {
@@ -21,14 +15,14 @@ export type Study = {
 export async function loadStudy(): Promise<Study> {
   const supabase = await createClient();
   const today = kstDay(new Date());
-  // 세션 날짜와 제출 날짜가 하루 어긋날 수 있어 하루 더 읽는다
+  // 학습한 날은 제출 시각의 한국 날짜라 세션 날짜가 아니라 제출 시각으로 거른다
   const { data } = await supabase
     .from("sessions")
     .select("turns!inner(answered_at, score)")
     .eq("kind", "daily")
     .eq("turns.idx", 0)
     .not("turns.answered_at", "is", null)
-    .gte("day", addDays(grassStart(today), -1))
+    .gte("turns.answered_at", `${grassStart(today)}T00:00:00+09:00`)
     .throwOnError();
 
   const scores = new Map<string, number | null>();

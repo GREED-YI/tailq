@@ -67,9 +67,10 @@ export default function HomePage() {
   );
 }
 
+// 꼬리잇기를 못 읽어도 홈의 오늘의 질문은 보여준다
 async function HomeStreak() {
-  const { streak } = await loadStudy();
-  return <StreakTile days={streak.current} />;
+  const study = await loadStudy().catch(() => null);
+  return study && <StreakTile days={study.streak.current} />;
 }
 
 // 홈을 열면 오늘의 세션을 연다(08 설계 "오늘의 질문 세션")

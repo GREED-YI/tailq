@@ -45,9 +45,10 @@ async function TodayResult() {
       .select("box, due_day")
       .eq("question_id", session.question.id)
       .maybeSingle(),
-    loadStudy(),
+    // 꼬리잇기를 못 읽어도 결과와 복습은 보여준다
+    loadStudy().catch(() => null),
   ]);
-  const streak = study.streak.current;
+  const streak = study?.streak.current;
   const q = session.question;
   const followed = (turns ?? []).some(
     (t) => t.idx > 0 && t.status === "graded",
@@ -81,10 +82,12 @@ async function TodayResult() {
       <TurnRows turns={turns ?? []} prompt={q.prompt} />
 
       <section className={s.tiles}>
-        <StreakTile
-          days={streak}
-          note={streak > 1 ? "하루 더 이어졌어요" : undefined}
-        />
+        {streak !== undefined && (
+          <StreakTile
+            days={streak}
+            note={streak > 1 ? "하루 더 이어졌어요" : undefined}
+          />
+        )}
         {review && (
           <div className={`glass ${s.tile}`}>
             <span>다음 복습</span>
