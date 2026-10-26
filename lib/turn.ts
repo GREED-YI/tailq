@@ -21,10 +21,11 @@ export type TurnResult = {
   rating: number | null;
 };
 
+// 꼬리질문 턴은 summary만 있다(08 설계 "jsonb 스키마")
 type Feedback = {
   summary: string;
-  good: string[];
-  improve: string[];
+  good?: string[];
+  improve?: string[];
   missing_keywords?: string[];
 };
 
@@ -37,7 +38,7 @@ export async function turnResult(
   const { data: t } = await db
     .from("turns")
     .select(
-      "id, idx, score, verdict, feedback, rating, session_id, sessions(status, user_id, question_id, questions(question_keys(model_answer, links)))",
+      "id, idx, score, verdict, feedback, rating, session_id, turn_keys(expected_answer), sessions(status, user_id, question_id, questions(question_keys(model_answer, links)))",
     )
     .eq("id", turnId)
     .single()
@@ -59,17 +60,25 @@ export async function turnResult(
       .maybeSingle()
       .throwOnError(),
   ]);
+  // 꼬리질문은 모범 답안 대신 그 꼬리질문의 기대 답안, 참고 자료는 없다
   const keys = s.questions.question_keys;
+  const followUp = t.idx > 0;
   const fb = t.feedback as Feedback | null;
   return {
     turnId: t.id,
     status: "graded",
     score: t.score,
     verdict: t.verdict,
-    feedback: fb && { summary: fb.summary, good: fb.good, improve: fb.improve },
+    feedback: fb && {
+      summary: fb.summary,
+      good: fb.good ?? [],
+      improve: fb.improve ?? [],
+    },
     missingKeywords: fb?.missing_keywords ?? [],
-    modelAnswer: keys?.model_answer ?? "",
-    links: (keys?.links as Link[] | null) ?? [],
+    modelAnswer: followUp
+      ? (t.turn_keys?.expected_answer ?? "")
+      : (keys?.model_answer ?? ""),
+    links: followUp ? [] : ((keys?.links as Link[] | null) ?? []),
     nextTurn: next.data && {
       id: next.data.id,
       idx: next.data.idx,
