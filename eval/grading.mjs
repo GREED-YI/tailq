@@ -21,6 +21,11 @@ if (!process.env.ANTHROPIC_API_KEY) {
   process.exit(1);
 }
 const RUNS = Number(process.argv[2] ?? 3);
+// 0이나 숫자가 아니면 일부 작업만 유료로 돌아가므로 시작 전에 멈춘다
+if (!Number.isInteger(RUNS) || RUNS < 1) {
+  console.error("반복 횟수는 1 이상의 정수여야 해요. 예: npm run eval -- 1");
+  process.exit(1);
+}
 const KRW = 1400;
 const MODELS = {
   haiku: {
@@ -34,7 +39,7 @@ const MODELS = {
     id: "claude-sonnet-5-5",
     input: 2,
     output: 10,
-    cacheRead: 0.2,
+    cacheRead: 0.1, // Sonnet 5.5는 캐시 읽기가 입력 가격의 0.05배
     cacheWrite: 2.5,
   },
 };
@@ -139,11 +144,14 @@ async function pool(tasks, n = 4) {
     Array.from({ length: n }, async () => {
       while (i < tasks.length) {
         const k = i++;
+        const { meta, fn } = tasks[k];
         try {
-          out[k] = await tasks[k]();
+          out[k] = { ...meta, ...(await fn()) };
           process.stdout.write(out[k].ok ? "." : "x");
         } catch (e) {
+          // 예외도 어느 작업의 실패인지 남겨 보고서의 실패 수에 들어가게 한다
           out[k] = {
+            ...meta,
             ok: false,
             error: `${e?.constructor?.name}: ${e?.message}`,
           };
@@ -164,13 +172,10 @@ const tasksA = [];
 for (const modelKey of ["haiku", "sonnet"])
   set.answers.forEach((item, idx) => {
     for (let r = 0; r < RUNS; r++)
-      tasksA.push(async () => ({
-        part: "A",
-        modelKey,
-        idx,
-        run: r,
-        ...(await call(modelKey, SYS_GRADE, gradeContent(item), Grade)),
-      }));
+      tasksA.push({
+        meta: { part: "A", modelKey, idx, run: r },
+        fn: () => call(modelKey, SYS_GRADE, gradeContent(item), Grade),
+      });
   });
 
 // B. 꼬리질문 채점(1번째). 본 질문 턴은 부분 정답(50점)으로 고정한다
@@ -187,15 +192,10 @@ set.followups.forEach((f, fi) => {
       ["sonnet", 1],
     ])
       for (let r = 0; r < runs; r++)
-        tasksB.push(async () => ({
-          part: "B",
-          modelKey,
-          fi,
-          ai,
-          expect,
-          run: r,
-          ...(await call(modelKey, SYS_FOLLOW, content, FollowGrade)),
-        }));
+        tasksB.push({
+          meta: { part: "B", modelKey, fi, ai, expect, run: r },
+          fn: () => call(modelKey, SYS_FOLLOW, content, FollowGrade),
+        });
   });
 });
 
@@ -203,26 +203,25 @@ set.followups.forEach((f, fi) => {
 const tasksC = [];
 set.projects.forEach((p, pi) => {
   for (let r = 0; r < 2; r++)
-    tasksC.push(async () => ({
-      part: "C",
-      modelKey: "sonnet",
-      pi,
-      run: r,
-      ...(await call(
-        "sonnet",
-        SYS_PROJECT,
-        `<project_name>${p.name}</project_name>\n<readme>${p.readme}</readme>`,
-        Project,
-        16000,
-      )),
-    }));
+    tasksC.push({
+      meta: { part: "C", modelKey: "sonnet", pi, run: r },
+      fn: () =>
+        call(
+          "sonnet",
+          SYS_PROJECT,
+          `<project_name>${p.name}</project_name>\n<readme>${p.readme}</readme>`,
+          Project,
+          16000,
+        ),
+    });
 });
 
 console.log(
   `A ${tasksA.length}건 · B ${tasksB.length}건 · C ${tasksC.length}건`,
 );
 const results = await pool([...tasksA, ...tasksB, ...tasksC]);
-const stamp = new Date().toISOString().slice(0, 16).replace(/[:T]/g, "");
+// 초 단위까지 넣어 같은 분에 끝난 실행끼리 결과 파일을 덮어쓰지 않게 한다
+const stamp = new Date().toISOString().slice(0, 19).replace(/[-:T]/g, "");
 mkdirSync(join(here, "results"), { recursive: true });
 writeFileSync(
   join(here, "results", `eval-${stamp}.json`),
@@ -359,9 +358,10 @@ for (const r of results.filter((r) => r.part === "C")) {
   const qs = r.out.questions;
   const order =
     qs.map((q) => q.kind).join(",") === "design,design,tech,tech,trouble";
-  const srcOk = qs.filter((q) =>
-    norm(p.readme).includes(norm(q.source).replace(/^["']|["']$/g, "")),
-  ).length;
+  const srcOk = qs.filter((q) => {
+    const src = norm(q.source).replace(/^["']|["']$/g, "");
+    return src !== "" && norm(p.readme).includes(src); // 빈 근거는 README에 있다고 세지 않는다
+  }).length;
   const long = qs.filter((q) => q.question.length > 80).length;
   md.push(
     `### ${p.name} ${r.run + 1}회차 (${(r.usd * KRW).toFixed(0)}원) — 5개 ${qs.length === 5 ? "O" : "X"} · 순서 ${order ? "O" : "X"} · source가 README에 있음 ${srcOk}/${qs.length} · 80자 초과 ${long}`,
