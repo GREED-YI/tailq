@@ -153,6 +153,95 @@ export type Database = {
           },
         ];
       };
+      reviews: {
+        Row: {
+          box: number | null;
+          due_day: string;
+          question_id: number;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          box?: number | null;
+          due_day: string;
+          question_id: number;
+          user_id: string;
+        };
+        Update: {
+          box?: number | null;
+          due_day?: string;
+          question_id?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reviews_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "bank_questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reviews_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sessions: {
+        Row: {
+          completed_at: string | null;
+          created_at: string;
+          day: string;
+          id: string;
+          kind: string;
+          pick: string | null;
+          question_id: number;
+          status: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string;
+          day: string;
+          id?: string;
+          kind: string;
+          pick?: string | null;
+          question_id: number;
+          status?: string;
+          user_id: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string;
+          day?: string;
+          id?: string;
+          kind?: string;
+          pick?: string | null;
+          question_id?: number;
+          status?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sessions_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "bank_questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sessions_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       topics: {
         Row: {
           field: string;
@@ -174,6 +263,63 @@ export type Database = {
           sort?: number;
         };
         Relationships: [];
+      };
+      turns: {
+        Row: {
+          answer: string | null;
+          answered_at: string | null;
+          feedback: Json | null;
+          follow_up_prompt: string | null;
+          grading_attempts: number;
+          grading_started_at: string | null;
+          id: string;
+          idx: number;
+          rating: number | null;
+          score: number | null;
+          session_id: string;
+          status: string;
+          verdict: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          answer?: string | null;
+          answered_at?: string | null;
+          feedback?: Json | null;
+          follow_up_prompt?: string | null;
+          grading_attempts?: number;
+          grading_started_at?: string | null;
+          id?: string;
+          idx: number;
+          rating?: number | null;
+          score?: number | null;
+          session_id: string;
+          status?: string;
+          verdict?: string | null;
+        };
+        Update: {
+          answer?: string | null;
+          answered_at?: string | null;
+          feedback?: Json | null;
+          follow_up_prompt?: string | null;
+          grading_attempts?: number;
+          grading_started_at?: string | null;
+          id?: string;
+          idx?: number;
+          rating?: number | null;
+          score?: number | null;
+          session_id?: string;
+          status?: string;
+          verdict?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "turns_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "sessions";
+            referencedColumns: ["id"];
+          },
+        ];
       };
     };
     Views: {
@@ -199,6 +345,26 @@ export type Database = {
       };
     };
     Functions: {
+      start_daily_session: {
+        Args: { p_pick: string; p_question_id: number; p_user_id: string };
+        Returns: {
+          completed_at: string | null;
+          created_at: string;
+          day: string;
+          id: string;
+          kind: string;
+          pick: string | null;
+          question_id: number;
+          status: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "sessions";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       sync_question_id_seq: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
