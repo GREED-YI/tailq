@@ -208,7 +208,11 @@ export function Interview({
         </div>
         {/* 별표는 꼬리질문에서도 본 질문을 북마크한다(05 사용자 흐름). Figma 화면에는 자리가 없어 머리 오른쪽에 둔다 */}
         <div className={s.headerEnd}>
-          <BookmarkButton questionId={question.id} initial={bookmarked} />
+          <BookmarkButton
+            questionId={question.id}
+            initial={bookmarked}
+            toastTop
+          />
           <ThemeToggle />
         </div>
       </header>
