@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+# PR 자동 코드 리뷰 설정. 혼자 하는 프로젝트라 사람 리뷰어 대신 쓴다(#17).
+language: ko-KR
+
+reviews:
+  profile: chill
+  # 리뷰는 의견이다. 머지를 막지 않는다(머지 조건은 CI 필수 검사)
+  request_changes_workflow: false
+  high_level_summary: true
+  review_status: true
+  collapse_walkthrough: true
+  poem: false
+  in_progress_fortune: false
+  auto_review:
+    enabled: true
+    drafts: false
+  # 생성 파일과 잠금 파일은 리뷰하지 않는다
+  path_filters:
+    - "!lib/database.types.ts"
+    - "!package-lock.json"
+  path_instructions:
+    - path: "supabase/migrations/**"
+      instructions: >-
+        RLS가 켜져 있는지, 쓰기 정책 없이 읽기 정책만 있는지, 새 DB 함수마다
+        public·anon·authenticated의 실행 권한을 회수하고 service_role에만 주는지 확인한다
+        (docs/08-architecture.md "함수 권한은 명시적으로 닫는다").
+    - path: "{app,lib}/**"
+      instructions: >-
+        Claude API 키와 SUPABASE_SERVICE_ROLE_KEY가 브라우저 코드로 새지 않는지,
+        모델 호출이 서버 쪽에만 있는지 확인한다.
+
+chat:
+  auto_reply: true
