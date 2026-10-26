@@ -58,8 +58,8 @@ export function Interview({
   // 다른 탭이나 새로고침으로 채점 중인 턴을 열었으면 잠시 뒤 다시 읽는다
   useEffect(() => {
     if (initialStatus !== "grading") return;
-    const t = setTimeout(() => router.refresh(), 5000);
-    return () => clearTimeout(t);
+    const t = setInterval(() => router.refresh(), 5000);
+    return () => clearInterval(t);
   }, [initialStatus, router]);
 
   const length = answer.trim().length;
@@ -450,12 +450,11 @@ function useCountUp(target: number, run: boolean) {
       const t = setTimeout(() => setShown(target), 0);
       return () => clearTimeout(t);
     }
+    let v = 0;
     const id = setInterval(() => {
-      setShown((v) => {
-        const next = Math.min(target, v + 2);
-        if (next >= target) clearInterval(id);
-        return next;
-      });
+      v = Math.min(target, v + 2);
+      setShown(v);
+      if (v >= target) clearInterval(id);
     }, 18);
     return () => clearInterval(id);
   }, [target, run]);

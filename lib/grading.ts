@@ -108,6 +108,13 @@ export type GradeInput = {
 const label = (list: readonly { id: string; label: string }[], id: string) =>
   list.find((x) => x.id === id)?.label ?? id;
 
+// 답변 속 입력 태그가 프롬프트 구조를 닫거나 열지 못하게 태그 이름 앞에 폭 없는 공백을 넣는다
+const neutralize = (text: string) =>
+  text.replace(
+    /<(\/?)(question|topic|rubric|model_answer|answer)\b/gi,
+    "<\u200b$1$2",
+  );
+
 // 채점 사용자 메시지(docs/09 "채점 사용자 메시지 (본 질문)"). 답변은 <answer> 안의 자료로만 들어간다
 export function gradeUserMessage(i: GradeInput) {
   return [
@@ -119,7 +126,7 @@ export function gradeUserMessage(i: GradeInput) {
     ...i.rubric.criteria.map((c) => `- ${c}`),
     "</rubric>",
     `<model_answer>${i.modelAnswer}</model_answer>`,
-    `<answer>${i.answer}</answer>`,
+    `<answer>${neutralize(i.answer)}</answer>`,
   ].join("\n");
 }
 

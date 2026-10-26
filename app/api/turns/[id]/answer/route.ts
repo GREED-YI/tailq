@@ -104,6 +104,7 @@ export async function PUT(
 
   // 사용자가 떠나 스트림이 끊겨도 채점과 저장은 끝까지 한다(08 설계 "사용자가 떠나도 저장한다")
   const job = (async () => {
+    let saved = false;
     try {
       const out = await grade(
         {
@@ -122,8 +123,18 @@ export async function PUT(
       await db
         .rpc("save_grading", { p_turn_id: id, p_result: result })
         .throwOnError();
+      saved = true;
       send("result", await turnResult(db, id));
     } catch (e) {
+      // 저장은 끝났고 결과 조회만 실패했다. 채점 실패로 되돌리지 않고 새로고침으로 다시 읽게 한다
+      if (saved) {
+        console.error("grading result read failed", id, e);
+        send("error", {
+          code: "INTERNAL",
+          message: "결과를 불러오지 못했어요. 새로고침해 주세요.",
+        });
+        return;
+      }
       console.error("grading failed", id, e);
       await db.rpc("save_grading", { p_turn_id: id, p_result: null });
       send("error", {
