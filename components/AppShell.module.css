@@ -1,0 +1,140 @@
+/* 앱 화면 공통 뼈대. 숫자는 Figma C안 파일(모바일 390·태블릿 768·PC 1440) 기준 */
+
+.main {
+  min-height: 100dvh;
+  padding: 0 20px calc(20px + 64px + 24px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  height: 64px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.headerTools {
+  display: flex;
+  gap: 8px;
+}
+
+.footer {
+  margin-top: auto;
+  padding-top: 32px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--sub);
+}
+.footer a:hover {
+  color: var(--text);
+}
+
+/* 탭바: 화면 아래에 떠 있는 유리 막대, 선택 탭은 안쪽 유리 캡슐 */
+.nav {
+  position: fixed;
+  z-index: 10;
+  left: 20px;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  height: 64px;
+  border-radius: 32px;
+  padding: 6px;
+}
+.navLogo,
+.navTools {
+  display: none;
+}
+.navList {
+  list-style: none;
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+.navItem {
+  height: 100%;
+  border-radius: 26px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 10px;
+  color: var(--sub);
+}
+.navItem[aria-current="page"] {
+  background: var(--tab-active);
+  box-shadow:
+    inset 0 1px 0 var(--glass-hi),
+    0 4px 12px -6px var(--glass-shadow);
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* 태블릿: 내용 폭 640 가운데, 탭바 폭 480 */
+@media (min-width: 768px) {
+  .main {
+    width: 640px;
+    margin: 0 auto;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .nav {
+    left: 50%;
+    right: auto;
+    width: 480px;
+    transform: translateX(-50%);
+    bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+}
+
+/* PC: 왼쪽 사이드 메뉴(폭 224), 내용은 x 272부터 */
+@media (min-width: 1024px) {
+  .main {
+    width: auto;
+    margin: 0 0 0 272px;
+    padding: 40px 40px 32px 0;
+  }
+  .header {
+    display: none;
+  }
+  .nav {
+    top: 16px;
+    bottom: 16px;
+    left: 16px;
+    width: 224px;
+    height: auto;
+    transform: none;
+    border-radius: 28px;
+    padding: 24px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .navLogo {
+    display: block;
+    padding-left: 12px;
+  }
+  .navList {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .navItem {
+    height: 48px;
+    border-radius: 24px;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 0 16px;
+    font-size: 15px;
+    font-weight: 500;
+  }
+  .navTools {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    padding-left: 8px;
+  }
+}
