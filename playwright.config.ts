@@ -2,6 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "e2e",
+  // CI에서는 실패했을 때 올릴 HTML 리포트를 만든다
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
   use: { baseURL: "http://localhost:3000" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   // E2E도 Claude API는 가짜 응답으로 돈다(AI_MOCK=1)
