@@ -56,7 +56,7 @@ C안 목업이 기존 문서와 부딪힌 곳을 항목마다 골랐다. 전부 
 | 12 | 랜딩 주 버튼 | 화면마다 하나 | 랜딩은 헤더·첫 화면·데모·체험 4개를 예외로 허용 | 목업 구성대로 둔다 |
 | 13 | PC 홈 오른쪽 열 | 정하지 않음 (두 안) | 통계 카드 세로 + "이번 주"(월~일 7칸, 휴식권 빗금, 오늘 테두리) + "약한 주제"(평균 점수 막대) | |
 
-- Figma 파일의 글꼴은 목업과 같게 Geist·Geist Mono·Noto Sans KR이다. 목업 환경에 Pretendard가 없어서였고, 구현은 아래 "기초 값"의 글꼴로 바꾼다.
+- Figma 파일의 글꼴은 영문·숫자 Inter, 한글 Noto Sans KR, 고정폭 JetBrains Mono다. Pretendard는 영문이 Inter, 한글이 본고딕(= Noto Sans KR)에서 온 글꼴이라 이 조합이 구현 글꼴(아래 "기초 값")과 거의 같게 보인다. 처음엔 목업대로 Geist·Geist Mono였으나(목업 환경에 Pretendard가 없었다) 구현과 맞추려고 바꿨다. JetBrains Mono에는 SemiBold가 없어 Bold를 쓴다.
 
 ## 디자인 토큰
 
