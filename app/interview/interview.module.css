@@ -1,4 +1,5 @@
-/* 면접 화면. 숫자는 C안 목업(모바일 390)과 docs/07. PC·태블릿은 내용 최대 720 가운데 */
+/* 면접 화면. 숫자는 Figma C안(모바일 390·태블릿 768·PC 1440)과 docs/07.
+   태블릿은 좌우 64 띄운 640, PC는 720 가운데 */
 
 .screen {
   min-height: 100dvh;
@@ -12,10 +13,18 @@
 .header {
   height: 64px;
   flex-shrink: 0;
+  padding: 0 10px;
   display: grid;
-  grid-template-columns: 64px 1fr 64px;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-items: center;
+}
+.header > :first-child {
+  justify-self: start;
+}
+.headerEnd {
+  justify-self: end;
+  display: flex;
+  gap: 8px;
 }
 
 .steps {
@@ -34,7 +43,8 @@
   gap: 5px;
 }
 .dot,
-.dotOn {
+.dotOn,
+.dotDone {
   width: 8px;
   height: 6px;
   border-radius: 3px;
@@ -56,6 +66,7 @@
   padding-top: 14px;
 }
 .status {
+  min-height: 16px;
   margin-top: 16px;
   display: flex;
   align-items: center;
@@ -74,14 +85,6 @@
   background: var(--accent);
 }
 
-.questionRow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: start;
-}
-.questionRow > button {
-  margin: 12px 12px 0 0;
-}
 .question {
   padding: 22px 24px 20px;
   display: flex;
@@ -153,6 +156,71 @@
 .error {
   font-size: 13px;
   color: var(--low);
+}
+
+/* 채점 실패(S17): 질문과 시트 사이에 여우와 안내 */
+.fail {
+  margin-top: auto;
+  padding: 24px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.fail + .sheet {
+  margin-top: 0;
+}
+.fail strong {
+  margin-top: 12px;
+  font-size: 18px;
+  line-height: 25px;
+  letter-spacing: -0.3px;
+}
+.fail p {
+  margin-top: 7px;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--sub);
+}
+/* 여우(Figma Mascot/Fox)는 마스크로 그려 테마 글자색을 입힌다 */
+.fox {
+  width: 72px;
+  height: 72px;
+  background: var(--text);
+  -webkit-mask: url(/brand/fox.svg) center / contain no-repeat;
+  mask: url(/brand/fox.svg) center / contain no-repeat;
+}
+
+/* 세션 나가기(S31) */
+.dialog {
+  margin: auto;
+  width: min(400px, calc(100% - 64px));
+  max-width: none;
+  border: 0;
+  border-radius: 28px;
+  padding: 24px 20px 16px;
+  color: var(--text);
+}
+.dialog::backdrop {
+  background: var(--scrim);
+}
+.dialog h2 {
+  font-size: 18px;
+  line-height: 25px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+.dialog p {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--sub);
+}
+.dialogActions {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
 
 .row {
@@ -299,6 +367,18 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.more summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sub);
+}
+.more[open] summary {
+  margin-bottom: 14px;
+}
+.more > :not(summary) + :not(summary) {
+  margin-top: 14px;
+}
 .rating {
   display: flex;
   gap: 8px;
@@ -404,27 +484,88 @@
   color: var(--sub);
 }
 .tile strong {
-  font-size: 20px;
+  font-size: 22px;
   line-height: 32px;
+}
+.tile .date {
+  font-size: 12px;
 }
 .actions {
   margin-top: auto;
   padding-top: 24px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 10px;
 }
-.textBtn {
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--sub);
+
+/* 태블릿: 좌우 64 띄운 640 */
+@media (min-width: 768px) {
+  .screen {
+    max-width: none;
+    width: 100%;
+    padding-left: max(64px, calc((100% - 720px) / 2));
+    padding-right: max(64px, calc((100% - 720px) / 2));
+  }
+  .header {
+    padding: 0;
+  }
+  .question {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .sheet {
+    margin-left: 0;
+    margin-right: 0;
+  }
+  /* 3D Q 120, 질문 26/36(Figma 태블릿·PC) */
+  .orb {
+    padding-top: 30px;
+  }
+  .orb > :first-child {
+    zoom: calc(120 / 104);
+  }
+  .status {
+    margin-top: 22px;
+  }
+  .question {
+    padding-top: 28px;
+  }
+  .prompt {
+    font-size: 26px;
+    line-height: 36px;
+  }
+  .input {
+    height: 198px;
+  }
 }
-.textBtn:hover {
-  color: var(--text);
+
+/* PC: 720 묶음을 위에서 띄워 놓고(Figma 1440x900에서 108), 시트와 버튼은 아래에 붙이지 않고 내용 바로 뒤에 */
+@media (min-width: 1024px) {
+  .screen {
+    padding-top: clamp(24px, 12dvh, 108px);
+    padding-bottom: 24px;
+  }
+  .orb {
+    padding-top: 34px;
+  }
+  .sheet {
+    margin-top: 12px;
+  }
+  .fail {
+    margin-top: 0;
+    padding-top: 16px;
+  }
+  .input {
+    height: 160px;
+  }
+  /* 채점 실패는 여우 안내만큼 입력 칸을 줄여 한 화면에 담는다(Figma PC S17) */
+  .fail + .sheet .input {
+    height: 96px;
+  }
+  .actions {
+    margin-top: 0;
+    padding-top: 32px;
+  }
 }
 
 @media (prefers-reduced-motion: no-preference) {

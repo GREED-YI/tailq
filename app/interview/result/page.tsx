@@ -92,6 +92,11 @@ async function TodayResult() {
           <div className={`glass ${s.tile}`}>
             <span>다음 복습</span>
             <strong>{review.box ? `${days}일 뒤` : "익힌 질문이에요"}</strong>
+            {review.box ? (
+              <span className={`mono ${s.date}`}>
+                {review.due_day.slice(5, 7)}/{review.due_day.slice(8, 10)}
+              </span>
+            ) : null}
           </div>
         )}
       </section>
@@ -101,7 +106,7 @@ async function TodayResult() {
         <button type="button" className="btn btn-primary" disabled>
           결과 공유하기
         </button>
-        <Link href="/home" className={s.textBtn}>
+        <Link href="/home" className="glass btn btn-secondary press">
           홈으로
         </Link>
       </div>

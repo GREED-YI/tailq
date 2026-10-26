@@ -9,12 +9,14 @@ import s from "./Bookmark.module.css";
 export function BookmarkButton({
   questionId,
   initial,
+  toastTop = false,
 }: {
   questionId: number;
   initial: boolean;
+  toastTop?: boolean;
 }) {
   const [on, setOn] = useState(initial);
-  const [toast, showToast] = useToast();
+  const [toast, showToast] = useToast({ top: toastTop });
   // 요청이 끝나기 전 다시 누르면 PUT·DELETE 순서가 뒤바뀔 수 있어 끝날 때까지 막는다
   const busy = useRef(false);
 
