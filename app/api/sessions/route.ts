@@ -18,7 +18,13 @@ export async function POST(request: Request) {
     return error(400, "VALIDATION", "kind는 daily여야 해요.");
   }
 
-  const session = await startDailySession(userId);
+  let session;
+  try {
+    session = await startDailySession(userId);
+  } catch (e) {
+    console.error("startDailySession failed", e);
+    return error(500, "INTERNAL", "오늘의 질문을 만들지 못했어요.");
+  }
   // exhausted면 화면이 "범위 안의 새 질문을 다 풀었어요. 범위를 넓혀볼까요?"를 보여준다
   return NextResponse.json({
     session,
