@@ -90,10 +90,15 @@ export function Interview({
     return () => clearTimeout(t);
   }, [draftKey, initialAnswer]);
 
+  // 실패한 뒤 "다시 채점하기"는 실패한 요청과 같은 종류로 다시 보낸다(모르겠어요 포함)
+  const [lastDontKnow, setLastDontKnow] = useState(false);
+
   function saveDraft() {
     try {
-      if (answer.trim() && (phase === "answer" || phase === "failed"))
-        localStorage.setItem(draftKey, answer);
+      if (phase !== "answer" && phase !== "failed") return;
+      // 답변을 다 지우고 나가면 전에 남긴 초안도 지운다
+      if (answer.trim()) localStorage.setItem(draftKey, answer);
+      else localStorage.removeItem(draftKey);
     } catch {
       // 저장소를 못 쓰면 쓰던 답변은 남지 않는다
     }
@@ -101,6 +106,7 @@ export function Interview({
 
   async function submit(body: { text: string } | { dontKnow: true }) {
     const before = phase;
+    setLastDontKnow("dontKnow" in body);
     try {
       localStorage.removeItem(draftKey);
     } catch {
@@ -322,8 +328,10 @@ export function Interview({
                 <button
                   type="button"
                   className="btn btn-md btn-primary press"
-                  disabled={!valid}
-                  onClick={() => submit({ text: answer })}
+                  disabled={!lastDontKnow && !valid}
+                  onClick={() =>
+                    submit(lastDontKnow ? { dontKnow: true } : { text: answer })
+                  }
                 >
                   다시 채점하기
                 </button>
