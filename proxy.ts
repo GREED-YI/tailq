@@ -1,8 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// 로그인해야 들어가는 탭 화면(app/(app))
-const APP_PATHS = ["/home", "/review", "/history", "/projects", "/my"];
+// 로그인해야 들어가는 탭 화면(app/(app))과 면접 화면
+const APP_PATHS = [
+  "/home",
+  "/review",
+  "/history",
+  "/projects",
+  "/my",
+  "/interview",
+];
 
 // 요청마다 로그인 세션을 갱신하고, 로그인 안 한 사람이 탭 화면·온보딩에 오면 로그인으로 보낸다.
 // 데이터는 RLS가 지키므로 여기서는 화면 이동만 막는다.

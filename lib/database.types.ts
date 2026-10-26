@@ -264,6 +264,37 @@ export type Database = {
         };
         Relationships: [];
       };
+      turn_keys: {
+        Row: {
+          expected_answer: string;
+          turn_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          expected_answer: string;
+          turn_id: string;
+        };
+        Update: {
+          expected_answer?: string;
+          turn_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "turn_keys_turn_id_fkey";
+            columns: ["turn_id"];
+            isOneToOne: true;
+            referencedRelation: "turn_states";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "turn_keys_turn_id_fkey";
+            columns: ["turn_id"];
+            isOneToOne: true;
+            referencedRelation: "turns";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       turns: {
         Row: {
           answer: string | null;
@@ -343,8 +374,80 @@ export type Database = {
           },
         ];
       };
+      turn_states: {
+        Row: {
+          answer: string | null;
+          answered_at: string | null;
+          effective_status: string | null;
+          feedback: Json | null;
+          follow_up_prompt: string | null;
+          grading_attempts: number;
+          grading_started_at: string | null;
+          id: string;
+          idx: number;
+          rating: number | null;
+          score: number | null;
+          session_id: string;
+          status: string;
+          verdict: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          answer?: string | null;
+          answered_at?: string | null;
+          effective_status?: never;
+          feedback?: Json | null;
+          follow_up_prompt?: string | null;
+          grading_attempts?: number | null;
+          grading_started_at?: string | null;
+          id?: string | null;
+          idx?: number | null;
+          rating?: number | null;
+          score?: number | null;
+          session_id?: string | null;
+          status?: string | null;
+          verdict?: string | null;
+        };
+        Update: {
+          answer?: string | null;
+          answered_at?: string | null;
+          effective_status?: never;
+          feedback?: Json | null;
+          follow_up_prompt?: string | null;
+          grading_attempts?: number | null;
+          grading_started_at?: string | null;
+          id?: string | null;
+          idx?: number | null;
+          rating?: number | null;
+          score?: number | null;
+          session_id?: string | null;
+          status?: string | null;
+          verdict?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "turns_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "sessions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Functions: {
+      apply_review: {
+        Args: { p_good: boolean; p_question_id: number; p_user_id: string };
+        Returns: string;
+      };
+      save_grading: {
+        Args: { p_result: Json; p_turn_id: string };
+        Returns: Json;
+      };
+      set_turn_rating: {
+        Args: { p_rating: number; p_turn_id: string; p_user_id: string };
+        Returns: undefined;
+      };
       start_daily_session: {
         Args: { p_pick: string; p_question_id: number; p_user_id: string };
         Returns: {
@@ -361,6 +464,35 @@ export type Database = {
         SetofOptions: {
           from: "*";
           to: "sessions";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      submit_answer: {
+        Args: {
+          p_answer: string;
+          p_dont_know: boolean;
+          p_turn_id: string;
+          p_user_id: string;
+        };
+        Returns: {
+          answer: string | null;
+          answered_at: string | null;
+          feedback: Json | null;
+          follow_up_prompt: string | null;
+          grading_attempts: number;
+          grading_started_at: string | null;
+          id: string;
+          idx: number;
+          rating: number | null;
+          score: number | null;
+          session_id: string;
+          status: string;
+          verdict: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "turns";
           isOneToOne: true;
           isSetofReturn: false;
         };

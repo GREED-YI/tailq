@@ -6,11 +6,17 @@ export type DailySession = {
   day: string;
   pick: Pick;
   status: string;
-  question: { id: number; prompt: string; topicId: string; level: string };
+  question: {
+    id: number;
+    prompt: string;
+    topicId: string;
+    level: string;
+    field: string;
+  };
 };
 
 const SESSION_COLUMNS =
-  "id, day, pick, status, questions(id, prompt, topic_id, level)";
+  "id, day, pick, status, questions(id, prompt, topic_id, level, topics(field))";
 
 // 오늘의 질문 세션을 돌려준다. 오늘 세션이 있으면 그것을, 없으면 규칙대로 골라 만든다.
 // 낼 질문이 하나도 없으면 null. userId는 호출한 쪽이 로그인으로 확인한 값이어야 한다.
@@ -107,7 +113,13 @@ function toDailySession(row: {
   day: string;
   pick: string | null;
   status: string;
-  questions: { id: number; prompt: string; topic_id: string; level: string };
+  questions: {
+    id: number;
+    prompt: string;
+    topic_id: string;
+    level: string;
+    topics: { field: string };
+  };
 }): DailySession {
   return {
     id: row.id,
@@ -119,6 +131,7 @@ function toDailySession(row: {
       prompt: row.questions.prompt,
       topicId: row.questions.topic_id,
       level: row.questions.level,
+      field: row.questions.topics.field,
     },
   };
 }

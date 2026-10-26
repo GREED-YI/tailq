@@ -345,8 +345,10 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `start_daily_session(user_id, question_id, pick)` | 사용자 잠금 → 전날 열린 daily 세션 정리(`expired` 또는 `done` + `skipped`) → 오늘 세션이 있으면 반환, 없으면 서버가 고른 질문으로 세션·턴 0 생성. 고르기(복습 → 새 질문 → 앞당기기)는 서버의 순수 함수(`lib/daily-pick.ts`)가 한다. 처음엔 함수 안에서 골랐으나, 주제 고르게 돌리기 같은 규칙을 단위 테스트로 지키기 쉽게 고르기만 서버로 옮겼다. 동시에 와도 잠금과 유일 인덱스로 먼저 만든 세션이 돌아온다 (2026-10-26, #30) |
 | `start_project_session(user_id, question_id)` | 주인 확인, 월 예산·하루 한도 확인과 예약, 세션·턴 0 생성 |
 | `start_trial(trial_token, ip_hash, field)` | 브라우저 1번·IP 20번 확인, `trial_field = field`인 샘플 질문으로 세션 생성 |
-| `submit_answer(turn_id, owner, text \| dont_know)` | 소유 확인(사용자 또는 체험 토큰), 상태 전이(`grading` 또는 `unknown`), 다시 채점 횟수, 모르겠어요면 복습 1칸·세션 종료 |
-| `save_grading(turn_id, result)` | 결과 저장, idx 0이면 복습 칸 갱신, 다음 꼬리질문 턴 + `turn_keys` 생성 또는 세션 종료(세션이 이미 닫혔으면 결과만 저장), `ai_usage`를 `used`/`failed`로 |
+| `submit_answer(turn_id, owner, text \| dont_know)` | 소유 확인(사용자 또는 체험 토큰), 상태 전이(`grading` 또는 `unknown`), 다시 채점 횟수(세션의 턴을 합쳐 3번. 오늘의 질문은 하루 1세션이라 하루 3번), 모르겠어요면 복습 1칸·세션 종료. 세션이 이미 닫혔으면 `SESSION_CLOSED` |
+| `save_grading(turn_id, result)` | 결과 저장, idx 0이면 복습 칸 갱신, 다음 꼬리질문 턴 + `turn_keys` 생성 또는 세션 종료(세션이 이미 닫혔으면 결과만 저장), `ai_usage`를 `used`/`failed`로. `result`가 null이면 `failed`(답변은 그대로). 꼬리질문 판정 저장은 #32, `ai_usage` 기록은 하루 사용 상한(#43)에서 붙인다 |
+| `apply_review(user_id, question_id, good)` | 복습 칸 옮기기(04 기능 명세 5번). `submit_answer`(모르겠어요)와 `save_grading`(본 질문)이 안에서 부른다. 처음엔 두 함수가 각자 옮기는 것으로 적었으나, 같은 규칙을 두 곳에 쓰지 않게 하나로 뺐다 (2026-10-26, #31) |
+| `set_turn_rating(turn_id, user_id, rating)` | 👍/👎. 채점이 끝난 자기 턴에만 남긴다. 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-26, #31) |
 | `create_project(user_id, name, content)` | 3개 제한, 예산·한도 확인과 예약, `generating`으로 저장 |
 | `save_project_questions(project_id, questions)` | 질문 5개 + 정답지 저장, `ready`. 실패면 `failed` + `error_code` |
 | `delete_project(user_id, project_id)` | 오늘 daily 세션이 이 프로젝트 질문이면 거부, 아니면 삭제(cascade) |
@@ -402,6 +404,7 @@ HTTP 상태 코드에 더해 본문은 항상 `{ "error": { "code", "message" } 
 | `GRADING_IN_PROGRESS` | 409 | 20초 안의 채점이 진행 중. 화면은 버튼을 두고 현재 상태를 다시 읽는다 |
 | `PROJECT_IN_TODAY_SESSION` | 409 | 오늘의 질문으로 나온 프로젝트 삭제 |
 | `PROJECT_LIMIT` | 409 | 프로젝트 3개 초과 |
+| `SESSION_CLOSED` | 409 | 이미 닫힌 세션(지난 날 `expired`·`done`)의 턴에 답변. 처음엔 없었으나, 자정을 넘겨 어제 화면에서 제출하면 닫힌 세션에서 복습 칸이 옮겨져서 더했다 (2026-10-26, #31) |
 | `REGRADE_LIMIT` | 429 | 다시 채점 횟수 초과 |
 | `LIMIT_EXCEEDED` | 429 | 개인 하루 한도 |
 | `BUDGET_EXCEEDED` | 429 | 서비스 월 예산 |
