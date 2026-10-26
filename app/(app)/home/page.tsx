@@ -103,13 +103,15 @@ async function Home() {
     loadStudy().catch(() => null),
   ]);
   const turns = session
-    ? ((
+    ? (
         await supabase
           .from("turns")
           .select("idx, status, score, verdict")
           .eq("session_id", session.id)
           .order("idx")
-      ).data ?? [])
+          // 실패를 빈 목록으로 바꾸면 하던 중인 세션이 "오늘 안 풂"으로 보인다
+          .throwOnError()
+      ).data
     : [];
 
   const state = session ? homeState(session.status, turns) : null;
