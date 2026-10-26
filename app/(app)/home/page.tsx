@@ -1,7 +1,11 @@
+import Link from "next/link";
+import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { FloatingQ } from "@/components/FloatingQ";
+import { startDailySession } from "@/lib/daily";
+import { createClient } from "@/lib/supabase/server";
 
-// 홈 뼈대. 오늘의 질문은 #30에서 채운다.
+// 홈 뼈대. 오늘의 질문 카드에서 면접 화면으로 들어간다. 통계·인사는 각 이슈에서 채운다.
 export default function HomePage() {
   return (
     <>
@@ -37,18 +41,70 @@ export default function HomePage() {
           <FloatingQ />
         </div>
         <div style={{ flex: 1 }} />
-        <p style={{ fontSize: 15, color: "var(--sub)", position: "relative" }}>
-          오늘의 질문을 준비하고 있어요
-        </p>
-        <button
-          type="button"
-          className="btn"
-          disabled
-          style={{ marginTop: 20, width: "100%" }}
-        >
-          시작하기
-        </button>
+        <Suspense fallback={<TodayCard />}>
+          <TodayQuestion />
+        </Suspense>
       </section>
+    </>
+  );
+}
+
+// 홈을 열면 오늘의 세션을 연다(08 설계 "오늘의 질문 세션")
+async function TodayQuestion() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const userId = data?.claims?.sub;
+  const session = userId ? await startDailySession(userId) : null;
+  if (!session) {
+    return (
+      <TodayCard text="범위 안의 새 질문을 다 풀었어요. 범위를 넓혀볼까요?" />
+    );
+  }
+  const q = session.question;
+  return (
+    <>
+      <span
+        className="mono"
+        style={{ fontSize: 12, color: "var(--accent)", position: "relative" }}
+      >
+        Q.{String(q.id).padStart(3, "0")} · {q.field} / {q.topicId}
+      </span>
+      <p
+        style={{
+          marginTop: 8,
+          fontSize: 20,
+          lineHeight: "28px",
+          fontWeight: 700,
+          position: "relative",
+        }}
+      >
+        {q.prompt}
+      </p>
+      <Link
+        href="/interview"
+        className="btn btn-primary press"
+        style={{ marginTop: 20, width: "100%" }}
+      >
+        시작하기
+      </Link>
+    </>
+  );
+}
+
+function TodayCard({ text = "오늘의 질문을 준비하고 있어요" }) {
+  return (
+    <>
+      <p style={{ fontSize: 15, color: "var(--sub)", position: "relative" }}>
+        {text}
+      </p>
+      <button
+        type="button"
+        className="btn"
+        disabled
+        style={{ marginTop: 20, width: "100%" }}
+      >
+        시작하기
+      </button>
     </>
   );
 }
