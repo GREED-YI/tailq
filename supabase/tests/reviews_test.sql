@@ -1,6 +1,6 @@
 -- 간격 반복 복습(#33, 04 기능 명세 5번, 09 채점 "복습 칸 옮기기")
 begin;
-select plan(15);
+select plan(16);
 
 insert into auth.users (id, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000000a', '{"name": "에이"}'),
@@ -49,6 +49,7 @@ select is(
   30,
   '4칸 → 5칸, 30일 뒤(돌려주는 날짜도 같다)'
 );
+select is(pg_temp.box_of('00000000-0000-0000-0000-00000000000a', 99912), '(5,30)', '5칸의 저장된 복습일도 30일 뒤');
 select is(public.apply_review('00000000-0000-0000-0000-00000000000a', 99912, true), null, '5칸에서 잘 답하면 다음 복습일이 없다');
 select is(
   (select box from public.reviews where user_id = '00000000-0000-0000-0000-00000000000a' and question_id = 99912),

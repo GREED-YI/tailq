@@ -33,6 +33,7 @@ function Heading({ count }: { count?: number }) {
   );
 }
 
+// ponytail: PostgREST 기본 최대 1,000행. 복습 중인 질문이 1,000개를 넘으면(매일 풀어도 몇 년) .range()로 나눠 읽는다
 // RLS가 자기 복습 행과 그 질문만 보여준다. 숨긴 질문은 다시 나오지 않으므로 뺀다(lib/daily.ts와 같은 기준)
 async function Reviews() {
   const supabase = await createClient();
