@@ -30,18 +30,24 @@ async function TodayInterview() {
 
   // 이어하기: 턴마다 저장하므로 가장 마지막 턴(본 질문 또는 꼬리질문)부터 이어간다(08 설계 "이어하기").
   // RLS가 자기 세션의 턴만 보여준다. 멈춘 채점은 effective_status가 failed다
-  const [{ data: turn }, { data: profile }] = await Promise.all([
-    supabase
-      .from("turn_states")
-      .select(
-        "id, idx, follow_up_prompt, effective_status, answer, grading_attempts",
-      )
-      .eq("session_id", session.id)
-      .order("idx", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    supabase.from("profiles").select("nickname").maybeSingle(),
-  ]);
+  const [{ data: turn }, { data: profile }, { data: bookmark }] =
+    await Promise.all([
+      supabase
+        .from("turn_states")
+        .select(
+          "id, idx, follow_up_prompt, effective_status, answer, grading_attempts",
+        )
+        .eq("session_id", session.id)
+        .order("idx", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      supabase.from("profiles").select("nickname").maybeSingle(),
+      supabase
+        .from("bookmarks")
+        .select("question_id")
+        .eq("question_id", session.question.id)
+        .maybeSingle(),
+    ]);
   if (!turn?.id || turn.idx === null) redirect("/home");
 
   const status = turn.effective_status as InterviewStatus;
@@ -59,6 +65,7 @@ async function TodayInterview() {
       }}
       question={session.question}
       nickname={profile?.nickname ?? ""}
+      bookmarked={Boolean(bookmark)}
       initialStatus={status}
       initialAnswer={turn.answer ?? ""}
       initialResult={result}

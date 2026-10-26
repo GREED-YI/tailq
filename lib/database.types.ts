@@ -34,6 +34,40 @@ export type Database = {
   };
   public: {
     Tables: {
+      bookmarks: {
+        Row: {
+          created_at: string;
+          question_id: number;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          question_id: number;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          question_id?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bookmarks_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "bank_questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bookmarks_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       profiles: {
         Row: {
           agreed_at: string | null;
@@ -443,6 +477,10 @@ export type Database = {
       save_grading: {
         Args: { p_result: Json; p_turn_id: string };
         Returns: Json;
+      };
+      set_bookmark: {
+        Args: { p_on: boolean; p_question_id: number; p_user_id: string };
+        Returns: undefined;
       };
       set_turn_rating: {
         Args: { p_rating: number; p_turn_id: string; p_user_id: string };
