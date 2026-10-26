@@ -342,7 +342,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 
 | 함수 | 하는 일 |
 |---|---|
-| `start_daily_session(user_id)` | 사용자 잠금 → 전날 열린 daily 세션 정리(`expired` 또는 `done` + `skipped`) → 오늘 세션이 있으면 반환, 없으면 질문 고르기(복습 → 새 질문 → 앞당기기) + 세션·턴 0 생성 |
+| `start_daily_session(user_id, question_id, pick)` | 사용자 잠금 → 전날 열린 daily 세션 정리(`expired` 또는 `done` + `skipped`) → 오늘 세션이 있으면 반환, 없으면 서버가 고른 질문으로 세션·턴 0 생성. 고르기(복습 → 새 질문 → 앞당기기)는 서버의 순수 함수(`lib/daily-pick.ts`)가 한다. 처음엔 함수 안에서 골랐으나, 주제 고르게 돌리기 같은 규칙을 단위 테스트로 지키기 쉽게 고르기만 서버로 옮겼다. 동시에 와도 잠금과 유일 인덱스로 먼저 만든 세션이 돌아온다 (2026-10-26, #30) |
 | `start_project_session(user_id, question_id)` | 주인 확인, 월 예산·하루 한도 확인과 예약, 세션·턴 0 생성 |
 | `start_trial(trial_token, ip_hash, field)` | 브라우저 1번·IP 20번 확인, `trial_field = field`인 샘플 질문으로 세션 생성 |
 | `submit_answer(turn_id, owner, text \| dont_know)` | 소유 확인(사용자 또는 체험 토큰), 상태 전이(`grading` 또는 `unknown`), 다시 채점 횟수, 모르겠어요면 복습 1칸·세션 종료 |
