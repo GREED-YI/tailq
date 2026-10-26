@@ -396,3 +396,49 @@
     display: block;
   }
 }
+
+/* 복습할 질문 행(복습 목록 S18 행과 같은 높이) */
+.reviewRow {
+  min-height: 86px;
+  padding: 12px 0 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* 약한 주제: 주제 이름·평균 점수, 막대(docs/07 "약한 주제" 막대) */
+.weakList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 4px;
+}
+.weakRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 12px;
+}
+.weakName {
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.weakAvg {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}
+.weakBar {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
+  overflow: hidden;
+}
+.weakBar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
