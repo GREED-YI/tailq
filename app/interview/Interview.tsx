@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
@@ -26,7 +26,7 @@ const STATUS_TEXT: Record<Phase, string> = {
   answer: "답변을 기다리고 있어요",
   grading: "채점하고 있어요",
   result: "채점이 끝났어요",
-  failed: "채점하지 못했어요",
+  failed: "",
 };
 
 const PHASE_OF: Record<InterviewStatus, Phase> = {
@@ -71,9 +71,41 @@ export function Interview({
 
   const length = answer.trim().length;
   const valid = length >= MIN && length <= MAX;
+  const hint =
+    length < MIN ? "30자 이상 · " : length > MAX ? "2,000자 이하 · " : "";
+  const exitRef = useRef<HTMLDialogElement>(null);
+  const draftKey = `tailq-draft:${turn.id}`;
+
+  // 나가기 전에 쓰던 답변을 되살린다(서버에 저장된 답변이 있으면 그쪽이 먼저)
+  useEffect(() => {
+    if (initialAnswer) return;
+    let draft: string | null = null;
+    try {
+      draft = localStorage.getItem(draftKey);
+    } catch {
+      // 저장소를 못 읽으면 빈 칸에서 시작한다
+    }
+    if (!draft) return;
+    const t = setTimeout(() => setAnswer(draft), 0);
+    return () => clearTimeout(t);
+  }, [draftKey, initialAnswer]);
+
+  function saveDraft() {
+    try {
+      if (answer.trim() && (phase === "answer" || phase === "failed"))
+        localStorage.setItem(draftKey, answer);
+    } catch {
+      // 저장소를 못 쓰면 쓰던 답변은 남지 않는다
+    }
+  }
 
   async function submit(body: { text: string } | { dontKnow: true }) {
     const before = phase;
+    try {
+      localStorage.removeItem(draftKey);
+    } catch {
+      // 지우지 못해도 서버에 저장된 답변이 먼저다
+    }
     setPhase("grading");
     setStreamed("");
     setError("");
@@ -147,15 +179,16 @@ export function Interview({
   return (
     <div className={`${s.screen} fade`}>
       <header className={s.header}>
-        <Link
-          href="/home"
+        <button
+          type="button"
           className="glass press icon-btn"
           aria-label="면접 나가기"
+          onClick={() => exitRef.current?.showModal()}
         >
           <Icon name="close" />
-        </Link>
+        </button>
         <div className={s.steps}>
-          <span className={`mono ${s.stepLabel}`}>
+          <span className={`num ${s.stepLabel}`}>
             {turn.idx === 0 ? "본 질문" : `꼬리질문 ${turn.idx} / 3`}
           </span>
           <div
@@ -173,11 +206,16 @@ export function Interview({
             ))}
           </div>
         </div>
-        <ThemeToggle />
+        {/* 별표는 꼬리질문에서도 본 질문을 북마크한다(05 사용자 흐름). Figma 화면에는 자리가 없어 머리 오른쪽에 둔다 */}
+        <div className={s.headerEnd}>
+          <BookmarkButton questionId={question.id} initial={bookmarked} />
+          <ThemeToggle />
+        </div>
       </header>
 
       <div className={s.orb}>
         <FloatingQ size={104} thinking={phase === "grading"} />
+        {/* 채점 실패는 아래 여우 안내가 대신하므로 줄만 비워 둔다(Figma S17) */}
         <p className={s.status} aria-live="polite">
           {STATUS_TEXT[phase]}
           {phase === "grading" && (
@@ -190,14 +228,30 @@ export function Interview({
         </p>
       </div>
 
-      {/* 별표는 꼬리질문에서도 본 질문을 북마크한다(05 사용자 흐름) */}
-      <div className={s.questionRow}>
-        <div key={turn.id} className={`fade ${s.question}`}>
-          <span className={`mono ${s.tag}`}>{tag}</span>
-          <h1 className={s.prompt}>{turn.prompt}</h1>
-        </div>
-        <BookmarkButton questionId={question.id} initial={bookmarked} />
+      <div key={turn.id} className={`fade ${s.question}`}>
+        <span className={`${turn.idx === 0 ? "mono" : ""} ${s.tag}`}>
+          {tag}
+        </span>
+        <h1 className={s.prompt}>{turn.prompt}</h1>
       </div>
+
+      {phase === "failed" && (
+        <div className={s.fail} role="alert">
+          <span className={s.fox} aria-hidden="true" />
+          <strong>채점이 늦어지고 있어요</strong>
+          <p>
+            {error && error !== FAILED ? (
+              error
+            ) : (
+              <>
+                쓴 답변은 그대로 있어요.
+                <br />
+                잠시 후 다시 시도해 주세요.
+              </>
+            )}
+          </p>
+        </div>
+      )}
 
       <section
         className={`glass-strong rise ${s.sheet}`}
@@ -235,31 +289,30 @@ export function Interview({
               readOnly={phase === "grading"}
               aria-describedby="answer-count"
             />
-            {error && (
+            {error && phase !== "failed" && (
               <p className={s.error} role="alert">
                 {error}
               </p>
             )}
             <div className={s.row}>
-              <button
-                type="button"
-                className={`glass press ${s.pill}`}
-                disabled={phase === "grading"}
-                onClick={() => submit({ dontKnow: true })}
-              >
-                모르겠어요
-              </button>
+              {phase !== "failed" && (
+                <button
+                  type="button"
+                  className={`glass press ${s.pill}`}
+                  disabled={phase === "grading"}
+                  onClick={() => submit({ dontKnow: true })}
+                >
+                  모르겠어요
+                </button>
+              )}
+              {/* 한글이 섞이면 본문 글꼴, 숫자만이면 mono(globals.css 규칙) */}
               <span
                 id="answer-count"
-                className={`num ${s.count}`}
+                className={`${hint ? "num" : "mono"} ${s.count}`}
                 data-over={length > MAX || undefined}
               >
+                {hint}
                 {length.toLocaleString()} / 2,000
-                {length < MIN
-                  ? " · 30자 이상"
-                  : length > MAX
-                    ? " · 2,000자 이하"
-                    : ""}
               </span>
               {phase === "failed" ? (
                 <button
@@ -285,6 +338,33 @@ export function Interview({
           </>
         )}
       </section>
+
+      {/* 세션 나가기(S31). 턴마다 저장하므로 다시 들어오면 이어간다. 쓰던 답변은 이 기기에 남긴다 */}
+      <dialog
+        ref={exitRef}
+        className={`glass-strong ${s.dialog}`}
+        aria-labelledby="exit-title"
+      >
+        <h2 id="exit-title">지금 나가도 현재 시점까지 저장돼요</h2>
+        <p>다음에 이어서 할 수 있어요.</p>
+        <div className={s.dialogActions}>
+          <Link
+            href="/home"
+            className="glass btn btn-md btn-secondary press"
+            onClick={saveDraft}
+          >
+            나가기
+          </Link>
+          <button
+            type="button"
+            className="btn btn-md btn-primary press"
+            autoFocus
+            onClick={() => exitRef.current?.close()}
+          >
+            계속 쓰기
+          </button>
+        </div>
+      </dialog>
     </div>
   );
 }
@@ -334,17 +414,6 @@ function ResultView({
         </div>
       </div>
 
-      {!!result.feedback?.improve.length && (
-        <div className={s.block}>
-          <span className={s.label}>보완할 점</span>
-          <ul className={s.list}>
-            {result.feedback.improve.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
       {result.missingKeywords.length > 0 && (
         <div className={s.chips}>
           <span className={s.label}>보완할 개념</span>
@@ -359,27 +428,43 @@ function ResultView({
         </div>
       )}
 
-      <div className={s.block}>
-        <span className={s.label}>모범 답안</span>
-        <p className={s.well}>{result.modelAnswer}</p>
-      </div>
+      {/* Figma S14는 점수·한 줄·보완할 개념만 보인다. 모범 답안·보완할 점·참고 자료·평가(04 기능 명세)는
+          기록 상세(S20)처럼 접어 둔다. 모르겠어요는 모범 답안이 전부라 펼친 채로 */}
+      <details className={s.more} open={unknown}>
+        <summary>모범 답안과 피드백 자세히 보기</summary>
+        {!!result.feedback?.improve.length && (
+          <div className={s.block}>
+            <span className={s.label}>보완할 점</span>
+            <ul className={s.list}>
+              {result.feedback.improve.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-      {result.links.length > 0 && (
         <div className={s.block}>
-          <span className={s.label}>참고 자료</span>
-          <ul className={s.links}>
-            {result.links.map((l) => (
-              <li key={l.url}>
-                <a href={l.url} target="_blank" rel="noopener noreferrer">
-                  {l.title}
-                </a>
-              </li>
-            ))}
-          </ul>
+          <span className={s.label}>모범 답안</span>
+          <p className={s.well}>{result.modelAnswer}</p>
         </div>
-      )}
 
-      {!unknown && <Rating turnId={result.turnId} initial={result.rating} />}
+        {result.links.length > 0 && (
+          <div className={s.block}>
+            <span className={s.label}>참고 자료</span>
+            <ul className={s.links}>
+              {result.links.map((l) => (
+                <li key={l.url}>
+                  <a href={l.url} target="_blank" rel="noopener noreferrer">
+                    {l.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {!unknown && <Rating turnId={result.turnId} initial={result.rating} />}
+      </details>
 
       <NextButton result={result} onNext={onNext} />
     </div>

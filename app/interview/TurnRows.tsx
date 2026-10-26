@@ -35,7 +35,7 @@ export function TurnRows({
               aria-hidden="true"
             />
             <div className={s.rowText}>
-              <span className="mono">
+              <span className="num">
                 {t.idx === 0 ? "본 질문" : `꼬리질문 ${t.idx}`}
               </span>
               <p>{t.follow_up_prompt ?? prompt}</p>
