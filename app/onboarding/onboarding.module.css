@@ -1,0 +1,247 @@
+/* 온보딩(S06~S08). 뼈대는 components/Flow.module.css */
+
+/* 단계 표시: "1 / 3" + 점 3개(지금 단계는 길게) */
+.steps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  color: var(--sub);
+}
+.dots {
+  display: flex;
+  gap: 5px;
+}
+.dots span {
+  width: 8px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--dot-off);
+  transition:
+    width 0.2s ease,
+    background-color 0.2s ease;
+}
+.dots span[data-on] {
+  background: var(--accent-fill);
+}
+.dots span[data-now] {
+  width: 22px;
+}
+
+.alert {
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--danger);
+  text-align: center;
+}
+
+/* S06 동의 */
+.check {
+  flex: 1;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  font-size: 15px;
+}
+.box {
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1.5px var(--muted);
+  color: transparent;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.check input:checked + .box {
+  background: var(--accent-fill);
+  box-shadow: none;
+  color: var(--on-accent);
+}
+.check input:focus-visible + .box {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.allRow {
+  margin-top: 24px;
+  height: 56px;
+  border-radius: 22px;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+}
+.agreements {
+  margin-top: 12px;
+}
+.required {
+  color: var(--sub);
+}
+.note {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--sub);
+}
+/* 작은 유리 알약 버튼(보기, 전체 선택) */
+.pill {
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 18px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* S07 범위 */
+.field {
+  margin-top: 28px;
+}
+.field h2 {
+  font-size: 15px;
+  font-weight: 700;
+}
+.fieldHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.chips {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* S08 알림: 미리보기 카드 뒤에 민트 빛 */
+.previewWrap {
+  position: relative;
+  margin: 16px 0 28px;
+}
+.previewWrap::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 260px;
+  height: 160px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--halo), transparent);
+  opacity: 0.55;
+}
+.preview {
+  position: relative;
+  border-radius: 22px;
+  padding: 13px 16px 14px;
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.symbol {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  background: var(--text);
+  mask: url(/brand/symbol.svg) center / contain no-repeat;
+  -webkit-mask: url(/brand/symbol.svg) center / contain no-repeat;
+}
+.previewText {
+  flex: 1;
+  min-width: 0;
+}
+.previewText > p:last-child {
+  margin-top: 2px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--sub);
+}
+.previewHead {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  line-height: 19px;
+}
+.previewHead span {
+  font-size: 12px;
+  color: var(--sub);
+}
+
+.hourRow {
+  position: relative;
+  margin-top: 20px;
+  height: 74px;
+  border-radius: 22px;
+  padding: 0 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-content: center;
+  column-gap: 12px;
+  font-size: 15px;
+  line-height: 24px;
+  cursor: pointer;
+}
+.hourLabel {
+  grid-column: 1;
+  font-size: 12px;
+  line-height: 18px;
+  font-weight: 700;
+  color: var(--sub);
+}
+.hourRow svg {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  align-self: center;
+}
+.hourRow select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 16px;
+}
+.hourRow:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.guides {
+  margin-top: 12px;
+}
+.guides summary {
+  justify-content: space-between;
+  list-style: none;
+  cursor: pointer;
+}
+.guides summary::-webkit-details-marker {
+  display: none;
+}
+.guides summary svg {
+  transition: transform 0.2s ease;
+}
+.guides details[open] summary svg {
+  transform: rotate(90deg);
+}
+.guides details p {
+  padding-bottom: 16px;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--sub);
+}

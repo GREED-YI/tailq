@@ -12,9 +12,9 @@ test("로그인 화면에 소셜 로그인 버튼 3개와 계정 안내가 있�
     await expect(page.getByRole("button", { name })).toBeVisible();
   }
   await expect(page.getByText("새 계정이 만들어져요")).toBeVisible();
-  await expect(page.getByRole("link", { name: "이용약관" })).toHaveAttribute(
+  await expect(page.getByRole("link", { name: "뒤로" })).toHaveAttribute(
     "href",
-    "/terms",
+    "/",
   );
   await expect(page.getByRole("link", { name: "피드백 보내기" })).toBeVisible();
 });

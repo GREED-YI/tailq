@@ -1,0 +1,48 @@
+/* 로그인(S05). 뼈대는 components/Flow.module.css */
+.q {
+  margin: 20px auto;
+}
+
+.no {
+  width: 15px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* 소셜 버튼: 로고와 글자를 함께 가운데. 색은 브랜드 색 그대로(07 "버튼 규칙") */
+.social {
+  width: 100%;
+  gap: 10px;
+  font-size: 15px;
+}
+.brand {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.brand svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+form.form {
+  gap: 8px;
+}
+
+.note {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--sub);
+  text-align: center;
+}
+
+.error {
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--danger);
+  text-align: center;
+}

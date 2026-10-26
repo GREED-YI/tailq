@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type CSSProperties, type ReactNode } from "react";
 import { FeedbackLink } from "@/components/FeedbackLink";
+import f from "@/components/Flow.module.css";
 import { FloatingQ } from "@/components/FloatingQ";
+import { Icon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import s from "./login.module.css";
 
 export const metadata: Metadata = { title: "로그인 · TailQ" };
 
@@ -81,74 +83,32 @@ const PROVIDERS: {
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
-    <main
-      style={{
-        minHeight: "100dvh",
-        padding: "0 20px",
-        maxWidth: 520,
-        margin: "0 auto",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <header
-        style={{
-          height: 64,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Link href="/" aria-label="TailQ 첫 화면으로">
-          <Logo />
+    <main className={f.main}>
+      <Link href="/" className={f.pcLogo} aria-label="TailQ 첫 화면으로">
+        <Logo />
+      </Link>
+      <header className={f.top}>
+        <Link
+          href="/"
+          className={`glass press icon-btn ${f.back}`}
+          aria-label="뒤로"
+        >
+          <Icon name="chevronLeft" />
         </Link>
-        <ThemeToggle />
       </header>
 
-      <section
-        style={{
-          marginTop: 24,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          textAlign: "center",
-          gap: 12,
-        }}
-      >
-        <FloatingQ size={120} />
-        <h1
-          style={{
-            fontSize: 28,
-            lineHeight: "36px",
-            fontWeight: 700,
-            letterSpacing: -0.8,
-          }}
-        >
-          TailQ 시작하기
-        </h1>
-        <p style={{ fontSize: 15, color: "var(--sub)" }}>
-          매일 5분, AI 면접관에게 채점과 피드백 받기
-        </p>
-      </section>
+      <h1 className={f.title}>TailQ 시작하기</h1>
+      <p className={f.sub}>매일 5분, AI 면접관에게 채점과 피드백 받기</p>
 
-      <ol
-        className="glass"
-        style={{
-          marginTop: 24,
-          borderRadius: 24,
-          padding: "16px 20px",
-          listStyle: "none",
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
-        }}
-      >
+      <div className={s.q}>
+        <FloatingQ size={136} />
+      </div>
+
+      <ol className={`glass ${f.rows}`}>
         {POINTS.map((point, i) => (
-          <li key={point} style={{ display: "flex", gap: 12, fontSize: 15 }}>
-            <span className="mono" style={{ color: "var(--accent)" }}>
-              0{i + 1}
-            </span>
-            {point}
+          <li key={point} className={f.row}>
+            <span className={`mono ${s.no}`}>0{i + 1}</span>
+            <strong>{point}</strong>
           </li>
         ))}
       </ol>
@@ -160,12 +120,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
       <form
         action="/auth/login"
         method="post"
-        style={{
-          marginTop: 24,
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
-        }}
+        className={`${f.bottom} ${s.form}`}
       >
         <Suspense>
           <NextField searchParams={searchParams} />
@@ -176,54 +131,21 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
             type="submit"
             name="provider"
             value={p.id}
-            className="btn press"
-            style={{ ...p.style, position: "relative", width: "100%" }}
+            className={`btn press ${s.social}`}
+            style={p.style}
           >
-            <span
-              aria-hidden
-              style={{
-                position: "absolute",
-                left: 20,
-                width: 20,
-                height: 20,
-                display: "flex",
-              }}
-            >
+            <span aria-hidden className={s.brand}>
               {p.logo}
             </span>
             {p.label}
           </button>
         ))}
+        <p className={s.note}>
+          이메일이 같은 로그인 방법은 한 계정으로 이어져요.
+          <br />
+          이메일이 다르면 새 계정이 만들어져요.
+        </p>
       </form>
-
-      <p
-        style={{
-          marginTop: 16,
-          fontSize: 13,
-          lineHeight: "20px",
-          color: "var(--sub)",
-          textAlign: "center",
-        }}
-      >
-        이메일이 같은 로그인 방법은 한 계정으로 이어져요.
-        <br />
-        이메일이 다르면 새 계정이 만들어져요.
-      </p>
-
-      <nav
-        aria-label="약관"
-        style={{
-          marginTop: 24,
-          display: "flex",
-          justifyContent: "center",
-          gap: 16,
-          fontSize: 13,
-          color: "var(--sub)",
-        }}
-      >
-        <Link href="/terms">이용약관</Link>
-        <Link href="/privacy">개인정보처리방침</Link>
-      </nav>
 
       <FeedbackLink />
     </main>
@@ -241,15 +163,7 @@ async function ErrorNotice({ searchParams }: { searchParams: SearchParams }) {
   const { error } = await searchParams;
   if (!error) return null;
   return (
-    <p
-      role="alert"
-      style={{
-        marginTop: 16,
-        fontSize: 14,
-        color: "var(--danger)",
-        textAlign: "center",
-      }}
-    >
+    <p role="alert" className={s.error}>
       로그인하지 못했어요. 다시 시도해 주세요.
     </p>
   );

@@ -1,0 +1,99 @@
+/* 탭이 없는 한 줄 화면(로그인 S05, 온보딩 S06~S08, 약관 S09) 공통 뼈대.
+   모바일은 폭 가득(좌우 20), PC는 폭 480 열을 화면 가운데, 워드마크는 왼쪽 위(Figma C안) */
+
+.main {
+  min-height: 100dvh;
+  padding: 0 20px calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+}
+
+.pcLogo {
+  display: none;
+}
+
+/* 위쪽 64: 뒤로(왼쪽) + 가운데 제목·단계 */
+.top {
+  position: relative;
+  height: 64px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.back {
+  position: absolute;
+  left: -10px;
+}
+.topTitle {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.title {
+  margin-top: 8px;
+  font-size: 26px;
+  line-height: 34px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+  outline: none;
+}
+.sub {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--sub);
+}
+
+/* 모바일은 주 버튼을 화면 아래에 붙인다 */
+.bottom {
+  margin-top: auto;
+  padding-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 유리 카드 안 60px 줄 목록 */
+.rows {
+  border-radius: 28px;
+  padding: 8px 16px;
+  list-style: none;
+}
+.row {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+}
+
+@media (min-width: 768px) {
+  .main {
+    width: 520px;
+    margin: 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .main {
+    width: 520px;
+    justify-content: center;
+    padding-top: 64px;
+    padding-bottom: 48px;
+  }
+  .pcLogo {
+    display: block;
+    position: absolute;
+    left: 40px;
+    top: 36px;
+  }
+  .back {
+    left: 0;
+  }
+  .bottom {
+    margin-top: 0;
+  }
+}

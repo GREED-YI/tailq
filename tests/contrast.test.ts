@@ -8,7 +8,7 @@ describe.each(["dark", "light"] as const)("%s 테마 대비", (name) => {
   const glass = over(t.glass, t.bg);
   const sheet = over(t.sheet, t.bg);
 
-  it.each(["text", "sub", "accent"] as const)(
+  it.each(["text", "sub", "muted", "accent"] as const)(
     "유리 위 %s 글자가 4.5:1 이상",
     (key) => {
       expect(contrast(t[key], glass)).toBeGreaterThanOrEqual(4.5);

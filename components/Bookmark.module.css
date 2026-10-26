@@ -1,4 +1,4 @@
-/* 북마크 별표: 저장하면 강조색으로 채운다 */
+/* 북마크 별표: 저장하면 강조색으로 채운다. 토스트는 components/Toast.tsx */
 .button {
   flex-shrink: 0;
 }
@@ -7,29 +7,4 @@
 }
 .button[aria-pressed="true"] svg {
   fill: currentColor;
-}
-
-/* 토스트: 모바일·태블릿은 하단 탭 위, PC는 오른쪽 아래(docs/04 "모달과 토스트", docs/07) */
-.toastArea {
-  position: fixed;
-  z-index: 20;
-  left: 20px;
-  right: 20px;
-  bottom: calc(20px + 64px + 12px + env(safe-area-inset-bottom));
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-}
-.toast {
-  padding: 12px 20px;
-  border-radius: 22px;
-  font-size: 14px;
-  font-weight: 600;
-}
-@media (min-width: 1024px) {
-  .toastArea {
-    left: auto;
-    right: 24px;
-    bottom: 24px;
-  }
 }
