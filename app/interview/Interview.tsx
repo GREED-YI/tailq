@@ -8,6 +8,7 @@ import { Icon } from "@/components/icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import type { TurnResult } from "@/lib/turn";
 import s from "./interview.module.css";
+import { ScoreRing } from "./ScoreRing";
 import { VERDICTS } from "./verdict";
 
 export type InterviewStatus = "answering" | "grading" | "graded" | "failed";
@@ -281,8 +282,6 @@ export function Interview({
   );
 }
 
-const RING = 2 * Math.PI * 40;
-
 function ResultView({
   followUp,
   result,
@@ -445,55 +444,6 @@ function NextButton({
     <Link href="/interview/result" className="btn btn-primary press">
       오늘의 결과 보기
     </Link>
-  );
-}
-
-function ScoreRing({
-  shown,
-  label,
-  value,
-}: {
-  shown: number;
-  label: string;
-  value?: number;
-}) {
-  return (
-    <div className={s.ring}>
-      <svg
-        width="96"
-        height="96"
-        viewBox="0 0 96 96"
-        role="img"
-        aria-label={label}
-      >
-        <circle
-          cx="48"
-          cy="48"
-          r="40"
-          fill="none"
-          stroke="var(--track)"
-          strokeWidth="8"
-        />
-        {/* 0점이면 둥근 끝만 점으로 남으므로 그리지 않는다 */}
-        {shown > 0 && (
-          <circle
-            cx="48"
-            cy="48"
-            r="40"
-            fill="none"
-            stroke="var(--ring)"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={`${((RING * shown) / 100).toFixed(1)} ${RING.toFixed(1)}`}
-            transform="rotate(-90 48 48)"
-          />
-        )}
-      </svg>
-      <div className={s.ringText} aria-hidden="true">
-        <span className="mono">{value ?? "··"}</span>
-        <span className="mono">/100</span>
-      </div>
-    </div>
   );
 }
 

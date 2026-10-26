@@ -1,4 +1,5 @@
-import { AppNav } from "@/components/AppNav";
+import { Suspense } from "react";
+import { AppNav, NavBar } from "@/components/AppNav";
 import { FeedbackLink } from "@/components/FeedbackLink";
 import s from "@/components/AppShell.module.css";
 
@@ -6,7 +7,9 @@ import s from "@/components/AppShell.module.css";
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <>
-      <AppNav />
+      <Suspense fallback={<NavBar pathname="" />}>
+        <AppNav />
+      </Suspense>
       <main className={s.main}>
         {children}
         <FeedbackLink />
