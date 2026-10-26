@@ -126,8 +126,14 @@
   font-size: 20px;
   font-weight: 700;
 }
-.question {
+.questionRow {
   margin-top: 20px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+}
+.question {
   display: flex;
   flex-direction: column;
   gap: 8px;

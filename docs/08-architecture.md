@@ -349,6 +349,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `save_grading(turn_id, result)` | 결과 저장, idx 0이면 복습 칸 갱신, 다음 꼬리질문 턴 + `turn_keys` 생성 또는 세션 종료(세션이 이미 닫혔으면 결과만 저장), `ai_usage`를 `used`/`failed`로. `result`가 null이면 `failed`(답변은 그대로). 꼬리질문 판정 저장은 #32, `ai_usage` 기록은 하루 사용 상한(#43)에서 붙인다 |
 | `apply_review(user_id, question_id, good)` | 복습 칸 옮기기(04 기능 명세 5번). `submit_answer`(모르겠어요)와 `save_grading`(본 질문)이 안에서 부른다. 처음엔 두 함수가 각자 옮기는 것으로 적었으나, 같은 규칙을 두 곳에 쓰지 않게 하나로 뺐다 (2026-10-26, #31) |
 | `set_turn_rating(turn_id, user_id, rating)` | 👍/👎. 채점이 끝난 자기 턴에만 남긴다. 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-26, #31) |
+| `set_bookmark(user_id, question_id, on)` | 북마크 저장·해제(여러 번 불러도 같다). 북마크가 `questions` 읽기 정책을 넓히므로 저장은 내 세션에 나온 질문만 받는다(아니면 아무 번호나 북마크해 질문 은행을 읽을 수 있다). 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-26, #35) |
 | `create_project(user_id, name, content)` | 3개 제한, 예산·한도 확인과 예약, `generating`으로 저장 |
 | `save_project_questions(project_id, questions)` | 질문 5개 + 정답지 저장, `ready`. 실패면 `failed` + `error_code` |
 | `delete_project(user_id, project_id)` | 오늘 daily 세션이 이 프로젝트 질문이면 거부, 아니면 삭제(cascade) |

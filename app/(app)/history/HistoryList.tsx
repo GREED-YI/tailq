@@ -12,6 +12,7 @@ type Item = {
   qid: number;
   prompt: string;
   tag: string;
+  bookmarked: boolean;
   turns: TurnRow[];
 };
 
@@ -19,7 +20,13 @@ const qLabel = (id: number) => `Q.${String(id).padStart(3, "0")}`;
 
 // 모바일·태블릿은 행을 누르면 상세로 간다. PC는 2열이라 행을 누르면 오른쪽에 요약이 뜨고,
 // "기록 상세 보기"로 상세에 간다(docs/07 "PC·태블릿 앱")
-export function HistoryList({ items }: { items: Item[] }) {
+export function HistoryList({
+  items,
+  empty,
+}: {
+  items: Item[];
+  empty: string;
+}) {
   const [selectedId, setSelectedId] = useState(items[0]?.id);
   const selected = items.find((r) => r.id === selectedId);
 
@@ -31,11 +38,7 @@ export function HistoryList({ items }: { items: Item[] }) {
   }
 
   if (items.length === 0) {
-    return (
-      <p className={`glass ${s.empty}`}>
-        오늘의 질문을 마치면 여기에 기록이 남아요
-      </p>
-    );
+    return <p className={`glass ${s.empty}`}>{empty}</p>;
   }
 
   return (
@@ -51,6 +54,7 @@ export function HistoryList({ items }: { items: Item[] }) {
             unknown && "모르겠어요",
             qLabel(r.qid),
             followUps > 0 && `꼬리질문 ${followUps}개`,
+            r.bookmarked && "북마크",
           ]
             .filter(Boolean)
             .join(" · ");

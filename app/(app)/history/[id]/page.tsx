@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { z } from "zod";
 import { AppHeader } from "@/components/AppHeader";
+import { BookmarkButton } from "@/components/BookmarkButton";
 import { Icon } from "@/components/icons";
 import { LEVELS } from "@/lib/profile";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -54,7 +55,7 @@ async function Detail({ id }: { id: string }) {
   const { data: session } = await supabase
     .from("sessions")
     .select(
-      "day, status, questions(id, prompt, topic_id, level, topics(field)), turns(id, idx, status, answer, follow_up_prompt)",
+      "day, status, questions(id, prompt, topic_id, level, topics(field), bookmarks(question_id)), turns(id, idx, status, answer, follow_up_prompt)",
     )
     .eq("id", id)
     .order("idx", { referencedTable: "turns" })
@@ -81,14 +82,18 @@ async function Detail({ id }: { id: string }) {
 
   return (
     <>
-      <div className={s.question}>
-        {/* 난이도가 한글이라 본문 글꼴 + 고정폭 숫자(globals.css .mono 주석) */}
-        <span className={`num ${s.tag}`}>
-          Q.{String(q.id).padStart(3, "0")} · {q.topics.field} / {q.topic_id}
-          {level && ` · ${level}`} · {session.day.replaceAll("-", ".")}{" "}
-          {weekday(session.day)}
-        </span>
-        <h2 className={s.panelTitle}>{q.prompt}</h2>
+      <div className={s.questionRow}>
+        <div className={s.question}>
+          {/* 난이도가 한글이라 본문 글꼴 + 고정폭 숫자(globals.css .mono 주석) */}
+          <span className={`num ${s.tag}`}>
+            Q.{String(q.id).padStart(3, "0")} · {q.topics.field} / {q.topic_id}
+            {level && ` · ${level}`} · {session.day.replaceAll("-", ".")}{" "}
+            {weekday(session.day)}
+          </span>
+          <h2 className={s.panelTitle}>{q.prompt}</h2>
+        </div>
+        {/* RLS가 내 북마크만 붙여 준다 */}
+        <BookmarkButton questionId={q.id} initial={q.bookmarks.length > 0} />
       </div>
 
       <MainResult answer={main.answer} result={results.get(main.id)!} />

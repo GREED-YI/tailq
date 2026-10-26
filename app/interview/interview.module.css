@@ -74,6 +74,14 @@
   background: var(--accent);
 }
 
+.questionRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+.questionRow > button {
+  margin: 12px 12px 0 0;
+}
 .question {
   padding: 22px 24px 20px;
   display: flex;

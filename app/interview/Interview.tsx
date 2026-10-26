@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { BookmarkButton } from "@/components/BookmarkButton";
 import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -39,6 +40,7 @@ export function Interview({
   initialTurn,
   question,
   nickname,
+  bookmarked,
   initialStatus,
   initialAnswer,
   initialResult,
@@ -46,6 +48,7 @@ export function Interview({
   initialTurn: Turn;
   question: { id: number; prompt: string; topicId: string; field: string };
   nickname: string;
+  bookmarked: boolean;
   initialStatus: InterviewStatus;
   initialAnswer: string;
   initialResult: TurnResult | null;
@@ -187,9 +190,13 @@ export function Interview({
         </p>
       </div>
 
-      <div key={turn.id} className={`fade ${s.question}`}>
-        <span className={`mono ${s.tag}`}>{tag}</span>
-        <h1 className={s.prompt}>{turn.prompt}</h1>
+      {/* 별표는 꼬리질문에서도 본 질문을 북마크한다(05 사용자 흐름) */}
+      <div className={s.questionRow}>
+        <div key={turn.id} className={`fade ${s.question}`}>
+          <span className={`mono ${s.tag}`}>{tag}</span>
+          <h1 className={s.prompt}>{turn.prompt}</h1>
+        </div>
+        <BookmarkButton questionId={question.id} initial={bookmarked} />
       </div>
 
       <section
