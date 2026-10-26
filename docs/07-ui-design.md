@@ -56,7 +56,7 @@ C안 목업이 기존 문서와 부딪힌 곳을 항목마다 골랐다. 전부 
 | 12 | 랜딩 주 버튼 | 화면마다 하나 | 랜딩은 헤더·첫 화면·데모·체험 4개를 예외로 허용 | 목업 구성대로 둔다 |
 | 13 | PC 홈 오른쪽 열 | 정하지 않음 (두 안) | 통계 카드 세로 + "이번 주"(월~일 7칸, 휴식권 빗금, 오늘 테두리) + "약한 주제"(평균 점수 막대) | |
 
-- Figma 파일의 글꼴은 영문·숫자 Inter, 한글 Noto Sans KR, 고정폭 JetBrains Mono다. Pretendard는 영문이 Inter, 한글이 본고딕(= Noto Sans KR)에서 온 글꼴이라 이 조합이 구현 글꼴(아래 "기초 값")과 거의 같게 보인다. 처음엔 목업대로 Geist·Geist Mono였으나(목업 환경에 Pretendard가 없었다) 구현과 맞추려고 바꿨다. JetBrains Mono에는 SemiBold가 없어 Bold를 쓴다.
+- Figma 파일의 글꼴은 영문·숫자 Inter, 한글 Noto Sans KR, 고정폭 Geist Mono다. Pretendard는 영문이 Inter, 한글이 본고딕(= Noto Sans KR)에서 온 글꼴이라 이 조합이 구현 글꼴(아래 "기초 값")과 거의 같게 보인다. 처음엔 목업대로 영문도 Geist였으나(목업 환경에 Pretendard가 없었다) 구현과 맞추려고 Inter로 바꿨다.
 
 ## 디자인 토큰
 
@@ -102,7 +102,7 @@ CSS 변수로 두고 `[data-theme="dark" | "light"]`에 매핑한다. 앱은 기
 
 | 항목 | 값 |
 |---|---|
-| 글꼴 | 본문 **Pretendard**, 숫자·메타 **JetBrains Mono**. 고정폭 글꼴 스택에 한글 대체 글꼴을 꼭 넣는다: `'JetBrains Mono', 'Pretendard', monospace` (빠뜨리면 "꼬리질문 1 / 3" 같은 라벨 안의 한글이 깨진다). 진행 방식의 큰 숫자 01·02·03은 본문 글꼴 굵게 |
+| 글꼴 | 본문 **Pretendard**, 숫자·메타 **Geist Mono**. 고정폭 글꼴 스택에 한글 대체 글꼴을 꼭 넣는다: `'Geist Mono', 'Pretendard', monospace` (빠뜨리면 "꼬리질문 1 / 3" 같은 라벨 안의 한글이 깨진다). 진행 방식의 큰 숫자 01·02·03은 본문 글꼴 굵게. 고정폭은 처음엔 JetBrains Mono(개발자 노트 방향)였으나, C안 목업과 확정 화면이 Geist Mono로 만들어졌고 JetBrains Mono는 폭이 넓고 코드 에디터 느낌이 강해서 2026-10-26에 바꿨다. Next.js에서는 `geist` 패키지로 쓴다 |
 | 글자 크기 | 화면 제목 24 · 섹션 제목 18 · 본문 16(줄 높이 160%) · 보조 14 · 캡션 13 · 최소 12. 랜딩 제목은 PC에서 더 크게 |
 | 줄바꿈 | 한글은 어절 단위로 끊는다 (`word-break: keep-all`) |
 | 모서리 | 앱 카드 22~32 · 랜딩 큰 카드 36~40 · 바텀 시트 30 · 버튼 알약형 · 칩은 알약형과 작은 둥근 칩(9~14) 두 가지 · 잔디 칸 3 |
