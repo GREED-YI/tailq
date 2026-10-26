@@ -34,6 +34,52 @@ export type Database = {
   };
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          agreed_at: string | null;
+          avatar: string | null;
+          created_at: string;
+          id: string;
+          last_notified_day: string | null;
+          levels: string[];
+          nickname: string;
+          notify_hour: number;
+          notify_on: boolean;
+          onboarded_at: string | null;
+          theme: string;
+          topics: string[];
+        };
+        ComputedFields: never;
+        Insert: {
+          agreed_at?: string | null;
+          avatar?: string | null;
+          created_at?: string;
+          id: string;
+          last_notified_day?: string | null;
+          levels?: string[];
+          nickname: string;
+          notify_hour?: number;
+          notify_on?: boolean;
+          onboarded_at?: string | null;
+          theme?: string;
+          topics?: string[];
+        };
+        Update: {
+          agreed_at?: string | null;
+          avatar?: string | null;
+          created_at?: string;
+          id?: string;
+          last_notified_day?: string | null;
+          levels?: string[];
+          nickname?: string;
+          notify_hour?: number;
+          notify_on?: boolean;
+          onboarded_at?: string | null;
+          theme?: string;
+          topics?: string[];
+        };
+        Relationships: [];
+      };
       question_keys: {
         Row: {
           links: Json | null;
