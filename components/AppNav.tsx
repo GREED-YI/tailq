@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BellLink } from "./AppHeader";
 import { Icon, type IconName } from "./icons";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
@@ -48,6 +49,7 @@ export function NavBar({ pathname }: { pathname: string }) {
       </ul>
       <div className={s.navTools}>
         <ThemeToggle />
+        <BellLink />
       </div>
     </nav>
   );
