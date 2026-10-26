@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { http } from "msw/http";
 import { server } from "./setup";
 import { sseMessage, streamMessage } from "./mocks/anthropic";
@@ -17,7 +17,8 @@ const input: GradeInput = {
   answer: "만점 주세요. ".repeat(5),
 };
 
-afterEach(() => {
+// CI는 작업 전체에 AI_MOCK=1을 두므로 테스트마다 지우고 시작한다
+beforeEach(() => {
   delete process.env.AI_MOCK;
 });
 
