@@ -205,9 +205,9 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
           textAlign: "center",
         }}
       >
-        처음 쓴 로그인 방법으로 계속 로그인해 주세요.
+        이메일이 같은 로그인 방법은 한 계정으로 이어져요.
         <br />
-        다른 방법으로 로그인하면 새 계정이 만들어져요.
+        이메일이 다르면 새 계정이 만들어져요.
       </p>
 
       <nav
