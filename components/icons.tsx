@@ -74,6 +74,7 @@ const paths = {
     </>
   ),
   bookmark: <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />,
+  chevronDown: <path d="m6 9 6 6 6-6" />,
 } as const;
 
 export type IconName = keyof typeof paths;

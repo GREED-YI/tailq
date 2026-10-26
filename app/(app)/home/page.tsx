@@ -14,7 +14,6 @@ import { loadStudy, type Study } from "@/lib/study";
 import { createClient } from "@/lib/supabase/server";
 import { weaknessReport } from "@/lib/weakness";
 import h from "../history/history.module.css";
-import w from "../history/report/weakness.module.css";
 import rv from "../review/review.module.css";
 import s from "./home.module.css";
 
@@ -191,7 +190,7 @@ async function Home() {
           {reviewing.slice(0, 3).map((r) => (
             <li key={r.questions.id}>
               <Link href="/review" className={s.linkRow}>
-                <span className={rv.row}>
+                <span className={s.reviewRow}>
                   <span className={`mono ${rv.meta}`}>
                     {qLabel(r.questions.id)} · {r.questions.topics.field} /{" "}
                     {r.questions.topic_id}
@@ -224,12 +223,12 @@ async function Home() {
             <Link href="/history/report">전체 보기</Link>
           </div>
           {weak.length > 0 ? (
-            <ul className={w.list}>
+            <ul className={s.weakList}>
               {weak.slice(0, 3).map((t) => (
-                <li key={t.topicId} className={w.row}>
-                  <span className={w.name}>{t.topic}</span>
-                  <span className={`num ${w.avg}`}>평균 {t.average}점</span>
-                  <span className={w.bar} aria-hidden="true">
+                <li key={t.topicId} className={s.weakRow}>
+                  <span className={s.weakName}>{t.topic}</span>
+                  <span className={`num ${s.weakAvg}`}>평균 {t.average}점</span>
+                  <span className={s.weakBar} aria-hidden="true">
                     <span
                       style={{
                         width: `${t.average}%`,
