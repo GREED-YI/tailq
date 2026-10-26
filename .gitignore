@@ -26,3 +26,4 @@ Thumbs.db
 
 # 인증서
 *.pem
+eval/results/
