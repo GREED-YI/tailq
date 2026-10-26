@@ -37,6 +37,12 @@ const paths = {
       <path d="m5 12 7-7 7 7" />
     </>
   ),
+  arrowLeft: (
+    <>
+      <path d="M19 12H5" />
+      <path d="m12 19-7-7 7-7" />
+    </>
+  ),
   thumbUp: (
     <>
       <path d="M7 10v12" />

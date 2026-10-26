@@ -7,7 +7,7 @@ import { startDailySession } from "@/lib/daily";
 import { kstDay } from "@/lib/daily-pick";
 import { createClient } from "@/lib/supabase/server";
 import s from "../interview.module.css";
-import { VERDICTS } from "../verdict";
+import { TurnRows } from "../TurnRows";
 
 export const metadata: Metadata = { title: "오늘의 결과 · TailQ" };
 
@@ -20,10 +20,6 @@ export default function ResultPage() {
     </Suspense>
   );
 }
-
-// 본 질문 점수 구간 색(docs/09 1장: 70점이 "잘 답함", 40점 미만은 핵심 대부분이 빠짐)
-const scoreColor = (score: number) =>
-  score >= 70 ? "var(--good)" : score >= 40 ? "var(--mid)" : "var(--low)";
 
 async function TodayResult() {
   const supabase = await createClient();
@@ -78,47 +74,7 @@ async function TodayResult() {
         )}
       </h1>
 
-      <ol className={`glass ${s.rows}`} aria-label="단계별 결과">
-        {(turns ?? []).map((t) => {
-          // 본 질문은 점수, 꼬리질문은 판정. 날짜를 넘겨 닫힌 꼬리질문은 건너뜀
-          const v = t.verdict ? VERDICTS[t.verdict] : null;
-          const color = v
-            ? v.color
-            : t.status === "graded"
-              ? scoreColor(t.score ?? 0)
-              : "var(--dot-off)";
-          return (
-            <li key={t.idx} className={s.rowItem}>
-              <span
-                className={s.verdictDot}
-                style={{ background: color }}
-                aria-hidden="true"
-              />
-              <div className={s.rowText}>
-                <span className="mono">
-                  {t.idx === 0 ? "본 질문" : `꼬리질문 ${t.idx}`}
-                </span>
-                <p>{t.follow_up_prompt ?? q.prompt}</p>
-              </div>
-              {v ? (
-                // 모르겠어요의 점 색(--dot-off)은 글자로 읽기 어려워 글자는 보조색으로 둔다
-                <span
-                  className={s.rowVerdict}
-                  style={t.verdict === "unknown" ? undefined : { color }}
-                >
-                  {v.label}
-                </span>
-              ) : t.status === "graded" ? (
-                <span className={`mono ${s.rowScore}`} style={{ color }}>
-                  {t.score}
-                </span>
-              ) : (
-                <span className={s.rowVerdict}>건너뜀</span>
-              )}
-            </li>
-          );
-        })}
-      </ol>
+      <TurnRows turns={turns ?? []} prompt={q.prompt} />
 
       {review && (
         <section className={s.tiles}>
