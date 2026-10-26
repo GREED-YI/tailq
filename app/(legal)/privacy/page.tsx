@@ -135,13 +135,23 @@ export default function PrivacyPage() {
       </ul>
 
       <h2>8. 문의처</h2>
-      <p>
-        <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
-          피드백 창구
-        </a>
-        로 보내 주세요. 공개 게시판이라 개인정보는 적지 마세요. 출시 전에
-        개인정보 보호책임자와 전용 연락처를 이 자리에 적을게요.
-      </p>
+      <ul>
+        <li>
+          개인정보 보호책임자: TailQ 운영자,{" "}
+          <a href="mailto:tronysh@gmail.com">tronysh@gmail.com</a>
+        </li>
+        <li>
+          열람·정정·삭제 같은 개인정보 요청은 위 이메일로 보내 주세요. 본인
+          확인 뒤 10일 안에 처리해요.
+        </li>
+        <li>
+          그 밖의 의견은{" "}
+          <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
+            피드백 창구
+          </a>
+          로 보내 주세요. 공개 게시판이라 개인정보는 적지 마세요.
+        </li>
+      </ul>
 
       <h2>9. 변경</h2>
       <p>
