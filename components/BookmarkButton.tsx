@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "./icons";
 import s from "./Bookmark.module.css";
@@ -15,6 +15,8 @@ export function BookmarkButton({
 }) {
   const [on, setOn] = useState(initial);
   const [toast, setToast] = useState({ id: 0, text: "" });
+  // 요청이 끝나기 전 다시 누르면 PUT·DELETE 순서가 뒤바뀔 수 있어 끝날 때까지 막는다
+  const busy = useRef(false);
 
   // 토스트는 2초 뒤 사라진다
   useEffect(() => {
@@ -26,11 +28,14 @@ export function BookmarkButton({
   const show = (text: string) => setToast((v) => ({ id: v.id + 1, text }));
 
   async function toggle() {
+    if (busy.current) return;
+    busy.current = true;
     const next = !on;
     setOn(next);
     const res = await fetch(`/api/bookmarks/${questionId}`, {
       method: next ? "PUT" : "DELETE",
     }).catch(() => null);
+    busy.current = false;
     if (res?.ok) {
       show(next ? "북마크에 저장했어요" : "북마크에서 뺐어요");
       return;
