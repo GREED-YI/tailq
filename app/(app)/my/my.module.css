@@ -22,6 +22,7 @@
 
 /* 프로필 줄: 아바타 56 + 닉네임·로그인 방법 + 편집 알약 */
 .profile {
+  --avatar-fg: var(--sub);
   margin-top: 8px;
   min-height: 56px;
   display: flex;
@@ -53,7 +54,177 @@
   font-weight: 700;
 }
 
+/* 꼬리잇기·휴식권·북마크 칸(높이 76) */
+.stats {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.stat {
+  height: 76px;
+  padding: 16px 12px 0;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.stat > span {
+  font-size: 11px;
+  color: var(--sub);
+}
+.stat strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.stat strong :global(.mono) {
+  font-size: 22px;
+  font-weight: 600;
+}
+.accent {
+  color: var(--accent);
+}
+
+/* 학습·설정·정보: 제목 15 Bold + 유리 카드 안 62px 줄 */
+.group > h2 {
+  margin: 22px 0 10px;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 700;
+}
+.list {
+  list-style: none;
+  padding: 8px 16px;
+  border-radius: 28px;
+}
+.row {
+  width: 100%;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+.row:has(.rowText > span) {
+  min-height: 62px;
+}
+.row > svg {
+  flex-shrink: 0;
+  color: var(--text);
+}
+.rowText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.rowText strong {
+  font-size: 15px;
+  line-height: 22px;
+}
+.rowText span {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--sub);
+}
+
+/* 로그아웃(유리 + 글자) · 탈퇴(유리 + 빨간 글자) 나란히 */
+.account {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.accountBtn {
+  width: 100%;
+}
+
+/* 가운데 확인 창(S30): 폭 326, 모서리 30 */
+.dialog {
+  /* 위층(top layer)에서는 뒤 유리 흐림이 먹지 않아 화면 바탕 위에 시트 색을 깐다 */
+  background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
+  margin: auto;
+  width: min(326px, calc(100% - 40px));
+  padding: 23px 19px 17px;
+  border: 0;
+  border-radius: 30px;
+  color: var(--text);
+}
+.dialog::backdrop {
+  background: var(--scrim);
+}
+.dialog h2 {
+  font-size: 18px;
+  line-height: 25px;
+  font-weight: 700;
+}
+.dialog > p {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--sub);
+}
+.dialogButtons {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.dialogRow {
+  margin-top: 12px;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.select {
+  height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--ghost);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+.dialogError {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--danger);
+}
+.choicesCol {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.choicesCol > button {
+  height: 48px;
+  border-radius: 24px;
+  justify-content: center;
+}
+
 @media (min-width: 1024px) {
+  .dialog {
+    width: 400px;
+  }
+  .stats {
+    gap: 12px;
+  }
+  .stat {
+    padding-top: 18px;
+  }
+  .group > h2 {
+    margin-top: 28px;
+  }
+  .account {
+    gap: 10px;
+  }
   .my {
     width: 100%;
     max-width: 720px;

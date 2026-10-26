@@ -58,6 +58,10 @@ export function computeStreak(studied: string[], today: string): Streak {
   return { current: alive ? run : 0, longest, restDays };
 }
 
+// 이번 주에 남은 휴식권(주 1개, 월요일에 채워짐). 이번 주에 이미 쓴 날이 있으면 0개
+export const ticketsLeft = (restDays: string[], today: string) =>
+  restDays.some((d) => weekStart(d) === weekStart(today)) ? 0 : 1;
+
 export const GRASS_WEEKS = 52;
 
 // 잔디 칸 단계 0~4(docs/07 "학습 잔디"). 0은 학습하지 않은 날.
