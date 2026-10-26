@@ -445,6 +445,7 @@ CI는 샘플 질문만으로 돈다. 비공개 저장소는 콘텐츠 작업(#9 
 | 폴더 | 내용 |
 |---|---|
 | `app/` | 화면(서버 컴포넌트)과 Route Handler(`app/api/**/route.ts`) |
+| `components/` | 화면 공통 컴포넌트(유리, 탭바·사이드 메뉴, 헤더, 3D Q, 테마 토글) |
 | `lib/` | 서버·공용 코드. `lib/ai.ts`(모델 호출), `lib/database.types.ts`(생성 타입, 손으로 고치지 않는다) |
 | `supabase/migrations/` · `supabase/seed.sql` | DB 구조와 공개 시드(주제 15개) |
 | `tests/` | Vitest 단위·API 테스트. `tests/mocks/`에 MSW 핸들러(Claude API 가짜 응답) |
