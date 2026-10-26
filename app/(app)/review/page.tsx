@@ -1,5 +1,63 @@
-import { ComingSoon } from "@/components/ComingSoon";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { AppHeader } from "@/components/AppHeader";
+import { kstDay } from "@/lib/daily-pick";
+import { createClient } from "@/lib/supabase/server";
+import { ReviewList } from "./ReviewList";
+import s from "./review.module.css";
 
-export default function Page() {
-  return <ComingSoon title="복습" issue={33} />;
+export const metadata: Metadata = { title: "복습 · TailQ" };
+
+// 복습 목록(04 기능 명세 5번, S18). 복습 예정 질문과 다음 복습일, 익힌 질문을 본다.
+export default function ReviewPage() {
+  return (
+    <div className={s.page}>
+      <AppHeader />
+      <Suspense fallback={<Heading />}>
+        <Reviews />
+      </Suspense>
+    </div>
+  );
+}
+
+function Heading({ count }: { count?: number }) {
+  return (
+    <>
+      <h1 className={`num ${s.title}`}>
+        복습할 질문{count === undefined ? "" : ` ${count}개`}
+      </h1>
+      <p className={s.desc}>
+        잘 답하면 간격이 늘어나고, 부족하면 처음부터 다시 나와요
+      </p>
+    </>
+  );
+}
+
+// ponytail: PostgREST 기본 최대 1,000행. 복습 중인 질문이 1,000개를 넘으면(매일 풀어도 몇 년) .range()로 나눠 읽는다
+// RLS가 자기 복습 행과 그 질문만 보여준다. 숨긴 질문은 다시 나오지 않으므로 뺀다(lib/daily.ts와 같은 기준)
+async function Reviews() {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("reviews")
+    .select(
+      "box, due_day, questions!inner(id, prompt, topic_id, topics(field))",
+    )
+    .eq("questions.is_hidden", false)
+    .order("due_day")
+    .order("question_id")
+    .throwOnError();
+
+  const items = data.map((r) => ({
+    box: r.box,
+    dueDay: r.due_day,
+    id: r.questions.id,
+    prompt: r.questions.prompt,
+    tag: `${r.questions.topics.field} / ${r.questions.topic_id}`,
+  }));
+  return (
+    <>
+      <Heading count={items.filter((r) => r.box !== null).length} />
+      <ReviewList items={items} today={kstDay(new Date())} />
+    </>
+  );
 }

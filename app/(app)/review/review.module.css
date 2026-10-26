@@ -1,0 +1,91 @@
+/* 복습 목록(S18). 목록 카드·칩·숙련도 점은 Figma C안 공통 부품 값 */
+
+/* PC: 목록 화면은 가운데 열 720 */
+@media (min-width: 1024px) {
+  .page {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+}
+
+.title {
+  margin-top: 8px;
+  font-size: 26px;
+  line-height: 34px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+.desc {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--sub);
+}
+
+.chips {
+  margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rows {
+  margin-top: 16px;
+  border-radius: 28px;
+  padding: 8px 16px;
+  list-style: none;
+}
+.row {
+  min-height: 60px;
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+}
+.meta {
+  font-size: 11px;
+  color: var(--sub);
+}
+.prompt {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 700;
+}
+.due {
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--sub);
+}
+.dots {
+  display: inline-flex;
+  gap: 3px;
+}
+.dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dot-off);
+}
+.dots .on {
+  background: var(--ring);
+}
+
+.empty {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: var(--sub);
+}
+
+.note {
+  margin-top: 16px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--sub);
+}
