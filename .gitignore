@@ -23,3 +23,6 @@ next-env.d.ts
 Thumbs.db
 .idea/
 *.log
+
+# 인증서
+*.pem

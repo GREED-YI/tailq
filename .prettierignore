@@ -1,0 +1,10 @@
+# 문서는 표·줄바꿈을 손으로 맞춘다
+*.md
+docs/
+.claude/
+
+# 생성 파일
+package-lock.json
+supabase/.temp/
+playwright-report/
+test-results/
