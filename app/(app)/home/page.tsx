@@ -3,9 +3,11 @@ import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { FloatingQ } from "@/components/FloatingQ";
 import { StreakTile } from "@/components/Streak";
+import streakStyles from "@/components/Streak.module.css";
 import { startDailySession } from "@/lib/daily";
 import { loadStudy } from "@/lib/study";
 import { createClient } from "@/lib/supabase/server";
+import { weaknessReport } from "@/lib/weakness";
 
 // 홈 뼈대. 오늘의 질문 카드에서 면접 화면으로 들어간다. 통계·인사는 각 이슈에서 채운다.
 export default function HomePage() {
@@ -47,7 +49,7 @@ export default function HomePage() {
           <TodayQuestion />
         </Suspense>
       </section>
-      {/* 3칸 통계(docs/07 "홈"). 다시 나올 질문·약한 주제 칸은 각 이슈에서 붙인다 */}
+      {/* 3칸 통계(docs/07 "홈"). 다시 나올 질문 칸은 그 이슈에서 붙인다 */}
       <section
         aria-label="통계"
         style={{
@@ -60,17 +62,34 @@ export default function HomePage() {
         <Suspense
           fallback={<div className="glass" style={{ borderRadius: 22 }} />}
         >
-          <HomeStreak />
+          <HomeStats />
         </Suspense>
       </section>
     </>
   );
 }
 
-// 꼬리잇기를 못 읽어도 홈의 오늘의 질문은 보여준다
-async function HomeStreak() {
+// 꼬리잇기·약한 주제를 못 읽어도 홈의 오늘의 질문은 보여준다
+async function HomeStats() {
   const study = await loadStudy().catch(() => null);
-  return study && <StreakTile days={study.streak.current} />;
+  if (!study) return null;
+  // 약점 리포트와 같은 기준으로 가장 약한 주제(08 설계). 없으면 데이터가 모이는 중
+  const weakest = weaknessReport(study.attempts, study.today).topics[0];
+  return (
+    <>
+      <StreakTile days={study.streak.current} />
+      <div className={`glass ${streakStyles.tile}`} style={{ gridColumn: 3 }}>
+        <span className={streakStyles.label}>약한 주제</span>
+        {weakest ? (
+          <strong style={{ fontSize: 13, lineHeight: "18px" }}>
+            {weakest.topic}
+          </strong>
+        ) : (
+          <span className={streakStyles.note}>데이터가 모이는 중</span>
+        )}
+      </div>
+    </>
+  );
 }
 
 // 홈을 열면 오늘의 세션을 연다(08 설계 "오늘의 질문 세션")
