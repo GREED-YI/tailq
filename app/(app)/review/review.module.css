@@ -1,11 +1,33 @@
-/* 복습 목록(S18). 목록 카드·칩·숙련도 점은 Figma C안 공통 부품 값 */
+/* 복습 목록(S18). 값은 Figma C안 S18(모바일 390·PC 1440) */
 
-/* PC: 목록 화면은 가운데 열 720 */
+/* 모바일·태블릿은 Figma에서 제목이 헤더에 있다. 헤더(공용 셸)가 로고를 보여주는 동안은 읽기용으로만 둔다 */
+.pageTitle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* PC: 목록 화면은 가운데 열 720, 화면 제목을 보인다 */
 @media (min-width: 1024px) {
   .page {
     width: 100%;
     max-width: 720px;
     margin: 0 auto;
+  }
+  .pageTitle {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    font-size: 28px;
+    line-height: 44px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    margin-bottom: 20px; /* 아래 제목의 margin-top 8과 겹친다 */
   }
 }
 
@@ -23,42 +45,68 @@
   color: var(--sub);
 }
 
+/* 칩은 한 줄, 넘치면 가로로 넘긴다. 모바일은 화면 끝까지 */
 .chips {
-  margin-top: 20px;
+  margin: 20px -20px 0;
+  padding: 0 20px;
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.chips > button {
+  flex-shrink: 0;
+  gap: 5px;
+}
+@media (min-width: 768px) {
+  .chips {
+    margin: 20px 0 0;
+    padding: 0;
+  }
 }
 
 .rows {
-  margin-top: 16px;
+  margin-top: 12px;
   border-radius: 28px;
   padding: 8px 16px;
   list-style: none;
 }
 .row {
-  min-height: 60px;
-  padding: 10px 0;
+  min-height: 86px;
+  padding: 12px 0 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.row svg {
+  color: var(--sub);
+}
+.text {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 2px;
 }
 .meta {
   font-size: 11px;
+  line-height: 15px;
   color: var(--sub);
 }
 .prompt {
+  margin: 1px 0 8px;
   font-size: 15px;
   line-height: 22px;
   font-weight: 700;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 .due {
-  margin-top: 2px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-size: 12px;
+  line-height: 17px;
   color: var(--sub);
 }
 .dots {
@@ -84,8 +132,18 @@
 }
 
 .note {
-  margin-top: 16px;
+  margin-top: 12px;
+  border-radius: 22px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--sub);
+}
+.note strong {
   font-size: 12px;
   line-height: 18px;
-  color: var(--sub);
+  font-weight: 700;
 }

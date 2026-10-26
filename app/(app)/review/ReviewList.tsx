@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { Icon } from "@/components/icons";
 import {
   daysUntil,
   dueLabel,
@@ -10,7 +12,12 @@ import {
 } from "@/lib/review";
 import s from "./review.module.css";
 
-type Item = ReviewItem & { id: number; prompt: string; tag: string };
+type Item = ReviewItem & {
+  id: number;
+  prompt: string;
+  tag: string;
+  sessionId?: string;
+};
 
 const FILTERS: { key: ReviewFilter; label: string; empty: string }[] = [
   { key: "all", label: "전체", empty: "복습할 질문이 없어요" },
@@ -31,12 +38,14 @@ export function ReviewList({ items, today }: { items: Item[]; today: string }) {
           <button
             key={f.key}
             type="button"
-            className="chip glass press num"
+            className="chip glass press"
             aria-pressed={filter === f.key}
             onClick={() => setFilter(f.key)}
           >
-            {f.label}{" "}
-            {items.filter((r) => matchesFilter(r, f.key, today)).length}
+            {f.label}
+            <span className="mono">
+              {items.filter((r) => matchesFilter(r, f.key, today)).length}
+            </span>
           </button>
         ))}
       </div>
@@ -47,36 +56,51 @@ export function ReviewList({ items, today }: { items: Item[]; today: string }) {
             {FILTERS.find((f) => f.key === filter)!.empty}
           </li>
         )}
-        {shown.map((r) => {
-          const level = r.box ?? 5;
-          return (
-            <li key={r.id} className={s.row}>
-              <span className={`mono ${s.meta}`}>
-                Q.{String(r.id).padStart(3, "0")} · {r.tag}
-              </span>
-              <p className={s.prompt}>{r.prompt}</p>
-              <span className={`num ${s.due}`}>
-                {r.box === null ? "익힘" : dueLabel(daysUntil(r.dueDay, today))}{" "}
-                · 숙련도
-                <span
-                  className={s.dots}
-                  role="img"
-                  aria-label={`5칸 중 ${level}칸`}
-                >
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <span key={n} className={n <= level ? s.on : undefined} />
-                  ))}
-                </span>
-              </span>
-            </li>
-          );
-        })}
+        {shown.map((r) => (
+          <li key={r.id}>
+            {/* 기록이 있으면 그 질문의 가장 최근 기록 상세로 */}
+            {r.sessionId ? (
+              <Link href={`/history/${r.sessionId}`} className={s.row}>
+                <Row r={r} today={today} />
+                <Icon name="chevronRight" size={18} />
+              </Link>
+            ) : (
+              <div className={s.row}>
+                <Row r={r} today={today} />
+              </div>
+            )}
+          </li>
+        ))}
       </ul>
 
-      <p className={s.note}>
-        숙련도: 잘 답할수록 다음 복습까지 간격이 길어져요.
-        <br />점 5개를 다 채우면 익힌 질문이 돼요.
-      </p>
+      <div className={`glass ${s.note}`}>
+        <strong>숙련도</strong>
+        <p>
+          잘 답할수록 다음 복습까지 간격이 길어져요.
+          <br />점 5개를 다 채우면 익힌 질문이 돼요.
+        </p>
+      </div>
     </>
+  );
+}
+
+function Row({ r, today }: { r: Item; today: string }) {
+  const level = r.box ?? 5;
+  return (
+    <span className={s.text}>
+      <span className={`mono ${s.meta}`}>
+        Q.{String(r.id).padStart(3, "0")} · {r.tag}
+      </span>
+      <span className={s.prompt}>{r.prompt}</span>
+      <span className={`num ${s.due}`}>
+        {r.box === null ? "익힘" : dueLabel(daysUntil(r.dueDay, today))} ·
+        숙련도
+        <span className={s.dots} role="img" aria-label={`5칸 중 ${level}칸`}>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <span key={n} className={n <= level ? s.on : undefined} />
+          ))}
+        </span>
+      </span>
+    </span>
   );
 }
