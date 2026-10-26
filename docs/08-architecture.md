@@ -36,7 +36,7 @@ flowchart LR
 | 함수 실행 시간 | Fluid compute를 켠다(무료 플랜 최대 300초). 라우트마다 `export const maxDuration`을 적는다: 채점(`/api/turns/{id}/answer`) 60, 프로젝트 질문 생성·다시 생성(`/api/projects`, `/api/projects/{id}/generations`) 300. `after()`도 그 라우트의 `maxDuration`을 따른다 | Fluid compute가 꺼진 무료 플랜은 기본 10초라 채점(최대 15초)과 `after()` 저장이 끊긴다. 질문 5개 생성은 30~60초 넘게 걸릴 수 있다 |
 | 런타임 | Node.js (Edge 아님) | `web-push`와 Anthropic SDK 스트리밍이 Node에서 돈다. 공유 카드 이미지(`next/og`)만 Edge |
 | 스트리밍 중단 | Claude 호출에 브라우저의 `request.signal`을 넘기지 않는다 | 사용자가 떠나도 채점을 끝까지 받아 저장해야 한다 |
-| 환경변수 | `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PUBLIC_KEY`·`VAPID_PRIVATE_KEY`·`VAPID_SUBJECT`, `CRON_SECRET`, `TRIAL_IP_HMAC_SECRET`, `AI_MONTHLY_BUDGET_KRW`, `KRW_PER_USD`, `AI_MOCK` | 목록만 여기 두고 값·발급 방법은 #11. `NEXT_PUBLIC_` 둘만 브라우저에 간다 |
+| 환경변수 | `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PUBLIC_KEY`·`VAPID_PRIVATE_KEY`·`VAPID_SUBJECT`, `CRON_SECRET`, `TRIAL_IP_HMAC_SECRET`, `AI_MONTHLY_BUDGET_USD`, `KRW_PER_USD`, `AI_MOCK` | 목록만 여기 두고 값·발급 방법은 #11. `NEXT_PUBLIC_` 둘만 브라우저에 간다 |
 
 ### 데이터 읽고 쓰는 길
 
@@ -81,12 +81,12 @@ sequenceDiagram
   N-->>B: SSE delta(피드백 글) → result(점수·칩·다음 턴)
   N->>D: save_grading: 결과 저장, 복습 칸 갱신(본 질문), 꼬리질문 1 턴 + 기대 답안 저장
   B->>N: 꼬리질문 답변
-  N->>A: 3단계 판정 + 다음 꼬리질문이 필요한지 판단·생성
+  N->>A: 판정 + 다음 꼬리질문이 필요한지 판단·생성
   N->>D: save_grading(최소 2개, 최대 3개까지 반복, 마지막이면 세션 done)
 ```
 
 - **꼬리질문은 하나씩 만든다.** 앞 답변을 채점하는 호출에서 다음 꼬리질문과 그 기대 답안을 함께 만든다. 그래서 2·3번째 꼬리질문도 바로 앞 답변을 바탕으로 하고(C-3), "모르겠어요"를 누르면 미리 만든 기대 답안을 보여주므로 AI를 다시 부르지 않는다. 2번째 꼬리질문을 채점할 때 "더 물을지"를 함께 받아 3번째를 만들지 정한다. 호출 수는 본 질문 1번 + 꼬리질문 2~3번이다.
-- **꼬리질문은 점수 없이 3단계 판정**(`verdict`: good·partial·unknown)이고, 본 질문만 점수가 있다(07 UI 디자인, #10).
+- **꼬리질문은 점수 없이 판정**(`verdict`: good·partial·wrong·unknown)이고, 본 질문만 점수가 있다(07 UI 디자인, #10). 처음엔 good·partial·unknown 3단계였으나, 완전히 틀린 답도 "조금 부족해요"로 보여 잘못된 신호를 줘서 wrong(틀렸어요)을 더했다 (2026-10-26).
 - **채점은 한 요청만 통과한다.** `submit_answer`가 턴을 `grading`으로 바꾸는데, `answering`·`failed`이거나 `grading`이 20초를 넘긴(멈춘) 경우에만 바뀐다. 같은 답변으로 여러 번 눌러도 AI는 한 번만 부른다.
 - **시간 기준은 셋이다.** 서버의 Claude 호출 타임아웃 **15초**(넘으면 `failed`, 03 비기능 "15초 안에 끝난다"), 화면이 "다시 채점하기"를 보여주는 **15초**, 서버가 `grading`을 멈춘 것으로 보는 **20초**(타임아웃 뒤 저장까지의 여유). 처음엔 멈춤 판정이 30초였으나 화면의 15초와 15초나 벌어져 20초로 줄였다 (2026-10-25).
 - **복습 칸은 본 질문 채점 때 갱신한다.** `save_grading`이 `idx = 0` 결과를 저장하면서 `reviews`를 옮기고, "모르겠어요"는 `submit_answer`가 0점·`unknown`으로 저장하면서 1칸에 넣는다. 처음 푼 새 질문을 잘 답하면 **2칸(3일 뒤)부터** 시작한다(04 기능 명세 5번). 처음엔 세션이 끝날 때(종합) 옮겼으나, 꼬리질문을 안 하고 나가면 영영 반영되지 않았다. 복습 일정은 본 질문 점수로만 정하므로(07) 앞당겨도 결과가 같다 (2026-10-25).
@@ -166,7 +166,8 @@ Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로
 - `ai_usage`는 프로젝트·세션과 외래키로 묶지 않는다. 프로젝트를 지웠다 다시 만들어도 그날 쓴 양이 줄지 않는다.
 - 오늘의 질문 1세션은 개인 한도와 상관없이 보장한다(다시 채점 횟수만 따로 묶는다).
 - 비용은 **달러**(`cost_usd`)로 저장하고 원화는 보여줄 때 `KRW_PER_USD`(환경변수, 고정 환율)로 환산한다. 처음엔 `cost_krw`였으나 환율이 끼면 나중에 다시 계산할 수 없다 (2026-10-25).
-- 이번 달(KST) 합계가 월 예산(`AI_MONTHLY_BUDGET_KRW`, 1만 원)에 닿으면 새로 시작하는 AI 기능을 모두 막는다. 이미 시작한 세션은 끝까지 한다.
+- 이번 달(KST) 합계가 월 예산(`AI_MONTHLY_BUDGET_USD`, $20)에 닿으면 새로 시작하는 AI 기능을 모두 막는다. 이미 시작한 세션은 끝까지 한다. 처음엔 `AI_MONTHLY_BUDGET_KRW`(1만 원)였으나, 비용을 달러로 저장하므로 예산도 달러로 두어 환율 없이 비교하고, 금액을 $20으로 올렸다 (2026-10-26).
+- 합계가 예산의 80%를 넘으면 **세션을 시작할 때** 본 질문 채점 모델을 Haiku로 정해 세션에 저장한다(세션 중간에 모델이 바뀌지 않는다). 기본은 본 질문 Sonnet, 꼬리질문 Haiku다([09 채점](09-grading.md) 5장).
 - 숫자(프로젝트 하루 몇 회, 다시 채점 몇 회, 세션당 예약 몫)는 #10에서 호출당 비용을 잰 뒤 정한다.
 
 ### 내 프로젝트 질문 생성
@@ -255,7 +256,7 @@ erDiagram
     text answer
     text status "answering grading graded failed skipped"
     int score "idx 0만"
-    text verdict "꼬리질문 good partial unknown, 본 질문은 모르겠어요만 unknown"
+    text verdict "꼬리질문 good partial wrong unknown, 본 질문은 모르겠어요만 unknown"
     int grading_attempts
     timestamptz answered_at
   }
@@ -310,7 +311,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | 테이블 | 주요 열 | 메모 |
 |---|---|---|
 | `sessions` | `id`, `user_id`(체험이면 null), `trial_token`, `ip_hash`(체험 IP의 HMAC, 이어받으면 null), `question_id`, `kind`(daily·project·trial), `pick`(review·new·advance), `day`, `status`(open·done·expired), `created_at`, `completed_at` | 유일 인덱스 `(user_id, day) where kind = 'daily'`. 점수는 `turns`에 있다(세션 점수 = 본 질문 턴의 점수). `pick`은 "복습" 표시와 "새 질문을 다 풀었어요" 안내를 다시 그리는 데 쓴다 |
-| `turns` | `id`, `session_id`, `idx`(0 = 본 질문, 1~3 = 꼬리질문), `follow_up_prompt`(꼬리질문 글, 본 질문 턴은 비어 있고 글은 `questions`에 있다), `answer`, `status`(answering·grading·graded·failed·skipped), `grading_started_at`, `grading_attempts`(다시 채점 횟수 제한), `answered_at`, `score`(idx 0만), `verdict`(꼬리질문은 good·partial·unknown의 3단계 판정, 본 질문은 "모르겠어요"일 때만 unknown이고 그 외는 null), `feedback`(jsonb), `rating`(👍 1 / 👎 -1) | 유일 `(session_id, idx)`. CHECK: `idx = 0`이면 `verdict`가 `unknown`이거나 null이고 `graded`면 `score`가 있다, `idx > 0`이면 `score`가 null |
+| `turns` | `id`, `session_id`, `idx`(0 = 본 질문, 1~3 = 꼬리질문), `follow_up_prompt`(꼬리질문 글, 본 질문 턴은 비어 있고 글은 `questions`에 있다), `answer`, `status`(answering·grading·graded·failed·skipped), `grading_started_at`, `grading_attempts`(다시 채점 횟수 제한), `answered_at`, `score`(idx 0만), `verdict`(꼬리질문은 good·partial·wrong·unknown 판정, 본 질문은 "모르겠어요"일 때만 unknown이고 그 외는 null), `feedback`(jsonb), `rating`(👍 1 / 👎 -1) | 유일 `(session_id, idx)`. CHECK: `idx = 0`이면 `verdict`가 `unknown`이거나 null이고 `graded`면 `score`가 있다, `idx > 0`이면 `score`가 null |
 | `turn_keys` | `turn_id`, `expected_answer` | 꼬리질문 기대 답안. 서버 전용 |
 | `reviews` | `user_id`, `question_id`, `box`(1~5, 익히면 null), `due_day` | PK `(user_id, question_id)`. 사용자에게는 칸 대신 다음 복습일·숙련도로 보여준다. 갱신은 본 질문 채점 때 |
 | `bookmarks` | `user_id`, `question_id`, `created_at` | PK `(user_id, question_id)` |
@@ -324,7 +325,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 |---|---|
 | `question_keys.rubric` | `{ "keywords": string[], "criteria": string[] }` — `keywords`는 보완할 개념 칩의 후보, `criteria`는 채점 기준 문장 |
 | `question_keys.links` | `[{ "title": string, "url": string }]` 1~3개. 프로젝트 질문은 null |
-| `turns.feedback` | `{ "summary": string, "good": string[], "improve": string[], "missing_keywords": string[] }` — `missing_keywords ⊆ rubric.keywords`를 서버가 검증. 꼬리질문 턴은 `summary`만 있어도 된다 |
+| `turns.feedback` | `{ "summary": string, "good": string[], "improve": string[], "missing_keywords": string[], "criteria": { "concept": int, "reason": int, "application": int, "delivery": int } }` — `missing_keywords ⊆ rubric.keywords`를 서버가 검증. `good`은 0~3개(빈 배열이면 화면에서 잘한 점 줄을 숨긴다). `criteria`는 본 질문의 기준별 점수로 저장만 하고 화면에는 보여주지 않는다(약점 리포트용). 꼬리질문 턴은 `summary`만 있어도 된다. 처음엔 `criteria`를 둘 곳이 없었다 (2026-10-26) |
 | `events.props` | 1KB 이하의 평평한 객체. 이름별 허용 키는 지표 이슈에서 정한다 |
 
 ### 공유 · 운영
