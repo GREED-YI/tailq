@@ -188,7 +188,7 @@ async function Home() {
           )}
           {reviewing.slice(0, 3).map((r) => (
             <li key={r.questions.id}>
-              <Link href="/review" className={s.linkRow}>
+              <Link href="/review" className={`hover-row ${s.linkRow}`}>
                 <span className={s.reviewRow}>
                   <span
                     className={`${r.questions.projects ? "num" : "mono"} ${rv.meta}`}
@@ -478,7 +478,7 @@ function RecentSection({ rows }: { rows: RecentRow[] }) {
           .join(" · ");
         return (
           <li key={r.id}>
-            <Link href={`/history/${r.id}`} className={h.row}>
+            <Link href={`/history/${r.id}`} className={`hover-row ${h.row}`}>
               <span className={`mono ${h.date}`}>
                 {r.day.slice(5).replace("-", ".")}
               </span>
@@ -553,7 +553,7 @@ function Shortcuts({ className = "" }: { className?: string }) {
       <ul>
         {SHORTCUTS.map(([href, label], i) => (
           <li key={href}>
-            <Link href={href} className={s.linkRow}>
+            <Link href={href} className={`hover-row ${s.linkRow}`}>
               <span className={s.shortcut}>
                 <span className="mono">0{i + 1}</span>
                 {label}

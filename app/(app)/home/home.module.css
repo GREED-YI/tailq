@@ -246,9 +246,11 @@
   font-weight: 700;
   color: var(--text);
 }
-.sectionHead a:hover,
-.panelHead a:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .sectionHead a:hover,
+  .panelHead a:hover {
+    color: var(--text);
+  }
 }
 .list {
   margin-top: 10px;

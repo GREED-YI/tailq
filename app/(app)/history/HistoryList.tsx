@@ -46,7 +46,7 @@ export function HistoryList({
           .join(" · ");
         return (
           <li key={r.id}>
-            <Link href={`/history/${r.id}`} className={s.row}>
+            <Link href={`/history/${r.id}`} className={`hover-row ${s.row}`}>
               <span className={`mono ${s.date}`}>
                 {r.day.slice(5).replace("-", ".")}
               </span>

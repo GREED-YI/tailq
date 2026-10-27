@@ -17,15 +17,19 @@ const TABS: { href: string; label: string; icon: IconName }[] = [
 ];
 
 // 모바일·태블릿은 떠 있는 유리 탭바, PC(1024px~)는 왼쪽 유리 사이드 메뉴(docs/07 "PC·태블릿 앱")
-export function AppNav() {
-  return <NavBar pathname={usePathname()} />;
+// sub: 하위 화면이라 모바일·태블릿에서는 탭바를 숨긴다(app/(detail)/layout.tsx)
+export function AppNav({ sub }: { sub?: boolean }) {
+  return <NavBar pathname={usePathname()} sub={sub} />;
 }
 
 // 주소를 미리 알 수 없는 화면(기록 상세처럼 [id]가 있는 주소)은 미리 그릴 때 주소를 몰라
 // 선택한 탭 없이 그리고, 요청 때 AppNav로 바꾼다(app/(app)/layout.tsx의 Suspense)
-export function NavBar({ pathname }: { pathname: string }) {
+export function NavBar({ pathname, sub }: { pathname: string; sub?: boolean }) {
   return (
-    <nav className={`glass ${s.nav}`} aria-label="주요 메뉴">
+    <nav
+      className={`glass ${s.nav} ${sub ? s.navSub : ""}`}
+      aria-label="주요 메뉴"
+    >
       <div className={s.navLogo}>
         <Logo />
       </div>

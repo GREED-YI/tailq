@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "기록 · TailQ" };
 export default function HistoryPage({ searchParams }: PageProps<"/history">) {
   return (
     <div className={s.page}>
-      <AppHeader />
+      <AppHeader title="기록" />
       <h1 className={s.pageTitle}>기록</h1>
       <Suspense fallback={<HistoryTabs current="list" />}>
         {searchParams.then((p) => (

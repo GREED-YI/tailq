@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { ProjectForm } from "./ProjectForm";
-import s from "../projects.module.css";
+import s from "@/app/(app)/projects/projects.module.css";
 
 export const metadata: Metadata = { title: "프로젝트 등록 · TailQ" };
 

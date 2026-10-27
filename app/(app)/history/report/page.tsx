@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "리포트 · TailQ" };
 export default function ReportPage() {
   return (
     <div className={s.page}>
-      <AppHeader />
+      <AppHeader title="기록" />
       <h1 className={s.pageTitle}>기록</h1>
       <div className={s.bar}>
         <HistoryTabs current="report" />

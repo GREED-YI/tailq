@@ -198,7 +198,7 @@ function Row({
           {body}
         </a>
       ) : (
-        <Link href={href} className={s.row}>
+        <Link href={href} className={`hover-row ${s.row}`}>
           {body}
         </Link>
       )}

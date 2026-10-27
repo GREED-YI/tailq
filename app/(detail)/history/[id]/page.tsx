@@ -12,7 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 import { turnResult, type TurnResult } from "@/lib/turn";
 import { ScoreRing } from "@/app/interview/ScoreRing";
 import { VERDICTS } from "@/app/interview/verdict";
-import s from "../history.module.css";
+import s from "@/app/(app)/history/history.module.css";
 
 export const metadata: Metadata = { title: "기록 상세 · TailQ" };
 
@@ -194,7 +194,7 @@ function MainResult({
         aria-label="모범 답안과 참고 자료"
       >
         <details>
-          <summary>
+          <summary className="hover-row">
             모범 답안
             <Icon name="chevronDown" size={18} />
           </summary>
@@ -202,7 +202,7 @@ function MainResult({
         </details>
         {result.links.length > 0 && (
           <details>
-            <summary>
+            <summary className="hover-row">
               참고 자료
               <Icon name="chevronDown" size={18} />
             </summary>
@@ -241,7 +241,7 @@ function FollowUp({
   return (
     <li>
       <details className={s.followUp}>
-        <summary>
+        <summary className="hover-row">
           <span className={`mono ${s.followUpIdx}`}>
             {String(idx).padStart(2, "0")}
           </span>

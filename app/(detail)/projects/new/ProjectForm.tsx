@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "@/components/icons";
 import { CONTENT_MAX, CONTENT_MIN, NAME_MAX } from "@/lib/questions";
-import s from "../projects.module.css";
+import s from "@/app/(app)/projects/projects.module.css";
 
 // 이름과 README를 받아 등록하고, 질문을 만드는 동안 보여줄 질문 목록 화면으로 간다
 export function ProjectForm() {
