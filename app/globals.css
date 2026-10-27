@@ -219,6 +219,13 @@ button {
   }
 }
 
+/* 동작 줄이기: 유리 버튼의 hover 배경은 전환 없이 바로 바뀐다(.glass의 테마 전환 0.5초도 끈다) */
+@media (prefers-reduced-motion: reduce) {
+  .glass.press {
+    transition: none;
+  }
+}
+
 /* 카드 안 목록 행: hover·키보드 초점·눌림에 옅은 면. 행은 카드 안쪽 여백(16)까지 8px 넓혀 칠하고 자리는 그대로 둔다 */
 .hover-row {
   position: relative;
