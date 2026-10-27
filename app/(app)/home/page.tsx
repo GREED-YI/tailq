@@ -540,7 +540,7 @@ function Week({ study }: { study: Study }) {
         </span>
       </div>
       {/* 칸에 마우스를 올리면(터치는 누르면) 날짜·점수 말풍선(리포트 학습 잔디와 같다) */}
-      <GrassTip className={s.week} label={`이번 주: ${tips.join(", ")}`}>
+      <GrassTip className={s.week} label="이번 주" focusable>
         {cells.map((c, i) => (
           <span
             key={c.day}
@@ -548,6 +548,9 @@ function Week({ study }: { study: Study }) {
             data-today={c.day === study.today || undefined}
           >
             <span
+              tabIndex={0}
+              role="img"
+              aria-label={tips[i]}
               data-tip={tips[i]}
               data-level={c.level}
               data-rest={c.rest || undefined}

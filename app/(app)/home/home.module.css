@@ -431,6 +431,11 @@
     box-shadow: 0 0 0 1.5px var(--accent);
   }
 }
+/* 키보드 초점도 hover와 같은 테두리(말풍선은 GrassTip이 띄운다) */
+.day span:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+}
 
 /* 기기별로 보이는 부분 */
 .wide,
