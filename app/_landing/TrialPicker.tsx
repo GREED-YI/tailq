@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icons";
 import type { TrialField } from "@/lib/trial";
 import s from "./landing.module.css";
@@ -23,6 +23,15 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
   const router = useRouter();
   const [field, setField] = useState<TrialField>("backend");
   const [pending, setPending] = useState(false);
+  // 요청 중인지. 이동하는 동안에는 잠금을 유지하고(두 번 누르지 않게), 화면이 보관되어 숨겨질 때
+  // 요청 중이 아니면 잠금을 푼다(cacheComponents라 뒤로 오면 상태를 그대로 들고 다시 보인다)
+  const inFlight = useRef(false);
+  useEffect(
+    () => () => {
+      if (!inFlight.current) setPending(false);
+    },
+    [],
+  );
   const [error, setError] = useState("");
   const limitRef = useRef<HTMLDialogElement>(null);
   const label = FIELDS.find((f) => f.id === field)!.label;
@@ -30,6 +39,7 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
 
   async function start() {
     setPending(true);
+    inFlight.current = true;
     setError("");
     try {
       const res = await fetch("/api/trial-sessions", {
@@ -37,10 +47,8 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ field }),
       });
+      inFlight.current = false;
       if (res.ok) {
-        // cacheComponents라 체험으로 갔다가 뒤로 오면 이 화면이 상태를 그대로 들고 다시 보인다.
-        // 요청이 끝난 뒤(이동 직전)에 잠금을 풀어야, 요청 중에는 두 번 누를 수 없고 돌아왔을 때는 막혀 있지 않다
-        setPending(false);
         router.push("/trial");
         return;
       }
@@ -54,6 +62,7 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
     } catch {
       setError("잠시 뒤에 다시 시도해 주세요.");
     }
+    inFlight.current = false;
     setPending(false);
   }
 
