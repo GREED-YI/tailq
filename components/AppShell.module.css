@@ -2,7 +2,8 @@
 
 .main {
   min-height: 100dvh;
-  padding: 0 20px calc(20px + 64px + 24px + env(safe-area-inset-bottom));
+  /* 맨 아래까지 내려도 마지막 줄이 탭바 위 페이드(48px)에 덮이지 않게(탭바 아래 여백은 태블릿의 24px 기준) */
+  padding: 0 20px calc(24px + 64px + 48px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
 }
@@ -55,10 +56,49 @@
   border-radius: 32px;
   padding: 6px;
 }
-/* 하위 화면은 모바일·태블릿 탭바를 숨긴다. PC는 아래 .nav 규칙이 다시 보인다 */
+/* 모바일·태블릿 탭바는 불투명에 가깝게(시트 색 아래에 화면 바탕을 깐다, 토스트와 같다).
+   처음엔 유리(--glass)였는데, 뒤 글자가 다 비쳐 탭바가 눈에 안 띈다는 의견에 바꿨다(#114).
+   PC 사이드 메뉴는 유리 그대로 */
+@media (max-width: 1023px) {
+  .nav.nav {
+    background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
+  }
+}
+/* 탭바 위 48px는 화면 바탕으로 흐려져, 스크롤하는 글이 탭바에 닿기 전부터 사라지며 아래 내용이 더 있음을 알린다.
+   화면 전체를 덮는 고정 층에 배경(바탕색 + 은은한 그라디언트, globals.css .backdrop과 같은 값)을 그리고 아래쪽만 보이게 가린다.
+   빛 번짐 배경은 움직이는 덩어리라 바탕색만. 탭바가 없는 하위 화면(.mainSub)과 PC에는 없다 */
+.main:not(.mainSub)::after {
+  --fade-from: calc(20px + 64px + env(safe-area-inset-bottom));
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  background:
+    linear-gradient(160deg, var(--wash1) 0%, transparent 55%),
+    linear-gradient(340deg, var(--wash2) 0%, transparent 60%), var(--bg);
+  -webkit-mask: linear-gradient(
+    to top,
+    #000 var(--fade-from),
+    transparent calc(var(--fade-from) + 48px)
+  );
+  mask: linear-gradient(
+    to top,
+    #000 var(--fade-from),
+    transparent calc(var(--fade-from) + 48px)
+  );
+  transition: background-color 0.5s ease;
+}
+:global([data-bg="glow"]) .main:not(.mainSub)::after {
+  background: var(--bg);
+}
+/* 하위 화면은 모바일·태블릿 탭바를 숨긴다. PC는 아래 .nav 규칙이 다시 보인다.
+   리포트(.navPc)는 PC 사이드 메뉴에만, 긴 이름(.navLong, "MY페이지")도 PC에서만 */
 .navSub,
 .navLogo,
-.pcTools {
+.pcTools,
+.navPc,
+.navLong {
   display: none;
 }
 .navList {
@@ -126,6 +166,9 @@
     transform: translateX(-50%);
     bottom: calc(24px + env(safe-area-inset-bottom));
   }
+  .main:not(.mainSub)::after {
+    --fade-from: calc(24px + 64px + env(safe-area-inset-bottom));
+  }
 }
 
 /* PC: 왼쪽 사이드 메뉴(폭 --nav-w). 내용(최대 --content-max)은 x --shell-left부터 남은 폭의 가운데.
@@ -137,16 +180,25 @@
     padding: 24px
       max(40px, calc((100% - var(--shell-left) - var(--content-max)) / 2)) 32px;
   }
-  /* 테마 토글·알림 등은 내용 영역 오른쪽 위(모바일·태블릿은 헤더 오른쪽 위).
-     처음엔 사이드 메뉴 맨 아래에 있었는데 찾기 어려워 옮겼다(#114) */
+  /* 테마 토글은 내용 영역 오른쪽 위(모바일·태블릿은 헤더 오른쪽 위).
+     처음엔 사이드 메뉴 맨 아래에 있었는데 찾기 어려워 옮겼다(#114).
+     리포트·알림도 여기 있었는데, 리포트는 사이드 메뉴로 옮기고 알림(MY로 가기만 했다)은 뺐다(#114) */
   .pcTools {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
     margin-bottom: 8px;
   }
-  .header {
+  .header,
+  .navShort,
+  .main:not(.mainSub)::after {
     display: none;
+  }
+  .navPc {
+    display: block;
+  }
+  .navLong {
+    display: inline;
   }
   .nav {
     top: 16px;
@@ -262,30 +314,18 @@
   }
 }
 
-/* 여우 피드백 버튼(FeedbackFox.tsx): 오른쪽 아래에 떠 있고, 처음 한 번·hover·초점에 말풍선.
-   모바일·태블릿 탭 화면은 탭바 위, 하위 화면은 화면 아래, PC는 오른쪽 아래 */
+/* 여우 피드백 버튼(FeedbackFox.tsx): PC 오른쪽 아래에 떠 있고, 처음 한 번·hover·초점에 말풍선.
+   말풍선은 여우 왼쪽 위에 떠서 꼬리가 여우 머리를 가리킨다(여우가 말하는 것처럼).
+   처음엔 여우 왼쪽 옆에 나란히 있었고 모바일·태블릿에도 있었는데, 작은 화면에선 내용을 가려 PC에만 둔다(#114).
+   모바일·태블릿의 피드백은 MY > 피드백 보내기로 간다 */
 .fox {
-  position: fixed;
-  z-index: 15;
-  right: 20px;
-  bottom: calc(20px + 64px + 12px + env(safe-area-inset-bottom));
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-@media (min-width: 768px) {
-  .fox {
-    right: 24px;
-    bottom: calc(24px + 64px + 12px + env(safe-area-inset-bottom));
-  }
-}
-@media (max-width: 1023px) {
-  :global(body):has(.navSub) .fox {
-    bottom: calc(20px + env(safe-area-inset-bottom));
-  }
+  display: none;
 }
 @media (min-width: 1024px) {
   .fox {
+    display: block;
+    position: fixed;
+    z-index: 15;
     right: 28px;
     bottom: 28px;
   }
@@ -300,7 +340,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 .foxImg {
   width: 30px;
@@ -310,22 +349,14 @@
   mask: url(/brand/fox.svg) center / contain no-repeat;
   transition: background-color 0.5s ease;
 }
-/* 모바일은 내용을 덜 가리게 조금 작게 */
-@media (max-width: 767px) {
-  .foxBtn {
-    width: 48px;
-    height: 48px;
-  }
-  .foxImg {
-    width: 26px;
-    height: 34px;
-  }
-}
 .foxTip {
   /* 아래 내용 글자가 비치지 않게 시트 색 아래에 화면 바탕을 깐다(토스트와 같다) */
   background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
-  position: relative;
-  max-width: min(240px, calc(100vw - 120px));
+  position: absolute;
+  right: 26px;
+  bottom: calc(100% + 14px);
+  width: max-content;
+  max-width: 240px;
   padding: 10px 8px 10px 16px;
   border-radius: 20px 20px 6px 20px;
   display: flex;
@@ -336,9 +367,20 @@
   font-weight: 500;
   opacity: 0;
   visibility: hidden;
-  transform: translateX(8px);
+  transform: translateY(6px);
 }
-/* 토스트가 떠 있는 동안은 말풍선을 접는다(같은 줄에서 겹치지 않게) */
+/* 꼬리: 말풍선 오른쪽 아래 모서리에서 여우 머리(동그라미 위 가운데 조금 오른쪽)로 비스듬히 내려간다 */
+.foxTip::after {
+  content: "";
+  position: absolute;
+  right: -2px;
+  top: calc(100% - 1px);
+  width: 18px;
+  height: 13px;
+  background: inherit;
+  clip-path: polygon(0 0, 66% 0, 100% 100%);
+}
+/* 토스트가 떠 있는 동안은 말풍선을 접는다(겹치지 않게) */
 :global(body):has(.toastArea) .fox .foxTip {
   opacity: 0;
   visibility: hidden;
