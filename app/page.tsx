@@ -391,9 +391,7 @@ export default function Landing() {
         <nav aria-label="약관과 피드백">
           <Link href="/terms">이용약관</Link>
           <Link href="/privacy">개인정보처리방침</Link>
-          <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
-            피드백 보내기
-          </a>
+          <Link href={FEEDBACK_URL}>피드백 보내기</Link>
         </nav>
         <span className={s.copy}>© 2026 TailQ</span>
       </footer>
