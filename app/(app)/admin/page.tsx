@@ -73,11 +73,12 @@ async function Dashboard() {
           .order("id")
           .range(from, to),
       ),
+      // 채점이 20초 넘게 멈춘 턴도 실패로 세도록 turn_states.effective_status를 읽는다
       readAll((from, to) =>
         db
-          .from("turns")
+          .from("turn_states")
           .select(
-            "id, idx, status, answered_at, score, verdict, rating, sessions!inner(user_id)",
+            "id, idx, effective_status, answered_at, score, verdict, rating, sessions!inner(user_id)",
           )
           .gte("answered_at", `${answersSince(today)}T00:00:00+09:00`)
           .order("id")
@@ -110,9 +111,9 @@ async function Dashboard() {
   }));
   const answers: Answer[] = turns.map((t) => ({
     userId: t.sessions.user_id,
-    idx: t.idx,
+    idx: t.idx!,
     answeredAt: t.answered_at!,
-    status: t.status,
+    status: t.effective_status!,
     score: t.score,
     verdict: t.verdict,
     rating: t.rating,
