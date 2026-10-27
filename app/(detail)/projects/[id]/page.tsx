@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { z } from "zod";
+import { limitNotice } from "@/components/LimitNotice";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { loadQuota } from "@/lib/usage";
 import { ProjectView, type QuestionRow } from "./ProjectView";
 import s from "@/app/(app)/projects/projects.module.css";
 
@@ -26,15 +29,20 @@ async function Project({ id }: { id: string }) {
   if (!z.uuid().safeParse(id).success) notFound();
   // RLS가 내 프로젝트와 그 질문·세션만 보여준다
   const supabase = await createClient();
-  const { data: project } = await supabase
-    .from("projects")
-    .select(
-      "id, name, status, questions(id, prompt, sessions(status, created_at, turns(idx, status, score, verdict)))",
-    )
-    .eq("id", id)
-    .order("id", { referencedTable: "questions" })
-    .maybeSingle()
-    .throwOnError();
+  const { data: auth } = await supabase.auth.getClaims();
+  const [{ data: project }, quota] = await Promise.all([
+    supabase
+      .from("projects")
+      .select(
+        "id, name, status, questions(id, prompt, sessions(status, created_at, turns(idx, status, score, verdict)))",
+      )
+      .eq("id", id)
+      .order("id", { referencedTable: "questions" })
+      .maybeSingle()
+      .throwOnError(),
+    // 하루 한도·월 예산은 시작하기 전에 확인한다(04 기능 명세 12장)
+    loadQuota(createAdminClient(), auth?.claims.sub ?? null),
+  ]);
   if (!project) notFound();
 
   const questions: QuestionRow[] = project.questions.map((q) => {
@@ -45,14 +53,16 @@ async function Project({ id }: { id: string }) {
     const main = sessions
       .map((ss) => ss.turns.find((t) => t.idx === 0))
       .find((t) => t?.status === "graded");
+    const open = sessions.some((ss) => ss.status === "open");
     return {
       id: q.id,
       prompt: q.prompt,
+      open,
       state: main
         ? main.verdict === "unknown"
           ? "모르겠어요"
           : `${main.score}점`
-        : sessions.some((ss) => ss.status === "open")
+        : open
           ? "doing"
           : null,
     };
@@ -66,6 +76,8 @@ async function Project({ id }: { id: string }) {
       name={project.name}
       status={project.status as "generating" | "ready" | "failed"}
       questions={questions}
+      notice={limitNotice(quota, "practice")}
+      canRetry={quota.budget !== "exceeded"}
     />
   );
 }

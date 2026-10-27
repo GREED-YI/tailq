@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { kstDay, pickDailyQuestion, type Pick } from "@/lib/daily-pick";
 import { questionTags } from "@/lib/questions";
 import { track } from "@/lib/track";
+import { budgetUsd } from "@/lib/usage";
 
 // 면접·결과 화면이 보여주는 질문. 복습으로 나온 프로젝트 질문이면 projectId가 있다
 export type SessionQuestion = {
@@ -27,10 +28,11 @@ const SESSION_COLUMNS =
   `id, day, pick, status, questions(${QUESTION_COLUMNS})` as const;
 
 // 오늘의 질문 세션을 돌려준다. 오늘 세션이 있으면 그것을, 없으면 규칙대로 골라 만든다.
-// 낼 질문이 하나도 없으면 null. userId는 호출한 쪽이 로그인으로 확인한 값이어야 한다.
+// 낼 질문이 하나도 없으면 null, 서비스 월 예산에 닿아 새로 시작할 수 없으면 "budget"(이미 있는 오늘 세션은 그대로 준다).
+// userId는 호출한 쪽이 로그인으로 확인한 값이어야 한다.
 export async function startDailySession(
   userId: string,
-): Promise<DailySession | null> {
+): Promise<DailySession | null | "budget"> {
   const db = createAdminClient();
   const today = kstDay(new Date());
 
@@ -100,13 +102,14 @@ export async function startDailySession(
   if (result.pick === null) return null;
 
   // 같은 사용자의 요청이 동시에 와도 함수가 하나만 만들고, 늦은 쪽에는 먼저 만든 세션을 돌려준다
-  const started = await db
-    .rpc("start_daily_session", {
-      p_user_id: userId,
-      p_question_id: result.questionId,
-      p_pick: result.pick,
-    })
-    .throwOnError();
+  const started = await db.rpc("start_daily_session", {
+    p_user_id: userId,
+    p_question_id: result.questionId,
+    p_pick: result.pick,
+    p_budget_usd: budgetUsd(),
+  });
+  if (started.error?.message === "BUDGET_EXCEEDED") return "budget";
+  if (started.error) throw started.error;
   await track(
     "session_start",
     { session_id: started.data.id, kind: "daily" },

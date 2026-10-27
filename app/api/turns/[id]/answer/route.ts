@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { after } from "next/server";
 import { z } from "zod";
-import { grade, gradeFollowUp, GradingError } from "@/lib/ai";
+import { grade, gradeFollowUp, GradingError, type AiUsage } from "@/lib/ai";
 import {
   toFollowUpGrading,
   toGrading,
@@ -12,6 +12,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { track } from "@/lib/track";
 import { TRIAL_COOKIE } from "@/lib/trial";
+import { recordUsage } from "@/lib/usage";
 import {
   dbErrorResponse,
   errorResponse,
@@ -66,7 +67,7 @@ export async function PUT(
   const { data: turn } = await db
     .from("turns")
     .select(
-      "idx, session_id, sessions(user_id, kind, trial_token, questions(prompt, level, topics(name, field), projects(name), question_keys(rubric, model_answer)))",
+      "idx, session_id, sessions(user_id, kind, trial_token, grade_model, questions(prompt, level, topics(name, field), projects(name), question_keys(rubric, model_answer)))",
     )
     .eq("id", id)
     .maybeSingle();
@@ -111,6 +112,13 @@ export async function PUT(
         : track("session_complete", session, userId ?? null);
 
   if (dontKnow) {
+    // 본 질문을 모르겠어요로 끝내면 AI를 쓰지 않았으니 잡아 둔 하루 한도 몫을 돌려준다(프로젝트 세션만 있다)
+    if (turn.idx === 0) {
+      const { error: e } = await db.rpc("release_ai_usage", {
+        p_ref_id: turn.session_id,
+      });
+      if (e) console.error("ai_usage release failed", turn.session_id, e);
+    }
     const result = await turnResult(db, id);
     await completed(result);
     return Response.json(result);
@@ -140,6 +148,18 @@ export async function PUT(
   };
 
   const onText = (delta: string) => send("delta", { text: delta });
+  // 성공·실패 모두 ai_usage에 남긴다. 프로젝트 세션의 첫 본 질문 채점은 시작할 때 잡아 둔 몫을 쓴다.
+  // 체험은 사용자 없이 purpose = trial로 남긴다(월 예산 합계에 들어간다)
+  const onUsage = (purpose: "grade" | "follow_up") => (u: AiUsage) =>
+    recordUsage(
+      db,
+      {
+        userId: userId ?? null,
+        purpose: trial ? "trial" : purpose,
+        refId: turn.session_id,
+      },
+      u,
+    );
   // 본 질문은 점수(Sonnet), 꼬리질문은 판정(Haiku). 둘 다 다음 꼬리질문을 함께 만든다(08 설계 "핵심 흐름")
   const gradeTurn = async () => {
     if (turn.idx === 0) {
@@ -161,6 +181,11 @@ export async function PUT(
           answer: text,
         },
         onText,
+        // 예산 80%를 넘은 뒤 시작한 세션은 시작할 때 Haiku로 정해 두었다(08 설계)
+        {
+          light: turn.sessions.grade_model === "haiku",
+          onUsage: onUsage("grade"),
+        },
       );
       return toGrading(out, rubric.keywords);
     }
@@ -170,7 +195,10 @@ export async function PUT(
       modelAnswer: keys.model_answer,
       ...(await sessionTurns(db, turn.session_id, turn.idx, text)),
     };
-    return toFollowUpGrading(await gradeFollowUp(input, onText), turn.idx);
+    return toFollowUpGrading(
+      await gradeFollowUp(input, onText, onUsage("follow_up")),
+      turn.idx,
+    );
   };
 
   // 사용자가 떠나 스트림이 끊겨도 채점과 저장은 끝까지 한다(08 설계 "사용자가 떠나도 저장한다")

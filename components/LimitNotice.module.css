@@ -1,0 +1,30 @@
+/* 한도 소진 안내(Figma C안 S26 section: 350x96, 안쪽 16, 여우 64 + 12 + 글) */
+.notice {
+  margin-top: 20px;
+  border-radius: 22px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  column-gap: 12px;
+}
+.fox {
+  width: 64px;
+  height: 64px;
+  background: var(--text);
+  -webkit-mask: url(/brand/fox.svg) center / contain no-repeat;
+  mask: url(/brand/fox.svg) center / contain no-repeat;
+}
+.notice strong {
+  display: block;
+  font-size: 15px;
+  line-height: 21px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.notice p {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--sub);
+}

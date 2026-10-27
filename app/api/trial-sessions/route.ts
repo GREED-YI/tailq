@@ -11,6 +11,7 @@ import {
   trialCookie,
 } from "@/lib/trial";
 import { errorResponse } from "@/lib/turn";
+import { budgetUsd, LIMIT_MESSAGE } from "@/lib/usage";
 
 const Body = z.object({ field: z.enum(TRIAL_FIELDS) });
 
@@ -36,10 +37,15 @@ export async function POST(request: Request) {
     p_trial_token: token,
     p_ip_hash: ipHash,
     p_field: body.data.field,
+    p_budget_usd: budgetUsd(),
   });
   if (error) {
     if (error.message === "TRIAL_LIMIT") {
       return errorResponse(429, "TRIAL_LIMIT", "오늘 체험은 끝났어요");
+    }
+    // 서비스 월 예산에 닿으면 체험도 시작 전에 막는다(04 기능 명세 12장)
+    if (error.message === "BUDGET_EXCEEDED") {
+      return errorResponse(429, "BUDGET_EXCEEDED", LIMIT_MESSAGE);
     }
     if (error.message === "NOT_FOUND") {
       return errorResponse(

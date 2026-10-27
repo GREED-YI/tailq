@@ -5,6 +5,7 @@ import { toProjectQuestions } from "@/lib/project-questions";
 import { MAX_PROJECTS } from "@/lib/questions";
 import type { createAdminClient } from "@/lib/supabase/admin";
 import { errorResponse } from "@/lib/turn";
+import { LIMIT_MESSAGE, recordUsage } from "@/lib/usage";
 
 type Admin = ReturnType<typeof createAdminClient>;
 
@@ -12,16 +13,26 @@ type Admin = ReturnType<typeof createAdminClient>;
 // 실패해도 던지지 않고 failed + 에러 코드로 남긴다. 그사이 프로젝트가 지워졌으면 저장이 NOT_FOUND로 끝난다.
 export async function generateAndSave(
   db: Admin,
-  project: { id: string; name: string; content: string },
+  project: { id: string; user_id: string; name: string; content: string },
 ) {
   let questions = null;
   let code = "schema_invalid";
   try {
+    // 등록할 때 잡아 둔 몫을 첫 생성이 쓰고, 다시 생성은 새 행으로 남는다
     questions = toProjectQuestions(
-      await generateProjectQuestions({
-        name: project.name,
-        content: project.content,
-      }),
+      await generateProjectQuestions(
+        { name: project.name, content: project.content },
+        (u) =>
+          recordUsage(
+            db,
+            {
+              userId: project.user_id,
+              purpose: "project_gen",
+              refId: project.id,
+            },
+            u,
+          ),
+      ),
     );
   } catch (e) {
     console.error("project generation failed", project.id, e);
@@ -45,6 +56,8 @@ const ERRORS: Record<string, [number, string]> = {
     409,
     "오늘의 질문으로 나온 프로젝트는 내일 지울 수 있어요",
   ],
+  LIMIT_EXCEEDED: [429, LIMIT_MESSAGE],
+  BUDGET_EXCEEDED: [429, LIMIT_MESSAGE],
 };
 
 export function projectErrorResponse(e: unknown) {

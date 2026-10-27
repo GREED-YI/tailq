@@ -58,6 +58,13 @@
 .row:disabled {
   cursor: progress;
 }
+/* 한도에 닿아 새로 시작할 수 없는 질문(S26). 하던 연습은 그대로 누를 수 있다 */
+.row[data-locked] {
+  cursor: not-allowed;
+}
+.row[data-locked] > svg {
+  opacity: 0.35;
+}
 .text {
   display: flex;
   flex-direction: column;
@@ -86,6 +93,10 @@
   align-self: flex-end;
   font-size: 12px;
   color: var(--sub);
+}
+/* 한도 안내(S26)가 붙으면 Figma처럼 왼쪽에 둔다 */
+.count[data-left] {
+  align-self: flex-start;
 }
 
 /* 주 버튼: 모바일은 화면 아래(탭바 12px 위)에 붙고, PC는 목록 아래 */

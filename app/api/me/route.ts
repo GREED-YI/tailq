@@ -53,7 +53,7 @@ export async function PATCH(request: Request) {
 // 탈퇴(08 설계 "탈퇴"). '탈퇴합니다' 입력과 로그인 24시간 이내를 서버에서 다시 확인한 뒤
 // auth.users의 그 사용자를 지운다. 사용자 테이블은 모두 on delete cascade라 기록이 한 번에 지워진다.
 // events는 외래키가 없어 먼저 지운다(같은 브라우저의 로그인 전 이벤트 포함).
-// ai_usage 테이블이 생기면(#43) 여기서 ai_usage.user_id 비우기를 더한다(08 설계).
+// ai_usage는 user_id가 on delete set null이라 사용자만 비워지고 비용 합계는 남는다(08 설계).
 export async function DELETE(request: Request) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getClaims();
