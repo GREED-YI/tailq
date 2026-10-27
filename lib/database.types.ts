@@ -157,6 +157,7 @@ export type Database = {
       feedback: {
         Row: {
           body: string;
+          category: string;
           created_at: string;
           id: number;
           user_id: string;
@@ -164,12 +165,14 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           body: string;
+          category?: string;
           created_at?: string;
           id?: never;
           user_id: string;
         };
         Update: {
           body?: string;
+          category?: string;
           created_at?: string;
           id?: never;
           user_id?: string;
@@ -839,7 +842,12 @@ export type Database = {
         };
       };
       send_feedback: {
-        Args: { p_body: string; p_daily: number; p_user_id: string };
+        Args: {
+          p_body: string;
+          p_category?: string;
+          p_daily: number;
+          p_user_id: string;
+        };
         Returns: undefined;
       };
       set_bookmark: {

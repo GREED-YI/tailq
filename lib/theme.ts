@@ -37,6 +37,9 @@ export const TOKENS = {
     mid: "#F0C27A",
     low: "#FF8A7A",
     danger: "#FF8A7A",
+    // 삭제·탈퇴 버튼 바탕(#118, 사용자 요청). danger(#FF8A7A)는 흰 글씨가 2.3:1이라 버튼만 진한 빨강(흰 글씨 5:1)
+    "danger-fill": "#CC3A2E",
+    "on-danger": "#FFFFFF",
     well: "rgba(0,0,0,0.22)",
     scrim: "rgba(3,8,7,0.55)",
     // 학습 잔디 5단계(docs/07 "학습 잔디")
@@ -81,6 +84,8 @@ export const TOKENS = {
     mid: "#965A00",
     low: "#B3261E",
     danger: "#B3261E",
+    "danger-fill": "#B3261E",
+    "on-danger": "#FFFFFF",
     well: "rgba(15,26,23,0.05)",
     scrim: "rgba(15,26,23,0.32)",
     "grass-0": "rgba(15,26,23,0.07)",

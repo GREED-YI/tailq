@@ -180,7 +180,7 @@
 }
 .stat small {
   margin-top: auto;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 17px;
   color: var(--sub);
 }
@@ -347,12 +347,64 @@
 }
 .voices time {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
 }
 .empty {
   font-size: 13px;
   color: var(--sub);
+}
+
+/* 피드백 분류: 칸 위 분류별 개수, 각 피드백 앞 배지(바라는 기능 강조색 · 버그 경고 · 신고 주황 · 기타 회색) */
+.kinds {
+  margin-bottom: 12px;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 13px;
+  color: var(--sub);
+}
+.kinds :global(.mono) {
+  margin-left: 2px;
+  font-weight: 700;
+  color: var(--text);
+}
+.kind {
+  --kind: var(--sub);
+  height: 22px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  vertical-align: 1px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--kind);
+  background: color-mix(in srgb, var(--kind) 16%, transparent);
+}
+.kind[data-kind="feature"] {
+  --kind: var(--accent);
+}
+.kind[data-kind="bug"] {
+  --kind: var(--danger);
+}
+.kind[data-kind="report"] {
+  --kind: var(--low);
+}
+.filters {
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+/* 모바일 390에서도 다섯 개가 한 줄에 들어가게 칩을 조금 줄인다 */
+.filters :global(.chip) {
+  height: 36px;
+  padding: 0 13px;
+  font-size: 14px;
 }
 
 /* 아직 데이터가 없는 지표: 점선 테두리의 빈 칸. 누르면 해당 이슈로 */
@@ -404,8 +456,8 @@
   line-height: 17px;
   color: var(--text);
   background: var(--sheet);
-  backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
   box-shadow:
     inset 0 0 0 1px var(--glass-edge),
     0 8px 24px -8px var(--glass-shadow);
@@ -505,7 +557,7 @@
   overflow-wrap: anywhere;
 }
 .feedbackList time {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
 }
 @media (min-width: 1024px) {
