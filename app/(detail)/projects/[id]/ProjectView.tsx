@@ -45,14 +45,15 @@ export function ProjectView({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [busy, setBusy] = useState<number | "delete" | "retry" | null>(null);
   // 요청 중인지. 이동하는 동안에는 잠금을 유지하고(두 번 누르지 않게), 화면이 보관되어 숨겨질 때
-  // 요청 중이 아니면 잠금을 푼다(cacheComponents라 뒤로 오면 상태를 그대로 들고 다시 보인다)
+  // 요청 중이 아니면 잠금을 푼다. 다시 보일 때도 요청이 끝났으면 푼다(cacheComponents라 상태를 그대로 들고 다시 보인다)
   const inFlight = useRef(false);
-  useEffect(
-    () => () => {
+  useEffect(() => {
+    // 다시 보일 때(숨겨진 동안 요청이 끝났으면) 잠금을 푼다
+    if (!inFlight.current) setBusy(null);
+    return () => {
       if (!inFlight.current) setBusy(null);
-    },
-    [],
-  );
+    };
+  }, []);
   const [error, setError] = useState("");
   const [deleteError, setDeleteError] = useState("");
 
