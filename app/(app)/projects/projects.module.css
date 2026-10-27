@@ -1,0 +1,428 @@
+/* 내 프로젝트(S22 목록 · S23 등록 · S24 질문 목록 · S25 삭제 확인). 숫자는 Figma C안(모바일 390 · PC 1440) */
+
+/* 모바일·태블릿은 Figma에서 제목이 헤더에 있다. 헤더(공용 셸)가 로고를 보여주는 동안은 읽기용으로만 둔다 */
+.pageTitle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* 아래 버튼을 화면 아래로 밀 수 있게 남은 높이를 채운다 */
+.page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.guide,
+.guideNote {
+  display: none;
+}
+
+.title {
+  margin-top: 8px;
+  font-size: 26px;
+  line-height: 34px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+.desc {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--sub);
+}
+
+/* 유리 카드 안 줄 목록 */
+.rows {
+  margin-top: 20px;
+  border-radius: 28px;
+  padding: 8px 16px;
+  list-style: none;
+}
+.row {
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+.row > svg {
+  color: var(--sub);
+}
+.row:disabled {
+  cursor: progress;
+}
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.meta {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--sub);
+}
+.name {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.empty {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: var(--sub);
+}
+.count {
+  margin-top: 12px;
+  align-self: flex-end;
+  font-size: 12px;
+  color: var(--sub);
+}
+
+/* 주 버튼: 모바일은 화면 아래(탭바 12px 위)에 붙고, PC는 목록 아래 */
+.bottom {
+  position: sticky;
+  bottom: calc(20px + 64px + 12px + env(safe-area-inset-bottom));
+  margin-top: auto;
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+}
+.bottom > * {
+  width: 100%;
+}
+.error {
+  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--danger);
+  text-align: center;
+}
+
+/* 질문 목록(S24): 번호 · 질문 · 연습 상태 */
+.qRow {
+  min-height: 72px;
+  padding: 14px 0 12px;
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  column-gap: 8px;
+  align-items: start;
+}
+.qRow > svg {
+  align-self: center;
+}
+.qNo {
+  padding-top: 3px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--sub);
+}
+.qPrompt {
+  display: block;
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 700;
+}
+.qState {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 17px;
+  color: var(--sub);
+}
+.done {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* 위쪽 64: 뒤로 · 가운데 제목 · 오른쪽 알약(S23·S24) */
+.top {
+  height: 64px;
+  margin: 0 -10px;
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 64px;
+  align-items: center;
+}
+.top h1 {
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pill {
+  justify-self: end;
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 18px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger);
+}
+
+/* 등록(S23): 칸 제목(13 Bold)은 칸 밖 위, 안내 글씨(12)는 칸 밖 아래 */
+.form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.label {
+  display: block;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.gap {
+  margin-top: 26px;
+}
+.input,
+.textarea {
+  margin-top: 8px;
+  width: 100%;
+  border: 0;
+  border-radius: 18px;
+  padding: 0 16px;
+  font: inherit;
+  /* iOS가 입력할 때 화면을 확대하지 않게 16 이상 */
+  font-size: 16px;
+  color: var(--text);
+}
+.input {
+  height: 52px;
+}
+.textarea {
+  height: 240px;
+  padding: 14px 16px;
+  line-height: 24px;
+  resize: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scroll) transparent;
+}
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--ph);
+}
+.input:focus,
+.textarea:focus {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 2px;
+}
+.help {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--sub);
+}
+.help :global(.mono) {
+  font-size: 11px;
+  white-space: nowrap;
+}
+.help[data-over] :global(.mono) {
+  color: var(--danger);
+}
+.pcHelp {
+  display: none;
+}
+
+/* 질문을 만드는 중 · 실패 */
+.state {
+  margin-top: 20px;
+  border-radius: 28px;
+  padding: 28px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.state strong {
+  margin-top: 8px;
+  font-size: 17px;
+  line-height: 24px;
+}
+.state p {
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--sub);
+}
+.state :global(.btn) {
+  margin-top: 12px;
+}
+
+/* 삭제 확인(S25) */
+.dialog {
+  margin: auto;
+  width: min(326px, calc(100% - 64px));
+  max-width: none;
+  border: 0;
+  border-radius: 28px;
+  padding: 24px 20px 16px;
+  color: var(--text);
+  /* 맨 위 층(top layer)에서는 뒤 목록이 비쳐 글씨가 겹친다. 유리 면 아래에 배경색을 깔아 막는다(Figma S25도 불투명) */
+  background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
+}
+.dialog::backdrop {
+  background: var(--scrim);
+}
+.dialog h2 {
+  font-size: 18px;
+  line-height: 25px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  overflow-wrap: anywhere;
+}
+.dialog p {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--sub);
+}
+.dialog .error {
+  margin: 12px 0 0;
+  color: var(--danger);
+  text-align: left;
+}
+.dialogActions {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .top {
+    margin: 0;
+  }
+}
+
+/* PC: 목록(S22)은 왼쪽 640 + 오른쪽 안내 318, 질문 목록(S24)은 가운데 720, 등록(S23)은 그 열의 480 */
+@media (min-width: 1024px) {
+  .pageTitle {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    font-size: 28px;
+    line-height: 44px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    margin-bottom: 20px;
+  }
+  .page {
+    flex: none;
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: minmax(0, 640px) 318px;
+    gap: 33px;
+    align-items: start;
+  }
+  .title {
+    margin-top: 0;
+  }
+  .bottom {
+    position: static;
+    padding-top: 28px;
+  }
+  .guide {
+    display: block;
+    margin-top: 76px;
+    border-radius: 22px;
+    padding: 18px 16px 16px;
+  }
+  .guide h3 {
+    font-size: 15px;
+    line-height: 22px;
+    font-weight: 700;
+  }
+  .guide ol {
+    list-style: none;
+  }
+  .guide li {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+  }
+  .guide li :global(.mono) {
+    font-size: 11px;
+    line-height: 16px;
+    color: var(--sub);
+  }
+  .guide li strong {
+    font-size: 15px;
+    line-height: 22px;
+  }
+  .guide li span:last-child {
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--sub);
+  }
+  .guideNote {
+    display: block;
+    margin-top: 16px;
+    padding-left: 4px;
+    font-size: 12px;
+    line-height: 18px;
+    color: var(--sub);
+  }
+
+  .detail {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .top {
+    height: 44px;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 12px;
+  }
+  .top h1 {
+    font-size: 28px;
+    letter-spacing: -0.8px;
+    text-align: left;
+  }
+  .detail .title {
+    margin-top: 24px;
+  }
+  .form {
+    flex: none;
+    max-width: 480px;
+  }
+  .form .label:first-of-type {
+    margin-top: 28px;
+  }
+  .textarea {
+    height: 320px;
+  }
+  .mobileHelp {
+    display: none;
+  }
+  .pcHelp {
+    display: inline;
+  }
+  .qRow {
+    min-height: 72px;
+  }
+  .dialog {
+    width: 400px;
+  }
+}
