@@ -420,17 +420,17 @@
   flex-direction: column;
   gap: 8px;
 }
-/* 좁은 폭에서 칩이 길면 숙련도가 다음 줄로 내려간다 */
+/* 메타는 어느 폭에서나 한 줄: 분류 칩만 말줄임으로 줄고 복습 시기·숙련도는 그대로.
+   처음엔 칩이 길면 숙련도가 다음 줄로 내려갔다(#115, 좁은 PC 창 확인) */
 .rowSub {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 6px 10px;
+  gap: 10px;
   font-size: 13px;
   line-height: 18px;
 }
 .mini {
-  max-width: 100%;
+  min-width: 0;
   height: 24px;
   padding: 0 10px;
   border-radius: 12px;
@@ -442,6 +442,11 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.due,
+.level {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .due {
   color: var(--sub);
@@ -562,6 +567,29 @@
 @media (min-width: 768px) {
   .wide {
     display: block;
+  }
+}
+
+/* 좁은 PC 창(1024~1179): 가운데 열이 좁아(약 430) 원 옆 제목 칸이 270 남짓이라 짧은 질문도 2줄에서 잘렸다.
+   3줄 허용보다 모바일처럼 원+칩 위 · 제목과 아래 줄은 카드 폭 전체로 두는 편이 읽기 쉬워 이 배치를 쓴다(#115) */
+@media (min-width: 1024px) and (max-width: 1179px) {
+  :global(.glass).card {
+    grid-template-areas:
+      "vis chips"
+      "title title"
+      "foot foot";
+    row-gap: 0;
+  }
+  .cardTitle,
+  .emptyText {
+    margin-top: 14px;
+  }
+  .foot {
+    margin-top: 12px;
+  }
+  .clamp {
+    display: block;
+    overflow: visible;
   }
 }
 
