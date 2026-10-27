@@ -2,38 +2,51 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./icons";
 import { Logo } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
 import s from "./AppShell.module.css";
 
-// pc: PC 사이드 메뉴에만(모바일·태블릿 탭바는 5칸). short: 탭바처럼 좁은 곳에 쓰는 짧은 이름
+// where: 어느 폭에서 보이는지. wide는 태블릿·PC 상단 메뉴에만, mobile은 모바일 하단 탭에만
 const TABS: {
   href: string;
   label: string;
   icon: IconName;
-  pc?: boolean;
-  short?: string;
+  where?: "wide" | "mobile";
 }[] = [
   { href: "/home", label: "홈", icon: "home" },
   { href: "/review", label: "복습", icon: "review" },
   { href: "/history", label: "기록", icon: "history" },
-  // 처음엔 내용 영역 오른쪽 위 아이콘이었는데, 메뉴에서 바로 보이게 사이드 메뉴로 옮겼다(#114).
-  // 모바일·태블릿은 MY 메뉴와 홈 링크로 들어간다
-  { href: "/report", label: "리포트", icon: "chart", pc: true },
+  // 모바일은 MY 메뉴와 홈 링크로 들어간다
+  { href: "/report", label: "리포트", icon: "chart", where: "wide" },
   { href: "/projects", label: "프로젝트", icon: "projects" },
-  // 처음엔 "MY"였는데, 화면 제목과 같게 "MY페이지"로 맞췄다(#114). 탭바는 자리가 좁아 "MY"
-  { href: "/my", label: "MY페이지", icon: "my", short: "MY" },
+  // 태블릿·PC는 오른쪽 위 프로필 원이 MY로 간다
+  { href: "/my", label: "MY", icon: "my", where: "mobile" },
 ];
 
-// 운영자 메뉴(#104). PC 사이드 메뉴에만 두고, 모바일·태블릿은 헤더 아이콘(AdminMenu.tsx)으로 간다
-const ADMIN_TAB = { href: "/admin", label: "운영", icon: "shield" } as const;
+// 운영자 메뉴(#104). 태블릿·PC 상단 메뉴에만 두고, 모바일은 헤더 오른쪽 아이콘으로 간다
+const ADMIN_TAB = {
+  href: "/admin",
+  label: "운영",
+  icon: "shield",
+  where: "wide",
+} as const;
 
-// 모바일·태블릿은 떠 있는 유리 탭바, PC(1024px~)는 왼쪽 유리 사이드 메뉴(docs/07 "PC·태블릿 앱").
-// 테마 토글은 PC에서도 내용 영역 오른쪽 위(AppHeader.tsx의 PcTools)에 있다
-// sub: 하위 화면이라 모바일·태블릿에서는 탭바를 숨긴다(app/(detail)/layout.tsx)
-// admin: 운영자면 사이드 메뉴 아래에 운영 항목(서버가 정한다, AdminMenu.tsx)
-export function AppNav({ sub, admin }: { sub?: boolean; admin?: boolean }) {
-  return <NavBar pathname={usePathname()} sub={sub} admin={admin} />;
+export type Viewer = {
+  admin?: boolean;
+  // 꼬리잇기 일수. 못 읽으면 비운다
+  streak?: number;
+  nickname?: string;
+  avatar?: string | null;
+};
+
+// 앱 머리 막대(DESIGN.md app-nav).
+// 모바일(~767): 위 56px(로고 · 꼬리잇기) + 아래 탭 5개. 태블릿·PC: 위 64px 한 줄(로고 · 메뉴 · 꼬리잇기 · 테마 · MY).
+// 처음엔 모바일·태블릿은 떠 있는 유리 탭바, PC는 왼쪽 유리 사이드 메뉴였다(C안)
+// sub: 하위 화면이라 모바일에서는 머리 막대와 탭을 숨긴다(화면이 뒤로 버튼 머리를 그린다)
+export function AppNav({ sub, ...viewer }: { sub?: boolean } & Viewer) {
+  return <NavBar pathname={usePathname()} sub={sub} {...viewer} />;
 }
 
 // 주소를 미리 알 수 없는 화면(기록 상세처럼 [id]가 있는 주소)은 미리 그릴 때 주소를 몰라
@@ -42,49 +55,78 @@ export function NavBar({
   pathname,
   sub,
   admin,
-}: {
-  pathname: string;
-  sub?: boolean;
-  admin?: boolean;
-}) {
+  streak,
+  nickname = "",
+  avatar = null,
+}: { pathname: string; sub?: boolean } & Viewer) {
+  const on = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`);
   return (
-    <nav
-      className={`glass ${s.nav} ${sub ? s.navSub : ""}`}
-      aria-label="주요 메뉴"
-    >
-      <div className={s.navLogo}>
-        <Logo height={34} />
-      </div>
-      <ul className={s.navList}>
-        {(admin ? [...TABS, ADMIN_TAB] : TABS).map((t) => {
-          const active =
-            pathname === t.href || pathname.startsWith(`${t.href}/`);
-          return (
-            <li
-              key={t.href}
-              className={
-                t === ADMIN_TAB ? s.navAdmin : "pc" in t ? s.navPc : undefined
-              }
-            >
-              <Link
-                href={t.href}
-                className={`press ${s.navItem}`}
-                aria-current={active ? "page" : undefined}
+    <header className={`${s.bar} ${sub ? s.barSub : ""}`}>
+      <div className={s.barIn}>
+        <Link
+          href="/home"
+          className={`press ${s.barLogo}`}
+          aria-label="TailQ 홈"
+        >
+          <Logo height="var(--logo-h)" />
+        </Link>
+        {/* 운영 화면임을 알리는 표시(DESIGN.md). 강조색도 남색으로 바뀐다(lib/theme.ts ADMIN_TOKENS) */}
+        {on("/admin") && <span className="tag tag-today">운영</span>}
+        <nav className={s.nav} aria-label="주요 메뉴">
+          <ul className={s.navList}>
+            {(admin ? [...TABS, ADMIN_TAB] : TABS).map((t) => (
+              <li
+                key={t.href}
+                className={
+                  t.where === "wide"
+                    ? s.wideOnly
+                    : t.where === "mobile"
+                      ? s.mobileOnly
+                      : undefined
+                }
               >
-                <Icon name={t.icon} bold={active} />
-                {"short" in t ? (
-                  <>
-                    <span className={s.navShort}>{t.short}</span>
-                    <span className={s.navLong}>{t.label}</span>
-                  </>
-                ) : (
+                <Link
+                  href={t.href}
+                  className={`press ${s.navItem}`}
+                  aria-current={on(t.href) ? "page" : undefined}
+                >
+                  <Icon name={t.icon} size={22} bold={on(t.href)} />
                   <span>{t.label}</span>
-                )}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        <div className={s.tools}>
+          {streak !== undefined && (
+            <span className={s.streak}>
+              꼬리잇기 <b className="mono">{streak}</b>일
+            </span>
+          )}
+          {admin && (
+            <Link
+              href="/admin"
+              className={`press icon-btn ${s.mobileOnly}`}
+              aria-label="운영 대시보드"
+              aria-current={on("/admin") ? "page" : undefined}
+            >
+              <Icon name="shield" />
+            </Link>
+          )}
+          <span className={s.wideOnly}>
+            <ThemeToggle />
+          </span>
+          <Link
+            href="/my"
+            className={`press ${s.me} ${s.wideOnly}`}
+            aria-label="MY페이지"
+            aria-current={on("/my") ? "page" : undefined}
+          >
+            <Avatar avatar={avatar} nickname={nickname} size={32} />
+          </Link>
+        </div>
+      </div>
+    </header>
   );
 }

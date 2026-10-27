@@ -65,7 +65,7 @@ export function FeedbackFox() {
       <Link
         ref={link}
         href={FEEDBACK_URL}
-        className={`glass press ${s.foxBtn}`}
+        className={`press ${s.foxBtn}`}
         aria-label="피드백 보내기"
       >
         <span className={s.foxImg} />

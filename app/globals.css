@@ -1,4 +1,4 @@
-/* 색은 lib/theme.ts의 토큰(CSS 변수)만 쓴다. 클래스 이름은 Figma C안 파일과 같다. */
+/* 전역 스타일. 색은 lib/theme.ts의 토큰(CSS 변수)만 쓴다. 기준은 DESIGN.md */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -9,46 +9,25 @@ html {
   height: 100%;
 }
 
-/* PC 앱 뼈대 폭(components/AppShell.module.css). 화면 전용 레이아웃도 이 값을 쓴다.
-   --nav-w: 사이드 메뉴 폭, --shell-left: 내용 영역이 시작하는 x, --content-max: 내용 최대 폭.
-   처음엔 992로 고정했는데, 27인치(2560) 풀 화면에서 가운데로 몰려 허전해서 넓은 화면일수록 넓혔다(#114) */
+/* 색이 아닌 토큰(DESIGN.md Foundations). 간격은 4px 단위(4, 8, 12, 16, 20, 24, 32, 40, 56, 80) */
 :root {
-  --nav-w: 224px;
-  --shell-left: 272px;
-  --content-max: 992px;
-}
-@media (min-width: 1440px) {
-  :root {
-    --nav-w: 248px;
-    --shell-left: 304px;
-    --content-max: 1200px;
-  }
-}
-@media (min-width: 1920px) {
-  :root {
-    --nav-w: 264px;
-    --shell-left: 328px;
-    --content-max: 1360px;
-  }
-}
-@media (min-width: 2400px) {
-  :root {
-    --nav-w: 280px;
-    --shell-left: 352px;
-    --content-max: 1520px;
-  }
+  --radius-control: 8px;
+  --radius-panel: 12px;
+  --radius-pill: 999px;
+  /* 화면 위에 뜨는 요소(대화상자, 바텀시트, 토스트)에만 */
+  --shadow-overlay: 0 12px 32px rgba(17, 19, 18, 0.18);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
 }
 
 body {
   min-height: 100dvh;
-  background: var(--bg);
+  background: var(--canvas);
   color: var(--text);
   font-family: "Pretendard Variable", Pretendard, system-ui, sans-serif;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
-  transition:
-    background-color 0.5s ease,
-    color 0.5s ease;
 }
 
 a {
@@ -64,6 +43,7 @@ button {
   cursor: pointer;
 }
 
+/* 포커스는 2px accent 링에 2px 간격. outline을 지우지 않는다 */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
@@ -72,6 +52,7 @@ button {
 /* 한글이 없는 번호·태그·숫자만. 한글이 섞이면 본문 글꼴 + tabular-nums */
 .mono {
   font-family: var(--font-geist-mono), "Pretendard Variable", monospace;
+  font-variant-numeric: tabular-nums;
 }
 .num {
   font-variant-numeric: tabular-nums;
@@ -86,147 +67,129 @@ button {
   white-space: nowrap;
 }
 
-/* 유리 */
-.glass,
-.glass-strong {
-  transition:
-    background-color 0.5s ease,
-    box-shadow 0.5s ease;
-}
+/* 예전 유리 면. 이름은 화면들이 아직 쓰고 있어 남기고, 모양만 평평한 면으로 바꿨다.
+   .glass: 1px 선으로 두른 면, .glass-strong: 화면 위에 뜨는 면(시트·토스트·말풍선)이라 그림자를 준다.
+   components/Toast.tsx가 .glass-strong을 찾아 막힌 높이를 잰다 */
 .glass {
-  background: var(--glass);
-  /* 빌드가 접두사 뒤의 표준 속성을 지우지 않게 -webkit-을 먼저 쓴다 */
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  backdrop-filter: blur(24px) saturate(160%);
-  box-shadow:
-    inset 0 1px 0 var(--glass-hi),
-    inset 0 0 0 1px var(--glass-edge),
-    0 20px 40px -20px var(--glass-shadow);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 .glass-strong {
-  background: var(--sheet);
-  /* 빌드가 접두사 뒤의 표준 속성을 지우지 않게 -webkit-을 먼저 쓴다 */
-  -webkit-backdrop-filter: blur(30px) saturate(170%);
-  backdrop-filter: blur(30px) saturate(170%);
+  background: var(--surface);
   box-shadow:
-    inset 0 1px 0 var(--glass-hi),
-    inset 0 0 0 1px var(--glass-edge),
-    0 -10px 40px -10px var(--glass-shadow);
-}
-/* 유리를 그리지 못하는 브라우저는 불투명에 가까운 면으로 */
-@supports not (
-  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
-) {
-  .glass {
-    background: var(--sheet);
-  }
+    inset 0 0 0 1px var(--line),
+    var(--shadow-overlay);
 }
 
-/* 배경. 기본은 화면 전체에 은은한 선형 그라디언트(움직이지 않는다).
-   MY > 화면 테마에서 "빛 번짐"을 고르면(data-bg="glow") 예전 빛 덩어리 3개가 떠돈다.
-   처음엔 빛 덩어리만 있었는데, 계속 보면 어지럽고 촌스럽다는 의견에 기본을 바꾸고 선택지로 남겼다(#114) */
-@property --wash1 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: transparent;
-}
-@property --wash2 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: transparent;
-}
-.backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-  background:
-    linear-gradient(160deg, var(--wash1) 0%, transparent 55%),
-    linear-gradient(340deg, var(--wash2) 0%, transparent 60%);
-}
-/* 테마를 바꿀 때 배경색이 0.5초 동안 넘어간다. 동작 줄이기에서는 바로 바뀐다 */
-@media (prefers-reduced-motion: no-preference) {
-  .backdrop {
-    transition:
-      --wash1 0.5s ease,
-      --wash2 0.5s ease;
-  }
-}
-.blob {
-  display: none;
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(40px);
-  transition: background-color 0.5s ease;
-}
-[data-bg="glow"] .backdrop {
-  background: none;
-}
-[data-bg="glow"] .blob {
-  display: block;
-}
-
-/* 버튼 (누름 축소·hover 효과는 아래 모션 구역에서만 켠다) */
+/* 버튼(DESIGN.md button). primary 52px, 나머지 44px. 모서리 8px, 그림자 없음.
+   .glass와 함께 쓰는 곳이 있어 .glass보다 뒤에 둔다 */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 56px;
+  height: 52px;
   padding: 0 24px;
-  border-radius: 28px;
-  font-size: 17px;
+  border-radius: var(--radius-control);
+  font-size: 16px;
   font-weight: 700;
+  line-height: 1.4;
 }
 .btn-md {
-  height: 48px;
-  border-radius: 24px;
-  font-size: 16px;
+  height: 44px;
+  padding: 0 20px;
+  font-size: 15px;
+  font-weight: 600;
 }
 .btn-primary {
-  background: var(--accent-fill);
-  color: var(--on-accent);
+  background: var(--primary);
+  color: var(--on-primary);
+  box-shadow: none;
 }
 .btn-secondary {
+  background: transparent;
   color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--line-strong);
 }
-/* 되돌릴 수 없는 행동(삭제·탈퇴). 처음엔 유리 버튼에 빨간 글씨였는데, 눈에 띄게 빨간 바탕 + 흰 글씨로 바꿨다(#118, 사용자 요청) */
+.btn-ghost {
+  height: 44px;
+  padding: 0 12px;
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
+}
+/* 되돌릴 수 없는 행동(삭제·탈퇴): danger-fill 바탕에 흰 글자 */
 .btn-danger {
   background: var(--danger-fill);
   color: var(--on-danger);
+  box-shadow: none;
 }
-.btn:disabled {
-  background: var(--ghost);
-  color: var(--ghost-text);
-  cursor: not-allowed;
+.btn:disabled,
+.icon-btn:disabled,
+.chip:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 .icon-btn {
   width: 44px;
   height: 44px;
-  border-radius: 22px;
+  flex-shrink: 0;
+  border-radius: var(--radius-control);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--text);
   position: relative;
 }
+
+/* 고를 수 있는 칩(필터·선택지). 터치 영역 44px, 알약 모양, 선택은 accent */
 .chip {
   display: inline-flex;
   align-items: center;
-  height: 40px;
+  justify-content: center;
+  min-height: 44px;
   padding: 0 16px;
-  border-radius: 20px;
-  font-size: 15px;
-  font-weight: 500;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--text-sub);
+  font-size: 14px;
+  font-weight: 600;
 }
 .chip[aria-pressed="true"],
 .chip[aria-checked="true"],
 .chip[aria-current="page"] {
-  background: var(--tab-active);
-  box-shadow: inset 0 0 0 1.5px var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
   color: var(--accent);
   font-weight: 700;
+}
+
+/* 라벨(DESIGN.md label). 누를 수 없는 표시. today: 오늘의 질문·오늘 다시, neutral: 내일 다시 등, concept: 보완할 개념 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+.tag-today {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+}
+.tag-neutral {
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text-sub);
+}
+.tag-concept {
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--text);
 }
 
 /* 테마에 따라 하나만 보이는 요소(테마 아이콘, 3D Q 이미지) */
@@ -254,10 +217,59 @@ button {
   transform: rotate(-90deg) scale(0.4);
 }
 
-/* 모션: 동작 줄이기 설정이면 모두 끈다 */
+/* 상호작용 상태. hover는 마우스가 있는 기기에서만 붙여 터치 뒤에 남지 않게 한다.
+   primary·danger는 밝기 변화, 테두리·글자 버튼과 칩은 surface 바탕 */
+@media (hover: hover) {
+  /* 누를 수 있는 면(카드 링크·아이콘 버튼)은 테두리가 진해진다 */
+  .glass.press:not(:disabled):hover {
+    box-shadow: inset 0 0 0 1px var(--text-muted);
+  }
+  .btn-primary.press:not(:disabled):hover {
+    filter: brightness(1.08);
+  }
+  .btn-danger.press:not(:disabled):hover {
+    filter: brightness(0.92);
+  }
+  .btn-secondary.press:not(:disabled):hover,
+  .btn-ghost.press:not(:disabled):hover,
+  .icon-btn.press:not(:disabled):hover,
+  .chip.press:not(:disabled):not(
+      [aria-pressed="true"],
+      [aria-checked="true"]
+    ):hover {
+    background-color: var(--surface);
+    color: var(--text);
+  }
+  /* 이미 surface인 면(.glass) 위 버튼은 surface로는 안 보여 바탕색으로 */
+  .glass .icon-btn.press:not(:disabled):hover,
+  .glass .btn-secondary.press:not(:disabled):hover,
+  .glass .btn-ghost.press:not(:disabled):hover {
+    background-color: var(--canvas);
+  }
+}
+
+/* 목록 행: hover·키보드 초점에 행이 오른쪽으로 3px, 맨 끝 화살표(마지막 자식 svg)는 3px 더 나간다 */
+.hover-row:focus-visible {
+  translate: 3px 0;
+}
+.hover-row:focus-visible > svg:last-child {
+  translate: 3px 0;
+}
+@media (hover: hover) {
+  .hover-row:not(:disabled):hover {
+    translate: 3px 0;
+  }
+  .hover-row:not(:disabled):hover > svg:last-child {
+    translate: 3px 0;
+  }
+}
+
+/* 모션: 120ms(hover·눌림), 200ms(펼침·전환), 곡선 하나. 동작 줄이기 설정이면 켜지 않는다 */
 @media (prefers-reduced-motion: no-preference) {
-  .blob {
-    animation: drift 14s ease-in-out infinite alternate;
+  body {
+    transition:
+      background-color var(--dur-base) var(--ease),
+      color var(--dur-base) var(--ease);
   }
   .float {
     animation: float 5s ease-in-out infinite;
@@ -269,99 +281,47 @@ button {
     animation: think 1.8s ease-in-out infinite;
   }
   .rise {
-    animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation: rise var(--dur-base) var(--ease) both;
   }
   .fade {
-    animation: fade 0.45s ease both;
+    animation: fade var(--dur-base) var(--ease) both;
   }
   .press {
     transition:
-      transform 0.2s ease,
-      filter 0.2s ease,
-      background-color 0.2s ease,
-      box-shadow 0.2s ease,
-      color 0.2s ease;
+      transform var(--dur-fast) var(--ease),
+      filter var(--dur-fast) var(--ease),
+      background-color var(--dur-fast) var(--ease),
+      box-shadow var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease);
   }
   .press:not(:disabled):active {
-    transform: scale(0.96);
+    transform: scale(0.98);
   }
   .theme-toggle > span {
     transition:
-      transform 0.5s cubic-bezier(0.3, 1.4, 0.5, 1),
-      opacity 0.3s ease,
-      visibility 0.5s;
-  }
-  .theme-toggle svg {
-    transition: transform 0.3s ease;
-  }
-  @media (hover: hover) {
-    .theme-toggle:hover svg {
-      transform: rotate(25deg);
-    }
+      transform var(--dur-base) var(--ease),
+      opacity var(--dur-base) var(--ease),
+      visibility var(--dur-base);
   }
   .hover-row,
   .hover-row > svg:last-child {
     transition:
-      translate 0.2s ease,
-      color 0.2s ease;
+      translate var(--dur-fast) var(--ease),
+      color var(--dur-fast) var(--ease);
   }
 }
-
-/* 상호작용 상태(docs/07). hover는 마우스가 있는 기기에서만 붙여 터치 뒤에 남지 않게 한다 */
-@media (hover: hover) {
-  .press:not(:disabled):hover {
-    filter: brightness(1.06);
-  }
-  /* 빨간 바탕은 밝히면 흰 글씨 대비가 떨어져 살짝 어둡게 한다 */
-  .btn-danger.press:not(:disabled):hover {
-    filter: brightness(0.9);
-  }
-  /* 유리 버튼(아이콘·보조 버튼·칩·알약)은 밝기만으로는 거의 안 보여 유리를 선택 캡슐만큼 진하게 한다 */
-  .glass.press:not(:disabled):hover {
-    background-color: var(--tab-active);
-  }
-}
-
-/* 동작 줄이기: 유리 버튼의 hover 배경은 전환 없이 바로 바뀐다(.glass의 테마 전환 0.5초도 끈다) */
+/* 동작 줄이기: 화면 쪽에서 따로 건 전환·애니메이션도 모두 끈다 */
 @media (prefers-reduced-motion: reduce) {
-  .glass.press {
-    transition: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-/* 카드 안 목록 행: hover·키보드 초점에 제목(색을 물려받는 글자)이 강조색이 되고, 행이 오른쪽으로 3px,
-   맨 끝 화살표(행의 마지막 자식 svg)는 3px 더 나간다. 글자 크기는 그대로.
-   처음엔 회색 면을 깔았는데 덮개처럼 보여서 바꿨다(#114). 색을 따로 지정한 메타 글자는 그대로다 */
-.hover-row:focus-visible {
-  color: var(--accent);
-  translate: 3px 0;
-}
-.hover-row:focus-visible > svg:last-child {
-  translate: 3px 0;
-}
-@media (hover: hover) {
-  .hover-row:not(:disabled):hover {
-    color: var(--accent);
-    translate: 3px 0;
-  }
-  .hover-row:not(:disabled):hover > svg:last-child {
-    translate: 3px 0;
-  }
-}
-/* 모바일은 배경을 느리게 */
-@media (prefers-reduced-motion: no-preference) and (max-width: 768px) {
-  .blob {
-    animation-duration: 24s;
-  }
-}
-@keyframes drift {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-  100% {
-    transform: translate(30px, 40px) scale(1.15);
-  }
-}
 @keyframes float {
   0%,
   100% {
@@ -395,7 +355,7 @@ button {
 }
 @keyframes rise {
   from {
-    transform: translateY(40px);
+    transform: translateY(16px);
     opacity: 0;
   }
   to {

@@ -71,8 +71,8 @@ export function Avatar({
       aria-hidden="true"
       style={{
         ...box,
-        background: "var(--avatar-bg, var(--ghost))",
-        color: "var(--avatar-fg, var(--text))",
+        background: "var(--avatar-bg, var(--canvas))",
+        color: "var(--avatar-fg, var(--text-sub))",
       }}
     >
       <Icon name="my" size={Math.round(size * 0.46)} />

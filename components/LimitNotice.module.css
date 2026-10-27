@@ -1,7 +1,9 @@
-/* 한도 소진 안내(Figma C안 S26 section: 350x96, 안쪽 16, 여우 64 + 12 + 글) */
+/* 한도 소진 안내: 1px 선으로 두른 면, 여우 64 + 12 + 글 */
 .notice {
   margin-top: 20px;
-  border-radius: 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--surface);
   padding: 16px;
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr);
@@ -18,13 +20,12 @@
 .notice strong {
   display: block;
   font-size: 16px;
-  line-height: 22px;
+  line-height: 1.4;
   font-weight: 700;
-  letter-spacing: -0.2px;
 }
 .notice p {
   margin-top: 4px;
   font-size: 15px;
-  line-height: 22px;
-  color: var(--sub);
+  line-height: 1.6;
+  color: var(--text-sub);
 }

@@ -36,7 +36,7 @@ export default async function Image({ params }: PageProps<"/s/[id]">) {
     // 워드마크를 다크 글자색으로 칠해 넣는다
     readFile(join(process.cwd(), "public/brand/wordmark.svg"), "utf8"),
   ]);
-  const logo = `data:image/svg+xml;base64,${Buffer.from(wordmark.replaceAll("#111418", C.text)).toString("base64")}`;
+  const logo = `data:image/svg+xml;base64,${Buffer.from(wordmark.replaceAll("currentColor", C.text)).toString("base64")}`;
 
   return new ImageResponse(
     <div
@@ -46,7 +46,7 @@ export default async function Image({ params }: PageProps<"/s/[id]">) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: `radial-gradient(circle at 15% 10%, ${C.blob1}, transparent 45%), radial-gradient(circle at 90% 80%, ${C.blob2}, transparent 50%), ${C.bg}`,
+        background: C.canvas,
         color: C.text,
         fontFamily: "Pretendard",
       }}
@@ -55,7 +55,7 @@ export default async function Image({ params }: PageProps<"/s/[id]">) {
       <img
         src={logo}
         alt=""
-        width={135}
+        width={141}
         height={48}
         style={{ position: "absolute", top: 48, left: 64 }}
       />
@@ -82,7 +82,7 @@ export default async function Image({ params }: PageProps<"/s/[id]">) {
                 cy="150"
                 r={R}
                 fill="none"
-                stroke={C.track}
+                stroke={C.line}
                 strokeWidth="24"
               />
               {card.score > 0 && (
@@ -91,7 +91,7 @@ export default async function Image({ params }: PageProps<"/s/[id]">) {
                   cy="150"
                   r={R}
                   fill="none"
-                  stroke={C.ring}
+                  stroke={C.accent}
                   strokeWidth="24"
                   strokeLinecap="round"
                   strokeDasharray={`${(RING * card.score) / 100} ${RING}`}
@@ -120,7 +120,7 @@ export default async function Image({ params }: PageProps<"/s/[id]">) {
                 style={{
                   display: "flex",
                   fontSize: 26,
-                  color: C.sub,
+                  color: C["text-sub"],
                   marginTop: 8,
                 }}
               >
@@ -131,7 +131,9 @@ export default async function Image({ params }: PageProps<"/s/[id]">) {
           <div
             style={{ display: "flex", flexDirection: "column", maxWidth: 560 }}
           >
-            <div style={{ display: "flex", fontSize: 30, color: C.sub }}>
+            <div
+              style={{ display: "flex", fontSize: 30, color: C["text-sub"] }}
+            >
               오늘의 기술면접
             </div>
             <div
@@ -151,7 +153,7 @@ export default async function Image({ params }: PageProps<"/s/[id]">) {
                 display: "flex",
                 fontSize: 32,
                 marginTop: 36,
-                color: C.sub,
+                color: C["text-sub"],
               }}
             >
               <span style={{ color: C.text, fontWeight: 700 }}>

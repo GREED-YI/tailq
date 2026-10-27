@@ -1,25 +1,24 @@
 import { Suspense } from "react";
 import { AppNavForViewer } from "@/components/AdminMenu";
-import { PcTools } from "@/components/AppHeader";
 import { NavBar } from "@/components/AppNav";
 import { FeedbackFox } from "@/components/FeedbackFox";
 import { SiteFooter } from "@/components/SiteFooter";
 import s from "@/components/AppShell.module.css";
 
 // 탭 화면에서 들어가는 하위 화면(기록 상세·프로젝트 등록·프로젝트 질문) 뼈대.
-// Figma C안은 모바일·태블릿에 탭바가 없고, PC는 사이드 메뉴를 그대로 둔다(S20·S23·S24).
+// 모바일은 머리 막대·하단 탭 없이 화면이 그린 뒤로 버튼 머리를 쓰고, 태블릿·PC는 상단 메뉴를 그대로 둔다
 export default function DetailLayout({ children }: LayoutProps<"/">) {
   return (
-    <>
+    <div className={s.page}>
       <Suspense fallback={<NavBar pathname="" sub />}>
         <AppNavForViewer sub />
       </Suspense>
-      <main className={`${s.main} ${s.mainSub}`}>
-        <PcTools />
-        {children}
-        <SiteFooter className={s.siteFooter} logoHeight={18} />
-      </main>
+      <main className={`${s.main} ${s.mainSub}`}>{children}</main>
+      <SiteFooter
+        className={`${s.siteFooter} ${s.footerSub}`}
+        logoHeight={18}
+      />
       <FeedbackFox />
-    </>
+    </div>
   );
 }

@@ -15,12 +15,7 @@ import {
   subscribePush,
   unsubscribePush,
 } from "@/lib/push-client";
-import {
-  BACKDROP_STORAGE_KEY,
-  THEME_STORAGE_KEY,
-  type BackdropName,
-  type ThemeName,
-} from "@/lib/theme";
+import { THEME_STORAGE_KEY, type ThemeName } from "@/lib/theme";
 import p from "../../my/my.module.css";
 import s from "./my.module.css";
 import { openModal, useCloseOnLeave } from "@/lib/dialog";
@@ -230,12 +225,6 @@ const THEMES: { id: ThemeChoice; label: string }[] = [
   { id: "dark", label: "다크" },
 ];
 
-// 배경: 기본은 은은한 그라디언트, 예전 빛 덩어리 배경은 "빛 번짐"으로 남겼다(#114)
-const BACKDROPS: { id: BackdropName; label: string }[] = [
-  { id: "soft", label: "은은한 그라디언트" },
-  { id: "glow", label: "빛 번짐" },
-];
-
 // 저장한 선택(localStorage). 헤더의 테마 토글로 바꿔도 따라가도록 data-theme 변화를 지켜본다
 function readTheme(): ThemeChoice {
   try {
@@ -249,25 +238,10 @@ function watchTheme(onChange: () => void) {
   const observer = new MutationObserver(onChange);
   observer.observe(document.documentElement, {
     attributes: true,
-    attributeFilter: ["data-theme", "data-bg"],
+    attributeFilter: ["data-theme"],
   });
   return () => observer.disconnect();
 }
-const readBackdrop = (): BackdropName =>
-  document.documentElement.dataset.bg === "glow" ? "glow" : "soft";
-
-// 기본(soft)은 저장값을 지운다. 첫 그림 스크립트가 glow일 때만 data-bg를 붙인다
-function applyBackdrop(choice: BackdropName) {
-  try {
-    if (choice === "glow") localStorage.setItem(BACKDROP_STORAGE_KEY, "glow");
-    else localStorage.removeItem(BACKDROP_STORAGE_KEY);
-  } catch {
-    // 저장소를 못 쓰면 이번 방문 동안만 바뀐다
-  }
-  if (choice === "glow") document.documentElement.dataset.bg = "glow";
-  else delete document.documentElement.dataset.bg;
-}
-
 // 기기 설정이면 저장값을 지워 첫 그림 스크립트가 기기 설정을 따르게 한다
 function applyTheme(choice: ThemeChoice) {
   try {
@@ -284,23 +258,18 @@ function applyTheme(choice: ThemeChoice) {
         : "dark";
 }
 
-// 화면 테마·배경은 지금처럼 이 기기에만 기억한다(lib/theme.ts의 첫 그림 스크립트가 읽는 값).
+// 화면 테마는 지금처럼 이 기기에만 기억한다(lib/theme.ts의 첫 그림 스크립트가 읽는 값).
 // 고르면 바로 바뀌어 보이고, 창은 닫기로 닫는다
 export function ThemeRow() {
   const dialog = useRef<HTMLDialogElement>(null);
   useCloseOnLeave(dialog);
   const theme = useSyncExternalStore(watchTheme, readTheme, () => "system");
-  const backdrop = useSyncExternalStore(
-    watchTheme,
-    readBackdrop,
-    (): BackdropName => "soft",
-  );
 
   return (
     <>
       <SettingRow
         title="화면 테마"
-        meta={`${THEMES.find((t) => t.id === theme)!.label} · ${BACKDROPS.find((b) => b.id === backdrop)!.label}`}
+        meta={THEMES.find((t) => t.id === theme)!.label}
         onClick={() => openModal(dialog.current)}
       />
       <Dialog ref={dialog} title="화면 테마">
@@ -321,28 +290,6 @@ export function ThemeRow() {
               onClick={() => applyTheme(t.id)}
             >
               {t.label}
-            </button>
-          ))}
-        </div>
-        <p id="theme-bg-label" style={{ marginTop: 20 }}>
-          배경
-        </p>
-        <div
-          role="radiogroup"
-          aria-labelledby="theme-bg-label"
-          className={s.choicesCol}
-          style={{ marginTop: 10 }}
-        >
-          {BACKDROPS.map((b) => (
-            <button
-              key={b.id}
-              type="button"
-              role="radio"
-              aria-checked={backdrop === b.id}
-              className="chip glass press"
-              onClick={() => applyBackdrop(b.id)}
-            >
-              {b.label}
             </button>
           ))}
         </div>

@@ -22,7 +22,7 @@ export function BackButton({
   return (
     <button
       type="button"
-      className={`glass press icon-btn ${className}`}
+      className={`press icon-btn ${className}`}
       aria-label="뒤로"
       onClick={onClick ?? back}
     >

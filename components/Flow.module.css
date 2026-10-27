@@ -32,17 +32,17 @@
 
 .title {
   margin-top: 8px;
-  font-size: 28px;
-  line-height: 37px;
+  font-size: 22px;
+  line-height: 1.35;
   font-weight: 700;
-  letter-spacing: -0.6px;
+  letter-spacing: -0.02em;
   outline: none;
 }
 .sub {
   margin-top: 8px;
   font-size: 16px;
-  line-height: 24px;
-  color: var(--sub);
+  line-height: 1.6;
+  color: var(--text-sub);
 }
 
 /* 모바일은 주 버튼을 화면 아래에 붙인다 */
@@ -54,18 +54,22 @@
   gap: 10px;
 }
 
-/* 유리 카드 안 60px 줄 목록 */
+/* 1px 선으로 나눈 60px 줄 목록 */
 .rows {
-  border-radius: 28px;
-  padding: 8px 16px;
+  border-radius: var(--radius-control);
+  padding: 0 16px;
   list-style: none;
 }
 .row {
   min-height: 60px;
+  border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 16px;
+}
+.row:last-child {
+  border-bottom: 0;
 }
 
 @media (min-width: 768px) {
@@ -89,6 +93,9 @@
     position: absolute;
     left: 40px;
     top: 36px;
+  }
+  .title {
+    font-size: 26px;
   }
   .back {
     left: 0;

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
-import { AdminHeaderLink } from "@/components/AdminMenu";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/icons";
 import { TailIcon } from "@/components/Streak";
@@ -23,9 +22,6 @@ export default function MyPage() {
       <header className={s.header}>
         <h1 className={s.title}>MY페이지</h1>
         <span className={s.mobileOnly}>
-          <Suspense>
-            <AdminHeaderLink />
-          </Suspense>
           <ThemeToggle />
         </span>
       </header>
