@@ -452,9 +452,12 @@
 .rowText p {
   font-size: 16px;
   font-weight: 600;
+  /* 글자가 커져 한 줄 말줄임이면 뜻이 안 남아 두 줄까지 보인다(#110) */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .rowScore {
   font-size: 22px;

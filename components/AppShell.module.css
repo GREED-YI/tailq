@@ -185,6 +185,8 @@
   pointer-events: none;
 }
 .toast {
+  /* 아래 내용 글자가 비치지 않게 시트 색 아래에 화면 바탕을 깐다(확인 창과 같다) */
+  background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
   height: 48px;
   padding: 0 18px 0 17px;
   border-radius: 24px;
@@ -208,6 +210,12 @@
     left: 272px;
     right: 0;
     bottom: 32px;
+  }
+}
+/* 하위 화면(모바일·태블릿)은 탭바가 없어 화면 아래에 붙인다 */
+@media (max-width: 1023px) {
+  :global(body):has(.navSub) .toastArea:not(.toastTop) {
+    bottom: calc(20px + env(safe-area-inset-bottom));
   }
 }
 .toastArea.toastTop {
