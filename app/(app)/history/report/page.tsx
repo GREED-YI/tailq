@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { GrassTip } from "@/components/GrassTip";
 import { grassCells, type GrassCell } from "@/lib/streak";
 import { loadStudy } from "@/lib/study";
 import { weaknessReport, type TopicScore } from "@/lib/weakness";
 import s from "../history.module.css";
 import { HistoryTabs } from "../HistoryTabs";
-import { GrassTip } from "./GrassTip";
 import w from "./weakness.module.css";
 
 export const metadata: Metadata = { title: "리포트 · TailQ" };
