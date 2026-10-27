@@ -3,6 +3,7 @@ import { Suspense, type ReactNode } from "react";
 import { scoreColor } from "@/app/interview/verdict";
 import { AppHeader } from "@/components/AppHeader";
 import { FloatingQ } from "@/components/FloatingQ";
+import { GrassTip } from "@/components/GrassTip";
 import { Icon } from "@/components/icons";
 import { LimitNotice } from "@/components/LimitNotice";
 import { startDailySession, type DailySession } from "@/lib/daily";
@@ -11,7 +12,7 @@ import { homeState, type HomeState } from "@/lib/home";
 import { hourLabel } from "@/lib/profile";
 import { qLabel, tagLine } from "@/lib/questions";
 import { daysUntil, dueLabel } from "@/lib/review";
-import { grassCells } from "@/lib/streak";
+import { grassCells, type GrassCell } from "@/lib/streak";
 import { loadStudy, type Study } from "@/lib/study";
 import { createClient } from "@/lib/supabase/server";
 import { weaknessReport } from "@/lib/weakness";
@@ -37,11 +38,11 @@ function Greeting({ name, title }: { name?: string; title: string }) {
   return (
     <div className={s.head}>
       <h1 className={s.title}>
+        {/* 닉네임 줄은 더 크게, 닉네임은 강조색(사용자 요청 #115) */}
         {name && (
-          <>
-            {name}님,
-            <br />
-          </>
+          <span className={s.hello}>
+            <span className={s.name}>{name}</span>님,
+          </span>
         )}
         {title}
       </h1>
@@ -194,12 +195,14 @@ async function Home() {
               <Link href="/review" className={`hover-row ${s.linkRow}`}>
                 <span className={s.reviewRow}>
                   <span
-                    className={`${r.questions.projects ? "num" : "mono"} ${rv.meta}`}
+                    className={`${r.questions.projects ? "num" : "mono"} ${rv.meta} ${s.rowMeta}`}
                   >
                     {tagLine(r.questions)}
                   </span>
-                  <span className={rv.prompt}>{r.questions.prompt}</span>
-                  <span className={`num ${rv.due}`}>
+                  <span className={`${rv.prompt} ${s.rowTitle}`}>
+                    {r.questions.prompt}
+                  </span>
+                  <span className={`num ${rv.due} ${s.rowSub}`}>
                     {dueLabel(daysUntil(r.due_day, today))} · 숙련도
                     <Dots level={r.box!} />
                   </span>
@@ -225,14 +228,19 @@ async function Home() {
         <section className={`glass ${s.panel}`} aria-label="약한 주제">
           <div className={s.panelHead}>
             <h2>약한 주제</h2>
-            <Link href="/history/report">전체 보기</Link>
+            <Link href="/report">전체 보기</Link>
           </div>
           {weak.length > 0 ? (
             <ul className={s.weakList}>
               {weak.slice(0, 3).map((t) => (
                 <li key={t.topicId} className={s.weakRow}>
                   <span className={s.weakName}>{t.topic}</span>
-                  <span className={`num ${s.weakAvg}`}>평균 {t.average}점</span>
+                  <span
+                    className={`num ${s.weakAvg}`}
+                    style={{ color: scoreColor(t.average) }}
+                  >
+                    평균 {t.average}점
+                  </span>
                   <span className={s.weakBar} aria-hidden="true">
                     <span
                       style={{
@@ -256,6 +264,9 @@ async function Home() {
   );
 }
 
+// 오늘의 질문 카드의 3D Q. 처음엔 136이었는데 작아 보인다는 요청으로 키웠다(#115)
+const Q_SIZE = 172;
+
 function TodayCard({
   session,
   state,
@@ -273,7 +284,7 @@ function TodayCard({
   return (
     <section className={`glass ${s.card}`} aria-label="오늘의 질문">
       <div className={s.q}>
-        <FloatingQ />
+        <FloatingQ size={Q_SIZE} />
       </div>
       <div className={s.cardHead}>
         <span className={`glass ${q.projectId ? "" : "mono"} ${s.qChip}`}>
@@ -297,7 +308,7 @@ function EmptyCard() {
   return (
     <section className={`glass ${s.card}`} aria-label="오늘의 질문">
       <div className={s.q}>
-        <FloatingQ />
+        <FloatingQ size={Q_SIZE} />
       </div>
       <p className={s.emptyText}>
         범위 안의 새 질문을 다 풀었어요. 범위를 넓혀볼까요?
@@ -359,7 +370,7 @@ function DoneCard({
                 cy="30"
                 r="26"
                 fill="none"
-                stroke="var(--ring)"
+                stroke={scoreColor(score)}
                 strokeWidth="6"
                 strokeLinecap="round"
                 strokeDasharray={`${((RING * score) / 100).toFixed(1)} ${RING.toFixed(1)}`}
@@ -485,12 +496,14 @@ function RecentSection({ rows }: { rows: RecentRow[] }) {
         return (
           <li key={r.id}>
             <Link href={`/history/${r.id}`} className={`hover-row ${h.row}`}>
-              <span className={`mono ${h.date}`}>
+              <span className={`mono ${h.date} ${s.rowSub}`}>
                 {r.day.slice(5).replace("-", ".")}
               </span>
               <span className={h.text}>
-                <span className={`num ${h.meta}`}>{meta}</span>
-                <span className={h.prompt}>{r.questions.prompt}</span>
+                <span className={`num ${h.meta} ${s.rowMeta}`}>{meta}</span>
+                <span className={`${h.prompt} ${s.rowTitle}`}>
+                  {r.questions.prompt}
+                </span>
               </span>
               <span
                 className={`mono ${h.score}`}
@@ -517,6 +530,7 @@ function Week({ study }: { study: Study }) {
   ).slice(-7);
   const studied = cells.filter((c) => c.level > 0).length;
   const rest = cells.filter((c) => c.rest).length;
+  const tips = cells.map((c) => weekTip(c, study.today));
   return (
     <section className={`glass ${s.panel}`} aria-label="이번 주">
       <div className={s.panelHead}>
@@ -525,25 +539,42 @@ function Week({ study }: { study: Study }) {
           {studied}일 학습{rest > 0 && ` · 휴식 ${rest}일`}
         </span>
       </div>
-      <ol className={s.week}>
+      {/* 칸에 마우스를 올리면(터치는 누르면) 날짜·점수 말풍선(리포트 학습 잔디와 같다) */}
+      <GrassTip className={s.week} label={`이번 주: ${tips.join(", ")}`}>
         {cells.map((c, i) => (
-          <li
+          <span
             key={c.day}
+            className={s.day}
             data-today={c.day === study.today || undefined}
-            aria-label={`${"월화수목금토일"[i]}요일 ${c.level > 0 ? "학습" : c.rest ? "휴식권" : "안 함"}`}
           >
-            <span data-level={c.level} data-rest={c.rest || undefined} />
-            {"월화수목금토일"[i]}
-          </li>
+            <span
+              data-tip={tips[i]}
+              data-level={c.level}
+              data-rest={c.rest || undefined}
+            />
+            {WEEKDAYS[i]}
+          </span>
         ))}
-      </ol>
+      </GrassTip>
     </section>
   );
 }
 
+const WEEKDAYS = "월화수목금토일";
+
+// "2026.10.27 · 74점". 기록 없는 날·휴식권·아직 안 푼 오늘도 알려준다. 앞으로 올 날은 날짜만
+function weekTip(c: GrassCell, today: string) {
+  const day = c.day.replaceAll("-", ".");
+  if (c.rest) return `${day} · 휴식권`;
+  if (c.level > 0)
+    return c.score == null ? `${day} · 학습` : `${day} · ${c.score}점`;
+  if (c.day === today) return `${day} · 오늘`;
+  return c.future ? day : `${day} · 기록 없음`;
+}
+
 const SHORTCUTS = [
   ["/history", "학습 기록"],
-  ["/history/report", "리포트"],
+  ["/report", "리포트"],
   ["/history?filter=bookmark", "북마크"],
 ] as const;
 
@@ -560,7 +591,7 @@ function Shortcuts({ className = "" }: { className?: string }) {
             <Link href={href} className={`hover-row ${s.linkRow}`}>
               <span className={s.shortcut}>
                 <span className="mono">0{i + 1}</span>
-                {label}
+                <span className={s.rowTitle}>{label}</span>
               </span>
               <Icon name="chevronRight" size={18} />
             </Link>
