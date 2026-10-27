@@ -9,6 +9,36 @@ html {
   height: 100%;
 }
 
+/* PC 앱 뼈대 폭(components/AppShell.module.css). 화면 전용 레이아웃도 이 값을 쓴다.
+   --nav-w: 사이드 메뉴 폭, --shell-left: 내용 영역이 시작하는 x, --content-max: 내용 최대 폭.
+   처음엔 992로 고정했는데, 27인치(2560) 풀 화면에서 가운데로 몰려 허전해서 넓은 화면일수록 넓혔다(#114) */
+:root {
+  --nav-w: 224px;
+  --shell-left: 272px;
+  --content-max: 992px;
+}
+@media (min-width: 1440px) {
+  :root {
+    --nav-w: 248px;
+    --shell-left: 304px;
+    --content-max: 1200px;
+  }
+}
+@media (min-width: 1920px) {
+  :root {
+    --nav-w: 264px;
+    --shell-left: 328px;
+    --content-max: 1360px;
+  }
+}
+@media (min-width: 2400px) {
+  :root {
+    --nav-w: 280px;
+    --shell-left: 352px;
+    --content-max: 1520px;
+  }
+}
+
 body {
   min-height: 100dvh;
   background: var(--bg);
@@ -90,19 +120,44 @@ button {
   }
 }
 
-/* 배경 빛 */
+/* 배경. 기본은 화면 전체에 은은한 선형 그라디언트(움직이지 않는다).
+   MY > 화면 테마에서 "빛 번짐"을 고르면(data-bg="glow") 예전 빛 덩어리 3개가 떠돈다.
+   처음엔 빛 덩어리만 있었는데, 계속 보면 어지럽고 촌스럽다는 의견에 기본을 바꾸고 선택지로 남겼다(#114) */
+@property --wash1 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+@property --wash2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
 .backdrop {
   position: fixed;
   inset: 0;
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
+  background:
+    linear-gradient(160deg, var(--wash1) 0%, transparent 55%),
+    linear-gradient(340deg, var(--wash2) 0%, transparent 60%);
+  transition:
+    --wash1 0.5s ease,
+    --wash2 0.5s ease;
 }
 .blob {
+  display: none;
   position: absolute;
   border-radius: 50%;
   filter: blur(40px);
   transition: background-color 0.5s ease;
+}
+[data-bg="glow"] .backdrop {
+  background: none;
+}
+[data-bg="glow"] .blob {
+  display: block;
 }
 
 /* 버튼 (누름 축소·hover 효과는 아래 모션 구역에서만 켠다) */
@@ -172,6 +227,24 @@ button {
   display: none;
 }
 
+/* 테마 토글(ThemeToggle.tsx): 해·달 두 아이콘을 겹쳐 두고, 숨는 쪽은 돌며 작아져 사라진다.
+   위 .only-* 규칙의 display:none 대신 visibility로 숨겨 전환이 보이게 한다(읽기 프로그램에서는 그대로 빠진다) */
+.theme-toggle > span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+[data-theme="light"] .theme-toggle > .only-dark,
+[data-theme="dark"] .theme-toggle > .only-light,
+:root:not([data-theme]) .theme-toggle > .only-light {
+  display: flex;
+  visibility: hidden;
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.4);
+}
+
 /* 모션: 동작 줄이기 설정이면 모두 끈다 */
 @media (prefers-reduced-motion: no-preference) {
   .blob {
@@ -203,8 +276,25 @@ button {
   .press:not(:disabled):active {
     transform: scale(0.96);
   }
-  .hover-row::before {
-    transition: background-color 0.2s ease;
+  .theme-toggle > span {
+    transition:
+      transform 0.5s cubic-bezier(0.3, 1.4, 0.5, 1),
+      opacity 0.3s ease,
+      visibility 0.5s;
+  }
+  .theme-toggle svg {
+    transition: transform 0.3s ease;
+  }
+  @media (hover: hover) {
+    .theme-toggle:hover svg {
+      transform: rotate(25deg);
+    }
+  }
+  .hover-row,
+  .hover-row > svg:last-child {
+    transition:
+      translate 0.2s ease,
+      color 0.2s ease;
   }
 }
 
@@ -226,25 +316,23 @@ button {
   }
 }
 
-/* 카드 안 목록 행: hover·키보드 초점·눌림에 옅은 면. 행은 카드 안쪽 여백(16)까지 8px 넓혀 칠하고 자리는 그대로 둔다 */
-.hover-row {
-  position: relative;
-  isolation: isolate;
+/* 카드 안 목록 행: hover·키보드 초점에 제목(색을 물려받는 글자)이 강조색이 되고, 행이 오른쪽으로 3px,
+   맨 끝 화살표(행의 마지막 자식 svg)는 3px 더 나간다. 글자 크기는 그대로.
+   처음엔 회색 면을 깔았는데 덮개처럼 보여서 바꿨다(#114). 색을 따로 지정한 메타 글자는 그대로다 */
+.hover-row:focus-visible {
+  color: var(--accent);
+  translate: 3px 0;
 }
-.hover-row::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 0 -8px;
-  border-radius: 16px;
-}
-.hover-row:focus-visible::before,
-.hover-row:not(:disabled):active::before {
-  background: var(--hover);
+.hover-row:focus-visible > svg:last-child {
+  translate: 3px 0;
 }
 @media (hover: hover) {
-  .hover-row:not(:disabled):hover::before {
-    background: var(--hover);
+  .hover-row:not(:disabled):hover {
+    color: var(--accent);
+    translate: 3px 0;
+  }
+  .hover-row:not(:disabled):hover > svg:last-child {
+    translate: 3px 0;
   }
 }
 /* 모바일은 배경을 느리게 */

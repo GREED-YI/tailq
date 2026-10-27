@@ -33,6 +33,17 @@ describe.each(themes)("%s 테마 대비", (_, t) => {
     },
   );
 
+  // 점수 숫자·막대도 글자처럼 읽히므로 같은 기준. 구간끼리는 서로 다른 색이어야 한다
+  it.each(["good", "mid", "low"] as const)(
+    "유리 위 점수 %s 색이 4.5:1 이상",
+    (key) => {
+      expect(contrast(t[key], glass)).toBeGreaterThanOrEqual(4.5);
+    },
+  );
+  it("점수 구간 색 셋이 모두 다르다", () => {
+    expect(new Set([t.good, t.mid, t.low]).size).toBe(3);
+  });
+
   it("주 버튼 글자가 4.5:1 이상", () => {
     expect(contrast(t["on-accent"], t["accent-fill"])).toBeGreaterThanOrEqual(
       4.5,
