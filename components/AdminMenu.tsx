@@ -24,7 +24,7 @@ export async function AdminHeaderLink() {
       className="glass press icon-btn"
       aria-label="운영 대시보드"
     >
-      <Icon name="chart" />
+      <Icon name="shield" />
     </Link>
   );
 }
