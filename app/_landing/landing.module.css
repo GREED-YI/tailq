@@ -1211,12 +1211,21 @@
   }
 }
 
-/* 모바일(Figma 390): 좌우 24, 헤더는 로고·토글·무료로 시작만 */
-@media (max-width: 560px) {
-  .nav,
+/* 헤더: 가운데 메뉴는 오른쪽 버튼들과 겹치기 전(860px 이하)에 숨기고 [로고] ··· [테마][로그인][무료로 시작]만 둔다.
+   400px 이하(Figma 모바일 390)는 로그인도 숨긴다 */
+@media (max-width: 860px) {
+  .nav {
+    display: none;
+  }
+}
+@media (max-width: 400px) {
   .login {
     display: none;
   }
+}
+
+/* 모바일(Figma 390): 좌우 24 */
+@media (max-width: 560px) {
   .header {
     padding-left: 18px;
   }
