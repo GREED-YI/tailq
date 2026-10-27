@@ -236,7 +236,7 @@ export function Interview({
       </header>
 
       <div className={s.orb}>
-        <FloatingQ size={104} thinking={phase === "grading"} />
+        <FloatingQ size={120} thinking={phase === "grading"} />
         {/* 채점 실패는 아래 여우 안내가 대신하므로 줄만 비워 둔다(Figma S17) */}
         <p className={s.status} aria-live="polite">
           {STATUS_TEXT[phase]}
@@ -279,9 +279,10 @@ export function Interview({
 
       <section
         className={`glass-strong rise ${s.sheet}`}
-        // 답변 입력 시트만 화면 아래에 붙는다. 결과는 길어질 수 있어 질문 아래로 이어 붙인다
+        // 키보드가 올라온 답변 입력 시트만 화면 아래에 붙는다. 늘 붙여 두면 화면 높이가 낮을 때
+        // 시트가 질문을 덮는다. 결과는 길어질 수 있어 질문 아래로 이어 붙인다
         style={
-          showResultSheet
+          showResultSheet || keyboard === 0
             ? undefined
             : {
                 position: "sticky",
@@ -445,6 +446,7 @@ function ResultView({
           shown={shown}
           label={`100점 만점에 ${result.score ?? 0}점`}
           value={shown}
+          score={result.score ?? 0}
         />
         <div className={s.headline}>
           <strong>{unknown ? "모르겠어요" : result.feedback?.summary}</strong>
