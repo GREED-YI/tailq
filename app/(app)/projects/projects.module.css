@@ -335,8 +335,9 @@
   }
 }
 
-/* PC: 목록(S22)은 왼쪽 목록(남은 폭) + 오른쪽 안내 318, 질문 목록(S24)은 가운데 최대 960, 등록(S23)은 그 열의 480.
-   처음엔 목록 640 · 질문 목록 720으로 Figma C안을 따랐으나, 넓은 화면에서 가운데로 몰려 허전해 내용 폭을 따라 늘렸다 */
+/* PC: 목록(S22)은 왼쪽 목록 680 + 오른쪽 안내 318을 가운데에, 질문 목록(S24)은 가운데 800, 등록(S23)은 그 열의 480.
+   처음엔 목록 640 · 질문 목록 720으로 Figma C안을 따랐다. 넓은 화면이 허전하다고 해 내용 폭을 따라 늘렸으나(질문 목록 960)
+   행이 지나치게 늘어나 어색해, 읽기 좋은 폭에서 멈추고 가운데에 둔다(글자가 커진 만큼 Figma보다 조금 넓게) */
 @media (min-width: 1024px) {
   .pageTitle {
     display: block;
@@ -351,7 +352,8 @@
   }
   .cols {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 318px;
+    grid-template-columns: minmax(0, 680px) 318px;
+    justify-content: center;
     gap: 33px;
     align-items: start;
   }
@@ -406,7 +408,7 @@
 
   .detail {
     width: 100%;
-    max-width: 960px;
+    max-width: 800px;
     margin: 0 auto;
   }
   .top {
