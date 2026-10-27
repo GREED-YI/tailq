@@ -195,7 +195,7 @@ async function Home() {
               <Link href="/review" className={`hover-row ${s.linkRow}`}>
                 <span className={s.reviewRow}>
                   <span
-                    className={`${r.questions.projects ? "num" : "mono"} ${rv.meta} ${s.rowMeta}`}
+                    className={`num ${rv.meta} ${s.rowMeta}`}
                   >
                     {tagLine(r.questions)}
                   </span>
@@ -501,8 +501,11 @@ function RecentSection({ rows }: { rows: RecentRow[] }) {
           .join(" · ");
         return (
           <li key={r.id}>
-            <Link href={`/history/${r.id}`} className={`hover-row ${h.row}`}>
-              <span className={`mono ${h.date} ${s.rowSub}`}>
+            <Link
+              href={`/history/${r.id}`}
+              className={`hover-row ${h.row} ${s.recentRow}`}
+            >
+              <span className={`num ${h.date} ${s.rowSub}`}>
                 {r.day.slice(5).replace("-", ".")}
               </span>
               <span className={h.text}>
@@ -512,13 +515,14 @@ function RecentSection({ rows }: { rows: RecentRow[] }) {
                 </span>
               </span>
               <span
-                className={`mono ${h.score}`}
+                className={`num ${h.score}`}
                 style={
                   unknown ? undefined : { color: scoreColor(main.score ?? 0) }
                 }
               >
                 {unknown ? "–" : main.score}
               </span>
+              <Icon name="chevronRight" size={18} />
             </Link>
           </li>
         );

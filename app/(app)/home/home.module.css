@@ -289,6 +289,16 @@
 .list .rowSub {
   font-size: 14px;
 }
+/* 최근 기록 행: 기록 목록처럼 점수 옆에 화살표를 붙여 누르는 행임을 보인다. 화살표는 점수와 한 묶음으로 가깝게(4px).
+   날짜·메타·점수는 모두 본문 글꼴 + 고정폭 숫자(.num)다. 처음엔 날짜·점수가 고정폭 글꼴(.mono)이라
+   한 행 안 글꼴이 달라 보여, 기록 목록과 같이 맞췄다(#115, 사용자 요청) */
+.recentRow {
+  grid-template-columns: 42px minmax(0, 1fr) auto auto;
+}
+.recentRow > svg {
+  margin-left: -4px;
+  color: var(--sub);
+}
 /* 목록 행 hover: 제목이 강조색, 행이 오른쪽으로 3px, 화살표가 앞으로(사용자 결정 #115) */
 .list :global(.hover-row):focus-visible .rowTitle {
   color: var(--accent);
