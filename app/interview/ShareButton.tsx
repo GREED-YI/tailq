@@ -33,10 +33,13 @@ export function ShareButton({ sessionId }: { sessionId: string }) {
       );
       if (done) return;
     }
-    const copied = await navigator.clipboard
-      .writeText(url)
-      .then(() => true)
-      .catch(() => false);
+    // 보안 컨텍스트가 아니면 navigator.clipboard가 없어 동기로 던지므로 체인 안에서 부른다
+    const copied = await Promise.resolve()
+      .then(() => navigator.clipboard.writeText(url))
+      .then(
+        () => true,
+        () => false,
+      );
     showToast(
       copied ? "공유 링크를 복사했어요" : "링크를 복사하지 못했어요.",
       copied ? "link" : undefined,
