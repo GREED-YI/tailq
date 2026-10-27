@@ -27,7 +27,10 @@ export default function TermsPage() {
           <li>GitHub, Google, 카카오 계정으로 가입해요.</li>
           <li>
             만 14세 이상만 가입할 수 있어요. 가입할 때 이 약관과{" "}
-            <Link href="/privacy">개인정보처리방침</Link>에 동의해야 해요.
+            <Link href="/privacy" replace>
+              개인정보처리방침
+            </Link>
+            에 동의해야 해요.
           </li>
           <li>
             언제든 MY 화면에서 탈퇴할 수 있어요. 탈퇴하면 기록이 바로 지워져요.

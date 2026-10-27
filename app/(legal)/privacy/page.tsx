@@ -177,7 +177,10 @@ export default function PrivacyPage() {
         </h2>
         <p>
           이 방침을 바꾸면 시행 7일 전에 서비스 화면에서 알려요. 이용약관은{" "}
-          <Link href="/terms">여기</Link>에서 볼 수 있어요.
+          <Link href="/terms" replace>
+            여기
+          </Link>
+          에서 볼 수 있어요.
         </p>
       </div>
     </>
