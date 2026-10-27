@@ -30,7 +30,7 @@
   }
 }
 
-/* 제목·필터 띠: 위에 붙어 있고 목록이 그 아래로 지나간다. 지나가는 내용은 띠가 가린다.
+/* 제목·필터 띠: 위에 붙어 있고 목록이 그 아래로 지나간다.
    모바일은 화면 끝까지(.main 좌우 여백 20), 태블릿·PC는 열 폭보다 조금 넓게 */
 .top {
   position: sticky;
@@ -38,23 +38,60 @@
   z-index: 5;
   margin: 0 -20px;
   padding: 0 20px 12px;
-  /* 처음엔 반투명 + 흐림이었으나 흐림을 못 그리는 환경에서 지나가는 글자가 읽혀 불투명하게 깔았다.
-     그다음엔 배경 위에 유리 색을 한 겹 더 깔고 아래 모서리를 둥글게 했는데, 페이지 위에 상자가 떠 보였다.
-     지금은 화면 배경(app/globals.css .backdrop의 두 그라디언트, 화면에 고정)을 똑같이 깔아 띠가 배경에 녹는다(#117) */
-  background:
-    linear-gradient(160deg, var(--wash1, transparent) 0%, transparent 55%) fixed,
-    linear-gradient(340deg, var(--wash2, transparent) 0%, transparent 60%) fixed,
-    var(--bg);
-  box-shadow: inset 0 -1px 0 var(--glass-edge);
 }
-/* 빛 번짐 배경은 덩어리가 떠돌아 똑같이 깔 수 없어, 예전처럼 유리 색을 한 겹 깐다 */
-:global([data-bg="glow"]) .top {
-  background: linear-gradient(var(--glass), var(--glass)), var(--bg);
+/* 띠 자체는 면이 없고, 뒤에 흐림 층만 둔다. 지나가는 목록은 흐려지고, 아래·좌우 가장자리로 갈수록 흐림이 0이 되어 경계가 없다.
+   처음엔 반투명 + 흐림이었으나 흐림을 못 그리는 환경에서 글자가 읽혀 불투명하게 깔았고, 그다음엔 유리 색 상자·화면 배경 복사를 깔았는데
+   어느 쪽이든 배경과 다른 사각형 틀과 아래 구분선이 보였다. 지금은 가장자리를 마스크로 흐려 틀·구분선을 없앴다(#117, 사용자 요청).
+   아래 꼬리 16px는 띠 아래 여백(12) + 첫 달 머리 위 여백(16) 안에서 끝나 처음 위치의 목록을 가리지 않는다.
+   좌우는 태블릿·PC에서 띠보다 24px 더(셸 내용 영역 여백 안) 깔고 그만큼 페이드한다 */
+.top::before {
+  --fx: 0px;
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 calc(-1 * var(--fx-out, 0px)) -16px;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--bg) 50%, transparent);
+  /* 접두사를 뒤에 두면 CSS 변환(Lightning CSS)이 접두사 없는 쪽을 지워 Chrome에서 흐림이 안 걸린다 */
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  -webkit-mask-image:
+    linear-gradient(to bottom, #000 calc(100% - 28px), transparent),
+    linear-gradient(
+      to right,
+      transparent,
+      #000 var(--fx),
+      #000 calc(100% - var(--fx)),
+      transparent
+    );
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to bottom, #000 calc(100% - 28px), transparent),
+    linear-gradient(
+      to right,
+      transparent,
+      #000 var(--fx),
+      #000 calc(100% - var(--fx)),
+      transparent
+    );
+  mask-composite: intersect;
+}
+/* 흐림을 못 그리면 같은 마스크로 화면 바탕을 거의 불투명하게 깔아, 지나가는 글자가 겹쳐 읽히지 않게 한다 */
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .top::before {
+    background: color-mix(in srgb, var(--bg) 94%, transparent);
+  }
 }
 @media (min-width: 768px) {
   .top {
     margin: 0 -16px;
     padding: 0 16px 12px;
+  }
+  .top::before {
+    --fx-out: 24px;
+    --fx: 40px;
   }
 }
 /* PC: 처음엔 .main 위 여백만큼 띠를 위로 늘렸는데, 그 위에 내용 오른쪽 위 도구(리포트·테마·알림)가 생기자
@@ -141,6 +178,18 @@
   font-size: 14px;
   font-weight: 600;
   box-shadow: inset 0 0 0 1px var(--dot-off);
+}
+/* 보이는 칩은 36px 그대로 두고 누르는 영역만 위아래 4px씩 넓혀 44px(터치 기준)로.
+   세그먼트 안쪽 여백(4)·.filters 위아래 여백(4) 안이라 잘리지 않고, 위아래로만 넓혀 이웃 칩과 겹치지 않는다 */
+.segment > a,
+.months > a {
+  position: relative;
+}
+.segment > a::after,
+.months > a::after {
+  content: "";
+  position: absolute;
+  inset: -4px 0;
 }
 @media (hover: hover) {
   .segment > a:not([aria-current="page"]):hover,
