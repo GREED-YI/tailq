@@ -128,7 +128,7 @@ async function Report() {
         <div className={`glass ${w.grassCard}`}>
           <div className={w.grassScroll}>
             <div className={w.stripWrap}>
-              <MonthLabels cells={cells} />
+              <MonthLabels cells={cells} joined={joined} />
               {grid}
             </div>
           </div>
@@ -169,19 +169,30 @@ async function Report() {
   );
 }
 
-// 달력 위 달 이름: 첫 열(시작한 달)과 월요일이 새 달로 넘어간 주 열에 "N월". 끝 열은 글자가 밖으로 넘쳐 뺀다
-function MonthLabels({ cells }: { cells: GrassCell[] }) {
-  const mondays = cells.filter((_, i) => i % 7 === 0).map((c) => c.day);
+// 달력 위 달 이름: 첫 열은 실제 시작한 날(시작 전 날은 비어 있다)의 달, 그 뒤로는 그 달 1일이 든 열에 "N월".
+// 끝 열은 글자가 밖으로 넘쳐 뺀다
+function MonthLabels({
+  cells,
+  joined,
+}: {
+  cells: GrassCell[];
+  joined?: string;
+}) {
+  const cols = Array.from({ length: Math.ceil(cells.length / 7) }, (_, i) =>
+    cells.slice(i * 7, i * 7 + 7).filter((c) => !joined || c.day >= joined),
+  );
+  const label = (col: GrassCell[], i: number) => {
+    if (col.length === 0 || i === cols.length - 1) return null;
+    if (i === 0) return col[0].day.slice(5, 7);
+    const first = col.find((c) => c.day.slice(8) === "01");
+    return first ? first.day.slice(5, 7) : null;
+  };
   return (
     <div className={w.months} aria-hidden="true">
-      {mondays.map((d, i) => (
-        <span key={d}>
-          {(i === 0 ||
-            (i < mondays.length - 1 &&
-              d.slice(5, 7) !== mondays[i - 1].slice(5, 7))) &&
-            `${Number(d.slice(5, 7))}월`}
-        </span>
-      ))}
+      {cols.map((col, i) => {
+        const m = label(col, i);
+        return <span key={i}>{m && `${Number(m)}월`}</span>;
+      })}
     </div>
   );
 }
