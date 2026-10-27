@@ -508,7 +508,7 @@ function RecentSection({ rows }: { rows: RecentRow[] }) {
   );
 }
 
-// 이번 주 월~일 7칸: 학습한 날 채움, 휴식권 빗금, 오늘 테두리(docs/07 결정 13)
+// 이번 주 월~일 7칸: 학습 잔디처럼 점수 단계 색, 휴식권 빗금, 오늘 테두리(docs/07 결정 13)
 function Week({ study }: { study: Study }) {
   const cells = grassCells(
     study.scores,
@@ -532,9 +532,7 @@ function Week({ study }: { study: Study }) {
             data-today={c.day === study.today || undefined}
             aria-label={`${"월화수목금토일"[i]}요일 ${c.level > 0 ? "학습" : c.rest ? "휴식권" : "안 함"}`}
           >
-            <span
-              data-state={c.level > 0 ? "done" : c.rest ? "rest" : undefined}
-            />
+            <span data-level={c.level} data-rest={c.rest || undefined} />
             {"월화수목금토일"[i]}
           </li>
         ))}
