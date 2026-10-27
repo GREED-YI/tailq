@@ -132,7 +132,7 @@
   box-shadow: 0 0 16px -2px var(--accent-fill);
 }
 .weeks small {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 @media (min-width: 1024px) {

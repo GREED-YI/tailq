@@ -300,7 +300,7 @@
   line-height: 32px;
 }
 .ringText span:last-child {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--sub);
 }
 .headline {
