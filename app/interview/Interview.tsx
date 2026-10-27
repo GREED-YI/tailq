@@ -12,6 +12,7 @@ import type { TurnResult } from "@/lib/turn";
 import s from "./interview.module.css";
 import { ScoreRing } from "./ScoreRing";
 import { VERDICTS } from "./verdict";
+import { openModal, useCloseOnLeave } from "@/lib/dialog";
 
 export type InterviewStatus = "answering" | "grading" | "graded" | "failed";
 type Phase = "answer" | "grading" | "result" | "failed";
@@ -84,6 +85,7 @@ export function Interview({
   const hint =
     length < MIN ? "30자 이상 · " : length > MAX ? "2,000자 이하 · " : "";
   const exitRef = useRef<HTMLDialogElement>(null);
+  useCloseOnLeave(exitRef);
   const draftKey = `tailq-draft:${turn.id}`;
 
   // 나가기 전에 쓰던 답변을 되살린다(서버에 저장된 답변이 있으면 그쪽이 먼저)
@@ -199,7 +201,7 @@ export function Interview({
           type="button"
           className="glass press icon-btn"
           aria-label="면접 나가기"
-          onClick={() => exitRef.current?.showModal()}
+          onClick={() => openModal(exitRef.current)}
         >
           <Icon name="close" />
         </button>
@@ -382,7 +384,11 @@ export function Interview({
           <Link
             href={exitHref}
             className="glass btn btn-md btn-secondary press"
-            onClick={saveDraft}
+            onClick={() => {
+              saveDraft();
+              // 열린 채로 떠나면 돌아왔을 때 창이 반쯤 열린 상태로 남는다
+              exitRef.current?.close();
+            }}
           >
             나가기
           </Link>

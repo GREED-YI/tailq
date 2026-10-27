@@ -8,6 +8,7 @@ import { Icon } from "@/components/icons";
 import { LimitNotice, type Notice } from "@/components/LimitNotice";
 import { scoreColor } from "@/app/interview/verdict";
 import s from "@/app/(app)/projects/projects.module.css";
+import { openModal, useCloseOnLeave } from "@/lib/dialog";
 
 // state: 최근 점수("72점"·"모르겠어요"), 연습 중("doing"), 아직 안 함(null). score는 점수 색을 고를 때 쓴다
 // open: 열린 세션이 있으면 한도와 상관없이 이어 할 수 있다(점수가 있어도 꼬리질문 중일 수 있다)
@@ -43,6 +44,7 @@ export function ProjectView({
 }) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
+  useCloseOnLeave(dialogRef);
   const [busy, setBusy] = useState<number | "delete" | "retry" | null>(null);
   // 요청 중인지. 이동하는 동안에는 잠금을 유지하고(두 번 누르지 않게), 화면이 보관되어 숨겨질 때
   // 요청 중이 아니면 잠금을 푼다. 다시 보일 때도 요청이 끝났으면 푼다(cacheComponents라 상태를 그대로 들고 다시 보인다)
@@ -250,7 +252,7 @@ export function ProjectView({
           onClick={() => {
             setDeleteError("");
             setTypedName("");
-            dialogRef.current?.showModal();
+            openModal(dialogRef.current);
           }}
         >
           프로젝트 삭제하기
