@@ -1,5 +1,6 @@
 /* 면접 화면. 숫자는 Figma C안(모바일 390·태블릿 768·PC 1440)과 docs/07.
-   태블릿은 좌우 64 띄운 640, PC는 720 가운데 */
+   태블릿은 좌우 64 띄운 640, PC는 720 가운데. 넓은 화면은 화면 폭의 45%까지 920으로 넓힌다
+   (질문 32px 한 줄이 한글 30자 남짓, 답변 17px 한 줄이 50자 남짓이라 읽기 폭을 넘지 않는다) */
 
 .screen {
   min-height: 100dvh;
@@ -34,25 +35,25 @@
   gap: 6px;
 }
 .stepLabel {
-  font-size: 12px;
-  color: var(--sub);
-  letter-spacing: 0.4px;
+  font-size: 17px;
+  line-height: 22px;
+  font-weight: 700;
 }
 .dots {
   display: flex;
-  gap: 5px;
+  gap: 6px;
 }
 .dot,
 .dotOn,
 .dotDone {
-  width: 8px;
-  height: 6px;
-  border-radius: 3px;
+  width: 12px;
+  height: 8px;
+  border-radius: 4px;
   background: var(--dot-off);
   transition: all 0.3s ease;
 }
 .dotOn {
-  width: 22px;
+  width: 32px;
   background: var(--accent-fill);
 }
 .dotDone {
@@ -66,12 +67,14 @@
   padding-top: 14px;
 }
 .status {
-  min-height: 16px;
+  min-height: 24px;
   margin-top: 16px;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 14px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 500;
   color: var(--sub);
 }
 .thinking {
@@ -86,13 +89,13 @@
 }
 
 .question {
-  padding: 22px 24px 20px;
+  padding: 36px 24px 20px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 .tag {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--accent);
 }
 .prompt {
@@ -102,8 +105,8 @@
   letter-spacing: -0.5px;
 }
 
-/* 질문 아래 남은 자리의 맨 아래에 놓인다. 답변 입력 중에는 화면 아래에 붙고(sticky)
-   키보드가 올라오면 그 높이만큼 올라간다. 결과가 길면 화면이 늘어나 스크롤된다 */
+/* 질문 아래 남은 자리의 맨 아래에 놓인다. 키보드가 올라오면(data-typing) 화면 아래에 붙어(sticky)
+   그 높이만큼 올라간다. 그 밖에는 질문 뒤에 이어 놓여, 높이가 모자라면 화면이 스크롤된다 */
 .sheet {
   position: relative;
   z-index: 10;
@@ -117,7 +120,7 @@
 }
 
 .label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--sub);
 }
@@ -141,6 +144,11 @@
 }
 .input:focus {
   outline: none;
+}
+/* 입력 칸 대신 시트 테두리로 포커스를 보인다 */
+.sheet:has(.input:focus-visible) {
+  outline: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 0;
 }
 .input::-webkit-scrollbar {
   width: 4px;
@@ -241,7 +249,7 @@
 }
 .count {
   flex: 1;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 .count[data-over] {
@@ -300,15 +308,15 @@
   line-height: 32px;
 }
 .ringText span:last-child {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
 }
 .headline {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 14px;
-  line-height: 22px;
+  font-size: 15px;
+  line-height: 23px;
   color: var(--sub);
 }
 .headline strong {
@@ -343,7 +351,7 @@
   gap: 6px;
 }
 .chip {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   padding: 5px 9px;
   border-radius: 9px;
@@ -369,9 +377,16 @@
 }
 .more summary {
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--sub);
+  transition: color 0.2s ease;
+}
+@media (hover: hover) {
+  .more summary:hover,
+  .links a:hover {
+    color: var(--text);
+  }
 }
 .more[open] summary {
   margin-bottom: 14px;
@@ -437,6 +452,7 @@
   align-items: center;
   gap: 12px;
   min-height: 60px;
+  padding: 10px 0;
 }
 .rowText {
   flex: 1;
@@ -446,7 +462,7 @@
   gap: 2px;
 }
 .rowText span {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--sub);
 }
 .rowText p {
@@ -483,7 +499,7 @@
   gap: 4px;
 }
 .tile span {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 .tile strong {
@@ -491,7 +507,7 @@
   line-height: 35px;
 }
 .tile .date {
-  font-size: 13px;
+  font-size: 15px;
 }
 .actions {
   margin-top: auto;
@@ -506,8 +522,8 @@
   .screen {
     max-width: none;
     width: 100%;
-    padding-left: max(64px, calc((100% - 720px) / 2));
-    padding-right: max(64px, calc((100% - 720px) / 2));
+    padding-left: max(64px, calc((100% - clamp(720px, 45vw, 920px)) / 2));
+    padding-right: max(64px, calc((100% - clamp(720px, 45vw, 920px)) / 2));
   }
   .header {
     padding: 0;
@@ -520,18 +536,19 @@
     margin-left: 0;
     margin-right: 0;
   }
-  /* 3D Q 120, 질문 26/36(Figma 태블릿·PC) */
+  /* 3D Q 148(Figma 태블릿·PC 120보다 크게, 사용자 요청) */
   .orb {
     padding-top: 30px;
   }
   .orb > :first-child {
-    zoom: calc(120 / 104);
+    zoom: calc(148 / 120);
   }
   .status {
     margin-top: 22px;
+    font-size: 17px;
   }
   .question {
-    padding-top: 28px;
+    padding-top: 44px;
   }
   .prompt {
     font-size: 28px;
@@ -561,7 +578,7 @@
 
 @media (min-width: 1024px) {
   .screen {
-    padding-top: clamp(24px, 12dvh, 108px);
+    padding-top: clamp(16px, 8dvh, 96px);
     padding-bottom: 24px;
   }
   .orb {
@@ -584,6 +601,20 @@
   .actions {
     margin-top: 0;
     padding-top: 32px;
+  }
+}
+
+/* 넓은 화면: 폭이 넓어진 만큼 질문 글자와 입력 칸도 키운다 */
+@media (min-width: 1600px) {
+  .orb > :first-child {
+    zoom: calc(168 / 120);
+  }
+  .prompt {
+    font-size: 32px;
+    line-height: 44px;
+  }
+  .input {
+    height: 200px;
   }
 }
 
