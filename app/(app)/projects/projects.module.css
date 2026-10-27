@@ -170,7 +170,8 @@
   font-weight: 700;
 }
 
-/* 위쪽 64: 뒤로 · 가운데 제목 · 오른쪽 알약(S23·S24) */
+/* 위쪽 64: 뒤로 · 가운데 제목(S23·S24). 오른쪽 칸은 제목을 가운데에 두려고 비워 둔다.
+   처음엔 S24 오른쪽에 삭제 알약이 있었는데 목록 맨 아래로 내렸다(#118, 사용자 요청) */
 .top {
   height: 64px;
   margin: 0 -10px;
@@ -187,14 +188,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.pill {
-  justify-self: end;
-  height: 36px;
-  padding: 0 13px;
-  border-radius: 18px;
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--danger);
+
+/* 프로젝트 삭제하기(S24): 목록 아래. 내용이 짧으면 화면 맨 아래로 밀린다(PC는 목록 바로 아래) */
+.deleteBottom {
+  margin-top: auto;
+  padding-top: 32px;
+}
+.deleteBottom > * {
+  width: 100%;
 }
 
 /* 등록(S23): 칸 제목(13 Bold)은 칸 밖 위, 안내 글씨(12)는 칸 밖 아래 */
@@ -316,6 +317,15 @@
   font-size: 15px;
   line-height: 22px;
   color: var(--sub);
+}
+/* 이름 다시 쓰기(#118, 사용자 요청): 칸 제목은 등록 화면(.label)처럼 칸 밖 위 */
+.dialogLabel {
+  display: block;
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
 }
 .dialog .error {
   margin: 12px 0 0;

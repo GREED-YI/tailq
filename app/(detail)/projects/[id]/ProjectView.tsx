@@ -56,6 +56,9 @@ export function ProjectView({
   }, []);
   const [error, setError] = useState("");
   const [deleteError, setDeleteError] = useState("");
+  // 삭제 확인 창에 다시 쓴 프로젝트 이름. 똑같이 써야 삭제 버튼이 켜진다(#118, 사용자 요청)
+  const [typedName, setTypedName] = useState("");
+  const nameMatches = typedName.trim() === name.trim();
 
   // 만드는 동안 서버 컴포넌트를 다시 그려 프로젝트 행을 읽는다(RLS 읽기 정책 안에서)
   useEffect(() => {
@@ -125,16 +128,6 @@ export function ProjectView({
           <Icon name="chevronLeft" />
         </Link>
         <h1>{name}</h1>
-        <button
-          type="button"
-          className={`glass press ${s.pill}`}
-          onClick={() => {
-            setDeleteError("");
-            dialogRef.current?.showModal();
-          }}
-        >
-          삭제
-        </button>
       </header>
 
       {status === "ready" ? (
@@ -248,6 +241,22 @@ export function ProjectView({
         </p>
       )}
 
+      {/* 처음엔 머리 오른쪽 알약이었는데, 실수로 누르기 쉬운 자리라 목록 맨 아래로 내렸다(#118, 사용자 요청) */}
+      <div className={s.deleteBottom}>
+        <button
+          type="button"
+          className="btn btn-md btn-danger press"
+          disabled={busy === "delete"}
+          onClick={() => {
+            setDeleteError("");
+            setTypedName("");
+            dialogRef.current?.showModal();
+          }}
+        >
+          프로젝트 삭제하기
+        </button>
+      </div>
+
       {/* 삭제 확인(S25). 질문·기록·복습 일정이 함께 지워진다(04 기능 명세 9번) */}
       <dialog
         ref={dialogRef}
@@ -260,29 +269,45 @@ export function ProjectView({
           <br />
           함께 지워지고 되돌릴 수 없어요.
         </p>
-        {deleteError && (
-          <p className={s.error} role="alert">
-            {deleteError}
-          </p>
-        )}
-        <div className={s.dialogActions}>
-          <button
-            type="button"
-            className="glass btn btn-md btn-secondary press"
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (nameMatches && busy !== "delete") remove();
+          }}
+        >
+          <label htmlFor="delete-name" className={s.dialogLabel}>
+            삭제하려면 프로젝트 이름 「{name}」을 입력하세요
+          </label>
+          <input
+            id="delete-name"
+            className={`glass ${s.input}`}
+            value={typedName}
+            onChange={(e) => setTypedName(e.target.value)}
+            autoComplete="off"
             autoFocus
-            onClick={() => dialogRef.current?.close()}
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            className="glass btn btn-md btn-danger press"
-            disabled={busy === "delete"}
-            onClick={remove}
-          >
-            삭제
-          </button>
-        </div>
+          />
+          {deleteError && (
+            <p className={s.error} role="alert">
+              {deleteError}
+            </p>
+          )}
+          <div className={s.dialogActions}>
+            <button
+              type="button"
+              className="glass btn btn-md btn-secondary press"
+              onClick={() => dialogRef.current?.close()}
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              className="btn btn-md btn-danger press"
+              disabled={!nameMatches || busy === "delete"}
+            >
+              삭제
+            </button>
+          </div>
+        </form>
       </dialog>
     </>
   );

@@ -91,7 +91,7 @@ export function WithdrawForm(props: { provider: string }) {
       <div className={`${f.bottom} ${s.withdrawBottom}`}>
         <button
           type="button"
-          className="btn btn-danger glass press"
+          className="btn btn-danger press"
           disabled={!typed || busy}
           onClick={withdraw}
         >

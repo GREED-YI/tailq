@@ -142,7 +142,7 @@ async function My() {
         <LogoutButton />
         <Link
           href="/my/delete"
-          className={`btn btn-md btn-danger glass press ${s.accountBtn}`}
+          className={`btn btn-md btn-danger press ${s.accountBtn}`}
         >
           탈퇴하기
         </Link>
