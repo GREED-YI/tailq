@@ -6,14 +6,16 @@ import { useEffect, useRef, useState } from "react";
 import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
 import { LimitNotice, type Notice } from "@/components/LimitNotice";
+import { scoreColor } from "@/app/interview/verdict";
 import s from "@/app/(app)/projects/projects.module.css";
 
-// state: 최근 점수("72점"·"모르겠어요"), 연습 중("doing"), 아직 안 함(null)
+// state: 최근 점수("72점"·"모르겠어요"), 연습 중("doing"), 아직 안 함(null). score는 점수 색을 고를 때 쓴다
 // open: 열린 세션이 있으면 한도와 상관없이 이어 할 수 있다(점수가 있어도 꼬리질문 중일 수 있다)
 export type QuestionRow = {
   id: number;
   prompt: string;
   state: string | null;
+  score: number | null;
   open: boolean;
 };
 
@@ -51,6 +53,10 @@ export function ProjectView({
     const t = setInterval(() => router.refresh(), POLL_MS);
     return () => clearInterval(t);
   }, [status, router]);
+
+  // cacheComponents라 면접으로 갔다가 뒤로 오면 이 화면이 상태를 그대로 들고 다시 보인다.
+  // 화면을 떠날 때 "시작하는 중"을 풀어야 돌아왔을 때 질문이 모두 막혀 있지 않다
+  useEffect(() => () => setBusy(null), []);
 
   // 질문을 누르면 그 질문의 세션을 열고(열린 세션이 있으면 이어서) 면접 화면으로
   async function practice(questionId: number) {
@@ -152,7 +158,16 @@ export function ProjectView({
                         "연습 중"
                       ) : (
                         <>
-                          <span className={s.done}>연습함</span> · {q.state}
+                          <span className={s.done}>연습함</span> ·{" "}
+                          <span
+                            style={
+                              q.score === null
+                                ? undefined
+                                : { color: scoreColor(q.score) }
+                            }
+                          >
+                            {q.state}
+                          </span>
                         </>
                       )}
                     </span>
