@@ -146,12 +146,16 @@ const vars = (t: Record<string, string>) =>
     .join("");
 
 // 기본은 다크. 저장한 선택이 없으면 기기 설정을 따른다(script가 data-theme을 정한다).
-// 운영 화면은 :has([data-admin])로 같은 자리에서 덮어써 배경 빛·사이드 메뉴까지 남색이 된다
+// 운영 화면은 :has([data-admin])로 같은 자리에서 덮어써 배경 빛·사이드 메뉴까지 남색이 된다.
+// 처음엔 [data-admin]이 있기만 하면 덮었는데, 다른 화면으로 가도 운영 화면이 숨겨진 채(display: none) 문서에 남아
+// 남색이 그대로였다(cacheComponents). 숨겨진 운영 화면은 빼고 센다
+const ADMIN_SHOWN =
+  ':has([data-admin]:not([style*="display: none"],[style*="display: none"] *))';
 export const themeCss =
   `:root,[data-theme="dark"]{${vars(TOKENS.dark)}color-scheme:dark}` +
   `[data-theme="light"]{${vars(TOKENS.light)}color-scheme:light}` +
-  `:root:not([data-theme="light"]):has([data-admin]){${vars(ADMIN_TOKENS.dark)}}` +
-  `[data-theme="light"]:has([data-admin]){${vars(ADMIN_TOKENS.light)}}`;
+  `:root:not([data-theme="light"])${ADMIN_SHOWN}{${vars(ADMIN_TOKENS.dark)}}` +
+  `[data-theme="light"]${ADMIN_SHOWN}{${vars(ADMIN_TOKENS.light)}}`;
 
 export const THEME_STORAGE_KEY = "tailq-theme";
 

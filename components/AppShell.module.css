@@ -330,7 +330,11 @@
     bottom: 28px;
   }
 }
-:global(body):has([data-admin]) .fox {
+/* 숨겨진 채 남은 운영 화면(cacheComponents)은 빼고 센다. 안 빼면 운영 화면을 다녀온 뒤 다른 화면에서도 여우가 안 보였다 */
+:global(body):has(
+    [data-admin]:not([style*="display: none"], [style*="display: none"] *)
+  )
+  .fox {
   display: none;
 }
 .foxBtn {
