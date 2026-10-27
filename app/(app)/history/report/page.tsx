@@ -6,6 +6,7 @@ import { loadStudy } from "@/lib/study";
 import { weaknessReport, type TopicScore } from "@/lib/weakness";
 import s from "../history.module.css";
 import { HistoryTabs } from "../HistoryTabs";
+import { GrassTip } from "./GrassTip";
 import w from "./weakness.module.css";
 
 export const metadata: Metadata = { title: "리포트 · TailQ" };
@@ -59,21 +60,20 @@ async function Report() {
         </div>
         <div className={`glass ${w.grassCard}`}>
           <div className={s.grassScroll}>
-            <div
+            <GrassTip
               className={s.grass}
-              role="img"
-              aria-label={`최근 1년 동안 ${studied}일 학습, 휴식권 ${streak.restDays.length}번 사용`}
+              label={`최근 1년 동안 ${studied}일 학습, 휴식권 ${streak.restDays.length}번 사용`}
             >
               {cells.map((c) => (
                 <span
                   key={c.day}
-                  title={cellTitle(c)}
+                  data-tip={c.future ? undefined : cellTitle(c)}
                   data-level={c.level}
                   data-rest={c.rest || undefined}
                   data-future={c.future || undefined}
                 />
               ))}
-            </div>
+            </GrassTip>
           </div>
           <p className={w.caption}>
             진할수록 점수가 높고, 빗금은 휴식권을 쓴 날이에요

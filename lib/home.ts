@@ -17,9 +17,3 @@ export function homeState(
   }
   return { kind: "doing", step: last.idx };
 }
-
-const WEEKDAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-
-// "2026-10-22" → "2026.10.22 THU"
-export const dayLabel = (day: string) =>
-  `${day.replaceAll("-", ".")} ${WEEKDAYS[new Date(Date.parse(day)).getUTCDay()]}`;

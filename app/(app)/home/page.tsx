@@ -7,7 +7,7 @@ import { Icon } from "@/components/icons";
 import { LimitNotice } from "@/components/LimitNotice";
 import { startDailySession, type DailySession } from "@/lib/daily";
 import { kstDay } from "@/lib/daily-pick";
-import { dayLabel, homeState, type HomeState } from "@/lib/home";
+import { homeState, type HomeState } from "@/lib/home";
 import { hourLabel } from "@/lib/profile";
 import { qLabel, tagLine } from "@/lib/questions";
 import { daysUntil, dueLabel } from "@/lib/review";
@@ -33,19 +33,9 @@ export default function HomePage() {
   );
 }
 
-// 날짜는 요청 때 정해지므로 미리 그리는 대기 화면에는 자리만 둔다
-function Greeting({
-  day,
-  name,
-  title,
-}: {
-  day?: string;
-  name?: string;
-  title: string;
-}) {
+function Greeting({ name, title }: { name?: string; title: string }) {
   return (
     <div className={s.head}>
-      <p className={`mono ${s.date}`}>{day ? dayLabel(day) : " "}</p>
       <h1 className={s.title}>
         {name && (
           <>
@@ -148,7 +138,6 @@ async function Home() {
   return (
     <div className={s.home}>
       <Greeting
-        day={today}
         name={nickname}
         title={state ? TITLES[state.kind] : TITLES.todo}
       />

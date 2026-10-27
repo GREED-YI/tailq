@@ -9,17 +9,12 @@
   flex-direction: column;
 }
 
-/* 날짜 · 인사 */
+/* 인사 */
 .head {
   margin: 8px 0 20px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-.date {
-  font-size: 13px;
-  letter-spacing: 0.4px;
-  color: var(--sub);
 }
 .title {
   font-size: 30px;
