@@ -84,7 +84,6 @@ export function FeedbackForm() {
         className={`glass ${s.input} ${s.textarea}`}
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        maxLength={FEEDBACK_MAX + 100}
         placeholder="예) 복습 알림을 저녁에도 받고 싶어요"
         aria-describedby="feedback-help"
       />
