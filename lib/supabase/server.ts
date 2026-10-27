@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { connection } from "next/server";
 import type { Database } from "@/lib/database.types";
+import { AUTH_COOKIE_OPTIONS } from "@/lib/supabase/cookie-options";
 
 // 서버 컴포넌트·Route Handler용. 로그인한 사용자 권한으로 읽고 RLS가 자기 행만 보여준다.
 export async function createClient() {
@@ -12,6 +13,7 @@ export async function createClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      cookieOptions: AUTH_COOKIE_OPTIONS,
       cookies: {
         getAll: () => cookieStore.getAll(),
         setAll(cookiesToSet) {
