@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { REAUTH_COOKIE } from "@/lib/account";
 import { safeNextPath } from "@/lib/safe-next";
 import { createClient } from "@/lib/supabase/server";
 
@@ -21,7 +22,22 @@ export async function POST(request: Request) {
         skipBrowserRedirect: true,
       },
     });
-    if (!error && data.url) return NextResponse.redirect(data.url, 303);
+    if (!error && data.url) {
+      const res = NextResponse.redirect(data.url, 303);
+      // 탈퇴 재확인: 돌아온 계정이 지금 계정과 같은지 탈퇴할 때 본다(DELETE /api/me)
+      if (form.get("reauth")) {
+        const { data: auth } = await supabase.auth.getClaims();
+        if (auth?.claims.sub)
+          res.cookies.set(REAUTH_COOKIE, auth.claims.sub, {
+            httpOnly: true,
+            sameSite: "lax",
+            secure: origin.startsWith("https://"),
+            path: "/",
+            maxAge: 600,
+          });
+      }
+      return res;
+    }
   }
 
   const failed = new URL("/login", origin);

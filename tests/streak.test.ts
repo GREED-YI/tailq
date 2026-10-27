@@ -6,6 +6,7 @@ import {
   grassLevel,
   grassStart,
   studyDay,
+  ticketsLeft,
   weekStart,
 } from "@/lib/streak";
 
@@ -180,5 +181,15 @@ describe("grassCells", () => {
     });
     expect(byDay.get("2026-10-29")!.future).toBe(true);
     expect(cells.filter((c) => c.level > 0)).toHaveLength(3);
+  });
+});
+
+describe("ticketsLeft", () => {
+  it("이번 주에 휴식권을 안 썼으면 1개, 썼으면 0개", () => {
+    // 2026-10-26은 월요일
+    expect(ticketsLeft([], "2026-10-27")).toBe(1);
+    expect(ticketsLeft(["2026-10-25"], "2026-10-27")).toBe(1);
+    expect(ticketsLeft(["2026-10-26"], "2026-10-27")).toBe(0);
+    expect(ticketsLeft(["2026-10-26"], "2026-11-02")).toBe(1);
   });
 });

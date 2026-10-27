@@ -248,11 +248,13 @@ function AgreeStep({ onNext }: { onNext: () => Promise<boolean | void> }) {
 const toggle = <T,>(list: T[], id: T) =>
   list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
 
-function RangeStep(props: {
+// 연습 범위 고르기. MY의 연습 범위 바꾸기(/my/range)도 같은 화면을 쓴다
+export function RangeStep(props: {
   topics: Topic[];
   initialTopics: string[];
   initialLevels: Level[];
   onNext: (body: Body) => Promise<boolean | void>;
+  label?: string;
 }) {
   const [topics, setTopics] = useState(props.initialTopics);
   const [levels, setLevels] = useState(props.initialLevels);
@@ -334,7 +336,8 @@ function RangeStep(props: {
           disabled={empty || busy}
           onClick={() => run(() => props.onNext({ topics, levels }))}
         >
-          다음 (주제 {topics.length}개 · 난이도 {levels.length}개)
+          {props.label ?? "다음"} (주제 {topics.length}개 · 난이도{" "}
+          {levels.length}개)
         </button>
         {empty && (
           <p className={s.hint}>주제와 난이도를 하나 이상 골라 주세요.</p>

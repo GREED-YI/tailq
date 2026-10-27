@@ -183,6 +183,47 @@ main.main {
   text-align: center;
 }
 
+/* S29 탈퇴: 지워지는 것 목록(줄 60) */
+.goneTitle {
+  margin-top: 8px;
+  font-size: 26px;
+  line-height: 34px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+.gone {
+  margin-top: 20px;
+  padding: 8px 16px;
+  border-radius: 28px;
+  list-style: none;
+}
+.gone li {
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.gone :global(.mono) {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--sub);
+}
+.warn {
+  margin-top: 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--danger);
+}
+.help[data-strong] {
+  color: var(--text);
+  font-weight: 500;
+}
+.withdrawBottom button {
+  width: 100%;
+}
+
 /* PC: 폭 480 열은 그대로, 뒤로·저장은 열 밖(Figma 360·1084) */
 @media (min-width: 1024px) {
   main.main {
@@ -193,5 +234,8 @@ main.main {
   }
   .save {
     right: -124px;
+  }
+  .withdrawBottom {
+    padding-top: 24px;
   }
 }
