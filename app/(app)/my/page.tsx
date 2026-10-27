@@ -13,14 +13,14 @@ import { createClient } from "@/lib/supabase/server";
 import { LogoutButton, NotifyRow, ThemeRow } from "./MySettings";
 import s from "./my.module.css";
 
-export const metadata: Metadata = { title: "MY 페이지 · TailQ" };
+export const metadata: Metadata = { title: "MY페이지 · TailQ" };
 
-// MY 페이지(S27): 프로필, 꼬리잇기·휴식권·북마크 요약, 학습(리포트·북마크·연습 범위)·설정·정보 목록, 로그아웃·탈퇴(04 기능 명세 11장)
+// MY페이지(S27): 프로필, 꼬리잇기·휴식권·북마크 요약, 학습(리포트·북마크·연습 범위)·설정·정보 목록, 로그아웃·탈퇴(04 기능 명세 11장)
 export default function MyPage() {
   return (
     <div className={s.my}>
       <header className={s.header}>
-        <h1 className={s.title}>MY 페이지</h1>
+        <h1 className={s.title}>MY페이지</h1>
         <span className={s.mobileOnly}>
           <Suspense>
             <AdminHeaderLink />

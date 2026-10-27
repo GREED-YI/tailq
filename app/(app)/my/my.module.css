@@ -75,7 +75,7 @@
   gap: 4px;
 }
 .stat > span {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--sub);
 }
 .stat strong {
@@ -249,24 +249,5 @@
   }
   .profile {
     margin-top: 20px;
-  }
-}
-
-/* 넓은 PC: 한 열 720 대신 두 열(왼쪽 학습·정보, 오른쪽 설정·로그아웃/탈퇴). 프로필·요약은 위에 가득 */
-@media (min-width: 1280px) {
-  .my {
-    max-width: none;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 24px;
-    align-items: start;
-  }
-  .header,
-  .profile,
-  .stats {
-    grid-column: 1 / -1;
-  }
-  .account {
-    align-self: end;
   }
 }
