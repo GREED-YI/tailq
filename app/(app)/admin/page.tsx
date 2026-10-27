@@ -82,6 +82,8 @@ async function Dashboard() {
             "id, idx, effective_status, answered_at, score, verdict, rating, sessions!inner(user_id)",
           )
           .gte("answered_at", `${answersSince(today)}T00:00:00+09:00`)
+          // 로그인 없는 체험(user_id 없음)은 회원 지표에서 뺀다. 체험은 지표 이벤트로 센다
+          .not("sessions.user_id", "is", null)
           .order("id")
           .range(from, to),
       ),
@@ -117,7 +119,7 @@ async function Dashboard() {
     onboardedAt: p.onboarded_at,
   }));
   const answers: Answer[] = turns.map((t) => ({
-    userId: t.sessions.user_id,
+    userId: t.sessions.user_id!,
     idx: t.idx!,
     answeredAt: t.answered_at!,
     status: t.effective_status!,

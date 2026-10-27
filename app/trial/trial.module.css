@@ -1,0 +1,93 @@
+/* 체험 결과(Figma S03). 뼈대는 Flow.module.css(모바일 폭 가득, PC 가운데 열) */
+
+.card {
+  border-radius: 30px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tag {
+  font-size: 12px;
+  color: var(--accent);
+}
+/* Figma는 짧은 제목("JPA N+1 문제")이지만 질문에는 짧은 제목이 없어 질문 글을 두 줄까지 보인다 */
+.prompt {
+  font-size: 17px;
+  line-height: 24px;
+  font-weight: 700;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.note {
+  font-size: 13px;
+  color: var(--sub);
+}
+.point {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 21px;
+}
+.good,
+.improve {
+  font-size: 12px;
+  font-weight: 700;
+}
+.good {
+  color: var(--accent);
+}
+.improve {
+  color: var(--low);
+}
+
+.pitch {
+  margin-top: 24px;
+  font-size: 24px;
+  line-height: 33px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+
+.streak {
+  margin-top: 16px;
+  border-radius: 24px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.streakLabel {
+  font-size: 12px;
+  color: var(--sub);
+}
+.streakValue {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 36px;
+}
+.streakValue span {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--accent);
+  margin-right: 4px;
+}
+.streakNote {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--sub);
+}
