@@ -666,21 +666,35 @@ function useCountUp(target: number, run: boolean) {
   return shown;
 }
 
-// 키보드가 올라오면 시트도 그 위로(docs/07 "iOS 대응", visualViewport 기준)
+// 키보드가 올라오면 시트도 그 위로(docs/07 "iOS 대응", visualViewport 기준).
+// 주소창이 다시 보이거나 확대해도 visualViewport가 줄어드니, 입력 칸에 초점이 있고
+// 확대하지 않았고 줄어든 높이가 키보드만큼(120px 이상)일 때만 키보드로 본다
+const KEYBOARD_MIN = 120;
 function useKeyboardInset() {
   const [inset, setInset] = useState(0);
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
-    const update = () =>
+    const update = () => {
+      const el = document.activeElement;
+      const typing =
+        el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement;
+      const shrunk = Math.round(window.innerHeight - vv.height - vv.offsetTop);
       setInset(
-        Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)),
+        typing && vv.scale <= 1.01 && shrunk >= KEYBOARD_MIN ? shrunk : 0,
       );
+    };
     vv.addEventListener("resize", update);
     vv.addEventListener("scroll", update);
+    // 초점이 빠지면(키보드 닫힘) 바로 원래대로. focusout 중에는 activeElement가 아직 바뀌기 전일 수 있다
+    const later = () => setTimeout(update, 0);
+    document.addEventListener("focusout", later);
+    document.addEventListener("focusin", later);
     return () => {
       vv.removeEventListener("resize", update);
       vv.removeEventListener("scroll", update);
+      document.removeEventListener("focusout", later);
+      document.removeEventListener("focusin", later);
     };
   }, []);
   return inset;
