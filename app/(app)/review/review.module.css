@@ -5,8 +5,14 @@
   display: none;
 }
 
-/* PC: 화면 제목을 보인다. 처음엔 가운데 열 720이었으나 넓은 화면에서 가운데로 몰려 셸 폭을 다 쓴다(#117) */
+/* PC: 화면 제목을 보인다. 목록은 처음엔 가운데 열 720이었고, 넓은 화면에서 셸 폭을 다 쓰게 했다가 행이 지나치게
+   늘어나 읽기 좋은 폭 800에서 멈추고 가운데에 둔다(#117) */
 @media (min-width: 1024px) {
+  .page {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
   .pageTitle {
     display: block;
     font-size: 30px;
