@@ -45,6 +45,50 @@
   }
 }
 
+/* 앱 화면 내용 맨 아래 푸터(SiteFooter, 랜딩과 같은 항목). 랜딩보다 작고 차분하게(#114, 사용자 요청).
+   내용이 짧으면 화면 아래로 밀린다. 아래 여백은 .main(탭바·페이드 몫)이 맡아 따로 두지 않는다 */
+.siteFooter {
+  margin-top: auto;
+  padding-top: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 16px;
+  font-size: 13px;
+}
+/* 링크 글자는 양 끝 내용선에 맞추고 터치 영역(44px)은 그 밖으로 */
+.siteFooter nav {
+  display: flex;
+  flex-wrap: wrap;
+  margin-inline: -10px;
+}
+.siteFooter nav a {
+  height: 44px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 12px;
+  color: var(--sub);
+  transition: color 0.2s ease;
+}
+.siteFooter small {
+  font-size: 13px;
+  color: var(--muted);
+}
+@media (hover: hover) {
+  .siteFooter nav a:hover {
+    color: var(--text);
+  }
+}
+/* PC는 오른쪽 아래 여우(right 28 + 폭 56 = 화면 끝에서 84px)가 맨 끝 ©를 덮지 않게 비켜 둔다.
+   내용 오른쪽 여백은 40px 이상이라 56px면 늘 12px 넘게 떨어진다(넓은 화면에선 조금 남는다) */
+@media (min-width: 1024px) {
+  .siteFooter {
+    padding-right: 56px;
+  }
+}
+
 /* 탭바: 화면 아래에 떠 있는 유리 막대, 선택 탭은 안쪽 유리 캡슐 */
 .nav {
   position: fixed;
