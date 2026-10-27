@@ -1114,7 +1114,7 @@
   color: var(--sub);
   transition: color 0.2s ease;
 }
-.copy {
+.footer small {
   font-size: 14px;
   color: var(--muted);
 }
@@ -1345,7 +1345,7 @@
   .footer nav {
     margin-right: -10px;
   }
-  .copy {
+  .footer small {
     width: 100%;
   }
 }

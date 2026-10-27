@@ -1,6 +1,9 @@
 import { Suspense } from "react";
 import { AppNavForViewer } from "@/components/AdminMenu";
+import { PcTools } from "@/components/AppHeader";
 import { NavBar } from "@/components/AppNav";
+import { FeedbackFox } from "@/components/FeedbackFox";
+import { SiteFooter } from "@/components/SiteFooter";
 import s from "@/components/AppShell.module.css";
 
 // 탭 화면에서 들어가는 하위 화면(기록 상세·프로젝트 등록·프로젝트 질문) 뼈대.
@@ -11,7 +14,12 @@ export default function DetailLayout({ children }: LayoutProps<"/">) {
       <Suspense fallback={<NavBar pathname="" sub />}>
         <AppNavForViewer sub />
       </Suspense>
-      <main className={`${s.main} ${s.mainSub}`}>{children}</main>
+      <main className={`${s.main} ${s.mainSub}`}>
+        <PcTools />
+        {children}
+        <SiteFooter className={s.siteFooter} logoHeight={18} />
+      </main>
+      <FeedbackFox />
     </>
   );
 }

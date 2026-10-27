@@ -5,8 +5,8 @@ import { Suspense } from "react";
 import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import { SiteFooter } from "@/components/SiteFooter";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { FEEDBACK_URL } from "@/lib/links";
 import { tagLine } from "@/lib/questions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
@@ -386,15 +386,7 @@ export default function Landing() {
         </section>
       </main>
 
-      <footer className={s.footer}>
-        <Logo height={22} />
-        <nav aria-label="약관과 피드백">
-          <Link href="/terms">이용약관</Link>
-          <Link href="/privacy">개인정보처리방침</Link>
-          <Link href={FEEDBACK_URL}>피드백 보내기</Link>
-        </nav>
-        <span className={s.copy}>© 2026 TailQ</span>
-      </footer>
+      <SiteFooter className={s.footer} logoHeight={22} feedback />
     </div>
   );
 }
