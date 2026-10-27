@@ -49,6 +49,12 @@ describe.each(themes)("%s 테마 대비", (_, t) => {
       4.5,
     );
   });
+
+  it("삭제·탈퇴 버튼 흰 글씨가 4.5:1 이상", () => {
+    expect(contrast(t["on-danger"], t["danger-fill"])).toBeGreaterThanOrEqual(
+      4.5,
+    );
+  });
 });
 
 describe("대비 계산", () => {

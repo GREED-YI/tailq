@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { isAdmin } from "@/lib/admin";
+import { categoryLabel, FEEDBACK_CATEGORIES } from "@/lib/feedback";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import s from "../admin.module.css";
@@ -13,13 +14,22 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-// 받은 피드백 목록(운영 대시보드 "사용자 피드백" 칸에서 온다). 운영자가 아니면 404
-export default function FeedbackListPage() {
+// 받은 피드백 목록(운영 대시보드 "사용자 피드백" 칸에서 온다). 운영자가 아니면 404.
+// ?category=bug처럼 분류로 거른다(없거나 모르는 값이면 전체)
+export default function FeedbackListPage({
+  searchParams,
+}: PageProps<"/admin/feedback">) {
   return (
     <div className={s.page} data-admin>
       <AppHeader />
       <Suspense>
-        <FeedbackList />
+        {searchParams.then(({ category }) => (
+          <FeedbackList
+            category={
+              FEEDBACK_CATEGORIES.find((c) => c.id === category)?.id ?? null
+            }
+          />
+        ))}
       </Suspense>
     </div>
   );
@@ -35,17 +45,18 @@ const when = (iso: string) =>
     timeStyle: "short",
   }).format(new Date(iso));
 
-async function FeedbackList() {
+async function FeedbackList({ category }: { category: string | null }) {
   const { data: auth } = await (await createClient()).auth.getClaims();
   if (!isAdmin(auth?.claims.sub, process.env.ADMIN_USER_IDS)) notFound();
 
   // 운영자 확인을 마친 뒤에만 RLS를 건너뛰어 읽는다. 누가 보냈는지는 읽지 않는다
-  const { data, count } = await createAdminClient()
+  let query = createAdminClient()
     .from("feedback")
-    .select("id, body, created_at", { count: "exact" })
+    .select("id, body, category, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
-    .limit(LIMIT)
-    .throwOnError();
+    .limit(LIMIT);
+  if (category) query = query.eq("category", category);
+  const { data, count } = await query.throwOnError();
 
   return (
     <>
@@ -55,17 +66,34 @@ async function FeedbackList() {
       <header className={s.top}>
         <h1>사용자 피드백</h1>
         <span className="num">
-          전체 {count ?? 0}개{(count ?? 0) > LIMIT && ` · 최근 ${LIMIT}개`}
+          {category ? categoryLabel(category) : "전체"} {count ?? 0}개
+          {(count ?? 0) > LIMIT && ` · 최근 ${LIMIT}개`}
         </span>
       </header>
+      <nav className={s.filters} aria-label="분류로 거르기">
+        {[{ id: null, label: "전체" }, ...FEEDBACK_CATEGORIES].map((c) => (
+          <Link
+            key={c.id ?? "all"}
+            href={c.id ? `/admin/feedback?category=${c.id}` : "/admin/feedback"}
+            replace
+            className="chip glass press"
+            aria-current={category === c.id ? "page" : undefined}
+          >
+            {c.label}
+          </Link>
+        ))}
+      </nav>
       {data.length === 0 ? (
         <p className={`glass ${s.card} ${s.empty}`}>
-          아직 받은 피드백이 없어요
+          {category ? "이 분류의 피드백이 없어요" : "아직 받은 피드백이 없어요"}
         </p>
       ) : (
         <ul className={s.feedbackList}>
           {data.map((v) => (
             <li key={v.id} className={`glass ${s.card}`}>
+              <span className={s.kind} data-kind={v.category}>
+                {categoryLabel(v.category)}
+              </span>
               <p>{v.body}</p>
               <time className="num" dateTime={v.created_at}>
                 {when(v.created_at)}

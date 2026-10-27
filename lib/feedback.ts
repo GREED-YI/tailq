@@ -13,3 +13,16 @@ export const FeedbackBody = z
   .max(FEEDBACK_MAX);
 
 export const feedbackLength = (v: string) => [...v.trim()].length;
+
+// 피드백 분류(#118). 값은 feedback.category check와 같다. 고르지 않으면 기타
+export const FEEDBACK_CATEGORIES = [
+  { id: "feature", label: "바라는 기능" },
+  { id: "bug", label: "버그" },
+  { id: "report", label: "신고" },
+  { id: "etc", label: "기타" },
+] as const;
+export const FeedbackCategory = z
+  .enum(["feature", "bug", "report", "etc"])
+  .default("etc");
+export const categoryLabel = (id: string) =>
+  FEEDBACK_CATEGORIES.find((c) => c.id === id)?.label ?? "기타";

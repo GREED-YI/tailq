@@ -8,6 +8,7 @@ import {
   subscribePush,
 } from "@/lib/push-client";
 import s from "../my/my.module.css";
+import { openModal, useCloseOnLeave } from "@/lib/dialog";
 
 const LATER_KEY = "tailq-notify-later";
 
@@ -17,6 +18,7 @@ const LATER_KEY = "tailq-notify-later";
 export function NotifyPrompt({ vapidKey }: { vapidKey: string }) {
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
+  useCloseOnLeave(dialog);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -28,7 +30,7 @@ export function NotifyPrompt({ vapidKey }: { vapidKey: string }) {
       // 저장소를 못 쓰면 매번 묻는다
     }
     if (!later && pushSupported() && Notification.permission === "default")
-      dialog.current?.showModal();
+      openModal(dialog.current);
   }, []);
 
   function close() {

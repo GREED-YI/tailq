@@ -18,6 +18,7 @@ export function LegalTabs() {
         <Link
           key={d.href}
           href={d.href}
+          replace
           className="press"
           aria-current={pathname === d.href ? "page" : undefined}
         >

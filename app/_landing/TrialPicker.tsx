@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icons";
 import type { TrialField } from "@/lib/trial";
 import s from "./landing.module.css";
+import { openModal, useCloseOnLeave } from "@/lib/dialog";
 
 export type TrialQuestions = Partial<
   Record<TrialField, { tag: string; prompt: string }>
@@ -23,13 +24,25 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
   const router = useRouter();
   const [field, setField] = useState<TrialField>("backend");
   const [pending, setPending] = useState(false);
+  // 요청 중인지. 이동하는 동안에는 잠금을 유지하고(두 번 누르지 않게), 화면이 보관되어 숨겨질 때
+  // 요청 중이 아니면 잠금을 푼다. 다시 보일 때도 요청이 끝났으면 푼다(cacheComponents라 상태를 그대로 들고 다시 보인다)
+  const inFlight = useRef(false);
+  useEffect(() => {
+    // 다시 보일 때(숨겨진 동안 요청이 끝났으면) 잠금을 푼다
+    if (!inFlight.current) setPending(false);
+    return () => {
+      if (!inFlight.current) setPending(false);
+    };
+  }, []);
   const [error, setError] = useState("");
   const limitRef = useRef<HTMLDialogElement>(null);
+  useCloseOnLeave(limitRef);
   const label = FIELDS.find((f) => f.id === field)!.label;
   const q = questions?.[field];
 
   async function start() {
     setPending(true);
+    inFlight.current = true;
     setError("");
     try {
       const res = await fetch("/api/trial-sessions", {
@@ -37,6 +50,7 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ field }),
       });
+      inFlight.current = false;
       if (res.ok) {
         router.push("/trial");
         return;
@@ -44,13 +58,14 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
       const json = await res.json().catch(() => null);
       // 서비스 월 예산 소진(BUDGET_EXCEEDED)은 체험 횟수 안내가 아니라 한도 문구를 그대로 보여준다
       if (res.status === 429 && json?.error?.code === "TRIAL_LIMIT") {
-        limitRef.current?.showModal();
+        openModal(limitRef.current);
       } else {
         setError(json?.error?.message ?? "잠시 뒤에 다시 시도해 주세요.");
       }
     } catch {
       setError("잠시 뒤에 다시 시도해 주세요.");
     }
+    inFlight.current = false;
     setPending(false);
   }
 

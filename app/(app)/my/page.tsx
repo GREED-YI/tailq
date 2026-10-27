@@ -4,6 +4,7 @@ import { Suspense, type ReactNode } from "react";
 import { AdminHeaderLink } from "@/components/AdminMenu";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/icons";
+import { TailIcon } from "@/components/Streak";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FEEDBACK_URL } from "@/lib/links";
 import { FIELDS, LEVELS, providerName } from "@/lib/profile";
@@ -13,14 +14,14 @@ import { createClient } from "@/lib/supabase/server";
 import { LogoutButton, NotifyRow, ThemeRow } from "./MySettings";
 import s from "./my.module.css";
 
-export const metadata: Metadata = { title: "MY · TailQ" };
+export const metadata: Metadata = { title: "MY페이지 · TailQ" };
 
-// MY(S27): 프로필, 꼬리잇기·휴식권·북마크 요약, 학습·설정·정보 목록, 로그아웃·탈퇴(04 기능 명세 11장)
+// MY페이지(S27): 프로필, 꼬리잇기·휴식권·북마크 요약, 학습(리포트·북마크·연습 범위)·설정·정보 목록, 로그아웃·탈퇴(04 기능 명세 11장)
 export default function MyPage() {
   return (
     <div className={s.my}>
       <header className={s.header}>
-        <h1 className={s.title}>MY</h1>
+        <h1 className={s.title}>MY페이지</h1>
         <span className={s.mobileOnly}>
           <Suspense>
             <AdminHeaderLink />
@@ -89,7 +90,12 @@ async function My() {
 
       <section className={s.stats} aria-label="요약">
         <Stat
-          label="꼬리잇기"
+          label={
+            <>
+              <TailIcon />
+              꼬리잇기
+            </>
+          }
           value={study?.streak.current}
           unit="일째"
           accent
@@ -103,6 +109,7 @@ async function My() {
       </section>
 
       <Group title="학습">
+        <Row href="/report" title="리포트" meta="꼬리잇기 달력과 약점 리포트" />
         <Row
           href="/history?filter=bookmark"
           title="북마크"
@@ -135,7 +142,7 @@ async function My() {
         <LogoutButton />
         <Link
           href="/my/delete"
-          className={`btn btn-md btn-danger glass press ${s.accountBtn}`}
+          className={`btn btn-md btn-danger press ${s.accountBtn}`}
         >
           탈퇴하기
         </Link>
@@ -150,7 +157,7 @@ function Stat({
   unit,
   accent = false,
 }: {
-  label: string;
+  label: ReactNode;
   value: number | null | undefined;
   unit: string;
   accent?: boolean;

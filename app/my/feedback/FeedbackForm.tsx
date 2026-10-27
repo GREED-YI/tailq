@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BackButton } from "@/components/BackButton";
 import f from "@/components/Flow.module.css";
 import {
+  FEEDBACK_CATEGORIES,
   FEEDBACK_MAX,
   FEEDBACK_MIN,
   FeedbackBody,
@@ -12,6 +13,7 @@ import {
 import s from "../my.module.css";
 
 export function FeedbackForm() {
+  const [category, setCategory] = useState<string>("etc");
   const [body, setBody] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -26,7 +28,7 @@ export function FeedbackForm() {
     const res = await fetch("/api/feedback", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ body }),
+      body: JSON.stringify({ body, category }),
     }).catch(() => null);
     if (res?.ok) {
       setSent(true);
@@ -55,6 +57,7 @@ export function FeedbackForm() {
             className="btn btn-secondary glass press"
             onClick={() => {
               setBody("");
+              setCategory("etc");
               setSent(false);
               setBusy(false);
             }}
@@ -75,6 +78,28 @@ export function FeedbackForm() {
       <p className={f.sub}>
         불편했던 점, 바라는 기능, 채점이 이상했던 질문까지 무엇이든 좋아요.
       </p>
+
+      <p id="feedback-category" className={`${s.label} ${s.gap}`}>
+        분류
+      </p>
+      <div
+        role="radiogroup"
+        aria-labelledby="feedback-category"
+        className={s.categories}
+      >
+        {FEEDBACK_CATEGORIES.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            role="radio"
+            aria-checked={category === c.id}
+            className="chip glass press"
+            onClick={() => setCategory(c.id)}
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
 
       <label htmlFor="feedback" className={`${s.label} ${s.gap}`}>
         의견
