@@ -38,58 +38,118 @@
   z-index: 5;
   margin: 0 -20px;
   padding: 0 20px 12px;
-  /* 처음엔 반투명 + 흐림이었으나 흐림을 못 그리는 환경에서 지나가는 글자가 읽혀, 배경 위 유리 색을 불투명하게 깔았다 */
-  background: linear-gradient(var(--glass), var(--glass)), var(--bg);
+  /* 처음엔 반투명 + 흐림이었으나 흐림을 못 그리는 환경에서 지나가는 글자가 읽혀 불투명하게 깔았다.
+     그다음엔 배경 위에 유리 색을 한 겹 더 깔고 아래 모서리를 둥글게 했는데, 페이지 위에 상자가 떠 보였다.
+     지금은 화면 배경(app/globals.css .backdrop의 두 그라디언트, 화면에 고정)을 똑같이 깔아 띠가 배경에 녹는다(#117) */
+  background:
+    linear-gradient(160deg, var(--wash1, transparent) 0%, transparent 55%) fixed,
+    linear-gradient(340deg, var(--wash2, transparent) 0%, transparent 60%) fixed,
+    var(--bg);
   box-shadow: inset 0 -1px 0 var(--glass-edge);
+}
+/* 빛 번짐 배경은 덩어리가 떠돌아 똑같이 깔 수 없어, 예전처럼 유리 색을 한 겹 깐다 */
+:global([data-bg="glow"]) .top {
+  background: linear-gradient(var(--glass), var(--glass)), var(--bg);
 }
 @media (min-width: 768px) {
   .top {
     margin: 0 -16px;
     padding: 0 16px 12px;
-    border-radius: 0 0 24px 24px;
   }
 }
-/* PC는 .main 위 여백(40)만큼 띠를 위로 늘려, 붙었을 때 제목 위로 목록이 비치지 않게 */
+/* PC: 처음엔 .main 위 여백만큼 띠를 위로 늘렸는데, 그 위에 내용 오른쪽 위 도구(리포트·테마·알림)가 생기자
+   띠가 그 도구를 덮었다. 이제 도구 아래 간격(8)만큼만 올려, 붙었을 때 제목 위로 목록이 비치지 않게만 한다 */
 @media (min-width: 1024px) {
   .top {
-    margin-top: -40px;
-    padding-top: 40px;
+    margin-top: -8px;
+    padding-top: 8px;
   }
 }
 
-/* 필터 칩(전체·북마크)과 달 칩. 한 줄, 넘치면 가로로 넘긴다. 모바일은 화면 끝까지 */
+/* 거르기(전체·북마크)와 달 칩. 한 줄, 넘치면 가로로 넘긴다. 모바일은 화면 끝까지.
+   가로 넘김 칸은 세로로도 잘라서, 칩의 초점 테두리가 잘리지 않게 위아래·양옆 4px 여유를 둔다 */
 .filters {
-  margin: 8px -20px 0;
-  padding: 0 20px;
+  margin: 4px -20px 0;
+  padding: 4px 20px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 16px;
   overflow-x: auto;
   scrollbar-width: none;
 }
 @media (min-width: 768px) {
   .filters {
-    margin: 8px 0 0;
-    padding: 0;
+    margin: 4px -4px 0;
+    padding: 4px;
   }
 }
 @media (min-width: 1024px) {
   .filters {
-    margin-top: 16px;
+    margin-top: 12px;
   }
 }
-.chipGroup {
+
+/* 거르기: 한 덩어리 세그먼트. 고른 쪽만 떠오른 캡슐 + 강조색 */
+.segment {
+  flex-shrink: 0;
   display: flex;
-  gap: 8px;
-  flex-shrink: 0;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 22px;
+  background: var(--well);
+  box-shadow: inset 0 0 0 1px var(--glass-edge);
 }
-/* 필터와 달 칩 사이 세로 줄 */
-.chipGroup + .chipGroup {
-  padding-left: 8px;
-  border-left: 1px solid var(--glass-edge);
+.segment > a {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--sub);
 }
-.chipGroup > a {
+.segment > a[aria-current="page"] {
+  background: var(--tab-active);
+  color: var(--accent);
+  font-weight: 700;
+  /* 다른 칩의 선택 표시(app/globals.css .chip[aria-current])와 같은 강조색 테두리 */
+  box-shadow:
+    inset 0 0 0 1.5px var(--accent),
+    0 2px 6px -2px var(--glass-shadow);
+}
+
+/* 달로 건너뛰기: "바로 가기" 이름표 + 테두리만 있는 칩(누르면 그 달로 이동) */
+.months {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.monthsLabel {
+  margin-right: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sub);
+  white-space: nowrap;
+}
+.months > a {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--dot-off);
+}
+@media (hover: hover) {
+  .segment > a:not([aria-current="page"]):hover,
+  .months > a:hover {
+    color: var(--accent);
+  }
+  .months > a:hover {
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
 }
 
 /* 한 달 묶음. 달 칩으로 건너뛰면 위 띠에 가리지 않게 띠 높이만큼 띄운다 */
@@ -252,18 +312,23 @@
   align-items: center;
   gap: 16px;
 }
-/* 면접 화면의 점수 링(96)을 Figma S20 크기(72)로 줄인다 */
+/* 면접 화면의 점수 링(96)을 줄여 쓴다. 처음엔 Figma S20 크기(72)에 숫자 24였는데 숫자가 링 안을 꽉 채워 답답해 보여,
+   링을 88로 키우고 숫자를 22로 줄여 안쪽 여백을 뒀다(#117) */
 .ring > div {
-  width: 72px;
-  height: 72px;
+  width: 88px;
+  height: 88px;
 }
 .ring svg {
-  width: 72px;
-  height: 72px;
+  width: 88px;
+  height: 88px;
 }
-.ring span:first-child {
-  font-size: 24px;
-  line-height: 26px;
+.ring div span:first-child {
+  font-size: 22px;
+  line-height: 24px;
+}
+.ring div span:last-child {
+  font-size: 11px;
+  line-height: 14px;
 }
 .headline {
   display: flex;
