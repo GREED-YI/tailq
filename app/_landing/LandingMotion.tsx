@@ -21,14 +21,19 @@ export function LandingMotion() {
     const fox = root.querySelector<HTMLElement>(`.${s.fox}`);
 
     // 나타나기는 화면 위아래 10% 안쪽에 들어왔을 때, 숨기기는 화면 밖으로 완전히 나갔을 때.
-    // 숨긴 요소는 화면 바깥쪽으로 밀려나므로 경계에서 나타났다 숨었다를 되풀이하지 않는다
-    const show = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries)
-          if (e.isIntersecting) e.target.setAttribute("data-shown", "");
-      },
-      { rootMargin: "-10% 0px" },
-    );
+    // 숨긴 요소는 화면 바깥쪽으로 밀려나므로 경계에서 나타났다 숨었다를 되풀이하지 않는다.
+    // rootMargin의 %는 위아래도 화면 "너비" 기준이라(넓고 낮은 창에서 영역이 사라진다) 높이로 px를 계산하고,
+    // 창 높이가 바뀌면 다시 만든다
+    const reveal = (entries: IntersectionObserverEntry[]) => {
+      for (const e of entries)
+        if (e.isIntersecting) e.target.setAttribute("data-shown", "");
+    };
+    const makeShow = () =>
+      new IntersectionObserver(reveal, {
+        rootMargin: `-${Math.round(window.innerHeight * 0.1)}px 0px`,
+      });
+    let show = makeShow();
+    let shownFor = window.innerHeight;
     const hide = new IntersectionObserver((entries) => {
       for (const e of entries) {
         if (e.isIntersecting) continue;
@@ -53,6 +58,14 @@ export function LandingMotion() {
     const onScroll = () => {
       frame ||= requestAnimationFrame(paint);
     };
+    const onResize = () => {
+      onScroll();
+      if (window.innerHeight === shownFor || reduce.matches) return;
+      show.disconnect();
+      show = makeShow();
+      shownFor = window.innerHeight;
+      items.forEach((el) => show.observe(el));
+    };
 
     const apply = () => {
       if (reduce.matches) {
@@ -72,7 +85,7 @@ export function LandingMotion() {
     calm.addEventListener("change", apply);
     reduce.addEventListener("change", apply);
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", onResize);
     return () => {
       show.disconnect();
       hide.disconnect();
@@ -80,7 +93,7 @@ export function LandingMotion() {
       calm.removeEventListener("change", apply);
       reduce.removeEventListener("change", apply);
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", onResize);
     };
   }, []);
   return null;
