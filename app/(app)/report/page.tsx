@@ -56,13 +56,14 @@ async function Report({ view }: { view: GrassView }) {
   const out = (c: GrassCell) =>
     view === "month" && c.day.slice(0, 7) !== today.slice(0, 7);
   const studied = cells.filter((c) => c.level > 0 && !out(c)).length;
+  const rested = cells.filter((c) => c.rest && !out(c)).length;
   const range = VIEWS.find((v) => v.key === view)!.range;
   const calendar = view === "week" || view === "month";
 
   const grid = (
     <GrassTip
       className={`${w.grass} ${calendar ? w.calendar : w.strip}`}
-      label={`${range} ${studied}일 학습, 휴식권 ${streak.restDays.length}번 사용`}
+      label={`${range} ${studied}일 학습, 휴식권 ${rested}번 사용`}
     >
       {cells.map((c) => (
         <span
