@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dayLabel, homeState } from "@/lib/home";
+import { homeState } from "@/lib/home";
 
 describe("homeState", () => {
   it("본 질문에 아직 답하지 않았으면 오늘 안 풂", () => {
@@ -27,12 +27,5 @@ describe("homeState", () => {
     expect(homeState("done", [{ idx: 0, status: "graded" }])).toEqual({
       kind: "done",
     });
-  });
-});
-
-describe("dayLabel", () => {
-  it("날짜와 영어 요일 세 글자", () => {
-    expect(dayLabel("2026-10-22")).toBe("2026.10.22 THU");
-    expect(dayLabel("2026-10-26")).toBe("2026.10.26 MON");
   });
 });
