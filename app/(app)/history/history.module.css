@@ -322,8 +322,13 @@
 .rows {
   margin-top: 12px;
   border-radius: 28px;
-  padding: 8px 16px;
+  padding: 8px 20px;
   list-style: none;
+}
+@media (min-width: 768px) {
+  .rows {
+    padding: 8px 32px;
+  }
 }
 .row {
   min-height: 72px;
@@ -362,6 +367,36 @@
   font-size: 22px;
   font-weight: 800;
   color: var(--sub);
+}
+
+/* 기록 목록 행(홈 최근 기록은 위 .row 그대로). 처음엔 홈과 같은 행이라 날짜·제목·점수가 12px 간격으로 붙어 답답해,
+   행 위아래·열 사이를 넓히고 점수 옆에 다른 목록과 같은 화살표를 붙였다(#117, 사용자 요청).
+   화살표는 점수와 한 묶음으로 보이게 열 간격보다 가깝게(4~6px) 당긴다. 모바일은 제목 칸이 좁아지지 않게 열 간격을 12로 둔다 */
+.listRow {
+  min-height: 84px;
+  padding: 16px 0;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto;
+  column-gap: 12px;
+}
+/* 메타는 옆 날짜와 같은 크기(14)로 맞춘다 */
+.listRow .text {
+  gap: 4px;
+}
+.listRow .meta {
+  font-size: 14px;
+  line-height: 20px;
+}
+.listRow > svg {
+  margin-left: -8px;
+  color: var(--sub);
+}
+@media (min-width: 768px) {
+  .listRow {
+    column-gap: 20px;
+  }
+  .listRow > svg {
+    margin-left: -14px;
+  }
 }
 
 /* 상세 머리: 모바일은 뒤로 · 가운데 제목 · 북마크(Figma는 화면 끝에서 10), PC는 뒤로 + 큰 제목 */

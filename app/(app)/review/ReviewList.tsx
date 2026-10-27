@@ -47,7 +47,7 @@ export function ReviewList({ items, today }: { items: Item[]; today: string }) {
             onClick={() => setFilter(f.key)}
           >
             {f.label}
-            <span className="mono">
+            <span className="num">
               {items.filter((r) => matchesFilter(r, f.key, today)).length}
             </span>
           </button>
@@ -96,9 +96,9 @@ function Row({ r, today }: { r: Item; today: string }) {
   const level = r.box ?? 5;
   return (
     <span className={s.text}>
-      <span className={`${/[가-힣]/.test(r.tag) ? "num" : "mono"} ${s.meta}`}>
-        {r.tag}
-      </span>
+      {/* 처음엔 한글 없는 태그(Q.042 · backend / jpa)만 고정폭 글꼴이었으나, 아래 복습일 줄과 글꼴이 달라 보여
+          행 안 글자를 모두 본문 글꼴 + 고정폭 숫자로 맞췄다(#117, 사용자 요청) */}
+      <span className={`num ${s.meta}`}>{r.tag}</span>
       <span className={s.prompt}>{r.prompt}</span>
       <span className={`num ${s.due}`}>
         {r.box === null ? "복습 완료" : dueLabel(daysUntil(r.dueDay, today))} ·

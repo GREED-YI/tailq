@@ -247,7 +247,7 @@ function FollowUp({
     <li>
       <details className={s.followUp}>
         <summary className="hover-row">
-          <span className={`mono ${s.followUpIdx}`}>
+          <span className={`num ${s.followUpIdx}`}>
             {String(idx).padStart(2, "0")}
           </span>
           <span className={s.followUpPrompt}>{prompt}</span>
