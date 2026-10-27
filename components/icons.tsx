@@ -75,6 +75,13 @@ const paths = {
   ),
   bookmark: <path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z" />,
   chevronDown: <path d="m6 9 6 6 6-6" />,
+  // 운영 대시보드(막대 차트)
+  chart: (
+    <>
+      <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+      <path d="M18 17V9M13 17V5M8 17v-3" />
+    </>
+  ),
   info: (
     <>
       <circle cx="12" cy="12" r="10" />

@@ -213,3 +213,16 @@
   top: calc(76px + env(safe-area-inset-top));
   bottom: auto;
 }
+
+/* 운영자 메뉴(#104): 사이드 메뉴가 있는 PC에서만. 모바일·태블릿은 헤더 아이콘을 쓴다 */
+.navAdmin {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .navAdmin {
+    display: block;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--glass-edge);
+  }
+}

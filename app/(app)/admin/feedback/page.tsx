@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 // 받은 피드백 목록(운영 대시보드 "사용자 피드백" 칸에서 온다). 운영자가 아니면 404
 export default function FeedbackListPage() {
   return (
-    <div className={s.page}>
+    <div className={s.page} data-admin>
       <AppHeader />
       <Suspense>
         <FeedbackList />

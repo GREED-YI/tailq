@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { contrast, over } from "@/lib/contrast";
-import { TOKENS } from "@/lib/theme";
+import { ADMIN_TOKENS, TOKENS } from "@/lib/theme";
 
 // 유리 위 글자 대비 4.5:1 이상(#25 완료 조건, docs/07 접근성)
-describe.each(["dark", "light"] as const)("%s 테마 대비", (name) => {
-  const t = TOKENS[name];
+// 운영 화면(#104)은 기본 토큰 위에 남색 값을 덮어쓴다
+const themes = [
+  ["dark", TOKENS.dark],
+  ["light", TOKENS.light],
+  ["운영 dark", { ...TOKENS.dark, ...ADMIN_TOKENS.dark }],
+  ["운영 light", { ...TOKENS.light, ...ADMIN_TOKENS.light }],
+] as const;
+
+describe.each(themes)("%s 테마 대비", (_, t) => {
   const glass = over(t.glass, t.bg);
   const sheet = over(t.sheet, t.bg);
 
