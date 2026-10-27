@@ -9,6 +9,8 @@
   --chip-on-bg: var(--text);
   --chip-on-text: var(--bg);
   /* 자기 배경 빛(스크롤 패럴랙스)을 쓰므로 불투명 배경으로 전체 화면 배경 빛(Backdrop)을 덮는다 */
+  /* flow-root: 헤더의 margin-top이 .root 밖으로 겹쳐 나가 맨 위 24px에 전역 배경 빛이 띠로 보이던 것을 막는다 */
+  display: flow-root;
   position: relative;
   min-height: 100dvh;
   overflow-x: clip;
@@ -97,6 +99,31 @@
   margin-inline: auto;
 }
 
+/* 헤더 뒤 흐림 층: 화면 맨 위부터 메뉴 아래 24px까지 본문을 흐리고, 아래로 갈수록 마스크로 사라진다.
+   -webkit- 접두사를 먼저 써야 빌드 뒤에도 표준 속성이 남는다 */
+.root::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: 96px;
+  z-index: 5;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  -webkit-mask-image: linear-gradient(#000 55%, transparent);
+  mask-image: linear-gradient(#000 55%, transparent);
+}
+/* 흐림을 못 그리는 브라우저는 바탕색 그라디언트로 글자를 가린다 */
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .root::before {
+    background: linear-gradient(var(--bg) 55%, transparent);
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
 /* 헤더: 화면 위에 붙어 따라오는 유리(본문보다 조금 더 불투명) */
 .header {
   position: sticky;
@@ -109,8 +136,8 @@
   display: flex;
   align-items: center;
   background: var(--nav);
-  backdrop-filter: blur(28px) saturate(170%);
   -webkit-backdrop-filter: blur(28px) saturate(170%);
+  backdrop-filter: blur(28px) saturate(170%);
   box-shadow:
     inset 0 1px 0 var(--glass-hi),
     inset 0 0 0 1px var(--glass-edge),
@@ -1093,8 +1120,8 @@
 }
 
 /* 차례 등장: 첫 화면(배지 → 제목 → 설명 → 데모 → 버튼, 0.08초 간격)과 스크롤(data-reveal).
-   768px 이하·동작 줄이기에서는 처음부터 보인다 */
-@media (prefers-reduced-motion: no-preference) and (min-width: 769px) {
+   모바일도 PC와 같다. 동작 줄이기에서는 처음부터 보인다 */
+@media (prefers-reduced-motion: no-preference) {
   .in {
     animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
@@ -1110,38 +1137,38 @@
   .in[data-i="4"] {
     animation-delay: 0.32s;
   }
+  /* 스크롤 등장은 화면에 들어올 때마다 다시 한다(data-shown은 LandingMotion이 붙였다 뗀다).
+     transform 대신 translate로 움직여 카드 hover(transform)와 따로 돈다. 지연(--d)은 등장에만 건다 */
   .root[data-motion] [data-reveal] {
+    --d: 0s;
     transition:
-      opacity 0.7s ease,
-      transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1),
+      opacity 0.6s ease var(--d),
+      translate 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) var(--d),
+      transform 0.2s ease,
       box-shadow 0.2s ease,
       background-color 0.2s ease;
   }
   .root[data-motion] [data-reveal]:not([data-shown]) {
     opacity: 0;
-    transform: translateY(32px);
+    translate: 0 20px;
+  }
+  .root[data-motion] [data-reveal][data-from="top"]:not([data-shown]) {
+    translate: 0 -20px;
   }
   .root[data-motion] [data-reveal][data-i="1"] {
-    transition-delay: 0.08s;
+    --d: 0.08s;
   }
   .root[data-motion] [data-reveal][data-i="2"] {
-    transition-delay: 0.16s;
+    --d: 0.16s;
   }
   .root[data-motion] [data-reveal][data-i="3"] {
-    transition-delay: 0.24s;
+    --d: 0.24s;
   }
   .root[data-motion] [data-reveal][data-i="4"] {
-    transition-delay: 0.32s;
+    --d: 0.32s;
   }
   .root[data-motion] [data-reveal][data-i="5"] {
-    transition-delay: 0.4s;
-  }
-  /* 등장이 끝난 카드의 hover는 다시 0.2초, 지연 없이 */
-  .root[data-motion] .tile[data-shown] {
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease,
-      background-color 0.2s ease;
+    --d: 0.4s;
   }
 }
 @keyframes rise {
@@ -1184,12 +1211,21 @@
   }
 }
 
-/* 모바일(Figma 390): 좌우 24, 헤더는 로고·토글·무료로 시작만 */
-@media (max-width: 560px) {
-  .nav,
+/* 헤더: 가운데 메뉴는 오른쪽 버튼들과 겹치기 전(860px 이하)에 숨기고 [로고] ··· [테마][로그인][무료로 시작]만 둔다.
+   400px 이하(Figma 모바일 390)는 로그인도 숨긴다 */
+@media (max-width: 860px) {
+  .nav {
+    display: none;
+  }
+}
+@media (max-width: 400px) {
   .login {
     display: none;
   }
+}
+
+/* 모바일(Figma 390): 좌우 24 */
+@media (max-width: 560px) {
   .header {
     padding-left: 18px;
   }
