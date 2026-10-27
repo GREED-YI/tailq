@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 // 운영자가 아니면 화면이 있다는 것도 알리지 않도록 404로 보낸다
 export default function AdminPage() {
   return (
-    <div className={s.page}>
+    <div className={s.page} data-admin>
       <AppHeader />
       <Suspense>
         <Dashboard />

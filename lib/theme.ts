@@ -82,15 +82,66 @@ export const TOKENS = {
   },
 } as const satisfies Record<ThemeName, Record<string, string>>;
 
+// 운영 화면(/admin, data-admin이 있는 화면)만 남색으로 덮어쓴다(#104). 사용자 화면은 위 민트 그대로.
+// 남색 배경·유리에 페리윙클 강조, 라벤더(중간)·앰버(낮음) 보조색
+export const ADMIN_TOKENS = {
+  dark: {
+    bg: "#070A16",
+    text: "#EBEFFA",
+    sub: "#A9B2CC",
+    muted: "#8790AD",
+    accent: "#9DB4FF",
+    "accent-fill": "#7C96FF",
+    "on-accent": "#050A1C",
+    ring: "#7C96FF",
+    sheet: "rgba(16,22,44,0.66)",
+    blob1: "rgba(76,111,255,0.32)",
+    blob2: "rgba(124,92,255,0.26)",
+    blob3: "rgba(157,180,255,0.14)",
+    halo: "rgba(124,150,255,0.55)",
+    "tab-active": "rgba(157,180,255,0.14)",
+    scroll: "rgba(157,180,255,0.35)",
+    good: "#8FA8FF",
+    mid: "#C3B5FF",
+    low: "#F5C27A",
+    scrim: "rgba(4,6,16,0.55)",
+  },
+  light: {
+    bg: "#EEF1FA",
+    text: "#0E1530",
+    sub: "#46506E",
+    muted: "#5E6888",
+    accent: "#2E45B8",
+    "accent-fill": "#3D5AFE",
+    "on-accent": "#FFFFFF",
+    ring: "#3D5AFE",
+    "glass-edge": "rgba(14,21,48,0.08)",
+    "glass-shadow": "rgba(24,36,90,0.20)",
+    track: "rgba(14,21,48,0.08)",
+    blob1: "rgba(61,90,254,0.30)",
+    blob2: "rgba(139,120,255,0.28)",
+    blob3: "rgba(120,160,255,0.30)",
+    halo: "rgba(61,90,254,0.40)",
+    scroll: "rgba(46,69,184,0.32)",
+    good: "#2E45B8",
+    mid: "#6B5BD6",
+    low: "#A3600A",
+    scrim: "rgba(14,21,48,0.32)",
+  },
+} as const satisfies Record<ThemeName, Partial<Record<string, string>>>;
+
 const vars = (t: Record<string, string>) =>
   Object.entries(t)
     .map(([k, v]) => `--${k}:${v};`)
     .join("");
 
 // 기본은 다크. 저장한 선택이 없으면 기기 설정을 따른다(script가 data-theme을 정한다).
+// 운영 화면은 :has([data-admin])로 같은 자리에서 덮어써 배경 빛·사이드 메뉴까지 남색이 된다
 export const themeCss =
   `:root,[data-theme="dark"]{${vars(TOKENS.dark)}color-scheme:dark}` +
-  `[data-theme="light"]{${vars(TOKENS.light)}color-scheme:light}`;
+  `[data-theme="light"]{${vars(TOKENS.light)}color-scheme:light}` +
+  `:root:not([data-theme="light"]):has([data-admin]){${vars(ADMIN_TOKENS.dark)}}` +
+  `[data-theme="light"]:has([data-admin]){${vars(ADMIN_TOKENS.light)}}`;
 
 export const THEME_STORAGE_KEY = "tailq-theme";
 
