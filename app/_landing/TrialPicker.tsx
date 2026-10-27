@@ -6,6 +6,7 @@ import { useRef, useState } from "react";
 import { Icon } from "@/components/icons";
 import type { TrialField } from "@/lib/trial";
 import s from "./landing.module.css";
+import { openModal, useCloseOnLeave } from "@/lib/dialog";
 
 export type TrialQuestions = Partial<
   Record<TrialField, { tag: string; prompt: string }>
@@ -25,6 +26,7 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const limitRef = useRef<HTMLDialogElement>(null);
+  useCloseOnLeave(limitRef);
   const label = FIELDS.find((f) => f.id === field)!.label;
   const q = questions?.[field];
 
@@ -44,7 +46,7 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
       const json = await res.json().catch(() => null);
       // 서비스 월 예산 소진(BUDGET_EXCEEDED)은 체험 횟수 안내가 아니라 한도 문구를 그대로 보여준다
       if (res.status === 429 && json?.error?.code === "TRIAL_LIMIT") {
-        limitRef.current?.showModal();
+        openModal(limitRef.current);
       } else {
         setError(json?.error?.message ?? "잠시 뒤에 다시 시도해 주세요.");
       }

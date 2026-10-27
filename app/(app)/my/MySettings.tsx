@@ -18,6 +18,7 @@ import {
 import { THEME_STORAGE_KEY, type ThemeName } from "@/lib/theme";
 import p from "../../my/my.module.css";
 import s from "./my.module.css";
+import { openModal, useCloseOnLeave } from "@/lib/dialog";
 
 // 가운데 확인 창(S30 로그아웃 확인 모양). 브라우저 기본 <dialog>라 Esc·바깥 포커스 막기가 된다
 function Dialog({
@@ -68,12 +69,13 @@ function SettingRow(props: {
 
 export function LogoutButton() {
   const dialog = useRef<HTMLDialogElement>(null);
+  useCloseOnLeave(dialog);
   return (
     <>
       <button
         type="button"
         className={`btn btn-md btn-secondary glass press ${s.accountBtn}`}
-        onClick={() => dialog.current?.showModal()}
+        onClick={() => openModal(dialog.current)}
       >
         로그아웃
       </button>
@@ -115,6 +117,7 @@ export function NotifyRow({
 }) {
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
+  useCloseOnLeave(dialog);
   const [nextOn, setNextOn] = useState(on);
   const [nextHour, setNextHour] = useState(hour);
   const [error, setError] = useState("");
@@ -124,7 +127,7 @@ export function NotifyRow({
     setNextOn(on);
     setNextHour(hour);
     setError("");
-    dialog.current?.showModal();
+    openModal(dialog.current);
   };
 
   async function save() {
@@ -259,6 +262,7 @@ function applyTheme(choice: ThemeChoice) {
 // 화면 테마는 지금처럼 이 기기에만 기억한다(lib/theme.ts의 첫 그림 스크립트가 읽는 값)
 export function ThemeRow() {
   const dialog = useRef<HTMLDialogElement>(null);
+  useCloseOnLeave(dialog);
   const theme = useSyncExternalStore(watchTheme, readTheme, () => "system");
 
   function pick(choice: ThemeChoice) {
@@ -271,7 +275,7 @@ export function ThemeRow() {
       <SettingRow
         title="화면 테마"
         meta={THEMES.find((t) => t.id === theme)!.label}
-        onClick={() => dialog.current?.showModal()}
+        onClick={() => openModal(dialog.current)}
       />
       <Dialog ref={dialog} title="화면 테마">
         <div role="radiogroup" aria-label="화면 테마" className={s.choicesCol}>

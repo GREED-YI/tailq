@@ -7,6 +7,7 @@ import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
 import { LimitNotice, type Notice } from "@/components/LimitNotice";
 import s from "@/app/(app)/projects/projects.module.css";
+import { openModal, useCloseOnLeave } from "@/lib/dialog";
 
 // state: 최근 점수("72점"·"모르겠어요"), 연습 중("doing"), 아직 안 함(null)
 // open: 열린 세션이 있으면 한도와 상관없이 이어 할 수 있다(점수가 있어도 꼬리질문 중일 수 있다)
@@ -41,6 +42,7 @@ export function ProjectView({
 }) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
+  useCloseOnLeave(dialogRef);
   const [busy, setBusy] = useState<number | "delete" | "retry" | null>(null);
   const [error, setError] = useState("");
   const [deleteError, setDeleteError] = useState("");
@@ -116,7 +118,7 @@ export function ProjectView({
           className={`glass press ${s.pill}`}
           onClick={() => {
             setDeleteError("");
-            dialogRef.current?.showModal();
+            openModal(dialogRef.current);
           }}
         >
           삭제
