@@ -50,7 +50,7 @@ main.main {
   align-items: center;
 }
 .helpRow :global(.mono) {
-  font-size: 12px;
+  font-size: 13px;
 }
 .helpRow[data-invalid] {
   color: var(--danger);
@@ -102,6 +102,16 @@ main.main {
   font: inherit;
   font-size: 16px;
   color: var(--text);
+}
+.input::placeholder {
+  color: var(--ph);
+}
+/* 피드백 분류: 칩 네 개, 좁으면 줄을 넘긴다 */
+.categories {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 /* 피드백 본문: 여러 줄 */
 .textarea {
@@ -222,10 +232,6 @@ main.main {
   font-size: 14px;
   font-weight: 700;
   color: var(--danger);
-}
-.help[data-strong] {
-  color: var(--text);
-  font-weight: 500;
 }
 .withdrawBottom button {
   width: 100%;

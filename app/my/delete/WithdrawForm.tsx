@@ -15,9 +15,10 @@ const GONE = [
 ];
 const OAUTH = ["github", "google", "kakao"];
 
-export function WithdrawForm(props: { provider: string; reauth: boolean }) {
+export function WithdrawForm(props: { provider: string }) {
   const [text, setText] = useState("");
-  const [reauth, setReauth] = useState(props.reauth);
+  // 서버(DELETE /api/me)가 "로그인한 지 24시간이 지났다(REAUTH)"고 답했을 때만 켠다
+  const [reauth, setReauth] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const loginForm = useRef<HTMLFormElement>(null);
@@ -25,7 +26,7 @@ export function WithdrawForm(props: { provider: string; reauth: boolean }) {
 
   async function withdraw() {
     setError("");
-    // 로그인한 지 24시간이 지났으면 같은 소셜 로그인으로 다시 확인하고 이 화면으로 돌아온다
+    // 서버가 다시 확인을 요구했으면 같은 소셜 로그인으로 확인하고 이 화면으로 돌아온다
     if (reauth) {
       if (!OAUTH.includes(props.provider))
         return setError("다시 로그인한 뒤 탈퇴해 주세요.");
@@ -78,24 +79,9 @@ export function WithdrawForm(props: { provider: string; reauth: boolean }) {
         className={`glass ${s.input}`}
         value={text}
         onChange={(e) => setText(e.target.value)}
+        placeholder={WITHDRAW_PHRASE}
         autoComplete="off"
-        aria-describedby="confirm-help"
       />
-      <p id="confirm-help" className={s.help} data-strong={reauth || undefined}>
-        {reauth ? (
-          <>
-            로그인한 지 24시간이 지나서
-            <br />
-            {providerName(props.provider)} 로그인으로 한 번 더 확인해요.
-          </>
-        ) : (
-          <>
-            로그인한 지 24시간이 지났으면
-            <br />
-            소셜 로그인으로 한 번 더 확인해요.
-          </>
-        )}
-      </p>
       {error && (
         <p role="alert" className={s.alert}>
           {error}
@@ -109,7 +95,9 @@ export function WithdrawForm(props: { provider: string; reauth: boolean }) {
           disabled={!typed || busy}
           onClick={withdraw}
         >
-          탈퇴하기
+          {reauth
+            ? `${providerName(props.provider)} 로그인으로 확인하기`
+            : "탈퇴하기"}
         </button>
       </div>
 

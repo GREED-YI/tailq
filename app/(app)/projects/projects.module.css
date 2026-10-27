@@ -71,8 +71,8 @@
   gap: 2px;
 }
 .meta {
-  font-size: 12px;
-  line-height: 17px;
+  font-size: 13px;
+  line-height: 18px;
   color: var(--sub);
 }
 .name {
@@ -242,7 +242,7 @@
   color: var(--sub);
 }
 .help :global(.mono) {
-  font-size: 12px;
+  font-size: 13px;
   white-space: nowrap;
 }
 .help[data-over] :global(.mono) {
@@ -323,7 +323,8 @@
   }
 }
 
-/* PC: 목록(S22)은 왼쪽 640 + 오른쪽 안내 318, 질문 목록(S24)은 가운데 720, 등록(S23)은 그 열의 480 */
+/* PC: 목록(S22)은 왼쪽 목록(남은 폭) + 오른쪽 안내 318, 질문 목록(S24)은 가운데 최대 960, 등록(S23)은 그 열의 480.
+   처음엔 목록 640 · 질문 목록 720으로 Figma C안을 따랐으나, 넓은 화면에서 가운데로 몰려 허전해 내용 폭을 따라 늘렸다 */
 @media (min-width: 1024px) {
   .pageTitle {
     display: block;
@@ -338,7 +339,7 @@
   }
   .cols {
     display: grid;
-    grid-template-columns: minmax(0, 640px) 318px;
+    grid-template-columns: minmax(0, 1fr) 318px;
     gap: 33px;
     align-items: start;
   }
@@ -393,7 +394,7 @@
 
   .detail {
     width: 100%;
-    max-width: 720px;
+    max-width: 960px;
     margin: 0 auto;
   }
   .top {
