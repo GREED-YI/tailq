@@ -116,7 +116,7 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
             <strong>
               {review.box
                 ? dueLabel(daysUntil(review.due_day, kstDay(new Date())))
-                : "익힌 질문이에요"}
+                : "복습 완료한 질문이에요"}
             </strong>
             {review.box ? (
               <span className={`num ${s.date}`}>

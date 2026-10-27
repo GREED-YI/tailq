@@ -45,6 +45,9 @@ export const TOKENS = {
     "grass-2": "rgba(52,199,154,0.55)",
     "grass-3": "#34C79A",
     "grass-4": "#7CF2CD",
+    // 홈 오늘 카드 바탕의 옅은 빛(왼쪽 위 강조색 · 오른쪽 아래 민트, #115 개편안)
+    hero1: "rgba(52,199,154,0.30)",
+    hero2: "rgba(124,242,205,0.10)",
   },
   light: {
     bg: "#EAF1EE",
@@ -85,6 +88,8 @@ export const TOKENS = {
     "grass-2": "rgba(18,162,127,0.55)",
     "grass-3": "#12A27F",
     "grass-4": "#0E7C66",
+    hero1: "rgba(52,199,154,0.34)",
+    hero2: "rgba(124,242,205,0.30)",
   },
 } as const satisfies Record<ThemeName, Record<string, string>>;
 
