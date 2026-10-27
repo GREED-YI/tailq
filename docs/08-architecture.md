@@ -34,7 +34,7 @@ flowchart LR
 | Vercel 함수 리전 | `icn1`(서울). 무료 플랜도 리전 1개를 고를 수 있다 | 기본 `iad1`(미국 동부)이면 Supabase 서울까지 왕복 200ms쯤 걸려, 서버 컴포넌트가 3~4번 읽으면 1초가 간다 |
 | Supabase 리전 | `ap-northeast-2`(서울) | 위와 같다 |
 | 함수 실행 시간 | Fluid compute를 켠다(무료 플랜 최대 300초). 라우트마다 `export const maxDuration`을 적는다: 채점(`/api/turns/{id}/answer`) 60, 프로젝트 질문 생성·다시 생성(`/api/projects`, `/api/projects/{id}/generations`) 300. `after()`도 그 라우트의 `maxDuration`을 따른다 | Fluid compute가 꺼진 무료 플랜은 기본 10초라 채점(최대 15초)과 `after()` 저장이 끊긴다. 질문 5개 생성은 30~60초 넘게 걸릴 수 있다 |
-| 런타임 | Node.js (Edge 아님) | `web-push`와 Anthropic SDK 스트리밍이 Node에서 돈다. 공유 카드 이미지(`next/og`)만 Edge |
+| 런타임 | Node.js (Edge 아님) | `web-push`와 Anthropic SDK 스트리밍이 Node에서 돈다. 공유 카드 이미지(`next/og`)도 Node다. 처음엔 Edge로 두었으나, Next 16 문서의 미리보기 이미지 예시가 Node에서 글꼴 파일을 읽는 방식이고 Edge는 한글 글꼴(서브셋 350KB×2)을 묶음 크기 제한 안에 넣기 번거로워 바꿨다 (2026-10-27, #41) |
 | 스트리밍 중단 | Claude 호출에 브라우저의 `request.signal`을 넘기지 않는다 | 사용자가 떠나도 채점을 끝까지 받아 저장해야 한다 |
 | 환경변수 | `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PUBLIC_KEY`·`VAPID_PRIVATE_KEY`·`VAPID_SUBJECT`, `CRON_SECRET`, `TRIAL_IP_HMAC_SECRET`, `AI_MONTHLY_BUDGET_USD`, `KRW_PER_USD`, `AI_MOCK`, `ADMIN_USER_IDS`(운영 대시보드에 들어갈 사용자 id, 쉼표로 구분) | 목록만 여기 두고 값·발급 방법은 #11. `NEXT_PUBLIC_` 둘만 브라우저에 간다 |
 
@@ -169,7 +169,11 @@ Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로
 - 비용은 **달러**(`cost_usd`)로 저장하고 원화는 보여줄 때 `KRW_PER_USD`(환경변수, 고정 환율)로 환산한다. 처음엔 `cost_krw`였으나 환율이 끼면 나중에 다시 계산할 수 없다 (2026-10-25).
 - 이번 달(KST) 합계가 월 예산(`AI_MONTHLY_BUDGET_USD`, $20)에 닿으면 새로 시작하는 AI 기능을 모두 막는다. 이미 시작한 세션은 끝까지 한다. 처음엔 `AI_MONTHLY_BUDGET_KRW`(1만 원)였으나, 비용을 달러로 저장하므로 예산도 달러로 두어 환율 없이 비교하고, 금액을 $20으로 올렸다 (2026-10-26).
 - 합계가 예산의 80%를 넘으면 **세션을 시작할 때** 본 질문 채점 모델을 Haiku로 정해 세션에 저장한다(세션 중간에 모델이 바뀌지 않는다). 기본은 본 질문 Sonnet, 꼬리질문 Haiku다([09 채점](09-grading.md) 5장).
-- 숫자(프로젝트 하루 몇 회, 다시 채점 몇 회, 세션당 예약 몫)는 #10에서 호출당 비용을 잰 뒤 정한다.
+- 숫자는 [09 채점](09-grading.md) 5장 "하루 한도와 다시 채점"을 따른다: 프로젝트 질문 생성 하루 1회, 프로젝트 질문 연습 하루 3세션, 다시 채점 세션당 3번(오늘의 질문은 하루 1세션이라 하루 3번). 처음엔 "#10에서 정한다"였다.
+- **예약 단위는 "몫"(호출 1번)이다 (2026-10-27, #43).** 처음엔 세션에 필요한 토큰·비용을 통째로 예약하는 것으로 읽혔으나, 개인 한도가 횟수(세션 수·생성 수)라서 세션당 한 행이면 충분하다. 프로젝트 세션을 열면 본 질문 채점 몫 한 행(`purpose = grade`, `quota = project_session`), 프로젝트를 등록하면 생성 몫 한 행(`quota = project_gen`)을 `reserved`로 넣고, 그 몫의 첫 호출이 같은 행을 `used`·`failed`로 바꾼다(`record_ai_usage`). 꼬리질문·다시 채점·다시 생성은 몫 없이 새 행으로 남는다. 하루 한도는 그날 `quota`가 있고 `released`가 아닌 행 수로 센다. 시작한 세션 안의 호출은 한도를 다시 보지 않으므로 중간에 끊기지 않는다.
+- 본 질문을 "모르겠어요"로 끝내 AI를 쓰지 않은 세션은 몫을 `released`로 돌려준다(`release_ai_usage`). 실패한 채점은 몫을 쓴 것으로 본다.
+- 월 예산은 **실제 비용만** 더한다(예상 비용을 예약하지 않는다). 동시에 시작한 세션 몇 개만큼(세션당 약 $0.01) 넘을 수 있지만, 이미 시작한 세션을 끝까지 하는 브레이크라 어차피 조금 넘는다. 프로젝트 다시 생성은 하루 한도를 다시 보지 않지만 새 AI 호출이라 월 예산은 본다.
+- 환경변수 `AI_MONTHLY_BUDGET_USD`가 비어 있으면 $20으로 본다(예산 없이 도는 것보다 막히는 쪽이 안전하다).
 
 ### 내 프로젝트 질문 생성
 
@@ -311,7 +315,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 
 | 테이블 | 주요 열 | 메모 |
 |---|---|---|
-| `sessions` | `id`, `user_id`(체험이면 null), `trial_token`, `ip_hash`(체험 IP의 HMAC, 이어받으면 null), `question_id`, `kind`(daily·project·trial), `pick`(review·new·advance), `day`, `status`(open·done·expired), `created_at`, `completed_at` | 유일 인덱스 `(user_id, day) where kind = 'daily'`. 점수는 `turns`에 있다(세션 점수 = 본 질문 턴의 점수). `pick`은 "복습" 표시와 "새 질문을 다 풀었어요" 안내를 다시 그리는 데 쓴다 |
+| `sessions` | `id`, `user_id`(체험이면 null), `trial_token`, `ip_hash`(체험 IP의 HMAC, 이어받으면 null), `question_id`, `kind`(daily·project·trial), `pick`(review·new·advance), `day`, `status`(open·done·expired), `created_at`, `completed_at` | 유일 인덱스 `(user_id, day) where kind = 'daily'`. 점수는 `turns`에 있다(세션 점수 = 본 질문 턴의 점수). `pick`은 "복습" 표시와 "새 질문을 다 풀었어요" 안내를 다시 그리는 데 쓴다. `grade_model`(sonnet·haiku)은 시작할 때 정한 본 질문 채점 모델이다(#43) |
 | `turns` | `id`, `session_id`, `idx`(0 = 본 질문, 1~3 = 꼬리질문), `follow_up_prompt`(꼬리질문 글, 본 질문 턴은 비어 있고 글은 `questions`에 있다), `answer`, `status`(answering·grading·graded·failed·skipped), `grading_started_at`, `grading_attempts`(다시 채점 횟수 제한), `answered_at`, `score`(idx 0만), `verdict`(꼬리질문은 good·partial·wrong·unknown 판정, 본 질문은 "모르겠어요"일 때만 unknown이고 그 외는 null), `feedback`(jsonb), `rating`(👍 1 / 👎 -1) | 유일 `(session_id, idx)`. CHECK: `idx = 0`이면 `verdict`가 `unknown`이거나 null이고 `graded`면 `score`가 있다, `idx > 0`이면 `score`가 null |
 | `turn_keys` | `turn_id`, `expected_answer` | 꼬리질문 기대 답안. 서버 전용 |
 | `reviews` | `user_id`, `question_id`, `box`(1~5, 익히면 null), `due_day` | PK `(user_id, question_id)`. 사용자에게는 칸 대신 다음 복습일·숙련도로 보여준다. 갱신은 본 질문 채점 때 |
@@ -334,8 +338,8 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 
 | 테이블 | 주요 열 | 메모 |
 |---|---|---|
-| `shares` | `id`(짧은 무작위 문자열), `session_id`(유일), `nickname`(뺄 수 있음), `topic_name`(프로젝트 질문이면 "내 프로젝트"), `score`, `streak`, `created_at` | daily·project 세션 모두 공유할 수 있다. 읽기 정책 없음. 공유 페이지는 서버가 `id` 하나로만 읽고 누구의 세션인지는 내보내지 않는다. 만들 때는 `session_id`만 받고 점수·꼬리잇기는 서버가 계산한다(위조 방지). 세션당 하나라 다시 누르면 기존 카드를 돌려준다 |
-| `ai_usage` | `id`, `user_id`(체험이면 null), `purpose`(grade·follow_up·project_gen·trial), `status`(reserved·used·released·failed), `error_code`, `latency_ms`, `input_tokens`, `output_tokens`, `cost_usd`, `day`, `created_at` | 개인 하루 한도, 서비스 월 예산, 그리고 **AI 실패율·지연 관측**(7장) |
+| `shares` | `id`(짧은 무작위 문자열), `session_id`(유일), `nickname`(뺄 수 있음), `topic_name`(프로젝트 질문이면 "내 프로젝트"), `score`, `streak`, `created_at` | daily·project 세션 모두 공유할 수 있다. 읽기 정책 없음. 공유 페이지는 서버가 `id` 하나로만 읽고 누구의 세션인지는 내보내지 않는다. 만들 때는 `session_id`만 받고 점수·꼬리잇기는 서버가 계산한다(위조 방지). 세션당 하나라 다시 누르면 기존 카드를 돌려준다. 이때 닉네임만 지금 설정(`profiles.share_nickname`)으로 고친다(닉네임 공개를 끄고 다시 공유하면 빠지게, 2026-10-27, #41). `id`는 16진수 12자, 체험 세션과 본 질문 점수가 없는 세션은 공유할 수 없다 |
+| `ai_usage` | `id`, `user_id`(체험이면 null, 탈퇴하면 `on delete set null`), `purpose`(grade·follow_up·project_gen·trial), `quota`(project_session·project_gen, 하루 한도 몫을 잡은 행만), `status`(reserved·used·released·failed), `ref_id`(세션·프로젝트 id, 외래키 없음), `model`, `error_code`, `latency_ms`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_write_tokens`, `cost_usd`, `day`, `created_at` | 개인 하루 한도, 서비스 월 예산, 그리고 **AI 실패율·지연 관측**(7장). `quota`·`ref_id`·`model`·캐시 토큰은 #43에서 더했다 |
 | `events` | `id`, `name`, `user_id`, `anon_id`, `props`(jsonb), `created_at` | 지표 이벤트(첫 방문, 체험 시작·완료, 가입, 세션 시작, 본 질문 제출, 세션 완료, 👍/👎, 공유, 알림 클릭). 서버만 쓴다. 비로그인도 보낼 수 있는 입구라 이름은 허용 목록만, `props`는 1KB까지, `anon_id`당 하루 200건을 넘으면 버린다. 90일 지난 행은 새벽 정리에서 지운다. `anon_id`는 브라우저 쿠키 `tailq-anon`(무작위 UUID, 1년)이다. 첫 방문 신호를 보낼지 브라우저가 알아야 해서 `httpOnly`가 아니고, 아무 권한도 주지 않는다. 로그인한 뒤의 이벤트에도 함께 남겨 첫 방문 → 첫 답변을 잇는다 (2026-10-27, #44) |
 
 ### DB 함수
@@ -345,14 +349,16 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | 함수 | 하는 일 |
 |---|---|
 | `start_daily_session(user_id, question_id, pick)` | 사용자 잠금 → 전날 열린 daily 세션 정리(`expired` 또는 `done` + `skipped`) → 오늘 세션이 있으면 반환, 없으면 서버가 고른 질문으로 세션·턴 0 생성. 고르기(복습 → 새 질문 → 앞당기기)는 서버의 순수 함수(`lib/daily-pick.ts`)가 한다. 처음엔 함수 안에서 골랐으나, 주제 고르게 돌리기 같은 규칙을 단위 테스트로 지키기 쉽게 고르기만 서버로 옮겼다. 동시에 와도 잠금과 유일 인덱스로 먼저 만든 세션이 돌아온다 (2026-10-26, #30) |
-| `start_project_session(user_id, question_id)` | 주인 확인, 같은 질문의 열린 세션이 있으면 그것을 돌려준다(이어하기), 없으면 월 예산·하루 한도 확인과 예약(#43), 세션·턴 0 생성 |
-| `start_trial(trial_token, ip_hash, field)` | 브라우저 1번·IP 20번 확인, `trial_field = field`인 샘플 질문으로 세션 생성 |
+| `start_project_session(user_id, question_id, budget_usd)` | 주인 확인, 같은 질문의 열린 세션이 있으면 그것을 돌려준다(이어하기, 한도를 보지 않는다), 없으면 사용자 잠금 안에서 월 예산(`BUDGET_EXCEEDED`)·하루 3세션(`LIMIT_EXCEEDED`) 확인, 세션(`grade_model`)·턴 0 생성과 본 질문 채점 몫 예약 |
+| `ai_quota(user_id, budget_usd)` | `{ budget: ok·downgrade·exceeded, spent_usd, sessions_left, gens_left }`. 시작 함수와 화면(시작 버튼 대신 안내)이 같은 기준을 쓴다. 예산은 서버 환경변수라 인자로 받는다 (#43) |
+| `record_ai_usage(user_id, purpose, ref_id, usage)` · `release_ai_usage(ref_id)` | AI 호출 한 번 기록(같은 `ref_id`·`purpose`의 `reserved` 행이 있으면 그 행을 `used`·`failed`로) · 쓰지 않은 몫 돌려주기 (#43) |
+| `start_trial(trial_token, ip_hash, field, budget_usd)` | 브라우저 1번·IP 20번 확인, 월 예산 확인(`BUDGET_EXCEEDED`, 열린 체험은 그대로 이어 한다), `trial_field = field`인 샘플 질문으로 세션 생성(`grade_model`도 정한다). 체험의 AI 호출은 `ai_usage`에 `user_id` 없이 `purpose = trial`로 남아 월 예산에 들어간다 (#43) |
 | `submit_answer(turn_id, owner, text \| dont_know)` | 소유 확인(사용자 또는 체험 토큰), 상태 전이(`grading` 또는 `unknown`), 다시 채점 횟수(세션의 턴을 합쳐 3번. 오늘의 질문은 하루 1세션이라 하루 3번), 모르겠어요면 복습 1칸·세션 종료. 세션이 이미 닫혔으면 `SESSION_CLOSED` |
-| `save_grading(turn_id, result)` | 결과 저장, idx 0이면 복습 칸 갱신, 다음 꼬리질문 턴 + `turn_keys` 생성 또는 세션 종료(세션이 이미 닫혔으면 결과만 저장), `ai_usage`를 `used`/`failed`로. `result`가 null이면 `failed`(답변은 그대로). 꼬리질문 판정 저장은 #32, `ai_usage` 기록은 하루 사용 상한(#43)에서 붙인다 |
+| `save_grading(turn_id, result)` | 결과 저장, idx 0이면 복습 칸 갱신, 다음 꼬리질문 턴 + `turn_keys` 생성 또는 세션 종료(세션이 이미 닫혔으면 결과만 저장), `result`가 null이면 `failed`(답변은 그대로). 꼬리질문 판정 저장은 #32. 처음엔 `ai_usage`도 여기서 바꾸기로 했으나, 토큰·비용은 채점 호출이 끝난 서버만 알고 실패(타임아웃)에도 남겨야 해서 `record_ai_usage`로 따로 부른다 (2026-10-27, #43) |
 | `apply_review(user_id, question_id, good)` | 복습 칸 옮기기(04 기능 명세 5번). `submit_answer`(모르겠어요)와 `save_grading`(본 질문)이 안에서 부른다. 처음엔 두 함수가 각자 옮기는 것으로 적었으나, 같은 규칙을 두 곳에 쓰지 않게 하나로 뺐다 (2026-10-26, #31) |
 | `set_turn_rating(turn_id, user_id, rating)` | 👍/👎. 채점이 끝난 자기 턴에만 남긴다. 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-26, #31) |
 | `set_bookmark(user_id, question_id, on)` | 북마크 저장·해제(여러 번 불러도 같다). 북마크가 `questions` 읽기 정책을 넓히므로 저장은 내 세션에 나온 질문만 받는다(아니면 아무 번호나 북마크해 질문 은행을 읽을 수 있다). 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-26, #35) |
-| `create_project(user_id, name, content)` | 3개 제한, 예산·한도 확인과 예약, `generating`으로 저장 |
+| `create_project(user_id, name, content, budget_usd)` | 3개 제한, 월 예산·하루 1회 확인과 생성 몫 예약, `generating`으로 저장 |
 | `save_project_questions(project_id, questions, error_code)` | 질문 5개 + 정답지 저장, `ready`. 실패면 `failed` + `error_code`. `generating`일 때만 저장한다(두 번 저장 방지) |
 | `restart_project_generation(user_id, project_id)` | 다시 생성: 주인 확인, `failed`일 때만 `generating`으로 되돌린다. 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-27, #39) |
 | `delete_project(user_id, project_id)` | 오늘 daily 세션이 이 프로젝트 질문이면 거부, 아니면 삭제(cascade) |
@@ -475,7 +481,7 @@ CI는 샘플 질문만으로 돈다. 비공개 저장소는 콘텐츠 작업(#9 
 
 Vercel 무료 플랜의 실행 로그는 **1시간**(확인 필요)만 남아 밤에 난 채점 실패를 아침에 볼 수 없다. 외부 에러 수집 서비스는 넣지 않고(8장) `ai_usage`에 남긴다 (2026-10-25).
 
-- **AI 호출 기록**: 성공·실패 모두 `ai_usage` 한 행. `status`(used·failed), `error_code`(timeout·api_error·schema_invalid·budget), `latency_ms`, 토큰, `cost_usd`. 실패율·p95 지연·일별 비용을 SQL 한 번으로 본다.
+- **AI 호출 기록**: 성공·실패 모두 `ai_usage` 한 행. `status`(used·failed), `error_code`(timeout·refusal·api_error·schema_invalid), `latency_ms`, 토큰(캐시 읽기·쓰기 포함), `model`(대체 모델로 넘어갔으면 그 모델), `cost_usd`(`lib/ai.ts`의 모델 가격표로 계산, 캐시 읽기 0.1배·쓰기 1.25배). 처음 목록의 `budget`은 예산 브레이크가 AI를 부르기 전에 막으므로 호출 기록에 남을 일이 없어 뺐다. 실패율·p95 지연·일별 비용을 SQL 한 번으로 본다.
 - **보는 방법**: Supabase SQL Editor에 저장한 쿼리 3개(오늘 실패율, 이번 달 비용, 어제 푸시 발송 수). 디스코드 웹훅으로 하루 요약을 보내는 것은 다음 버전 메모(9장)에 둔다.
 - **지표**: `events` 테이블(04 기능 명세 §12의 목록). 성공 지표(01) 중 넷은 뷰 `metrics_weekly`(서버만 읽음)가 주(월요일 시작, KST)별로 센다: 주간 답변 제출 수(본 질문, `turn_id`별 한 번), 첫 방문 브라우저 중 언제든 답변까지 간 비율, D7(가입 다음 날부터 7일 안에 이벤트를 다시 남긴 비율, 7일이 다 지난 가입자만), 👍 비율(턴별 마지막 평가). 화면 방문 이벤트는 목록에 없어서 D7의 "다시 옴"은 홈을 열어 오늘의 세션이 시작되는 것(`session_start`) 같은 행동으로 잰다. 월 운영비는 `ai_usage`(#43)로 본다 (2026-10-27, #44).
 - **보관 기간**: 이어받지 않은 체험 세션은 다음 날 4시, `events`는 90일, `ai_usage`는 무기한(개인 내용 없음, 탈퇴 시 `user_id`만 비움), 그 외 사용자 데이터는 탈퇴까지. 정리는 `pg_cron` 4시 작업 하나에 SQL로 모은다.

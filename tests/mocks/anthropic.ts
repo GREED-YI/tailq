@@ -6,7 +6,11 @@ const MESSAGES_URL = "https://api.anthropic.com/v1/messages";
 // 스트리밍 응답(SSE). 글을 몇 글자씩 잘라 content_block_delta로 흘린다
 export function sseMessage(
   text: string,
-  { stopReason = "end_turn", chunk = 7 } = {},
+  {
+    stopReason = "end_turn",
+    chunk = 7,
+    usage = {} as Record<string, number>,
+  } = {},
 ) {
   const events: [string, object][] = [
     [
@@ -21,7 +25,7 @@ export function sseMessage(
           content: [],
           stop_reason: null,
           stop_sequence: null,
-          usage: { input_tokens: 1, output_tokens: 1 },
+          usage: { input_tokens: 1, output_tokens: 1, ...usage },
         },
       },
     ],

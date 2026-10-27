@@ -22,8 +22,11 @@ create function pg_temp.five() returns jsonb language sql as $$
 $$;
 
 -- 사용자당 3개까지
+-- 질문 생성은 하루 1회라(#43) 등록할 때마다 예약 날짜를 하루 앞으로 옮긴다
 insert into ids select 'p1', (public.create_project('00000000-0000-0000-0000-00000000039a', '혜자', repeat('README ', 10))).id;
+update public.ai_usage set day = day - 1 where user_id = '00000000-0000-0000-0000-00000000039a';
 insert into ids select 'p2', (public.create_project('00000000-0000-0000-0000-00000000039a', '두 번째', repeat('README ', 10))).id;
+update public.ai_usage set day = day - 1 where user_id = '00000000-0000-0000-0000-00000000039a';
 insert into ids select 'p3', (public.create_project('00000000-0000-0000-0000-00000000039a', '세 번째', repeat('README ', 10))).id;
 select is(
   (select status from public.projects where id = (select id from ids where name = 'p1')),
@@ -38,6 +41,7 @@ select lives_ok(
   $$select public.create_project('00000000-0000-0000-0000-00000000039b', '남의 것', repeat('README ', 10))$$,
   '3개 제한은 사용자마다 따로 센다'
 );
+update public.ai_usage set day = day - 1 where user_id = '00000000-0000-0000-0000-00000000039b';
 select throws_ok(
   $$select public.create_project('00000000-0000-0000-0000-00000000039b', '짧음', '짧은 설명')$$,
   '23514', null, 'README가 30자보다 짧으면 저장하지 않는다'

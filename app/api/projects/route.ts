@@ -5,6 +5,7 @@ import { generateAndSave, projectErrorResponse } from "@/lib/projects";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { errorResponse } from "@/lib/turn";
+import { budgetUsd } from "@/lib/usage";
 
 // 질문 5개 생성은 30~60초 넘게 걸릴 수 있어 after()도 이 시간 안에서 끝낸다(08 설계 "실행 환경")
 export const maxDuration = 300;
@@ -14,7 +15,7 @@ const Body = z.object({
   content: z.string().trim().min(CONTENT_MIN).max(CONTENT_MAX),
 });
 
-// 프로젝트 등록(08 설계 4장). generating으로 저장하고 바로 응답한 뒤, 질문 생성은 뒤에서 한다.
+// 프로젝트 등록(08 설계 4장). 3개 제한·월 예산·하루 한도를 확인해 generating으로 저장하고 바로 응답한 뒤, 질문 생성은 뒤에서 한다.
 // 화면은 프로젝트 행을 다시 읽어 ready·failed가 됐는지 본다
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -40,6 +41,7 @@ export async function POST(request: Request) {
           p_user_id: userId,
           p_name: body.data.name,
           p_content: body.data.content,
+          p_budget_usd: budgetUsd(),
         })
         .throwOnError()
     ).data;

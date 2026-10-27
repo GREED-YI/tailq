@@ -4,6 +4,7 @@ import { startDailySession } from "@/lib/daily";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { track } from "@/lib/track";
+import { budgetUsd, LIMIT_MESSAGE } from "@/lib/usage";
 
 const error = (status: number, code: string, message: string) =>
   NextResponse.json({ error: { code, message } }, { status });
@@ -27,16 +28,23 @@ export async function POST(request: Request) {
   }
 
   if (body.data.kind === "project") {
-    // 하루 한도 확인과 예약은 하루 사용 상한(#43)에서 start_project_session에 붙인다
+    // 새 세션이면 월 예산·하루 한도를 확인하고 본 질문 채점 몫을 예약한다(이어 하는 세션은 보지 않는다)
     const { data: session, error: e } = await createAdminClient().rpc(
       "start_project_session",
-      { p_user_id: userId, p_question_id: body.data.questionId },
+      {
+        p_user_id: userId,
+        p_question_id: body.data.questionId,
+        p_budget_usd: budgetUsd(),
+      },
     );
     if (e?.message === "NOT_FOUND") {
       return error(404, "NOT_FOUND", "질문을 찾을 수 없어요.");
     }
     if (e?.message === "NOT_OWNER") {
       return error(403, "NOT_OWNER", "내 질문이 아니에요.");
+    }
+    if (e?.message === "LIMIT_EXCEEDED" || e?.message === "BUDGET_EXCEEDED") {
+      return error(429, e.message, LIMIT_MESSAGE);
     }
     if (e) {
       console.error("start_project_session failed", e);
@@ -57,6 +65,9 @@ export async function POST(request: Request) {
   } catch (e) {
     console.error("startDailySession failed", e);
     return error(500, "INTERNAL", "오늘의 질문을 만들지 못했어요.");
+  }
+  if (session === "budget") {
+    return error(429, "BUDGET_EXCEEDED", LIMIT_MESSAGE);
   }
   // exhausted면 화면이 "범위 안의 새 질문을 다 풀었어요. 범위를 넓혀볼까요?"를 보여준다
   return NextResponse.json({

@@ -4,10 +4,12 @@ import { generateAndSave, projectErrorResponse } from "@/lib/projects";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { errorResponse } from "@/lib/turn";
+import { budgetUsd } from "@/lib/usage";
 
 export const maxDuration = 300;
 
-// 실패한 프로젝트의 질문 다시 생성(08 설계 4장). failed일 때만 받고, 생성은 등록처럼 뒤에서 한다
+// 실패한 프로젝트의 질문 다시 생성(08 설계 4장). failed일 때만 받고, 생성은 등록처럼 뒤에서 한다.
+// 하루 한도는 등록 때 잡은 몫을 쓰므로 다시 보지 않고, 월 예산만 본다
 export async function POST(
   _request: Request,
   ctx: RouteContext<"/api/projects/[id]/generations">,
@@ -30,6 +32,7 @@ export async function POST(
         .rpc("restart_project_generation", {
           p_user_id: userId,
           p_project_id: id,
+          p_budget_usd: budgetUsd(),
         })
         .throwOnError()
     ).data;

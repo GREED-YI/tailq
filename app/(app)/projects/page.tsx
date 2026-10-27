@@ -3,8 +3,11 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { Icon } from "@/components/icons";
+import { LimitNotice, limitNotice } from "@/components/LimitNotice";
 import { MAX_PROJECTS } from "@/lib/questions";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { loadQuota } from "@/lib/usage";
 import s from "./projects.module.css";
 
 export const metadata: Metadata = { title: "내 프로젝트 · TailQ" };
@@ -55,16 +58,25 @@ export default function ProjectsPage() {
   );
 }
 
-// RLS가 내 프로젝트와 그 질문·세션만 보여준다. 본 질문을 채점받은(답했거나 모르겠어요) 질문을 "연습함"으로 센다
+// RLS가 내 프로젝트와 그 질문·세션만 보여준다. 본 질문을 채점받은(답했거나 모르겠어요) 질문을 "연습함"으로 센다.
+// 하루 한도·월 예산은 시작하기 전에 확인해 안내(S26)를 보여주고, 등록할 수 없으면 버튼을 막는다
 async function Projects() {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("projects")
-    .select("id, name, status, questions(id, sessions(turns(idx, status)))")
-    .order("created_at")
-    .throwOnError();
+  const { data: auth } = await supabase.auth.getClaims();
+  const [{ data }, quota] = await Promise.all([
+    supabase
+      .from("projects")
+      .select("id, name, status, questions(id, sessions(turns(idx, status)))")
+      .order("created_at")
+      .throwOnError(),
+    loadQuota(createAdminClient(), auth?.claims.sub ?? null),
+  ]);
 
-  const full = data.length >= MAX_PROJECTS;
+  const notice = limitNotice(quota, "both");
+  const full =
+    data.length >= MAX_PROJECTS ||
+    quota.budget === "exceeded" ||
+    quota.gensLeft <= 0;
   return (
     <>
       <ul className={`glass ${s.rows}`}>
@@ -96,9 +108,10 @@ async function Projects() {
           );
         })}
       </ul>
-      <p className={`num ${s.count}`}>
+      <p className={`num ${s.count}`} data-left={notice ? "" : undefined}>
         {data.length} / {MAX_PROJECTS}개 등록
       </p>
+      {notice && <LimitNotice {...notice} />}
       <div className={s.bottom}>
         {full ? (
           <button type="button" className="btn" disabled>
