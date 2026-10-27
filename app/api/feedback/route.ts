@@ -18,24 +18,18 @@ export async function POST(request: Request) {
   if (!parsed.success)
     return fail(400, "VALIDATION", "5~1000자로 적어 주세요.");
 
-  const admin = createAdminClient();
-  // ponytail: 세고 넣는 사이에 동시에 보내면 한도를 조금 넘을 수 있다. 문제가 되면 DB 함수로 옮긴다
-  const { count, error: countError } = await admin
-    .from("feedback")
-    .select("id", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .gte("created_at", new Date(Date.now() - 86_400_000).toISOString());
-  if (countError) return fail(500, "INTERNAL", "보내지 못했어요.");
-  if ((count ?? 0) >= FEEDBACK_DAILY)
+  // 하루 개수 확인과 넣기는 사용자별 잠금이 걸린 DB 함수 하나로 한다(동시 요청에도 한도를 넘지 않게)
+  const { error } = await createAdminClient().rpc("send_feedback", {
+    p_user_id: userId,
+    p_body: parsed.data,
+    p_daily: FEEDBACK_DAILY,
+  });
+  if (error?.message === "FEEDBACK_LIMIT")
     return fail(
       429,
       "FEEDBACK_LIMIT",
       "오늘은 피드백을 충분히 보냈어요. 내일 다시 보내 주세요.",
     );
-
-  const { error } = await admin
-    .from("feedback")
-    .insert({ user_id: userId, body: parsed.data });
   if (error) return fail(500, "INTERNAL", "보내지 못했어요.");
 
   return new NextResponse(null, { status: 201 });

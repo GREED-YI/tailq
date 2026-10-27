@@ -383,7 +383,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `PUT /api/turns/{id}/answer` | 답변 저장 → 채점 + 다음 꼬리질문(SSE). `{ text }` 또는 `{ dontKnow: true }`(AI를 부르지 않음, JSON 응답). 실패한 턴에 같은 요청을 다시 보내면 다시 채점이다. 체험 턴도 같은 주소(쿠키 토큰으로 소유 확인) | ○ 또는 체험 쿠키 |
 | `PUT /api/turns/{id}/rating` | 👍/👎 | ○ |
 | `PUT /api/bookmarks/{questionId}` · `DELETE` | 북마크 저장·해제 | ○ |
-| `POST /api/feedback` | 피드백 보내기 `{ body }`. 24시간에 5개를 넘으면 `429 FEEDBACK_LIMIT` | ○ |
+| `POST /api/feedback` | 피드백 보내기 `{ body }`. 24시간에 5개를 넘으면 `429 FEEDBACK_LIMIT`. 세기와 넣기는 사용자별 잠금이 걸린 `send_feedback` 한 번으로 해 동시 요청에도 한도를 넘지 않는다 | ○ |
 | `POST /api/projects` | 프로젝트 등록(한도 예약) → `generating`으로 바로 응답. 질문 생성은 뒤에서 | ○ |
 | `POST /api/projects/{id}/generations` | 실패한 프로젝트의 질문 다시 생성 | ○ |
 | `DELETE /api/projects/{id}` | 프로젝트와 딸린 질문·기록 삭제. 오늘의 질문이면 `409 PROJECT_IN_TODAY_SESSION` | ○ |

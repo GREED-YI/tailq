@@ -661,6 +661,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      send_feedback: {
+        Args: { p_body: string; p_daily: number; p_user_id: string };
+        Returns: undefined;
+      };
       set_bookmark: {
         Args: { p_on: boolean; p_question_id: number; p_user_id: string };
         Returns: undefined;
