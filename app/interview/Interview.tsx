@@ -415,7 +415,6 @@ function ResultView({
   streamed: string;
   onNext: (next: Turn) => void;
 }) {
-  const shown = useCountUp(result?.score ?? 0, Boolean(result) && !followUp);
   if (followUp) {
     return (
       <FollowUpResult
@@ -442,11 +441,11 @@ function ResultView({
   return (
     <div className={s.result}>
       <div className={s.top}>
+        {/* 0에서 점수까지 차오르는 것은 ScoreRing이 맡는다 */}
         <ScoreRing
-          shown={shown}
+          shown={result.score ?? 0}
           label={`100점 만점에 ${result.score ?? 0}점`}
-          value={shown}
-          score={result.score ?? 0}
+          value={result.score ?? 0}
         />
         <div className={s.headline}>
           <strong>{unknown ? "모르겠어요" : result.feedback?.summary}</strong>
@@ -644,26 +643,6 @@ function Rating({
       </button>
     </div>
   );
-}
-
-// 0에서 점수까지 18ms마다 2씩(docs/07 "모션"). 동작 줄이기면 바로 최종 값
-function useCountUp(target: number, run: boolean) {
-  const [shown, setShown] = useState(0);
-  useEffect(() => {
-    if (!run) return;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const t = setTimeout(() => setShown(target), 0);
-      return () => clearTimeout(t);
-    }
-    let v = 0;
-    const id = setInterval(() => {
-      v = Math.min(target, v + 2);
-      setShown(v);
-      if (v >= target) clearInterval(id);
-    }, 18);
-    return () => clearInterval(id);
-  }, [target, run]);
-  return shown;
 }
 
 // 키보드가 올라오면 시트도 그 위로(docs/07 "iOS 대응", visualViewport 기준).
