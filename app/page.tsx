@@ -386,7 +386,7 @@ export default function Landing() {
         </section>
       </main>
 
-      <SiteFooter className={s.footer} logoHeight={22} />
+      <SiteFooter className={s.footer} logoHeight={22} feedback />
     </div>
   );
 }
