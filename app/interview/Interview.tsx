@@ -7,6 +7,7 @@ import { BookmarkButton } from "@/components/BookmarkButton";
 import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import type { SessionQuestion } from "@/lib/daily";
 import type { TurnResult } from "@/lib/turn";
 import s from "./interview.module.css";
 import { ScoreRing } from "./ScoreRing";
@@ -39,6 +40,8 @@ const PHASE_OF: Record<InterviewStatus, Phase> = {
 export function Interview({
   initialTurn,
   question,
+  exitHref,
+  resultHref,
   nickname,
   bookmarked,
   initialStatus,
@@ -46,7 +49,10 @@ export function Interview({
   initialResult,
 }: {
   initialTurn: Turn;
-  question: { id: number; prompt: string; topicId: string; field: string };
+  question: SessionQuestion;
+  // 나가기와 끝난 뒤 결과 화면. 프로젝트 질문 세션은 프로젝트 질문 목록으로 돌아간다
+  exitHref: string;
+  resultHref: string;
   nickname: string;
   bookmarked: boolean;
   initialStatus: InterviewStatus;
@@ -177,7 +183,7 @@ export function Interview({
 
   const tag =
     turn.idx === 0
-      ? `Q.${String(question.id).padStart(3, "0")} · ${question.field} / ${question.topicId}`
+      ? `${question.label} · ${question.topic}`
       : `↳ 꼬리질문 ${turn.idx}`;
   const showResultSheet =
     phase === "result" || (phase === "grading" && streamed);
@@ -239,7 +245,9 @@ export function Interview({
       </div>
 
       <div key={turn.id} className={`fade ${s.question}`}>
-        <span className={`${turn.idx === 0 ? "mono" : ""} ${s.tag}`}>
+        <span
+          className={`${turn.idx === 0 && !question.projectId ? "mono" : ""} ${s.tag}`}
+        >
           {tag}
         </span>
         <h1 className={s.prompt}>{turn.prompt}</h1>
@@ -279,6 +287,7 @@ export function Interview({
         {showResultSheet ? (
           <ResultView
             followUp={turn.idx > 0}
+            resultHref={resultHref}
             result={phase === "result" ? result : null}
             streamed={streamed}
             onNext={goNext}
@@ -361,7 +370,7 @@ export function Interview({
         <p>다음에 이어서 할 수 있어요.</p>
         <div className={s.dialogActions}>
           <Link
-            href="/home"
+            href={exitHref}
             className="glass btn btn-md btn-secondary press"
             onClick={saveDraft}
           >
@@ -383,11 +392,13 @@ export function Interview({
 
 function ResultView({
   followUp,
+  resultHref,
   result,
   streamed,
   onNext,
 }: {
   followUp: boolean;
+  resultHref: string;
   result: TurnResult | null;
   streamed: string;
   onNext: (next: Turn) => void;
@@ -395,7 +406,12 @@ function ResultView({
   const shown = useCountUp(result?.score ?? 0, Boolean(result) && !followUp);
   if (followUp) {
     return (
-      <FollowUpResult result={result} streamed={streamed} onNext={onNext} />
+      <FollowUpResult
+        result={result}
+        streamed={streamed}
+        onNext={onNext}
+        resultHref={resultHref}
+      />
     );
   }
   if (!result) {
@@ -478,7 +494,7 @@ function ResultView({
         {!unknown && <Rating turnId={result.turnId} initial={result.rating} />}
       </details>
 
-      <NextButton result={result} onNext={onNext} />
+      <NextButton result={result} onNext={onNext} resultHref={resultHref} />
     </div>
   );
 }
@@ -488,10 +504,12 @@ function FollowUpResult({
   result,
   streamed,
   onNext,
+  resultHref,
 }: {
   result: TurnResult | null;
   streamed: string;
   onNext: (next: Turn) => void;
+  resultHref: string;
 }) {
   if (!result) {
     return (
@@ -522,18 +540,20 @@ function FollowUpResult({
         </div>
       )}
       {!unknown && <Rating turnId={result.turnId} initial={result.rating} />}
-      <NextButton result={result} onNext={onNext} />
+      <NextButton result={result} onNext={onNext} resultHref={resultHref} />
     </div>
   );
 }
 
-// 다음 꼬리질문이 있으면 이어서, 없으면(세션이 끝남) 오늘의 결과로
+// 다음 꼬리질문이 있으면 이어서, 없으면(세션이 끝남) 결과 화면으로
 function NextButton({
   result,
   onNext,
+  resultHref,
 }: {
   result: TurnResult;
   onNext: (next: Turn) => void;
+  resultHref: string;
 }) {
   const next = result.nextTurn;
   return next ? (
@@ -545,8 +565,9 @@ function NextButton({
       꼬리질문 받기 · {next.idx}/3
     </button>
   ) : (
-    <Link href="/interview/result" className="btn btn-primary press">
-      오늘의 결과 보기
+    <Link href={resultHref} className="btn btn-primary press">
+      {/* 프로젝트 질문 세션의 결과 주소는 ?session=이 붙는다 */}
+      {resultHref.includes("?") ? "결과 보기" : "오늘의 결과 보기"}
     </Link>
   );
 }

@@ -8,6 +8,7 @@ import { startDailySession, type DailySession } from "@/lib/daily";
 import { kstDay } from "@/lib/daily-pick";
 import { dayLabel, homeState, type HomeState } from "@/lib/home";
 import { hourLabel } from "@/lib/profile";
+import { qLabel, tagLine } from "@/lib/questions";
 import { daysUntil, dueLabel } from "@/lib/review";
 import { grassCells } from "@/lib/streak";
 import { loadStudy, type Study } from "@/lib/study";
@@ -16,8 +17,6 @@ import { weaknessReport } from "@/lib/weakness";
 import h from "../history/history.module.css";
 import rv from "../review/review.module.css";
 import s from "./home.module.css";
-
-const qLabel = (id: number) => `Q.${String(id).padStart(3, "0")}`;
 
 // 홈(S10 오늘 안 풂 · S11 하던 중 · S12 오늘 완료). 모바일은 카드와 통계,
 // 태블릿·PC는 복습할 질문·최근 기록 미리보기를 더하고, PC는 오른쪽 열에 통계·이번 주·약한 주제를 둔다(docs/07)
@@ -82,7 +81,7 @@ async function Home() {
     supabase
       .from("reviews")
       .select(
-        "box, due_day, questions!inner(id, prompt, topic_id, topics(field))",
+        "box, due_day, questions!inner(id, prompt, topic_id, topics(field), projects(name))",
       )
       .eq("questions.is_hidden", false)
       .order("due_day")
@@ -92,7 +91,7 @@ async function Home() {
     supabase
       .from("sessions")
       .select(
-        "id, day, questions(id, prompt), turns(idx, status, score, verdict)",
+        "id, day, questions(id, prompt, project_id), turns(idx, status, score, verdict)",
       )
       .eq("status", "done")
       .order("day", { ascending: false })
@@ -191,9 +190,10 @@ async function Home() {
             <li key={r.questions.id}>
               <Link href="/review" className={s.linkRow}>
                 <span className={s.reviewRow}>
-                  <span className={`mono ${rv.meta}`}>
-                    {qLabel(r.questions.id)} · {r.questions.topics.field} /{" "}
-                    {r.questions.topic_id}
+                  <span
+                    className={`${r.questions.projects ? "num" : "mono"} ${rv.meta}`}
+                  >
+                    {tagLine(r.questions)}
                   </span>
                   <span className={rv.prompt}>{r.questions.prompt}</span>
                   <span className={`num ${rv.due}`}>
@@ -271,12 +271,12 @@ function TodayCard({
         <FloatingQ />
       </div>
       <div className={s.cardHead}>
-        <span className={`glass mono ${s.qChip}`}>{qLabel(q.id)}</span>
+        <span className={`glass ${q.projectId ? "" : "mono"} ${s.qChip}`}>
+          {q.label}
+        </span>
         <span className="num">{meta}</span>
       </div>
-      <span className={`mono ${s.tag}`}>
-        {q.field} / {q.topicId}
-      </span>
+      <span className={`${q.projectId ? "" : "mono"} ${s.tag}`}>{q.topic}</span>
       <p className={s.prompt}>{q.prompt}</p>
       <Link href="/interview" className={`press ${s.go}`}>
         {state.kind === "doing" ? "이어서 하기" : "시작하기"}
@@ -327,8 +327,8 @@ function DoneCard({
     >
       <div className={s.cardHead}>
         <span className={s.doneChip}>오늘 완료</span>
-        <span className="mono">
-          {qLabel(q.id)} · {q.field} / {q.topicId}
+        <span className={q.projectId ? undefined : "mono"}>
+          {q.label} · {q.topic}
         </span>
       </div>
       <div className={s.doneRow}>
@@ -445,7 +445,7 @@ function Section({
 type RecentRow = {
   id: string;
   day: string;
-  questions: { id: number; prompt: string };
+  questions: { id: number; prompt: string; project_id: string | null };
   turns: {
     idx: number;
     status: string;
@@ -471,7 +471,7 @@ function RecentSection({ rows }: { rows: RecentRow[] }) {
         ).length;
         const meta = [
           unknown && "모르겠어요",
-          qLabel(r.questions.id),
+          qLabel(r.questions),
           followUps > 0 && `꼬리질문 ${followUps}개`,
         ]
           .filter(Boolean)

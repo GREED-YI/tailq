@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { qLabel } from "@/lib/questions";
 import { createClient } from "@/lib/supabase/server";
 import { HistoryFilters } from "./HistoryFilters";
 import { HistoryList } from "./HistoryList";
@@ -42,7 +43,7 @@ async function Sessions({
   const { data } = await supabase
     .from("sessions")
     .select(
-      "id, day, questions(id, prompt, bookmarks(question_id)), turns(idx, status, score, verdict)",
+      "id, day, questions(id, prompt, project_id, bookmarks(question_id)), turns(idx, status, score, verdict)",
     )
     .eq("status", "done")
     .order("day", { ascending: false })
@@ -55,7 +56,7 @@ async function Sessions({
     .map((r) => ({
       id: r.id,
       day: r.day,
-      qid: r.questions.id,
+      label: qLabel(r.questions),
       prompt: r.questions.prompt,
       // RLS가 내 북마크만 붙여 준다
       bookmarked: r.questions.bookmarks.length > 0,

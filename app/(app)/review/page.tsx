@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { kstDay } from "@/lib/daily-pick";
+import { tagLine } from "@/lib/questions";
 import { createClient } from "@/lib/supabase/server";
 import { ReviewList } from "./ReviewList";
 import s from "./review.module.css";
@@ -42,7 +43,7 @@ async function Reviews() {
     supabase
       .from("reviews")
       .select(
-        "box, due_day, questions!inner(id, prompt, topic_id, topics(field))",
+        "box, due_day, questions!inner(id, prompt, topic_id, topics(field), projects(name))",
       )
       .eq("questions.is_hidden", false)
       .order("due_day")
@@ -68,7 +69,7 @@ async function Reviews() {
     dueDay: r.due_day,
     id: r.questions.id,
     prompt: r.questions.prompt,
-    tag: `${r.questions.topics.field} / ${r.questions.topic_id}`,
+    tag: tagLine(r.questions),
     sessionId: latest.get(r.questions.id),
   }));
   return (

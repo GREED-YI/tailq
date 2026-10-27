@@ -15,14 +15,25 @@ import {
   type FollowUpInput,
   type GradeInput,
 } from "@/lib/grading";
+import {
+  MOCK_PROJECT_QUESTIONS,
+  PROJECT_SYSTEM_PROMPT,
+  ProjectQuestionsOutput,
+  projectUserMessage,
+  type ProjectInput,
+} from "@/lib/project-questions";
 
 // Claude API 호출은 이 모듈에만 둔다(08 설계 6장 "AI 경계"). 서버에서만 import한다.
 // 모델 ID는 docs/09 5장. 예산 80% 뒤 Haiku로 낮추는 것은 하루 사용 상한 이슈에서 붙인다.
 export const GRADE_MODEL = "claude-sonnet-5-5";
 export const FOLLOW_UP_MODEL = "claude-haiku-5-5";
+// README에 없는 사실을 지어내지 않는 게 중요해서 Sonnet(docs/09 5장)
+export const PROJECT_MODEL = "claude-sonnet-5-5";
 
 // 서버의 Claude 호출 타임아웃(08 설계 "시간 기준은 셋이다")
 const TIMEOUT_MS = 15_000;
+// 질문 5개 생성은 30~60초 넘게 걸릴 수 있다. 라우트 maxDuration 300초 안에서 실패를 저장할 여유를 둔다
+const PROJECT_TIMEOUT_MS = 240_000;
 
 // 구조화 출력 스키마. 거절(refusal)이면 SDK의 자동 파싱이 먼저 터지므로 파싱은 직접 한다
 const GRADE_FORMAT = {
@@ -32,6 +43,10 @@ const GRADE_FORMAT = {
 const FOLLOW_UP_FORMAT = {
   type: "json_schema" as const,
   schema: betaZodOutputFormat(FollowUpOutput).schema,
+};
+const PROJECT_FORMAT = {
+  type: "json_schema" as const,
+  schema: betaZodOutputFormat(ProjectQuestionsOutput).schema,
 };
 
 export class GradingError extends Error {
@@ -80,6 +95,26 @@ export async function gradeFollowUp(
   );
 }
 
+// 내 프로젝트 질문 5개 생성(Sonnet). 화면에 흘릴 글이 없어 끝난 출력만 돌려준다.
+// 브라우저 요청과 상관없이 after()에서 돈다(08 설계 "내 프로젝트 질문 생성")
+export async function generateProjectQuestions(
+  input: ProjectInput,
+): Promise<ProjectQuestionsOutput> {
+  if (process.env.AI_MOCK === "1") return MOCK_PROJECT_QUESTIONS;
+  return streamStructured(
+    {
+      model: PROJECT_MODEL,
+      fallback: true,
+      system: PROJECT_SYSTEM_PROMPT,
+      user: projectUserMessage(input),
+      format: PROJECT_FORMAT,
+      timeoutMs: PROJECT_TIMEOUT_MS,
+    },
+    ProjectQuestionsOutput,
+    () => {},
+  );
+}
+
 async function streamStructured<T>(
   req: {
     model: string;
@@ -87,13 +122,17 @@ async function streamStructured<T>(
     system: string;
     user: string;
     format: { type: "json_schema"; schema: Record<string, unknown> };
+    timeoutMs?: number;
   },
   schema: z.ZodType<T>,
   onText: (delta: string) => void,
 ): Promise<T> {
   const client = new Anthropic({ maxRetries: 1 });
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+  const timer = setTimeout(
+    () => controller.abort(),
+    req.timeoutMs ?? TIMEOUT_MS,
+  );
   let sent = "";
   try {
     const stream = client.beta.messages.stream(

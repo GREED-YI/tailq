@@ -176,7 +176,7 @@ Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로
 
 1. `POST /api/projects` → `create_project`: 3개 제한·한도 확인·예약 후 `projects`를 `status = 'generating'`으로 저장하고 **바로 응답**한다.
 2. 생성은 `after()`에서 한다(이 라우트와 다시 생성 라우트는 `maxDuration = 300`, 1장 "실행 환경"). 끝나면 `save_project_questions`가 `questions`(`project_id`, `topic_id`·`level` 없음) 5개와 `question_keys`(`rubric`, `model_answer`, `links`는 null) 5개를 한 트랜잭션으로 넣고 `status = 'ready'`. 실패하면 `status = 'failed'`, `error_code`.
-3. 화면은 `projects` 행을 2초마다 읽어(RLS 읽기 정책 안에서 supabase-js) 상태를 본다. Supabase Realtime으로 바꿔도 되지만 처음엔 폴링으로 충분하다.
+3. 화면은 `projects` 행을 2초마다 읽어(RLS 읽기 정책 안에서) 상태를 본다. Supabase Realtime으로 바꿔도 되지만 처음엔 폴링으로 충분하다. 처음엔 브라우저 supabase-js로 읽기로 했으나, 질문 목록 화면이 이미 서버 컴포넌트로 같은 행을 읽으므로 `router.refresh()`로 다시 그리게 했다. 브라우저용 Supabase 클라이언트를 따로 두지 않아도 된다 (2026-10-27, #39).
 4. 다시 생성은 `POST /api/projects/{id}/generations`. `failed`일 때만 받고 한도는 다시 예약하지 않는다(처음 예약한 몫을 쓴다).
 5. 프로젝트 질문에는 참고 자료 링크를 넣지 않는다. 모델이 만든 URL은 없는 주소일 수 있다.
 
@@ -343,7 +343,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | 함수 | 하는 일 |
 |---|---|
 | `start_daily_session(user_id, question_id, pick)` | 사용자 잠금 → 전날 열린 daily 세션 정리(`expired` 또는 `done` + `skipped`) → 오늘 세션이 있으면 반환, 없으면 서버가 고른 질문으로 세션·턴 0 생성. 고르기(복습 → 새 질문 → 앞당기기)는 서버의 순수 함수(`lib/daily-pick.ts`)가 한다. 처음엔 함수 안에서 골랐으나, 주제 고르게 돌리기 같은 규칙을 단위 테스트로 지키기 쉽게 고르기만 서버로 옮겼다. 동시에 와도 잠금과 유일 인덱스로 먼저 만든 세션이 돌아온다 (2026-10-26, #30) |
-| `start_project_session(user_id, question_id)` | 주인 확인, 월 예산·하루 한도 확인과 예약, 세션·턴 0 생성 |
+| `start_project_session(user_id, question_id)` | 주인 확인, 같은 질문의 열린 세션이 있으면 그것을 돌려준다(이어하기), 없으면 월 예산·하루 한도 확인과 예약(#43), 세션·턴 0 생성 |
 | `start_trial(trial_token, ip_hash, field)` | 브라우저 1번·IP 20번 확인, `trial_field = field`인 샘플 질문으로 세션 생성 |
 | `submit_answer(turn_id, owner, text \| dont_know)` | 소유 확인(사용자 또는 체험 토큰), 상태 전이(`grading` 또는 `unknown`), 다시 채점 횟수(세션의 턴을 합쳐 3번. 오늘의 질문은 하루 1세션이라 하루 3번), 모르겠어요면 복습 1칸·세션 종료. 세션이 이미 닫혔으면 `SESSION_CLOSED` |
 | `save_grading(turn_id, result)` | 결과 저장, idx 0이면 복습 칸 갱신, 다음 꼬리질문 턴 + `turn_keys` 생성 또는 세션 종료(세션이 이미 닫혔으면 결과만 저장), `ai_usage`를 `used`/`failed`로. `result`가 null이면 `failed`(답변은 그대로). 꼬리질문 판정 저장은 #32, `ai_usage` 기록은 하루 사용 상한(#43)에서 붙인다 |
@@ -351,7 +351,8 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `set_turn_rating(turn_id, user_id, rating)` | 👍/👎. 채점이 끝난 자기 턴에만 남긴다. 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-26, #31) |
 | `set_bookmark(user_id, question_id, on)` | 북마크 저장·해제(여러 번 불러도 같다). 북마크가 `questions` 읽기 정책을 넓히므로 저장은 내 세션에 나온 질문만 받는다(아니면 아무 번호나 북마크해 질문 은행을 읽을 수 있다). 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-26, #35) |
 | `create_project(user_id, name, content)` | 3개 제한, 예산·한도 확인과 예약, `generating`으로 저장 |
-| `save_project_questions(project_id, questions)` | 질문 5개 + 정답지 저장, `ready`. 실패면 `failed` + `error_code` |
+| `save_project_questions(project_id, questions, error_code)` | 질문 5개 + 정답지 저장, `ready`. 실패면 `failed` + `error_code`. `generating`일 때만 저장한다(두 번 저장 방지) |
+| `restart_project_generation(user_id, project_id)` | 다시 생성: 주인 확인, `failed`일 때만 `generating`으로 되돌린다. 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-27, #39) |
 | `delete_project(user_id, project_id)` | 오늘 daily 세션이 이 프로젝트 질문이면 거부, 아니면 삭제(cascade) |
 | `adopt_trial(user_id, trial_token)` | 이어받기(2장) |
 | `handle_new_user()` | `auth.users` insert 트리거. `profiles` 행 생성(닉네임·아바타는 소셜 메타데이터에서) |
@@ -397,7 +398,7 @@ HTTP 상태 코드에 더해 본문은 항상 `{ "error": { "code", "message" } 
 
 | 코드 | HTTP | 언제 |
 |---|---|---|
-| `VALIDATION` | 400 | 길이·형식(답변 30~2,000자, 프로젝트 10,000자, 닉네임 2~12자, 알림 시각 0~23) |
+| `VALIDATION` | 400 | 길이·형식(답변 30~2,000자, 프로젝트 이름 1~40자·README 30~10,000자, 닉네임 2~12자, 알림 시각 0~23) |
 | `UNAUTHORIZED` | 401 | 로그인 필요 |
 | `NOT_OWNER` | 403 | 내 것이 아닌 턴·세션·프로젝트 |
 | `NOT_FOUND` | 404 | |

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { Icon } from "@/components/icons";
 import { LEVELS } from "@/lib/profile";
+import { tagLine } from "@/lib/questions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { turnResult, type TurnResult } from "@/lib/turn";
@@ -59,7 +60,7 @@ async function Detail({ id }: { id: string }) {
   const { data: session } = await supabase
     .from("sessions")
     .select(
-      "day, status, questions(id, prompt, topic_id, level, topics(field), bookmarks(question_id)), turns(id, idx, status, answer, follow_up_prompt)",
+      "day, status, questions(id, prompt, topic_id, level, topics(field), projects(name), bookmarks(question_id)), turns(id, idx, status, answer, follow_up_prompt)",
     )
     .eq("id", id)
     .order("idx", { referencedTable: "turns" })
@@ -94,7 +95,7 @@ async function Detail({ id }: { id: string }) {
       <div className={s.question}>
         {/* 난이도가 한글이라 본문 글꼴 + 고정폭 숫자(globals.css .mono 주석) */}
         <span className={`num ${s.tag}`}>
-          Q.{String(q.id).padStart(3, "0")} · {q.topics.field} / {q.topic_id}
+          {tagLine(q)}
           {level && ` · ${level}`} · {session.day.replaceAll("-", ".")}{" "}
           {weekday(session.day)}
         </span>

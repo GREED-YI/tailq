@@ -88,8 +88,8 @@ function Row({ r, today }: { r: Item; today: string }) {
   const level = r.box ?? 5;
   return (
     <span className={s.text}>
-      <span className={`mono ${s.meta}`}>
-        Q.{String(r.id).padStart(3, "0")} · {r.tag}
+      <span className={`${/[가-힣]/.test(r.tag) ? "num" : "mono"} ${s.meta}`}>
+        {r.tag}
       </span>
       <span className={s.prompt}>{r.prompt}</span>
       <span className={`num ${s.due}`}>

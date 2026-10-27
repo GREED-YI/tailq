@@ -1,22 +1,29 @@
+import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { kstDay, pickDailyQuestion, type Pick } from "@/lib/daily-pick";
+import { questionTags } from "@/lib/questions";
+
+// 면접·결과 화면이 보여주는 질문. 복습으로 나온 프로젝트 질문이면 projectId가 있다
+export type SessionQuestion = {
+  id: number;
+  prompt: string;
+  label: string;
+  topic: string;
+  projectId: string | null;
+};
 
 export type DailySession = {
   id: string;
   day: string;
   pick: Pick;
   status: string;
-  question: {
-    id: number;
-    prompt: string;
-    topicId: string;
-    level: string;
-    field: string;
-  };
+  question: SessionQuestion;
 };
 
+export const QUESTION_COLUMNS =
+  "id, prompt, topic_id, project_id, topics(field), projects(name)";
 const SESSION_COLUMNS =
-  "id, day, pick, status, questions(id, prompt, topic_id, level, topics(field))";
+  `id, day, pick, status, questions(${QUESTION_COLUMNS})` as const;
 
 // 오늘의 질문 세션을 돌려준다. 오늘 세션이 있으면 그것을, 없으면 규칙대로 골라 만든다.
 // 낼 질문이 하나도 없으면 null. userId는 호출한 쪽이 로그인으로 확인한 값이어야 한다.
@@ -108,30 +115,56 @@ export async function startDailySession(
   return toDailySession(created.data);
 }
 
+// 내 프로젝트 질문 세션(면접 화면의 ?session=). 내 세션이 아니거나 프로젝트 세션이 아니면 null
+export async function loadProjectSession(userId: string, sessionId: string) {
+  if (!z.uuid().safeParse(sessionId).success) return null;
+  const { data } = await createAdminClient()
+    .from("sessions")
+    .select(`id, status, questions(${QUESTION_COLUMNS})`)
+    .eq("id", sessionId)
+    .eq("user_id", userId)
+    .eq("kind", "project")
+    .maybeSingle()
+    .throwOnError();
+  return (
+    data && {
+      id: data.id,
+      status: data.status,
+      question: toSessionQuestion(data.questions),
+    }
+  );
+}
+
+type QuestionRow = {
+  id: number;
+  prompt: string;
+  topic_id: string | null;
+  project_id: string | null;
+  topics: { field: string } | null;
+  projects: { name: string } | null;
+};
+
+export function toSessionQuestion(q: QuestionRow): SessionQuestion {
+  return {
+    id: q.id,
+    prompt: q.prompt,
+    ...questionTags(q),
+    projectId: q.project_id,
+  };
+}
+
 function toDailySession(row: {
   id: string;
   day: string;
   pick: string | null;
   status: string;
-  questions: {
-    id: number;
-    prompt: string;
-    topic_id: string;
-    level: string;
-    topics: { field: string };
-  };
+  questions: QuestionRow;
 }): DailySession {
   return {
     id: row.id,
     day: row.day,
     pick: row.pick as Pick,
     status: row.status,
-    question: {
-      id: row.questions.id,
-      prompt: row.questions.prompt,
-      topicId: row.questions.topic_id,
-      level: row.questions.level,
-      field: row.questions.topics.field,
-    },
+    question: toSessionQuestion(row.questions),
   };
 }

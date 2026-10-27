@@ -5,7 +5,7 @@ import s from "./history.module.css";
 type Item = {
   id: string;
   day: string;
-  qid: number;
+  label: string;
   prompt: string;
   bookmarked: boolean;
   turns: {
@@ -38,7 +38,7 @@ export function HistoryList({
         ).length;
         const meta = [
           unknown && "모르겠어요",
-          `Q.${String(r.qid).padStart(3, "0")}`,
+          r.label,
           followUps > 0 && `꼬리질문 ${followUps}개`,
           r.bookmarked && "북마크",
         ]

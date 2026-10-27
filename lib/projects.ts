@@ -1,0 +1,56 @@
+import "server-only";
+import { generateProjectQuestions, GradingError } from "@/lib/ai";
+import type { Json } from "@/lib/database.types";
+import { toProjectQuestions } from "@/lib/project-questions";
+import { MAX_PROJECTS } from "@/lib/questions";
+import type { createAdminClient } from "@/lib/supabase/admin";
+import { errorResponse } from "@/lib/turn";
+
+type Admin = ReturnType<typeof createAdminClient>;
+
+// 질문 5개를 만들어 저장한다(08 설계 "내 프로젝트 질문 생성"). 등록·다시 생성 라우트가 after()에서 부른다.
+// 실패해도 던지지 않고 failed + 에러 코드로 남긴다. 그사이 프로젝트가 지워졌으면 저장이 NOT_FOUND로 끝난다.
+export async function generateAndSave(
+  db: Admin,
+  project: { id: string; name: string; content: string },
+) {
+  let questions = null;
+  let code = "schema_invalid";
+  try {
+    questions = toProjectQuestions(
+      await generateProjectQuestions({
+        name: project.name,
+        content: project.content,
+      }),
+    );
+  } catch (e) {
+    console.error("project generation failed", project.id, e);
+    code = e instanceof GradingError ? e.reason : "ai_failed";
+  }
+  const { error } = await db.rpc("save_project_questions", {
+    p_project_id: project.id,
+    p_questions: questions as Json,
+    p_error_code: code,
+  });
+  if (error) console.error("project questions save failed", project.id, error);
+}
+
+// DB 함수가 던진 에러 코드 → HTTP 응답(08 설계 "에러 형식")
+const ERRORS: Record<string, [number, string]> = {
+  NOT_FOUND: [404, "프로젝트를 찾을 수 없어요."],
+  NOT_OWNER: [403, "내 프로젝트가 아니에요."],
+  NOT_FAILED: [409, "질문을 이미 만들었거나 만들고 있어요."],
+  PROJECT_LIMIT: [409, `프로젝트는 ${MAX_PROJECTS}개까지 등록할 수 있어요.`],
+  PROJECT_IN_TODAY_SESSION: [
+    409,
+    "오늘의 질문으로 나온 프로젝트는 내일 지울 수 있어요",
+  ],
+};
+
+export function projectErrorResponse(e: unknown) {
+  const code = (e as { message?: string } | null)?.message ?? "";
+  const known = ERRORS[code];
+  if (known) return errorResponse(known[0], code, known[1]);
+  console.error("project write failed", e);
+  return errorResponse(500, "INTERNAL", "잠시 뒤에 다시 시도해 주세요.");
+}
