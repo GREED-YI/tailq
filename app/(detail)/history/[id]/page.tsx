@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense, type ReactNode } from "react";
+import { Suspense, type CSSProperties, type ReactNode } from "react";
 import { z } from "zod";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { Icon } from "@/components/icons";
@@ -11,7 +11,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { turnResult, type TurnResult } from "@/lib/turn";
 import { ScoreRing } from "@/app/interview/ScoreRing";
-import { VERDICTS } from "@/app/interview/verdict";
+import { scoreColor, VERDICTS } from "@/app/interview/verdict";
 import s from "@/app/(app)/history/history.module.css";
 
 export const metadata: Metadata = { title: "기록 상세 · TailQ" };
@@ -146,7 +146,11 @@ function MainResult({
       </section>
 
       <section className={`glass ${s.card} ${s.scoreCard}`} aria-label="채점">
-        <div className={s.ring}>
+        {/* 링 색도 점수 구간 색(scoreColor). 면접 화면 공통 링의 --ring을 여기서만 바꾼다 */}
+        <div
+          className={s.ring}
+          style={{ "--ring": scoreColor(result.score ?? 0) } as CSSProperties}
+        >
           <ScoreRing
             shown={result.score ?? 0}
             value={result.score ?? 0}
@@ -222,7 +226,8 @@ function MainResult({
   );
 }
 
-// 꼬리질문: 번호 · 질문 · 판정 한 줄. 누르면 내 답변과 한 줄 피드백을 펼친다.
+// 꼬리질문: 번호 · 질문 · 판정 한 줄. 누르면 내 답변과 AI 코멘트를 펼친다.
+// 처음엔 펼침 표시가 없어 그냥 글로 보여, 오른쪽에 "답변 보기 ⌄"를 붙였다(#117).
 // 기대 답안은 면접 화면과 같이 모르겠어요일 때만 보여준다
 function FollowUp({
   idx,
@@ -242,7 +247,7 @@ function FollowUp({
     <li>
       <details className={s.followUp}>
         <summary className="hover-row">
-          <span className={`mono ${s.followUpIdx}`}>
+          <span className={`num ${s.followUpIdx}`}>
             {String(idx).padStart(2, "0")}
           </span>
           <span className={s.followUpPrompt}>{prompt}</span>
@@ -253,12 +258,22 @@ function FollowUp({
           >
             {verdict ? verdict.label : "건너뜀"}
           </span>
+          {verdict && (
+            <span className={s.more} aria-hidden="true">
+              <span className={s.moreOpen}>답변 보기</span>
+              <span className={s.moreClose}>접기</span>
+              <Icon name="chevronDown" size={16} />
+            </span>
+          )}
         </summary>
         {verdict && (
           <div className={s.followUpBody}>
             {!unknown && <p className={s.well}>{answer}</p>}
             {result.feedback?.summary && (
-              <p className={s.feedbackLine}>{result.feedback.summary}</p>
+              <div className={s.comment}>
+                <span className={s.aiLabel}>AI 코멘트</span>
+                <p className={s.feedbackLine}>{result.feedback.summary}</p>
+              </div>
             )}
             {unknown && (
               <>
