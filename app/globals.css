@@ -114,13 +114,13 @@ button {
   height: 56px;
   padding: 0 24px;
   border-radius: 28px;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
 }
 .btn-md {
   height: 48px;
   border-radius: 24px;
-  font-size: 15px;
+  font-size: 16px;
 }
 .btn-primary {
   background: var(--accent-fill);
@@ -153,7 +153,7 @@ button {
   height: 40px;
   padding: 0 16px;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
 }
 .chip[aria-pressed="true"],

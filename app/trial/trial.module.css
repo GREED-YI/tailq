@@ -19,13 +19,13 @@
   gap: 4px;
 }
 .tag {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--accent);
 }
 /* Figma는 짧은 제목("JPA N+1 문제")이지만 질문에는 짧은 제목이 없어 질문 글을 두 줄까지 보인다 */
 .prompt {
-  font-size: 17px;
-  line-height: 24px;
+  font-size: 18px;
+  line-height: 25px;
   font-weight: 700;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -33,19 +33,19 @@
   overflow: hidden;
 }
 .note {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 .point {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 14px;
-  line-height: 21px;
+  font-size: 15px;
+  line-height: 22px;
 }
 .good,
 .improve {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
 .good {
@@ -57,8 +57,8 @@
 
 .pitch {
   margin-top: 24px;
-  font-size: 24px;
-  line-height: 33px;
+  font-size: 26px;
+  line-height: 36px;
   font-weight: 700;
   letter-spacing: -0.6px;
 }
@@ -72,22 +72,22 @@
   gap: 2px;
 }
 .streakLabel {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
 }
 .streakValue {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
-  line-height: 36px;
+  line-height: 39px;
 }
 .streakValue span {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 600;
   color: var(--accent);
   margin-right: 4px;
 }
 .streakNote {
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 22px;
   color: var(--sub);
 }

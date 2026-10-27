@@ -289,6 +289,8 @@ export function Interview({
               }
         }
         aria-label={showResultSheet ? "채점 결과" : "답변 입력"}
+        data-result={showResultSheet || undefined}
+        data-typing={keyboard > 0 || undefined}
       >
         {showResultSheet ? (
           <ResultView

@@ -279,11 +279,11 @@ export function RangeStep(props: {
           >
             <div className={s.fieldHead}>
               <h2 id={`field-${field.id}`}>{field.label}</h2>
+              {/* 칩과 헷갈리지 않게 선택 상태 대신 문구가 바뀌는 테두리 버튼 */}
               <button
                 type="button"
-                className={`chip glass press ${s.pill}`}
-                aria-pressed={allOn}
-                aria-label={`${field.label} 전체 선택`}
+                className={`press ${s.all}`}
+                aria-label={`${field.label} ${allOn ? "전체 해제" : "전체 선택"}`}
                 onClick={() =>
                   setTopics((list) =>
                     allOn
@@ -292,7 +292,8 @@ export function RangeStep(props: {
                   )
                 }
               >
-                전체 선택
+                <Icon name={allOn ? "close" : "check"} size={14} bold />
+                {allOn ? "전체 해제" : "전체 선택"}
               </button>
             </div>
             <div className={s.chips}>

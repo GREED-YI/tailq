@@ -26,22 +26,22 @@
   left: -10px;
 }
 .topTitle {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .title {
   margin-top: 8px;
-  font-size: 26px;
-  line-height: 34px;
+  font-size: 28px;
+  line-height: 37px;
   font-weight: 700;
   letter-spacing: -0.6px;
   outline: none;
 }
 .sub {
   margin-top: 8px;
-  font-size: 14px;
-  line-height: 21px;
+  font-size: 15px;
+  line-height: 22px;
   color: var(--sub);
 }
 
@@ -65,7 +65,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 @media (min-width: 768px) {

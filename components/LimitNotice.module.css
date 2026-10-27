@@ -17,14 +17,14 @@
 }
 .notice strong {
   display: block;
-  font-size: 15px;
-  line-height: 21px;
+  font-size: 16px;
+  line-height: 22px;
   font-weight: 700;
   letter-spacing: -0.2px;
 }
 .notice p {
   margin-top: 4px;
-  font-size: 13px;
-  line-height: 19px;
+  font-size: 14px;
+  line-height: 20px;
   color: var(--sub);
 }
