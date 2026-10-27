@@ -9,13 +9,14 @@ import { kstDay } from "@/lib/daily-pick";
 import { loadStudy } from "@/lib/study";
 import { createClient } from "@/lib/supabase/server";
 import s from "../interview.module.css";
+import { ShareButton } from "../ShareButton";
 import { TurnRows } from "../TurnRows";
 
 export const metadata: Metadata = { title: "오늘의 결과 · TailQ" };
 
 // 오늘의 결과(docs/07 "오늘의 결과"). 세션이 끝난 뒤 페이지 이동으로 그린다(08 설계 "스트리밍 프로토콜").
 // ?session=이 있으면 내 프로젝트 질문 세션의 결과다. 프로젝트 질문은 꼬리잇기에 들어가지 않아 꼬리잇기 칸이 없고,
-// 닫기·두 번째 버튼은 프로젝트 질문 목록으로 간다. 공유는 결과 공유 카드(#41)에서 붙인다.
+// 닫기·두 번째 버튼은 프로젝트 질문 목록으로 간다.
 export default function ResultPage({
   searchParams,
 }: PageProps<"/interview/result">) {
@@ -116,10 +117,7 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
       </section>
 
       <div className={s.actions}>
-        {/* 공유 카드는 결과 공유 이슈(#41)에서 붙인다. 그때까지 비활성 */}
-        <button type="button" className="btn btn-primary" disabled>
-          결과 공유하기
-        </button>
+        <ShareButton sessionId={session.id} />
         <Link href={back} className="glass btn btn-secondary press">
           {sessionId ? "질문 목록으로" : "홈으로"}
         </Link>

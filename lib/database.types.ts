@@ -376,6 +376,45 @@ export type Database = {
           },
         ];
       };
+      shares: {
+        Row: {
+          created_at: string;
+          id: string;
+          nickname: string | null;
+          score: number;
+          session_id: string;
+          streak: number;
+          topic_name: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          nickname?: string | null;
+          score: number;
+          session_id: string;
+          streak?: number;
+          topic_name: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          nickname?: string | null;
+          score?: number;
+          session_id?: string;
+          streak?: number;
+          topic_name?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shares_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: true;
+            referencedRelation: "sessions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       topics: {
         Row: {
           field: string;
@@ -613,6 +652,10 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      create_share: {
+        Args: { p_session_id: string; p_streak: number; p_user_id: string };
+        Returns: string;
       };
       delete_project: {
         Args: { p_project_id: string; p_user_id: string };
