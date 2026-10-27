@@ -1,0 +1,292 @@
+/* 운영자 대시보드. Figma에 화면은 없고 리포트(S21)·MY(S27)의 카드·숫자·막대 부품 값을 따른다 */
+
+.page {
+  padding-bottom: 8px;
+}
+
+.top {
+  margin: 8px 0 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.top h1 {
+  font-size: 26px;
+  line-height: 34px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+.top span {
+  font-size: 12px;
+  color: var(--sub);
+}
+
+/* 북극성: 이번 주 숫자 + 최근 8주 막대 */
+.hero {
+  border-radius: 28px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.heroText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.heroText h2 {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sub);
+}
+.heroText strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.big {
+  font-size: 44px;
+  line-height: 52px;
+  font-weight: 600;
+  letter-spacing: -1px;
+  color: var(--accent);
+}
+.heroText > span {
+  font-size: 12px;
+  color: var(--sub);
+}
+.heroText [data-trend="up"] {
+  color: var(--good);
+}
+.heroText [data-trend="down"] {
+  color: var(--low);
+}
+
+.weeks {
+  list-style: none;
+  height: 132px;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+}
+.weeks li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+.weeks li > span {
+  font-size: 11px;
+  color: var(--sub);
+}
+.weeks i {
+  width: 100%;
+  max-width: 28px;
+  min-height: 4px;
+  border-radius: 8px;
+  background: var(--track);
+}
+.weeks i[data-now] {
+  background: var(--accent-fill);
+  box-shadow: 0 0 16px -2px var(--accent-fill);
+}
+.weeks small {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* 핵심 지표 칸: 모바일 2열, PC 4열 */
+.stats {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.stat {
+  min-height: 96px;
+  border-radius: 22px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stat > span {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--sub);
+}
+.stat strong {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 34px;
+}
+.value {
+  font-size: 26px;
+  font-weight: 600;
+}
+.value[data-met="true"] {
+  color: var(--good);
+}
+.value[data-met="false"],
+.value[data-warn] {
+  color: var(--low);
+}
+.stat small {
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--sub);
+}
+
+.grid {
+  margin-top: 12px;
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  border-radius: 22px;
+  padding: 16px;
+}
+.head {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.head h2 {
+  font-size: 15px;
+  font-weight: 700;
+}
+.head > span {
+  font-size: 12px;
+  color: var(--sub);
+  text-align: right;
+}
+
+/* 가로 막대 목록: 이름 · 막대 · 숫자 */
+.bands {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bands li {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--sub);
+}
+.bands li > :last-child {
+  text-align: right;
+  color: var(--text);
+}
+.track {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--track);
+  overflow: hidden;
+}
+.track i {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+}
+
+/* 꼬리질문 판정 한 줄 막대 + 범례 */
+.stack {
+  height: 14px;
+  border-radius: 7px;
+  background: var(--track);
+  display: flex;
+  gap: 2px;
+  overflow: hidden;
+}
+.stack i {
+  flex-basis: 0;
+}
+.legend {
+  list-style: none;
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--sub);
+}
+.legend li > i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.legend li > span {
+  margin-left: auto;
+  color: var(--text);
+}
+
+/* 아직 데이터가 없는 지표: 점선 테두리의 빈 카드 */
+.soon {
+  display: grid;
+  gap: 12px;
+}
+.soonCard {
+  border-radius: 22px;
+  padding: 16px;
+  border: 1.5px dashed var(--ring);
+}
+.soonCard .head {
+  margin-bottom: 6px;
+}
+.soonCard p {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--sub);
+}
+.badge {
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--tab-active);
+  color: var(--accent) !important;
+}
+
+@media (min-width: 1024px) {
+  .top {
+    margin-top: 0;
+  }
+  .hero {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 24px 28px;
+  }
+  .heroText {
+    flex-shrink: 0;
+    width: 200px;
+  }
+  .weeks {
+    flex: 1;
+    height: 148px;
+  }
+  .stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
