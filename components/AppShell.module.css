@@ -401,10 +401,11 @@
   /* 아래 내용 글자가 비치지 않게 시트 색 아래에 화면 바탕을 깐다(토스트와 같다) */
   background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
   position: absolute;
-  /* 처음엔 right 26px·위 14px(오른쪽 끝이 여우 가운데 조금 오른쪽)였는데, 너무 가운데로 보여
-     왼쪽 위로 옮겼다: 오른쪽 끝이 여우 가운데보다 10px 왼쪽, 6px 더 위(#114, 사용자 요청) */
-  right: 38px;
-  bottom: calc(100% + 20px);
+  /* 처음엔 right 26px·위 14px(오른쪽 끝이 여우 가운데 조금 오른쪽)였고, 다음엔 right 38px·위 20px로
+     옮겼는데 오른쪽 끝이 여우 머리 위를 덮었다. 사용자 그림대로 몸통을 여우 왼쪽 위로 완전히 뗐다:
+     오른쪽 끝은 여우 왼쪽 가장자리에서 2px 왼쪽, 아래쪽은 여우 위 6px(14px 내림)(#114, 사용자 요청) */
+  right: calc(100% + 2px);
+  bottom: calc(100% + 6px);
   width: max-content;
   max-width: 240px;
   padding: 10px 8px 10px 16px;
@@ -419,17 +420,18 @@
   visibility: hidden;
   transform: translateY(6px);
 }
-/* 꼬리: 말풍선 오른쪽 아래 모서리에서 여우 머리(동그라미 위 가운데 조금 왼쪽, 3px 위)로 비스듬히 내려간다.
-   말풍선을 왼쪽 위로 옮기며(#114) 꼬리도 더 길고 오른쪽으로 더 뻗게 맞췄다(처음엔 right -2px·높이 13px) */
+/* 꼬리: 말풍선 오른쪽 아래 모서리에서 오른쪽 아래(여우 머리 왼쪽 위 가장자리)로 뾰족하게 뻗는다.
+   밑변이 몸통 아래 변(모서리에서 8px 왼쪽)과 오른쪽 변(8px 위)에 걸쳐 이음새 없이 이어지고, 끝은 모서리에서 12px씩.
+   처음엔 모서리 아래로 비스듬히 내려가는 꼬리(right -4px·18px 상자, 위 변에 붙음)였는데 사용자 그림대로 바꿨다(#114, 사용자 요청) */
 .foxTip::after {
   content: "";
   position: absolute;
-  right: -4px;
-  top: calc(100% - 1px);
-  width: 18px;
-  height: 18px;
+  right: -12px;
+  bottom: -12px;
+  width: 20px;
+  height: 20px;
   background: inherit;
-  clip-path: polygon(0 0, 55% 0, 100% 100%);
+  clip-path: polygon(0 8px, 8px 0, 100% 100%);
 }
 /* 토스트가 떠 있는 동안은 말풍선을 접는다(겹치지 않게) */
 :global(body):has(.toastArea) .fox .foxTip {
