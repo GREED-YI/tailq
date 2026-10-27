@@ -66,6 +66,8 @@
   height: 100%;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
+  /* 선택 캡슐과 hover 캡슐이 나란히 있어도 붙지 않게 */
+  gap: 4px;
 }
 .navItem {
   height: 100%;
@@ -77,6 +79,10 @@
   gap: 4px;
   font-size: 11px;
   color: var(--sub);
+}
+/* 키보드 초점 테두리는 안쪽에 그려 옆 칸·탭바 밖으로 넘치지 않게 */
+.navItem:focus-visible {
+  outline-offset: -2px;
 }
 .navItem[aria-current="page"] {
   background: var(--tab-active);
