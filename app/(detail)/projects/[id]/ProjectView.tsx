@@ -54,10 +54,6 @@ export function ProjectView({
     return () => clearInterval(t);
   }, [status, router]);
 
-  // cacheComponents라 면접으로 갔다가 뒤로 오면 이 화면이 상태를 그대로 들고 다시 보인다.
-  // 화면을 떠날 때 "시작하는 중"을 풀어야 돌아왔을 때 질문이 모두 막혀 있지 않다
-  useEffect(() => () => setBusy(null), []);
-
   // 질문을 누르면 그 질문의 세션을 열고(열린 세션이 있으면 이어서) 면접 화면으로
   async function practice(questionId: number) {
     setBusy(questionId);
@@ -69,6 +65,9 @@ export function ProjectView({
     }).catch(() => null);
     const json = await res?.json().catch(() => null);
     if (res?.ok) {
+      // cacheComponents라 면접으로 갔다가 뒤로 오면 이 화면이 상태를 그대로 들고 다시 보인다.
+      // 요청이 끝난 뒤(이동 직전)에 잠금을 풀어야, 요청 중에는 두 번 누를 수 없고 돌아왔을 때는 막혀 있지 않다
+      setBusy(null);
       router.push(`/interview?session=${json.session.id}`);
       return;
     }

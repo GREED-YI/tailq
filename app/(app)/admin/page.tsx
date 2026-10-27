@@ -121,9 +121,16 @@ async function Dashboard() {
       .order("created_at", { ascending: false })
       .limit(3)
       .throwOnError(),
-    // 분류별 개수를 세려고 분류만 읽는다
-    readAll((from, to) =>
-      db.from("feedback").select("category").order("id").range(from, to),
+    // 분류별 개수는 행을 내려받지 않고 DB에서 센다(분류마다 head 개수 조회)
+    Promise.all(
+      FEEDBACK_CATEGORIES.map((c) =>
+        db
+          .from("feedback")
+          .select("*", { count: "exact", head: true })
+          .eq("category", c.id)
+          .throwOnError()
+          .then((r) => r.count ?? 0),
+      ),
     ),
     // 이번 달(KST) AI 비용 합계와 예산 상태(ai_usage)
     loadQuota(db, null),
@@ -342,12 +349,9 @@ async function Dashboard() {
             </span>
           </span>
           <ul className={s.kinds} aria-label="분류별 개수">
-            {FEEDBACK_CATEGORIES.map((c) => (
+            {FEEDBACK_CATEGORIES.map((c, i) => (
               <li key={c.id} className="num">
-                {c.label}{" "}
-                <span className="mono">
-                  {feedbackKinds.filter((k) => k.category === c.id).length}
-                </span>
+                {c.label} <span className="mono">{feedbackKinds[i]}</span>
               </li>
             ))}
           </ul>

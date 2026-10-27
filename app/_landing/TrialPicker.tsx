@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Icon } from "@/components/icons";
 import type { TrialField } from "@/lib/trial";
 import s from "./landing.module.css";
@@ -28,10 +28,6 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
   const label = FIELDS.find((f) => f.id === field)!.label;
   const q = questions?.[field];
 
-  // cacheComponents라 체험으로 갔다가 뒤로 오면 이 화면이 상태를 그대로 들고 다시 보인다.
-  // 화면을 떠날 때 "시작하는 중"을 풀어야 돌아왔을 때 시작 버튼이 막혀 있지 않다
-  useEffect(() => () => setPending(false), []);
-
   async function start() {
     setPending(true);
     setError("");
@@ -42,6 +38,9 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
         body: JSON.stringify({ field }),
       });
       if (res.ok) {
+        // cacheComponents라 체험으로 갔다가 뒤로 오면 이 화면이 상태를 그대로 들고 다시 보인다.
+        // 요청이 끝난 뒤(이동 직전)에 잠금을 풀어야, 요청 중에는 두 번 누를 수 없고 돌아왔을 때는 막혀 있지 않다
+        setPending(false);
         router.push("/trial");
         return;
       }
