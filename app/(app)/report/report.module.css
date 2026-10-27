@@ -205,10 +205,14 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
-/* 진한 칸(3·4단계)은 글자를 어둡게 */
+/* 진한 칸(3·4단계)은 글자를 바탕과 반대로: 다크는 밝은 칸이라 어둡게, 라이트는 짙은 칸이라 밝게 */
 .calendar [data-level="3"],
 .calendar [data-level="4"] {
   color: var(--on-accent);
+}
+:global([data-theme="light"]) .calendar [data-level="3"],
+:global([data-theme="light"]) .calendar [data-level="4"] {
+  color: var(--bg);
 }
 
 .grass span {
