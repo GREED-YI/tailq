@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { after } from "next/server";
 import { z } from "zod";
 import { grade, gradeFollowUp, GradingError } from "@/lib/ai";
@@ -10,6 +11,7 @@ import {
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { track } from "@/lib/track";
+import { TRIAL_COOKIE } from "@/lib/trial";
 import {
   dbErrorResponse,
   errorResponse,
@@ -34,7 +36,13 @@ export async function PUT(
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
-  if (!userId) return errorResponse(401, "UNAUTHORIZED", "로그인이 필요해요.");
+  // 로그인하지 않았으면 체험 쿠키의 토큰으로 소유를 확인한다(08 설계 "체험과 이어받기")
+  const trialToken = userId
+    ? undefined
+    : (await cookies()).get(TRIAL_COOKIE)?.value;
+  if (!userId && !trialToken) {
+    return errorResponse(401, "UNAUTHORIZED", "로그인이 필요해요.");
+  }
 
   const { id } = await ctx.params;
   const body = Body.safeParse(await request.json().catch(() => null));
@@ -58,12 +66,15 @@ export async function PUT(
   const { data: turn } = await db
     .from("turns")
     .select(
-      "idx, session_id, sessions(user_id, kind, questions(prompt, level, topics(name, field), projects(name), question_keys(rubric, model_answer)))",
+      "idx, session_id, sessions(user_id, kind, trial_token, questions(prompt, level, topics(name, field), projects(name), question_keys(rubric, model_answer)))",
     )
     .eq("id", id)
     .maybeSingle();
   if (!turn) return errorResponse(404, "NOT_FOUND", "질문을 찾을 수 없어요.");
-  if (turn.sessions.user_id !== userId) {
+  const owner = userId
+    ? turn.sessions.user_id === userId
+    : !turn.sessions.user_id && turn.sessions.trial_token === trialToken;
+  if (!owner) {
     return errorResponse(403, "NOT_OWNER", "내 질문이 아니에요.");
   }
 
@@ -72,6 +83,7 @@ export async function PUT(
       .rpc("submit_answer", {
         p_turn_id: id,
         p_user_id: userId,
+        p_trial_token: trialToken,
         p_answer: text,
         p_dont_know: dontKnow,
       })
@@ -81,18 +93,22 @@ export async function PUT(
   }
 
   const session = { session_id: turn.session_id, kind: turn.sessions.kind };
-  // 본 질문 제출(다시 채점도 같은 turn_id로 남고, 지표는 turn_id로 한 번만 센다)
-  if (turn.idx === 0) {
+  const trial = session.kind === "trial";
+  // 본 질문 제출(다시 채점도 같은 turn_id로 남고, 지표는 turn_id로 한 번만 센다).
+  // 체험은 회원 지표(답변 제출·세션 완료) 대신 체험 완료만 남긴다
+  if (turn.idx === 0 && !trial) {
     await track(
       "answer_submit",
       { ...session, turn_id: id, dont_know: dontKnow },
-      userId,
+      userId ?? null,
     );
   }
   const completed = (r: TurnResult) =>
-    r.session.status === "done"
-      ? track("session_complete", session, userId)
-      : undefined;
+    r.session.status !== "done"
+      ? undefined
+      : trial
+        ? track("trial_complete", { session_id: session.session_id }, null)
+        : track("session_complete", session, userId ?? null);
 
   if (dontKnow) {
     const result = await turnResult(db, id);

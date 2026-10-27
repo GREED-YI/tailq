@@ -52,13 +52,16 @@ export async function turnResult(
       .eq("idx", t.idx + 1)
       .maybeSingle()
       .throwOnError(),
-    db
-      .from("reviews")
-      .select("box, due_day")
-      .eq("user_id", s.user_id)
-      .eq("question_id", s.question_id)
-      .maybeSingle()
-      .throwOnError(),
+    // 체험 세션은 사용자가 없어 복습 칸도 없다
+    s.user_id
+      ? db
+          .from("reviews")
+          .select("box, due_day")
+          .eq("user_id", s.user_id)
+          .eq("question_id", s.question_id)
+          .maybeSingle()
+          .throwOnError()
+      : { data: null },
   ]);
   // 꼬리질문은 모범 답안 대신 그 꼬리질문의 기대 답안, 참고 자료는 없다
   const keys = s.questions.question_keys;
