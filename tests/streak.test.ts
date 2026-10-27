@@ -4,7 +4,6 @@ import {
   computeStreak,
   grassCells,
   grassLevel,
-  grassRange,
   grassStart,
   studyDay,
   ticketsLeft,
@@ -185,39 +184,39 @@ describe("grassCells", () => {
   });
 });
 
-describe("grassRange", () => {
+describe("grassStart", () => {
   const today = "2026-10-28"; // 수요일
-  const end = (r: { start: string; days: number }) =>
-    addDays(r.start, r.days - 1);
 
-  it("주는 이번 주 월~일 7칸", () => {
-    expect(grassRange("week", today)).toEqual({ start: "2026-10-26", days: 7 });
+  it("시작한 날을 주면 그 주 월요일부터 52주를 채운다", () => {
+    // 2026-09-16은 수요일
+    expect(grassStart(today, "2026-09-16")).toBe("2026-09-14");
+    const cells = grassCells(
+      new Map(),
+      [],
+      today,
+      grassStart(today, "2026-09-16"),
+    );
+    expect(cells).toHaveLength(52 * 7);
+    expect(cells[0].day).toBe("2026-09-14");
+    expect(cells.at(-1)!.day).toBe("2027-09-12");
+    expect(cells.filter((c) => !c.future)).toHaveLength(45);
   });
 
-  it("월은 이번 달 1일이 든 주 월요일부터 마지막 날이 든 주 일요일까지", () => {
-    // 2026-10-01은 목요일, 10-31은 토요일
-    const r = grassRange("month", today);
-    expect(r.start).toBe("2026-09-28");
-    expect(end(r)).toBe("2026-11-01");
-    expect(r.days).toBe(35);
-    // 12월(해를 넘는 다음 달)도 마지막 날을 맞게 찾는다. 12-31은 목요일
-    expect(end(grassRange("month", "2026-12-15"))).toBe("2027-01-03");
+  it("시작한 지 1년이 넘으면 이번 주가 마지막 열이 되게 민다", () => {
+    expect(grassStart(today, "2025-01-01")).toBe(grassStart(today));
+    const cells = grassCells(
+      new Map(),
+      [],
+      today,
+      grassStart(today, "2025-01-01"),
+    );
+    expect(cells[0].day).toBe("2025-11-03");
+    expect(cells.at(-1)!.day).toBe("2026-11-01");
   });
 
-  it("3개월은 이번 주까지 13주, 1년은 잔디 52주", () => {
-    const q = grassRange("3m", today);
-    expect(q).toEqual({ start: "2026-08-03", days: 91 });
-    expect(end(q)).toBe("2026-11-01");
-    expect(grassRange("year", today)).toEqual({
-      start: grassStart(today),
-      days: 52 * 7,
-    });
-  });
-
-  it("고른 범위만큼 칸을 만든다", () => {
-    const cells = grassCells(new Map(), [], today, grassRange("month", today));
-    expect(cells).toHaveLength(35);
-    expect(cells[0].day).toBe("2026-09-28");
+  it("시작한 날이 없거나 딱 52주 전 주면 최근 52주", () => {
+    expect(grassStart(today)).toBe("2025-11-03");
+    expect(grassStart(today, "2025-11-05")).toBe("2025-11-03");
   });
 });
 

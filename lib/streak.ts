@@ -82,40 +82,15 @@ export type GrassCell = {
   future: boolean;
 };
 
-// 꼬리잇기 달력 보기(리포트). 기본은 3개월
-export type GrassView = "week" | "month" | "3m" | "year";
-
-// 보기마다 첫 칸(월요일)과 칸 수. 모두 주 단위라 월요일에 시작해 일요일에 끝난다.
-// 주: 이번 주, 월: 이번 달이 걸친 주 전부, 3개월: 이번 주까지 13주, 1년: 52주(잔디 전체)
-export function grassRange(
-  view: GrassView,
-  today: string,
-): { start: string; days: number } {
-  const thisWeek = weekStart(today);
-  if (view === "week") return { start: thisWeek, days: 7 };
-  if (view === "3m") return { start: addDays(thisWeek, -12 * 7), days: 13 * 7 };
-  if (view === "year")
-    return { start: grassStart(today), days: GRASS_WEEKS * 7 };
-  const [y, m] = today.split("-").map(Number);
-  const start = weekStart(`${today.slice(0, 7)}-01`);
-  // 다음 달 1일의 하루 전이 이번 달 마지막 날
-  const last = addDays(
-    new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 10),
-    -1,
-  );
-  const end = addDays(weekStart(last), 7);
-  return { start, days: (Date.parse(end) - Date.parse(start)) / DAY_MS };
-}
-
-// 기본은 최근 52주(이번 주 포함) 칸을 월요일부터 주 단위로 채운다. 오늘 뒤 칸은 future
+// start(월요일)부터 52주 칸을 주 단위로 채운다. 기본은 최근 52주(이번 주 포함). 오늘 뒤 칸은 future
 export function grassCells(
   scores: Map<string, number | null>,
   restDays: string[],
   today: string,
-  { start, days } = grassRange("year", today),
+  start = grassStart(today),
 ): GrassCell[] {
   const rest = new Set(restDays);
-  return Array.from({ length: days }, (_, i) => {
+  return Array.from({ length: GRASS_WEEKS * 7 }, (_, i) => {
     const day = addDays(start, i);
     const studied = scores.has(day);
     const score = scores.get(day) ?? null;
@@ -129,5 +104,9 @@ export function grassCells(
   });
 }
 
-export const grassStart = (today: string) =>
-  addDays(weekStart(today), -(GRASS_WEEKS - 1) * 7);
+// 잔디 첫 칸(월요일): 최근 52주의 첫 주. 시작한 날(joined)을 주면 그 주부터 채우고,
+// 시작한 지 1년이 넘으면 이번 주가 마지막 열이 되게 앞으로 민다(리포트 꼬리잇기 달력, #117)
+export function grassStart(today: string, joined?: string) {
+  const yearAgo = addDays(weekStart(today), -(GRASS_WEEKS - 1) * 7);
+  return joined && weekStart(joined) > yearAgo ? weekStart(joined) : yearAgo;
+}

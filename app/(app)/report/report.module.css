@@ -73,7 +73,7 @@
   color: var(--sub);
 }
 
-/* 꼬리잇기 달력 카드: 보기 고르기(주·월·3개월·1년) · 달력 · 설명 */
+/* 꼬리잇기 달력 카드: 달력 · 설명. 처음엔 위에 보기 고르기(주·월·3개월·1년)가 있었으나 1년 고정으로 뺐다(#117) */
 .grassCard {
   border-radius: 22px;
   padding: 16px;
@@ -82,85 +82,27 @@
   gap: 16px;
 }
 
-/* 보기 고르기: 유리 막대 안 선택 캡슐 */
-.seg {
-  align-self: flex-start;
-  height: 40px;
-  border-radius: 20px;
-  padding: 4px;
-  background: var(--track);
-  display: grid;
-  grid-template-columns: repeat(4, minmax(64px, auto));
-}
-.seg a {
-  padding: 0 14px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--sub);
-}
-.seg a[aria-current="page"] {
-  background: var(--tab-active);
-  box-shadow:
-    inset 0 1px 0 var(--glass-hi),
-    0 4px 12px -6px var(--glass-shadow);
-  color: var(--accent);
-  font-weight: 700;
-}
-@media (hover: hover) {
-  .seg a:not([aria-current="page"]):hover {
-    background: var(--hover);
-    color: var(--text);
-  }
-}
-.seg a:focus-visible {
-  outline-offset: -2px;
-}
-
-/* 3개월·1년: 열이 주, 행이 요일(월~일). 1년은 넘치면 가로 스크롤, rtl로 처음엔 최근 주(오른쪽 끝)가 보인다 */
+/* 열이 주, 행이 요일(월~일). 시작한 주가 왼쪽 끝이라 넘치면 처음엔 왼쪽(시작)이 보이고 오른쪽 끝을 흐린다(docs/07).
+   처음엔 rtl로 최근 주(오른쪽 끝)부터 보였으나 시작부터 채워지는 달력으로 바꿨다(#117) */
 .grassScroll {
-  direction: rtl;
+  container-type: inline-size;
   overflow-x: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--scroll) transparent;
+  mask-image: linear-gradient(to left, transparent, #000 28px);
 }
-/* 1년은 모바일에서 넘쳐 왼쪽 끝을 흐리게(docs/07). 다 들어가는 PC는 흐리지 않는다 */
-.yearScroll {
-  mask-image: linear-gradient(to right, transparent, #000 28px);
-}
-@media (min-width: 1024px) {
-  .yearScroll {
-    mask-image: none;
-  }
-}
-/* 들어가면 가운데, 넘치면 auto 여백이 0이 되어 스크롤 */
+/* 칸 크기: 52열이 카드 폭을 꽉 채우게 늘리되 14px보다 작아지면(모바일) 14px로 두고 가로 스크롤 */
 .stripWrap {
-  direction: ltr;
+  --gap: 3px;
+  --cell: max(14px, (100cqw - 51 * var(--gap)) / 52);
   width: max-content;
-  margin: 0 auto;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-/* 칸 크기: 3개월은 크게, 1년은 52주가 PC 카드에 들어가게 */
-.quarter {
-  --cell: 18px;
-  --gap: 5px;
-}
-.year {
-  --cell: 14px;
-  --gap: 3px;
-}
 @media (min-width: 1024px) {
-  .quarter {
-    --cell: 24px;
-    --gap: 6px;
-  }
-  .year {
-    --cell: 15px;
+  .grassScroll {
+    mask-image: none;
   }
 }
 /* 칸 위 달 이름. 칸 폭 열에 글자가 넘쳐 옆 열로 이어진다 */
@@ -185,49 +127,8 @@
   gap: var(--gap);
 }
 
-/* 주·월: 요일 머리 아래 7열 달력, 칸 안에 날짜 */
-.calendarWrap {
-  width: 100%;
-  max-width: 560px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.weekdays,
-.calendar {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
-}
-.weekdays span {
-  text-align: center;
-  font-size: 13px;
-  color: var(--sub);
-}
-.calendar span {
-  aspect-ratio: 1;
-  border-radius: 10px;
-  padding: 6px 8px;
-  font-size: 14px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-/* 진한 칸(3·4단계)은 글자를 바탕과 반대로: 다크는 밝은 칸이라 어둡게, 라이트는 짙은 칸이라 밝게 */
-.calendar [data-level="3"],
-.calendar [data-level="4"] {
-  color: var(--on-accent);
-}
-:global([data-theme="light"]) .calendar [data-level="3"],
-:global([data-theme="light"]) .calendar [data-level="4"] {
-  color: var(--bg);
-}
-
 .grass span {
   border-radius: 4px;
-}
-.calendar span {
-  border-radius: 10px;
 }
 .grass [data-level="0"] {
   background: var(--grass-0);
@@ -258,15 +159,25 @@
 .grass [data-today] {
   box-shadow: inset 0 0 0 2px var(--accent);
 }
-/* 3개월·1년의 오늘 뒤 칸은 숨기고, 주·월은 날짜만 흐리게 남긴다. 월 보기의 다른 달 날은 비운다 */
-.strip [data-future],
-.calendar [data-out] {
-  visibility: hidden;
-}
-.calendar [data-future] {
+/* 오늘 뒤는 앞으로 채울 칸이라 테두리만 흐리게, 시작한 날 앞(첫 주)은 비운다 */
+.grass [data-future] {
   background: none;
   box-shadow: inset 0 0 0 1px var(--glass-edge);
-  color: var(--muted);
+}
+.grass [data-out] {
+  visibility: hidden;
+}
+/* 처음 열릴 때 학습한 칸이 왼쪽(시작)부터 차례로 나타난다. 늦춤(--delay)은 page.tsx가 0~0.45초로 준다 */
+@media (prefers-reduced-motion: no-preference) {
+  .grass [style] {
+    animation: fill 0.15s var(--delay) ease-out backwards;
+  }
+}
+@keyframes fill {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
 }
 /* 마우스가 올라간 칸을 안쪽 테두리로 짚는다. 처음엔 바깥 그림자(0 0 0 1.5px)였으나 칸 사이 틈으로 번져 바꿨다(#117) */
 @media (hover: hover) {

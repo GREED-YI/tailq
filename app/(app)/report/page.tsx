@@ -1,15 +1,17 @@
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { TailIcon } from "@/components/Streak";
+import { kstDay } from "@/lib/daily-pick";
 import {
   grassCells,
-  grassRange,
+  grassStart,
+  weekStart,
   type GrassCell,
-  type GrassView,
 } from "@/lib/streak";
 import { loadStudy } from "@/lib/study";
+import { createClient } from "@/lib/supabase/server";
 import { weaknessReport, type TopicScore } from "@/lib/weakness";
 import { GrassTip } from "@/components/GrassTip";
 import h from "../history/history.module.css";
@@ -17,67 +19,77 @@ import w from "./report.module.css";
 
 export const metadata: Metadata = { title: "리포트 · TailQ" };
 
-// 꼬리잇기 달력 보기. 처음엔 최근 1년 잔디 하나였으나 칸이 작고 빽빽해, 기본 3개월에 주·월·1년을 고르게 했다(#117)
-const VIEWS: { key: GrassView; label: string; range: string }[] = [
-  { key: "week", label: "주", range: "이번 주" },
-  { key: "month", label: "월", range: "이번 달" },
-  { key: "3m", label: "3개월", range: "최근 3개월" },
-  { key: "year", label: "1년", range: "최근 1년" },
-];
-
-const WEEKDAYS = ["월", "화", "수", "목", "금", "토", "일"];
-
 // 리포트(04 기능 명세 E-2·E-3, S21): 꼬리잇기·최장, 꼬리잇기 달력, 약점 리포트.
-// 처음엔 기록 탭 안("기록 / 리포트")에 있었으나 별도 화면으로 옮겼다(#117). ?view로 달력 보기를 고른다
-export default function ReportPage({ searchParams }: PageProps<"/report">) {
+// 처음엔 기록 탭 안("기록 / 리포트")에 있었으나 별도 화면으로 옮겼다(#117)
+export default function ReportPage() {
   return (
     <div className={w.page}>
       <AppHeader title="리포트" />
       <h1 className={h.pageTitle}>리포트</h1>
       <Suspense>
-        {searchParams.then((p) => (
-          <Report view={VIEWS.find((v) => v.key === p.view)?.key ?? "3m"} />
-        ))}
+        <Report />
       </Suspense>
     </div>
   );
 }
 
-async function Report({ view }: { view: GrassView }) {
-  const { today, scores, streak, attempts } = await loadStudy();
+// 꼬리잇기 달력은 1년(52주) 고정이고, 사용자가 시작한 주부터 채운다. 처음엔 주·월·3개월·1년 보기를 골랐으나
+// (?view) 시작한 날부터 채워지는 느낌이 나게 1년 하나로 고정했다(#117). 옛 ?view 링크는 무시한다
+async function Report() {
+  const supabase = await createClient();
+  const [{ today, scores, streak, attempts }, { data: profile }] =
+    await Promise.all([
+      loadStudy(),
+      supabase.from("profiles").select("created_at").maybeSingle(),
+    ]);
   const weak = weaknessReport(attempts, today);
+  // 시작한 날: 가입일의 한국 날짜. 가입 전에 푼 체험을 이어받았으면 그 첫 학습일이 더 이르다
+  const joined = [
+    profile && kstDay(new Date(profile.created_at)),
+    ...scores.keys(),
+  ]
+    .filter((d): d is string => !!d)
+    .sort()[0];
   const cells = grassCells(
     scores,
     streak.restDays,
     today,
-    grassRange(view, today),
+    grassStart(today, joined),
   );
-  // 월 보기의 앞뒤 주에 걸친 다른 달 날은 비워 둔다
-  const out = (c: GrassCell) =>
-    view === "month" && c.day.slice(0, 7) !== today.slice(0, 7);
-  const studied = cells.filter((c) => c.level > 0 && !out(c)).length;
-  const rested = cells.filter((c) => c.rest && !out(c)).length;
-  const range = VIEWS.find((v) => v.key === view)!.range;
-  const calendar = view === "week" || view === "month";
+  // 시작한 날 앞(첫 주의 그 전 요일)은 비워 둔다
+  const before = (c: GrassCell) => !!joined && c.day < joined;
+  const studied = cells.filter((c) => c.level > 0).length;
+  const rested = cells.filter((c) => c.rest).length;
+  // 오늘이 든 열(0부터)과 시작한 지 몇 주째인지. 1년이 넘으면 달력은 최근 52주만 보여준다
+  const todayCol = Math.floor(cells.findIndex((c) => c.day === today) / 7);
+  const weeks = joined
+    ? (Date.parse(weekStart(today)) - Date.parse(weekStart(joined))) /
+        (7 * 86_400_000) +
+      1
+    : todayCol + 1;
+  const range = weeks > 52 ? "최근 1년" : `시작한 지 ${weeks}주째`;
+  // 처음 열릴 때 학습한 칸이 왼쪽부터 차오르게: 오늘 열까지를 0.45초에 나눠 늦게 나타난다
+  const delay = (i: number) =>
+    ({
+      "--delay": `${Math.round((Math.floor(i / 7) / Math.max(todayCol, 1)) * 450)}ms`,
+    }) as CSSProperties;
 
   const grid = (
     <GrassTip
-      className={`${w.grass} ${calendar ? w.calendar : w.strip}`}
-      label={`${range} ${studied}일 학습, 휴식권 ${rested}번 사용`}
+      className={`${w.grass} ${w.strip}`}
+      label={`꼬리잇기 달력 52주, ${range} ${studied}일 학습, 휴식권 ${rested}번 사용`}
     >
-      {cells.map((c) => (
+      {cells.map((c, i) => (
         <span
           key={c.day}
-          data-tip={c.future || out(c) ? undefined : cellTitle(c, today)}
+          data-tip={c.future || before(c) ? undefined : cellTitle(c, today)}
           data-level={c.level}
           data-rest={c.rest || undefined}
           data-future={c.future || undefined}
-          data-out={out(c) || undefined}
+          data-out={before(c) || undefined}
           data-today={c.day === today || undefined}
-        >
-          {/* 주·월 보기는 칸 안에 날짜 */}
-          {calendar && !out(c) && Number(c.day.slice(8))}
-        </span>
+          style={c.level > 0 || c.rest ? delay(i) : undefined}
+        />
       ))}
     </GrassTip>
   );
@@ -114,41 +126,12 @@ async function Report({ view }: { view: GrassView }) {
           </span>
         </div>
         <div className={`glass ${w.grassCard}`}>
-          <nav className={w.seg} aria-label="달력 보기">
-            {VIEWS.map((v) => (
-              <Link
-                key={v.key}
-                href={v.key === "3m" ? "/report" : `/report?view=${v.key}`}
-                replace
-                scroll={false}
-                className="press"
-                aria-current={v.key === view ? "page" : undefined}
-              >
-                {v.label}
-              </Link>
-            ))}
-          </nav>
-          {calendar ? (
-            <div className={w.calendarWrap}>
-              <div className={w.weekdays} aria-hidden="true">
-                {WEEKDAYS.map((d) => (
-                  <span key={d}>{d}</span>
-                ))}
-              </div>
+          <div className={w.grassScroll}>
+            <div className={w.stripWrap}>
+              <MonthLabels cells={cells} />
               {grid}
             </div>
-          ) : (
-            <div
-              className={`${w.grassScroll} ${view === "year" ? w.yearScroll : ""}`}
-            >
-              <div
-                className={`${w.stripWrap} ${view === "year" ? w.year : w.quarter}`}
-              >
-                <MonthLabels cells={cells} />
-                {grid}
-              </div>
-            </div>
-          )}
+          </div>
           <p className={w.caption}>
             진할수록 점수가 높고, 빗금은 휴식권을 쓴 날이에요
           </p>
@@ -186,15 +169,16 @@ async function Report({ view }: { view: GrassView }) {
   );
 }
 
-// 3개월·1년 보기 위 달 이름: 월요일이 새 달로 넘어간 첫 주 열에만 "N월"(첫 열과 끝 열이 잘리지 않게)
+// 달력 위 달 이름: 첫 열(시작한 달)과 월요일이 새 달로 넘어간 주 열에 "N월". 끝 열은 글자가 밖으로 넘쳐 뺀다
 function MonthLabels({ cells }: { cells: GrassCell[] }) {
   const mondays = cells.filter((_, i) => i % 7 === 0).map((c) => c.day);
   return (
     <div className={w.months} aria-hidden="true">
       {mondays.map((d, i) => (
         <span key={d}>
-          {i > 0 &&
-            d.slice(5, 7) !== mondays[i - 1].slice(5, 7) &&
+          {(i === 0 ||
+            (i < mondays.length - 1 &&
+              d.slice(5, 7) !== mondays[i - 1].slice(5, 7))) &&
             `${Number(d.slice(5, 7))}월`}
         </span>
       ))}
