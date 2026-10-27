@@ -194,9 +194,7 @@ async function Home() {
             <li key={r.questions.id}>
               <Link href="/review" className={`hover-row ${s.linkRow}`}>
                 <span className={s.reviewRow}>
-                  <span
-                    className={`num ${rv.meta} ${s.rowMeta}`}
-                  >
+                  <span className={`num ${rv.meta} ${s.rowMeta}`}>
                     {tagLine(r.questions)}
                   </span>
                   <span className={`${rv.prompt} ${s.rowTitle}`}>
