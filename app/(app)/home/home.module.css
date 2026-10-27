@@ -1,4 +1,5 @@
-/* 홈(S10·S11·S12). 숫자는 Figma C안(모바일 390·태블릿 768·PC 1440)과 c-spec-px "모바일 홈" */
+/* 홈(S10·S11·S12). 숫자는 Figma C안(모바일 390·태블릿 768·PC 1440)과 c-spec-px "모바일 홈",
+   오늘 카드·숫자 카드·목록은 #115 홈 개편안(사용자 승인) */
 
 .home {
   display: flex;
@@ -31,152 +32,218 @@
   color: var(--accent);
 }
 
-/* 오늘의 질문 카드 */
-.card {
-  position: relative;
-  overflow: hidden;
-  min-height: 400px;
+/* 오늘의 질문 카드(모든 상태 한 틀). 모바일: 원(80) 옆에 칩, 질문과 아래 줄은 카드 폭 전체.
+   바탕은 다른 카드와 같은 유리에 옅은 빛만 더한다. 처음엔 3D Q 172를 오른쪽 위에 띄운 높이 400 카드였다(#115 개편안) */
+:global(.glass).card {
   border-radius: 32px;
-  padding: 24px 22px 22px;
-  display: flex;
-  flex-direction: column;
+  padding: 22px 20px 20px;
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  grid-template-areas:
+    "vis chips"
+    "title title"
+    "foot foot";
+  column-gap: 14px;
+  background:
+    radial-gradient(90% 120% at 0% 0%, var(--hero1) 0%, transparent 62%),
+    linear-gradient(135deg, transparent 40%, var(--hero2) 100%), var(--glass);
 }
-.q {
-  position: absolute;
-  right: 10px;
-  top: 10px;
-}
-.cardHead {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--sub);
-}
-/* 질문이 길어도 3D Q(172) 아래에서 시작하게 머리 아래를 비워 둔다 */
-.q + .cardHead {
-  margin-bottom: 112px;
-}
-.qChip {
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-}
-.tag {
-  position: relative;
-  margin-top: auto;
-  font-size: 15px;
-  color: var(--accent);
-}
-.prompt {
-  position: relative;
-  margin-top: 8px;
-  font-size: 26px;
-  line-height: 36px;
-  font-weight: 700;
-  letter-spacing: -0.6px;
-  text-wrap: pretty;
-  /* 넓은 카드에서도 한 줄이 너무 길지 않게(Figma PC 줄 폭 약 310) */
-  max-width: 13em;
-}
-.go {
-  position: relative;
-  margin-top: 20px;
-  height: 56px;
-  border-radius: 28px;
-  padding: 0 8px 0 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--accent-fill);
-  color: var(--on-accent);
-  font-size: 17px;
-  font-weight: 700;
-}
-.goArrow {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+.visual {
+  grid-area: vis;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--on-accent);
-  color: var(--accent-fill);
 }
-/* 화살표 hover: 오른쪽으로 4px(랜딩 시작 버튼과 같다, docs/07 "모션") */
+.chips {
+  grid-area: chips;
+  align-self: center;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+/* 상태 칩(오늘 완료 · 새 질문 · 진행 중)과 분류 칩, 높이 24 · 13px */
+.statusChip,
+.cat {
+  max-width: 100%;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 24px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.statusChip {
+  background: var(--tab-active);
+  box-shadow: inset 0 1px 0 var(--glass-hi);
+  font-weight: 700;
+  color: var(--accent);
+}
+.cat {
+  background: var(--hover);
+  box-shadow: inset 0 0 0 1px var(--glass-edge);
+  font-weight: 600;
+  color: var(--text);
+}
+.cardTitle,
+.emptyText {
+  grid-area: title;
+  margin-top: 14px;
+}
+.cardTitle {
+  font-size: 18px;
+  line-height: 25px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  text-wrap: pretty;
+}
+.emptyText {
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--sub);
+}
+.foot {
+  grid-area: foot;
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+/* 다음 복습 칩. 모바일은 날짜를 "10/30(금)"으로 줄여 버튼과 한 줄에 둔다 */
+.dueChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 12px;
+  background: var(--well);
+  font-size: 13px;
+  color: var(--sub);
+  white-space: nowrap;
+}
+.dueChip svg {
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.longDay {
+  display: none;
+}
+/* 카드 버튼은 높이 36 · 14px(모바일은 남은 폭을 채운다). 누르는 자리는 위아래로 넓혀 44를 둔다 */
+.card .cardBtn {
+  position: relative;
+  flex: 1 0 auto;
+  margin-left: auto;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 18px;
+  font-size: 14px;
+}
+.card .cardBtn::after {
+  content: "";
+  position: absolute;
+  inset: -4px 0;
+}
+/* 시작하기 화살표 hover: 오른쪽으로 4px(랜딩 시작 버튼과 같다, docs/07 "모션") */
 @media (prefers-reduced-motion: no-preference) {
-  .goArrow {
+  .cardBtn svg {
     transition: transform 0.2s ease;
   }
 }
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .go:hover .goArrow {
+  .cardBtn:hover svg {
     transform: translateX(4px);
   }
 }
-.emptyText {
-  position: relative;
-  margin-top: auto;
-  font-size: 16px;
-  color: var(--sub);
-}
 
-/* 오늘 완료 카드 */
-.doneCard {
-  min-height: 0;
-  gap: 20px;
-}
-.doneChip {
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: var(--tab-active);
-  box-shadow: inset 0 1px 0 var(--glass-hi);
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent);
-}
-.doneRow {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-}
+/* 점수 원 88(선 8), 모바일 80. 숫자 34(모바일 32) 점수색 */
 .ring {
   position: relative;
-  width: 60px;
-  height: 60px;
-  flex-shrink: 0;
+  width: 100%;
+  height: 100%;
 }
-.ring > span {
+.ring svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ringNum {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  font-weight: 600;
+  line-height: 1;
 }
-.next {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 14px;
+.ringNum b {
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -1px;
+}
+.ringNum small {
+  margin-top: 2px;
+  font-size: 12px;
   color: var(--sub);
 }
-.next strong {
-  font-size: 22px;
-  line-height: 31px;
-  font-weight: 700;
-  color: var(--text);
-}
-.again {
-  width: 100%;
-  color: var(--text);
+
+/* 태블릿·PC: 원(88) 오른쪽에 위 칩 · 가운데 질문 · 아래 다음 복습과 버튼(PC 카드 높이 약 162) */
+@media (min-width: 768px) {
+  :global(.glass).card {
+    padding: 20px 24px;
+    grid-template-columns: 88px minmax(0, 1fr);
+    grid-template-areas:
+      "vis chips"
+      "vis title"
+      "vis foot";
+    align-content: center;
+    column-gap: 20px;
+    row-gap: 6px;
+  }
+  .visual {
+    width: 88px;
+    height: 88px;
+    align-self: center;
+  }
+  .chips {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .cardTitle,
+  .emptyText,
+  .foot {
+    margin-top: 0;
+  }
+  /* 오늘 완료 질문은 2줄까지 */
+  .clamp {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card .cardBtn {
+    flex: none;
+  }
+  .ringNum b {
+    font-size: 34px;
+  }
+  .longDay {
+    display: inline;
+  }
+  .shortDay {
+    display: none;
+  }
 }
 
-/* 통계 칸 */
+/* 숫자 카드: 라벨 앞 아이콘(배경 칩 없이), 숫자 28 · 단위 16(#115 개편안). 처음엔 라벨 글자만 있었다 */
 .stats3,
 .stats2 {
   margin-top: 16px;
@@ -189,45 +256,62 @@
 .stats2 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
+/* 3칸(오늘 안 풂·하던 중 모바일)은 칸이 좁아 여백과 숫자를 줄인다 */
 .tile {
   border-radius: 22px;
-  padding: 18px 16px;
+  padding: 18px 12px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
+}
+.tile[data-big] {
+  border-radius: 24px;
+  padding: 18px 20px 16px;
 }
 .tileLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 14px;
   color: var(--sub);
 }
+.tile[data-big] .tileLabel {
+  gap: 6px;
+}
+.tileLabel > span {
+  display: flex;
+}
 .tileValue {
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 32px;
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--sub);
 }
 .tileNum {
-  margin-right: 3px;
   font-size: 24px;
+  line-height: 30px;
   font-weight: 600;
-}
-.tile[data-big] {
-  padding: 18px 20px;
-}
-.tile[data-big] .tileValue {
-  line-height: 37px;
+  letter-spacing: -1px;
+  color: var(--text);
 }
 .tile[data-big] .tileNum {
   font-size: 28px;
+  line-height: 34px;
 }
+.tileValue .accent,
 .accent {
   color: var(--accent);
 }
+.warm {
+  color: var(--mid);
+}
 .tileText {
-  display: block;
-  margin-top: 6px;
   font-size: 15px;
   line-height: 20px;
   font-weight: 700;
+  color: var(--text);
 }
 .tileNote {
   font-size: 14px;
@@ -235,12 +319,8 @@
   font-weight: 400;
   color: var(--sub);
 }
-.tileValue .tileNote {
-  display: block;
-  margin-top: 6px;
-}
 
-/* 목록 카드(복습할 질문 · 최근 기록 · 바로 가기) */
+/* 목록 카드(복습할 질문 · 최근 기록) */
 .section {
   margin-top: 32px;
 }
@@ -253,7 +333,7 @@
   font-size: 14px;
   color: var(--sub);
 }
-/* 글자 위계: 섹션 제목 19 > 행 제목 17 > 보조 14 > 메타 13(docs/07 "글자 크기") */
+/* 글자 위계: 섹션 제목 19 > 행 제목 16 > 보조 14 > 메타 13(docs/07 "글자 크기") */
 .sectionHead h2 {
   font-size: 19px;
   font-weight: 700;
@@ -264,40 +344,34 @@
   font-weight: 700;
   color: var(--text);
 }
+.sectionHead a b {
+  margin-left: 4px;
+  font-weight: 700;
+  color: var(--accent);
+}
 @media (hover: hover) {
   .sectionHead a:hover,
   .panelHead a:hover {
     color: var(--text);
   }
 }
-/* 안쪽 여백은 모서리 곡선(28) 안쪽에서 내용이 시작하게 넉넉히(#115) */
+/* 행이 위아래 여백(14·12)을 가져 카드 여백은 얇게. 처음엔 12·24(PC 14·28)였는데 개편안대로 줄였다(#115) */
 .list {
   margin-top: 14px;
   border-radius: 28px;
-  padding: 12px 24px;
+  padding: 4px 20px;
   list-style: none;
 }
-/* 행 글자(복습·기록 목록 클래스 위에 홈 크기를 덮는다) */
+/* 행 제목은 16px 한 줄 말줄임(개편안). 처음엔 17px 2줄이었다 */
 .list .rowTitle {
-  font-size: 17px;
-  line-height: 25px;
-}
-.list .rowMeta {
-  font-size: 13px;
-  line-height: 18px;
-}
-.list .rowSub {
-  font-size: 14px;
-}
-/* 최근 기록 행: 기록 목록처럼 점수 옆에 화살표를 붙여 누르는 행임을 보인다. 화살표는 점수와 한 묶음으로 가깝게(4px).
-   날짜·메타·점수는 모두 본문 글꼴 + 고정폭 숫자(.num)다. 처음엔 날짜·점수가 고정폭 글꼴(.mono)이라
-   한 행 안 글꼴이 달라 보여, 기록 목록과 같이 맞췄다(#115, 사용자 요청) */
-.recentRow {
-  grid-template-columns: 42px minmax(0, 1fr) auto auto;
-}
-.recentRow > svg {
-  margin-left: -4px;
-  color: var(--sub);
+  min-width: 0;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 /* 목록 행 hover: 제목이 강조색, 행이 오른쪽으로 3px, 화살표가 앞으로(사용자 결정 #115) */
 .list :global(.hover-row):focus-visible .rowTitle {
@@ -325,44 +399,84 @@
     transform: translateX(3px);
   }
 }
-.list ul {
-  list-style: none;
-}
-.linkRow {
+
+/* 복습할 질문 행(높이 76): 질문 한 줄, 아래 분류 칩 · 복습 시기 · 숙련도 */
+.reviewRow {
+  min-height: 76px;
+  padding: 14px 0;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
+}
+.reviewRow > svg,
+.list .recentRow > svg {
+  flex-shrink: 0;
   color: var(--sub);
 }
-.linkRow > span {
+.rowText {
   flex: 1;
   min-width: 0;
-  color: var(--text);
-}
-.shortcuts {
-  margin-top: 12px;
-}
-.shortcut {
-  min-height: 60px;
-  padding: 8px 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 2px;
-  font-size: 17px;
-  font-weight: 700;
+  gap: 8px;
 }
-.shortcut :global(.mono) {
+/* 좁은 폭에서 칩이 길면 숙련도가 다음 줄로 내려간다 */
+.rowSub {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
   font-size: 13px;
-  font-weight: 400;
+  line-height: 18px;
+}
+.mini {
+  max-width: 100%;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 12px;
+  background: var(--hover);
+  box-shadow: inset 0 0 0 1px var(--glass-edge);
+  line-height: 24px;
+  font-weight: 500;
+  color: var(--sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.due {
   color: var(--sub);
 }
+.due[data-now] {
+  font-weight: 600;
+  color: var(--accent);
+}
+.level {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+.level > span {
+  gap: 4px;
+}
+.level span span {
+  width: 7px;
+  height: 7px;
+}
 
-.note {
-  margin-top: 16px;
-  text-align: center;
-  font-size: 15px;
+/* 최근 기록 행: 날짜 · 질문(한 줄) · 점수 · 화살표. 화살표는 점수와 한 묶음으로 가깝게(4px).
+   날짜·점수는 본문 글꼴 + 고정폭 숫자(.num)다. 처음엔 고정폭 글꼴(.mono)이라 한 행 안 글꼴이 달라 보여, 기록 목록과 같이 맞췄다(#115, 사용자 요청) */
+.list .recentRow {
+  min-height: 60px;
+  padding: 12px 0;
+  grid-template-columns: 44px minmax(0, 1fr) auto auto;
+  gap: 12px;
+}
+.list .recentRow > svg {
+  margin-left: -4px;
+}
+.recentDate {
+  font-size: 14px;
   color: var(--sub);
 }
 
@@ -371,11 +485,11 @@
   display: none;
 }
 .panel {
-  border-radius: 24px;
-  padding: 20px;
+  border-radius: 28px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
 }
 .week {
   display: grid;
@@ -474,10 +588,12 @@
   .main {
     grid-area: main;
   }
+  /* 스크롤을 따라올 때 사이드 메뉴 위 끝(AppShell .nav top 16)과 같은 선에 멈춘다. 처음엔 40이었다(#115 개편안).
+     열 높이는 약 490이라 창(800)보다 짧고, 오른쪽 아래 여우 버튼 위에서 끝난다 */
   .side {
     grid-area: side;
     position: sticky;
-    top: 40px;
+    top: 16px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -488,19 +604,8 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
-  .prompt {
-    max-width: 20em;
-  }
-  .side .shortcuts {
-    margin-top: 0;
-    border-radius: 24px;
-    padding: 8px 20px;
-  }
-  .card {
-    padding: 28px;
-  }
   .list {
-    padding: 14px 28px;
+    padding: 6px 24px;
   }
   .compact {
     display: none;
@@ -510,16 +615,7 @@
   }
 }
 
-/* 복습할 질문 행(복습 목록 S18 행과 같은 높이) */
-.reviewRow {
-  min-height: 86px;
-  padding: 12px 0 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-/* 약한 주제: 주제 이름·평균 점수, 막대(docs/07 "약한 주제" 막대) */
+/* 약한 주제: 주제 이름·평균 점수, 막대 8(docs/07 "약한 주제" 막대, 처음엔 6이었다 #115) */
 .weakList {
   list-style: none;
   display: flex;
@@ -545,13 +641,13 @@
 }
 .weakBar {
   grid-column: 1 / -1;
-  height: 6px;
-  border-radius: 3px;
+  height: 8px;
+  border-radius: 4px;
   background: var(--track);
   overflow: hidden;
 }
 .weakBar span {
   display: block;
   height: 100%;
-  border-radius: 3px;
+  border-radius: 4px;
 }
