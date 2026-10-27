@@ -136,45 +136,64 @@ export function ProjectView({
           <p className={s.desc}>질문을 누르면 바로 연습해요</p>
           {notice && <LimitNotice {...notice} />}
           <ol className={`glass ${s.rows}`}>
-            {questions.map((q, i) => (
-              <li key={q.id}>
-                <button
-                  type="button"
-                  className={`hover-row ${s.row} ${s.qRow}`}
-                  disabled={busy !== null || (notice !== null && !q.open)}
-                  data-locked={notice !== null && !q.open ? "" : undefined}
-                  onClick={() => practice(q.id)}
+            {questions.map((q, i) => {
+              // 한도에 닿아 새로 시작할 수 없는 질문. 왜 막혔는지 칸에서도 보이게 자물쇠와 "오늘 한도"를 단다.
+              // 비활성 버튼은 브라우저에 따라 마우스 설명을 안 띄워 li에 title을 둔다
+              const locked = notice !== null && !q.open;
+              return (
+                <li
+                  key={q.id}
+                  title={
+                    locked
+                      ? "오늘 프로젝트 연습 한도를 모두 썼어요. 내일 다시 할 수 있어요"
+                      : undefined
+                  }
                 >
-                  <span className={`mono ${s.qNo}`}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span>
-                    <span className={s.qPrompt}>{q.prompt}</span>
-                    <span className={`num ${s.qState}`}>
-                      {q.state === null ? (
-                        "아직 안 함"
-                      ) : q.state === "doing" ? (
-                        "연습 중"
-                      ) : (
-                        <>
-                          <span className={s.done}>연습함</span> ·{" "}
-                          <span
-                            style={
-                              q.score === null
-                                ? undefined
-                                : { color: scoreColor(q.score) }
-                            }
-                          >
-                            {q.state}
-                          </span>
-                        </>
-                      )}
+                  <button
+                    type="button"
+                    className={`hover-row ${s.row} ${s.qRow}`}
+                    disabled={busy !== null || locked}
+                    data-locked={locked ? "" : undefined}
+                    onClick={() => practice(q.id)}
+                  >
+                    <span className={`mono ${s.qNo}`}>
+                      {String(i + 1).padStart(2, "0")}
                     </span>
-                  </span>
-                  <Icon name="chevronRight" size={18} />
-                </button>
-              </li>
-            ))}
+                    <span>
+                      <span className={s.qPrompt}>{q.prompt}</span>
+                      <span className={`num ${s.qState}`}>
+                        {q.state === null ? (
+                          "아직 안 함"
+                        ) : q.state === "doing" ? (
+                          "연습 중"
+                        ) : (
+                          <>
+                            <span className={s.done}>연습함</span> ·{" "}
+                            <span
+                              style={
+                                q.score === null
+                                  ? undefined
+                                  : { color: scoreColor(q.score) }
+                              }
+                            >
+                              {q.state}
+                            </span>
+                          </>
+                        )}
+                      </span>
+                    </span>
+                    {locked ? (
+                      <span className={s.lockTag}>
+                        <Icon name="lock" size={14} />
+                        오늘 한도
+                      </span>
+                    ) : (
+                      <Icon name="chevronRight" size={18} />
+                    )}
+                  </button>
+                </li>
+              );
+            })}
           </ol>
         </>
       ) : (
