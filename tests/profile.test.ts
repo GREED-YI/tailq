@@ -101,6 +101,13 @@ describe("프로필 이미지와 로그인 방법", () => {
     expect(socialPhoto({ picture: "https://x/p.png" })).toBe("https://x/p.png");
     expect(socialPhoto({ avatar_url: "javascript:alert(1)" })).toBeNull();
     expect(socialPhoto(undefined)).toBeNull();
+    // avatar_url이 쓸 수 없으면 picture를 쓴다
+    expect(socialPhoto({ avatar_url: "", picture: "https://x/p.png" })).toBe(
+      "https://x/p.png",
+    );
+    expect(
+      socialPhoto({ avatar_url: "http://x/a.png", picture: "https://x/p.png" }),
+    ).toBe("https://x/p.png");
   });
 
   it("로그인 방법 이름", () => {

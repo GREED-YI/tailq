@@ -47,7 +47,12 @@ export function ProfileForm(props: {
     const res = await fetch("/api/me", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ nickname, avatar, shareNickname: share }),
+      body: JSON.stringify({
+        nickname,
+        // 고른 이미지가 그대로면 보내지 않는다. 로그인 정보에 사진이 없을 때 저장된 소셜 사진을 지우지 않으려고
+        ...(avatar !== avatarChoice(props.avatar) && { avatar }),
+        shareNickname: share,
+      }),
     }).catch(() => null);
     if (res?.ok) {
       // 닉네임·이미지를 쓰는 화면이 새 값으로 다시 그려지게 한다

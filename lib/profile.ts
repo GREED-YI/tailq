@@ -91,8 +91,10 @@ export const avatarChoice = (avatar: string | null): AvatarChoice =>
 // 화면에 그대로 넣으므로 https 주소만 받는다.
 export function socialPhoto(meta: unknown): string | null {
   const m = (meta ?? {}) as Record<string, unknown>;
-  const url = m.avatar_url ?? m.picture;
-  return typeof url === "string" && url.startsWith("https://") ? url : null;
+  const url = [m.avatar_url, m.picture].find(
+    (u) => typeof u === "string" && u.startsWith("https://"),
+  );
+  return typeof url === "string" ? url : null;
 }
 
 // 로그인 방법(app_metadata.provider) 이름. 로그인 방법이 다르면 다른 계정이라 MY에 보여준다(04 기능 명세 1장)
