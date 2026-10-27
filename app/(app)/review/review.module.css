@@ -5,32 +5,27 @@
   display: none;
 }
 
-/* PC: 목록 화면은 가운데 열 720, 화면 제목을 보인다 */
+/* PC: 화면 제목을 보인다. 처음엔 가운데 열 720이었으나 넓은 화면에서 가운데로 몰려 셸 폭을 다 쓴다(#117) */
 @media (min-width: 1024px) {
-  .page {
-    width: 100%;
-    max-width: 720px;
-    margin: 0 auto;
-  }
   .pageTitle {
     display: block;
     font-size: 30px;
     line-height: 47px;
     font-weight: 700;
     letter-spacing: -0.8px;
-    margin-bottom: 20px; /* 아래 제목의 margin-top 8과 겹친다 */
+    margin-bottom: 8px;
   }
 }
 
-.title {
-  margin-top: 8px;
-  font-size: 28px;
-  line-height: 37px;
+/* 복습 예정 항목 N개: 제목 아래 한 줄 */
+.count {
+  margin-top: 4px;
+  font-size: 18px;
+  line-height: 26px;
   font-weight: 700;
-  letter-spacing: -0.6px;
 }
 .desc {
-  margin-top: 8px;
+  margin-top: 4px;
   font-size: 15px;
   line-height: 22px;
   color: var(--sub);
@@ -78,8 +73,8 @@
   flex-direction: column;
 }
 .meta {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 13px;
+  line-height: 18px;
   color: var(--sub);
 }
 .prompt {
@@ -96,8 +91,8 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
-  line-height: 18px;
+  font-size: 14px;
+  line-height: 20px;
   color: var(--sub);
 }
 .dots {

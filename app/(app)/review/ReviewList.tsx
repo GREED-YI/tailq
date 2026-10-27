@@ -23,10 +23,14 @@ const FILTERS: { key: ReviewFilter; label: string; empty: string }[] = [
   { key: "all", label: "전체", empty: "복습할 질문이 없어요" },
   { key: "today", label: "오늘", empty: "오늘 복습할 질문이 없어요" },
   { key: "week", label: "이번 주", empty: "이번 주 복습할 질문이 없어요" },
-  { key: "mastered", label: "익힌 질문", empty: "아직 익힌 질문이 없어요" },
+  {
+    key: "mastered",
+    label: "복습 완료",
+    empty: "아직 복습 완료한 질문이 없어요",
+  },
 ];
 
-// 칩은 필터. 사용자에게는 칸 번호 대신 다음 복습일과 숙련도 점 5개로 보여준다(04 기능 명세 5번)
+// 칩은 필터. 사용자에게는 칸 번호 대신 다음 복습일과 숙련도 5칸으로 보여준다(04 기능 명세 5번)
 export function ReviewList({ items, today }: { items: Item[]; today: string }) {
   const [filter, setFilter] = useState<ReviewFilter>("all");
   const shown = items.filter((r) => matchesFilter(r, filter, today));
@@ -80,7 +84,8 @@ export function ReviewList({ items, today }: { items: Item[]; today: string }) {
         <strong>숙련도</strong>
         <p>
           잘 답할수록 다음 복습까지 간격이 길어져요.
-          <br />점 5개를 다 채우면 익힌 질문이 돼요.
+          <br />
+          숙련도 5칸을 다 채우면 복습 완료한 질문이 돼요.
         </p>
       </div>
     </>
@@ -96,7 +101,7 @@ function Row({ r, today }: { r: Item; today: string }) {
       </span>
       <span className={s.prompt}>{r.prompt}</span>
       <span className={`num ${s.due}`}>
-        {r.box === null ? "익힘" : dueLabel(daysUntil(r.dueDay, today))} ·
+        {r.box === null ? "복습 완료" : dueLabel(daysUntil(r.dueDay, today))} ·
         숙련도
         <span className={s.dots} role="img" aria-label={`5칸 중 ${level}칸`}>
           {[1, 2, 3, 4, 5].map((n) => (
