@@ -9,7 +9,7 @@ import s from "./review.module.css";
 
 export const metadata: Metadata = { title: "복습 · TailQ" };
 
-// 복습 목록(04 기능 명세 5번, S18). 복습 예정 질문과 다음 복습일, 익힌 질문을 본다.
+// 복습 목록(04 기능 명세 5번, S18). 복습 예정 질문과 다음 복습일, 복습 완료한 질문을 본다.
 export default function ReviewPage() {
   return (
     <div className={s.page}>
@@ -25,9 +25,10 @@ export default function ReviewPage() {
 function Heading({ count }: { count?: number }) {
   return (
     <>
-      <h2 className={`num ${s.title}`}>
-        복습할 질문{count === undefined ? "" : ` ${count}개`}
-      </h2>
+      {/* 처음엔 큰 제목 "복습할 질문 N개"였으나 화면 제목 "복습"과 겹쳐 개수 한 줄로 줄였다(#117) */}
+      <p className={`num ${s.count}`}>
+        복습 예정 항목{count === undefined ? "" : ` ${count}개`}
+      </p>
       <p className={s.desc}>
         잘 답하면 간격이 늘어나고, 부족하면 처음부터 다시 나와요
       </p>

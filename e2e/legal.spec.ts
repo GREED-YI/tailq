@@ -25,3 +25,22 @@ test("개인정보처리방침은 로그인 없이 열리고 필수 항목을 �
   }
   await expect(page.getByText("Anthropic, PBC (미국)")).toBeVisible();
 });
+
+test("문서 탭을 여러 번 바꿔도 뒤로 가면 들어온 곳으로 바로 간다", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "이용약관" }).click();
+  await expect(page).toHaveURL("/terms");
+  const tabs = page.getByRole("navigation", { name: "문서 선택" });
+  for (const [name, url] of [
+    ["개인정보처리방침", "/privacy"],
+    ["이용약관", "/terms"],
+    ["개인정보처리방침", "/privacy"],
+  ]) {
+    await tabs.getByRole("link", { name }).click();
+    await expect(page).toHaveURL(url);
+  }
+  await page.getByRole("button", { name: "뒤로" }).click();
+  await expect(page).toHaveURL("/");
+});

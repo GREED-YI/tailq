@@ -184,6 +184,42 @@ describe("grassCells", () => {
   });
 });
 
+describe("grassStart", () => {
+  const today = "2026-10-28"; // 수요일
+
+  it("시작한 날을 주면 그 주 월요일부터 52주를 채운다", () => {
+    // 2026-09-16은 수요일
+    expect(grassStart(today, "2026-09-16")).toBe("2026-09-14");
+    const cells = grassCells(
+      new Map(),
+      [],
+      today,
+      grassStart(today, "2026-09-16"),
+    );
+    expect(cells).toHaveLength(52 * 7);
+    expect(cells[0].day).toBe("2026-09-14");
+    expect(cells.at(-1)!.day).toBe("2027-09-12");
+    expect(cells.filter((c) => !c.future)).toHaveLength(45);
+  });
+
+  it("시작한 지 1년이 넘으면 이번 주가 마지막 열이 되게 민다", () => {
+    expect(grassStart(today, "2025-01-01")).toBe(grassStart(today));
+    const cells = grassCells(
+      new Map(),
+      [],
+      today,
+      grassStart(today, "2025-01-01"),
+    );
+    expect(cells[0].day).toBe("2025-11-03");
+    expect(cells.at(-1)!.day).toBe("2026-11-01");
+  });
+
+  it("시작한 날이 없거나 딱 52주 전 주면 최근 52주", () => {
+    expect(grassStart(today)).toBe("2025-11-03");
+    expect(grassStart(today, "2025-11-05")).toBe("2025-11-03");
+  });
+});
+
 describe("ticketsLeft", () => {
   it("이번 주에 휴식권을 안 썼으면 1개, 썼으면 0개", () => {
     // 2026-10-26은 월요일

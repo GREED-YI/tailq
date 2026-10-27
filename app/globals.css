@@ -191,8 +191,10 @@ button {
 .btn-secondary {
   color: var(--text);
 }
+/* 되돌릴 수 없는 행동(삭제·탈퇴). 처음엔 유리 버튼에 빨간 글씨였는데, 눈에 띄게 빨간 바탕 + 흰 글씨로 바꿨다(#118, 사용자 요청) */
 .btn-danger {
-  color: var(--danger);
+  background: var(--danger-fill);
+  color: var(--on-danger);
 }
 .btn:disabled {
   background: var(--ghost);
@@ -309,6 +311,10 @@ button {
 @media (hover: hover) {
   .press:not(:disabled):hover {
     filter: brightness(1.06);
+  }
+  /* 빨간 바탕은 밝히면 흰 글씨 대비가 떨어져 살짝 어둡게 한다 */
+  .btn-danger.press:not(:disabled):hover {
+    filter: brightness(0.9);
   }
   /* 유리 버튼(아이콘·보조 버튼·칩·알약)은 밝기만으로는 거의 안 보여 유리를 선택 캡슐만큼 진하게 한다 */
   .glass.press:not(:disabled):hover {

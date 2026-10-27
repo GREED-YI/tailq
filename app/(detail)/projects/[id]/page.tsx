@@ -58,6 +58,7 @@ async function Project({ id }: { id: string }) {
       id: q.id,
       prompt: q.prompt,
       open,
+      score: main && main.verdict !== "unknown" ? main.score : null,
       state: main
         ? main.verdict === "unknown"
           ? "모르겠어요"

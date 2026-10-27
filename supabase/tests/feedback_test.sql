@@ -1,6 +1,6 @@
--- 앱 안 피드백(#101): 하루 한도, 사용자 권한으로는 읽지도 쓰지도 못하고, 탈퇴하면 같이 지워진다
+-- 앱 안 피드백(#101): 하루 한도, 분류(#118), 사용자 권한으로는 읽지도 쓰지도 못하고, 탈퇴하면 같이 지워진다
 begin;
-select plan(7);
+select plan(11);
 
 insert into auth.users (id, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000000a', '{"name": "에이"}');
@@ -20,6 +20,24 @@ select lives_ok(
 select throws_ok(
   $$select public.send_feedback('00000000-0000-0000-0000-00000000000a', '한도를 넘는 세 번째 의견', 2)$$,
   'FEEDBACK_LIMIT', '24시간 한도를 넘으면 넣지 않는다'
+);
+
+-- 분류: 고르지 않으면 기타, 고르면 그 분류로, 정해진 네 가지 밖은 막는다
+select is(
+  (select category from public.feedback where body = '복습 알림 시각을 고르고 싶어요'),
+  'etc', '분류 없이 넣으면 기타다'
+);
+select lives_ok(
+  $$select public.send_feedback('00000000-0000-0000-0000-00000000000a', '채점 결과가 안 보여요', 5, 'bug')$$,
+  '분류를 골라 넣는다'
+);
+select is(
+  (select category from public.feedback where body = '채점 결과가 안 보여요'),
+  'bug', '고른 분류로 저장한다'
+);
+select throws_ok(
+  $$select public.send_feedback('00000000-0000-0000-0000-00000000000a', '없는 분류로 보내 볼게요', 5, 'spam')$$,
+  '23514', null, '정해진 분류가 아니면 저장하지 않는다'
 );
 
 set local role authenticated;

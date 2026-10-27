@@ -75,8 +75,15 @@
   gap: 4px;
 }
 .stat > span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   color: var(--sub);
+}
+/* 꼬리잇기 라벨 앞 꼬리 아이콘: 면접 결과·홈의 꼬리잇기 칸(components/Streak)과 같은 16px · 강조색 */
+.stat > span svg {
+  color: var(--accent);
 }
 .stat strong {
   font-size: 13px;

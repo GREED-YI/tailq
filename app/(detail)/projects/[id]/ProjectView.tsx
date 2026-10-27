@@ -6,15 +6,17 @@ import { useEffect, useRef, useState } from "react";
 import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
 import { LimitNotice, type Notice } from "@/components/LimitNotice";
+import { scoreColor } from "@/app/interview/verdict";
 import s from "@/app/(app)/projects/projects.module.css";
 import { openModal, useCloseOnLeave } from "@/lib/dialog";
 
-// state: 최근 점수("72점"·"모르겠어요"), 연습 중("doing"), 아직 안 함(null)
+// state: 최근 점수("72점"·"모르겠어요"), 연습 중("doing"), 아직 안 함(null). score는 점수 색을 고를 때 쓴다
 // open: 열린 세션이 있으면 한도와 상관없이 이어 할 수 있다(점수가 있어도 꼬리질문 중일 수 있다)
 export type QuestionRow = {
   id: number;
   prompt: string;
   state: string | null;
+  score: number | null;
   open: boolean;
 };
 
@@ -44,8 +46,21 @@ export function ProjectView({
   const dialogRef = useRef<HTMLDialogElement>(null);
   useCloseOnLeave(dialogRef);
   const [busy, setBusy] = useState<number | "delete" | "retry" | null>(null);
+  // 요청 중인지. 이동하는 동안에는 잠금을 유지하고(두 번 누르지 않게), 화면이 보관되어 숨겨질 때
+  // 요청 중이 아니면 잠금을 푼다. 다시 보일 때도 요청이 끝났으면 푼다(cacheComponents라 상태를 그대로 들고 다시 보인다)
+  const inFlight = useRef(false);
+  useEffect(() => {
+    // 다시 보일 때(숨겨진 동안 요청이 끝났으면) 잠금을 푼다
+    if (!inFlight.current) setBusy(null);
+    return () => {
+      if (!inFlight.current) setBusy(null);
+    };
+  }, []);
   const [error, setError] = useState("");
   const [deleteError, setDeleteError] = useState("");
+  // 삭제 확인 창에 다시 쓴 프로젝트 이름. 똑같이 써야 삭제 버튼이 켜진다(#118, 사용자 요청)
+  const [typedName, setTypedName] = useState("");
+  const nameMatches = typedName.trim() === name.trim();
 
   // 만드는 동안 서버 컴포넌트를 다시 그려 프로젝트 행을 읽는다(RLS 읽기 정책 안에서)
   useEffect(() => {
@@ -57,6 +72,7 @@ export function ProjectView({
   // 질문을 누르면 그 질문의 세션을 열고(열린 세션이 있으면 이어서) 면접 화면으로
   async function practice(questionId: number) {
     setBusy(questionId);
+    inFlight.current = true;
     setError("");
     const res = await fetch("/api/sessions", {
       method: "POST",
@@ -64,6 +80,7 @@ export function ProjectView({
       body: JSON.stringify({ kind: "project", questionId }),
     }).catch(() => null);
     const json = await res?.json().catch(() => null);
+    inFlight.current = false;
     if (res?.ok) {
       router.push(`/interview?session=${json.session.id}`);
       return;
@@ -113,16 +130,6 @@ export function ProjectView({
           <Icon name="chevronLeft" />
         </Link>
         <h1>{name}</h1>
-        <button
-          type="button"
-          className={`glass press ${s.pill}`}
-          onClick={() => {
-            setDeleteError("");
-            openModal(dialogRef.current);
-          }}
-        >
-          삭제
-        </button>
       </header>
 
       {status === "ready" ? (
@@ -133,36 +140,64 @@ export function ProjectView({
           <p className={s.desc}>질문을 누르면 바로 연습해요</p>
           {notice && <LimitNotice {...notice} />}
           <ol className={`glass ${s.rows}`}>
-            {questions.map((q, i) => (
-              <li key={q.id}>
-                <button
-                  type="button"
-                  className={`hover-row ${s.row} ${s.qRow}`}
-                  disabled={busy !== null || (notice !== null && !q.open)}
-                  data-locked={notice !== null && !q.open ? "" : undefined}
-                  onClick={() => practice(q.id)}
+            {questions.map((q, i) => {
+              // 한도에 닿아 새로 시작할 수 없는 질문. 왜 막혔는지 칸에서도 보이게 자물쇠와 "오늘 한도"를 단다.
+              // 비활성 버튼은 브라우저에 따라 마우스 설명을 안 띄워 li에 title을 둔다
+              const locked = notice !== null && !q.open;
+              return (
+                <li
+                  key={q.id}
+                  title={
+                    locked
+                      ? "오늘 프로젝트 연습 한도를 모두 썼어요. 내일 다시 할 수 있어요"
+                      : undefined
+                  }
                 >
-                  <span className={`mono ${s.qNo}`}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span>
-                    <span className={s.qPrompt}>{q.prompt}</span>
-                    <span className={`num ${s.qState}`}>
-                      {q.state === null ? (
-                        "아직 안 함"
-                      ) : q.state === "doing" ? (
-                        "연습 중"
-                      ) : (
-                        <>
-                          <span className={s.done}>연습함</span> · {q.state}
-                        </>
-                      )}
+                  <button
+                    type="button"
+                    className={`hover-row ${s.row} ${s.qRow}`}
+                    disabled={busy !== null || locked}
+                    data-locked={locked ? "" : undefined}
+                    onClick={() => practice(q.id)}
+                  >
+                    <span className={`mono ${s.qNo}`}>
+                      {String(i + 1).padStart(2, "0")}
                     </span>
-                  </span>
-                  <Icon name="chevronRight" size={18} />
-                </button>
-              </li>
-            ))}
+                    <span>
+                      <span className={s.qPrompt}>{q.prompt}</span>
+                      <span className={`num ${s.qState}`}>
+                        {q.state === null ? (
+                          "아직 안 함"
+                        ) : q.state === "doing" ? (
+                          "연습 중"
+                        ) : (
+                          <>
+                            <span className={s.done}>연습함</span> ·{" "}
+                            <span
+                              style={
+                                q.score === null
+                                  ? undefined
+                                  : { color: scoreColor(q.score) }
+                              }
+                            >
+                              {q.state}
+                            </span>
+                          </>
+                        )}
+                      </span>
+                    </span>
+                    {locked ? (
+                      <span className={s.lockTag}>
+                        <Icon name="lock" size={14} />
+                        오늘 한도
+                      </span>
+                    ) : (
+                      <Icon name="chevronRight" size={18} />
+                    )}
+                  </button>
+                </li>
+              );
+            })}
           </ol>
         </>
       ) : (
@@ -208,6 +243,22 @@ export function ProjectView({
         </p>
       )}
 
+      {/* 처음엔 머리 오른쪽 알약이었는데, 실수로 누르기 쉬운 자리라 목록 맨 아래로 내렸다(#118, 사용자 요청) */}
+      <div className={s.deleteBottom}>
+        <button
+          type="button"
+          className="btn btn-md btn-danger press"
+          disabled={busy === "delete"}
+          onClick={() => {
+            setDeleteError("");
+            setTypedName("");
+            openModal(dialogRef.current);
+          }}
+        >
+          프로젝트 삭제하기
+        </button>
+      </div>
+
       {/* 삭제 확인(S25). 질문·기록·복습 일정이 함께 지워진다(04 기능 명세 9번) */}
       <dialog
         ref={dialogRef}
@@ -220,29 +271,45 @@ export function ProjectView({
           <br />
           함께 지워지고 되돌릴 수 없어요.
         </p>
-        {deleteError && (
-          <p className={s.error} role="alert">
-            {deleteError}
-          </p>
-        )}
-        <div className={s.dialogActions}>
-          <button
-            type="button"
-            className="glass btn btn-md btn-secondary press"
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (nameMatches && busy !== "delete") remove();
+          }}
+        >
+          <label htmlFor="delete-name" className={s.dialogLabel}>
+            삭제하려면 프로젝트 이름 「{name}」을 입력하세요
+          </label>
+          <input
+            id="delete-name"
+            className={`glass ${s.input}`}
+            value={typedName}
+            onChange={(e) => setTypedName(e.target.value)}
+            autoComplete="off"
             autoFocus
-            onClick={() => dialogRef.current?.close()}
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            className="glass btn btn-md btn-danger press"
-            disabled={busy === "delete"}
-            onClick={remove}
-          >
-            삭제
-          </button>
-        </div>
+          />
+          {deleteError && (
+            <p className={s.error} role="alert">
+              {deleteError}
+            </p>
+          )}
+          <div className={s.dialogActions}>
+            <button
+              type="button"
+              className="glass btn btn-md btn-secondary press"
+              onClick={() => dialogRef.current?.close()}
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              className="btn btn-md btn-danger press"
+              disabled={!nameMatches || busy === "delete"}
+            >
+              삭제
+            </button>
+          </div>
+        </form>
       </dialog>
     </>
   );
