@@ -117,6 +117,37 @@ export type Database = {
         };
         Relationships: [];
       };
+      projects: {
+        Row: {
+          content: string;
+          created_at: string;
+          error_code: string | null;
+          id: string;
+          name: string;
+          status: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          content: string;
+          created_at?: string;
+          error_code?: string | null;
+          id?: string;
+          name: string;
+          status?: string;
+          user_id: string;
+        };
+        Update: {
+          content?: string;
+          created_at?: string;
+          error_code?: string | null;
+          id?: string;
+          name?: string;
+          status?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       question_keys: {
         Row: {
           links: Json | null;
@@ -158,29 +189,39 @@ export type Database = {
         Row: {
           id: number;
           is_hidden: boolean;
-          level: string;
+          level: string | null;
+          project_id: string | null;
           prompt: string;
-          topic_id: string;
+          topic_id: string | null;
           trial_field: string | null;
         };
         ComputedFields: never;
         Insert: {
           id?: number;
           is_hidden?: boolean;
-          level: string;
+          level?: string | null;
+          project_id?: string | null;
           prompt: string;
-          topic_id: string;
+          topic_id?: string | null;
           trial_field?: string | null;
         };
         Update: {
           id?: number;
           is_hidden?: boolean;
-          level?: string;
+          level?: string | null;
+          project_id?: string | null;
           prompt?: string;
-          topic_id?: string;
+          topic_id?: string | null;
           trial_field?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "questions_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "questions_topic_id_fkey";
             columns: ["topic_id"];
@@ -395,9 +436,9 @@ export type Database = {
         Row: {
           field: string;
           id: number;
-          level: string;
+          level: string | null;
           prompt: string;
-          topic_id: string;
+          topic_id: string | null;
           trial_field: string | null;
         };
         ComputedFields: never;
@@ -477,9 +518,67 @@ export type Database = {
         Args: { p_good: boolean; p_question_id: number; p_user_id: string };
         Returns: string;
       };
+      create_project: {
+        Args: { p_content: string; p_name: string; p_user_id: string };
+        Returns: {
+          content: string;
+          created_at: string;
+          error_code: string | null;
+          id: string;
+          name: string;
+          status: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "projects";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      delete_project: {
+        Args: { p_project_id: string; p_user_id: string };
+        Returns: undefined;
+      };
+      restart_project_generation: {
+        Args: { p_project_id: string; p_user_id: string };
+        Returns: {
+          content: string;
+          created_at: string;
+          error_code: string | null;
+          id: string;
+          name: string;
+          status: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "projects";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       save_grading: {
         Args: { p_result: Json; p_turn_id: string };
         Returns: Json;
+      };
+      save_project_questions: {
+        Args: { p_error_code: string; p_project_id: string; p_questions: Json };
+        Returns: {
+          content: string;
+          created_at: string;
+          error_code: string | null;
+          id: string;
+          name: string;
+          status: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "projects";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       set_bookmark: {
         Args: { p_on: boolean; p_question_id: number; p_user_id: string };
@@ -491,6 +590,26 @@ export type Database = {
       };
       start_daily_session: {
         Args: { p_pick: string; p_question_id: number; p_user_id: string };
+        Returns: {
+          completed_at: string | null;
+          created_at: string;
+          day: string;
+          id: string;
+          kind: string;
+          pick: string | null;
+          question_id: number;
+          status: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "sessions";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      start_project_session: {
+        Args: { p_question_id: number; p_user_id: string };
         Returns: {
           completed_at: string | null;
           created_at: string;

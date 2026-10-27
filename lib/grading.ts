@@ -95,31 +95,36 @@ export const MOCK_GRADE: GradeOutput = {
 
 export type Rubric = { keywords: string[]; criteria: string[] };
 
+// 은행 질문은 분야·세부 주제·난이도, 프로젝트 질문은 프로젝트 이름(docs/09 "채점 사용자 메시지")
 export type GradeInput = {
   question: string;
-  field: string;
-  topicName: string;
-  level: string;
   rubric: Rubric;
   modelAnswer: string;
   answer: string;
-};
+} & (
+  { field: string; topicName: string; level: string } | { projectName: string }
+);
 
 const label = (list: readonly { id: string; label: string }[], id: string) =>
   list.find((x) => x.id === id)?.label ?? id;
 
-// 답변 속 입력 태그가 프롬프트 구조를 닫거나 열지 못하게 태그 이름 앞에 폭 없는 공백을 넣는다
-const neutralize = (text: string) =>
+// 사용자 글 속 입력 태그가 프롬프트 구조를 닫거나 열지 못하게 태그 이름 앞에 폭 없는 공백을 넣는다
+export const neutralize = (text: string) =>
   text.replace(
-    /<(\/?)(question|topic|rubric|model_answer|answer|history|turn|result|current|expected_answer|task)\b/gi,
+    /<(\/?)(question|topic|rubric|model_answer|answer|history|turn|result|current|expected_answer|task|project_name|readme)\b/gi,
     "<\u200b$1$2",
   );
 
-// 채점 사용자 메시지(docs/09 "채점 사용자 메시지 (본 질문)"). 답변은 <answer> 안의 자료로만 들어간다
+// 채점 사용자 메시지(docs/09 "채점 사용자 메시지 (본 질문)"). 답변은 <answer> 안의 자료로만 들어간다.
+// 프로젝트 질문은 <topic>을 "내 프로젝트 / {프로젝트 이름}"으로 넣고 난이도는 생략한다(이름도 사용자 글이다)
 export function gradeUserMessage(i: GradeInput) {
+  const topic =
+    "projectName" in i
+      ? `내 프로젝트 / ${neutralize(i.projectName)}`
+      : `${label(FIELDS, i.field)} / ${i.topicName} · 난이도 ${label(LEVELS, i.level)}`;
   return [
     `<question>${i.question}</question>`,
-    `<topic>${label(FIELDS, i.field)} / ${i.topicName} · 난이도 ${label(LEVELS, i.level)}</topic>`,
+    `<topic>${topic}</topic>`,
     "<rubric>",
     `keywords: ${i.rubric.keywords.join(", ")}`,
     "criteria:",
