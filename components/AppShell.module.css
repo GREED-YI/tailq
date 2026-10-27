@@ -35,7 +35,7 @@
   margin-top: auto;
   padding-top: 32px;
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 @media (hover: hover) {
@@ -58,7 +58,7 @@
 /* 하위 화면은 모바일·태블릿 탭바를 숨긴다. PC는 아래 .nav 규칙이 다시 보인다 */
 .navSub,
 .navLogo,
-.navTools {
+.pcTools {
   display: none;
 }
 .navList {
@@ -77,7 +77,7 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
 }
 /* 키보드 초점 테두리는 안쪽에 그려 옆 칸·탭바 밖으로 넘치지 않게 */
@@ -128,12 +128,22 @@
   }
 }
 
-/* PC: 왼쪽 사이드 메뉴(폭 224). 내용(최대 992)은 x 272부터 남은 폭의 가운데 */
+/* PC: 왼쪽 사이드 메뉴(폭 --nav-w). 내용(최대 --content-max)은 x --shell-left부터 남은 폭의 가운데.
+   폭 값은 app/globals.css의 :root(넓은 화면일수록 넓다) */
 @media (min-width: 1024px) {
   .main {
     width: auto;
-    margin: 0 0 0 272px;
-    padding: 40px max(40px, calc((100% - 272px - 992px) / 2)) 32px;
+    margin: 0 0 0 var(--shell-left);
+    padding: 24px
+      max(40px, calc((100% - var(--shell-left) - var(--content-max)) / 2)) 32px;
+  }
+  /* 테마 토글·알림 등은 내용 영역 오른쪽 위(모바일·태블릿은 헤더 오른쪽 위).
+     처음엔 사이드 메뉴 맨 아래에 있었는데 찾기 어려워 옮겼다(#114) */
+  .pcTools {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 8px;
   }
   .header {
     display: none;
@@ -142,7 +152,7 @@
     top: 16px;
     bottom: 16px;
     left: 16px;
-    width: 224px;
+    width: var(--nav-w);
     height: auto;
     transform: none;
     border-radius: 28px;
@@ -153,7 +163,7 @@
   }
   .navLogo {
     display: block;
-    padding-left: 12px;
+    padding: 4px 0 0 12px;
   }
   .navList {
     height: auto;
@@ -171,10 +181,17 @@
     font-size: 16px;
     font-weight: 500;
   }
-  .navTools {
-    display: flex;
-    gap: 8px;
-    margin-top: auto;
+}
+@media (min-width: 1440px) {
+  .nav {
+    padding: 28px 14px;
+    gap: 36px;
+  }
+  .navItem {
+    height: 52px;
+    border-radius: 26px;
+    padding: 0 18px;
+    font-size: 17px;
   }
 }
 
@@ -219,7 +236,7 @@
   }
   /* 사이드 메뉴가 있는 화면만 메뉴를 뺀 내용 영역의 가운데(면접처럼 메뉴가 없으면 화면 가운데) */
   :global(body):has(.nav) .toastArea {
-    left: 272px;
+    left: var(--shell-left);
     right: 0;
   }
 }
@@ -229,10 +246,8 @@
     bottom: calc(20px + env(safe-area-inset-bottom));
   }
 }
-.toastArea.toastTop {
-  top: calc(76px + env(safe-area-inset-top));
-  bottom: auto;
-}
+/* 아래가 답변 칸·버튼으로 막힌 화면(useToast({ top: true }))은 그 위쪽 하단 가운데.
+   bottom은 Toast.tsx가 막힌 높이를 재서 inline으로 준다 */
 
 /* 운영자 메뉴(#104): 사이드 메뉴가 있는 PC에서만. 모바일·태블릿은 헤더 아이콘을 쓴다 */
 .navAdmin {
@@ -244,5 +259,132 @@
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid var(--glass-edge);
+  }
+}
+
+/* 여우 피드백 버튼(FeedbackFox.tsx): 오른쪽 아래에 떠 있고, 처음 한 번·hover·초점에 말풍선.
+   모바일·태블릿 탭 화면은 탭바 위, 하위 화면은 화면 아래, PC는 오른쪽 아래 */
+.fox {
+  position: fixed;
+  z-index: 15;
+  right: 20px;
+  bottom: calc(20px + 64px + 12px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+@media (min-width: 768px) {
+  .fox {
+    right: 24px;
+    bottom: calc(24px + 64px + 12px + env(safe-area-inset-bottom));
+  }
+}
+@media (max-width: 1023px) {
+  :global(body):has(.navSub) .fox {
+    bottom: calc(20px + env(safe-area-inset-bottom));
+  }
+}
+@media (min-width: 1024px) {
+  .fox {
+    right: 28px;
+    bottom: 28px;
+  }
+}
+:global(body):has([data-admin]) .fox {
+  display: none;
+}
+.foxBtn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.foxImg {
+  width: 30px;
+  height: 39px;
+  background: var(--text);
+  -webkit-mask: url(/brand/fox.svg) center / contain no-repeat;
+  mask: url(/brand/fox.svg) center / contain no-repeat;
+  transition: background-color 0.5s ease;
+}
+/* 모바일은 내용을 덜 가리게 조금 작게 */
+@media (max-width: 767px) {
+  .foxBtn {
+    width: 48px;
+    height: 48px;
+  }
+  .foxImg {
+    width: 26px;
+    height: 34px;
+  }
+}
+.foxTip {
+  /* 아래 내용 글자가 비치지 않게 시트 색 아래에 화면 바탕을 깐다(토스트와 같다) */
+  background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
+  position: relative;
+  max-width: min(240px, calc(100vw - 120px));
+  padding: 10px 8px 10px 16px;
+  border-radius: 20px 20px 6px 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(8px);
+}
+/* 토스트가 떠 있는 동안은 말풍선을 접는다(같은 줄에서 겹치지 않게) */
+:global(body):has(.toastArea) .fox .foxTip {
+  opacity: 0;
+  visibility: hidden;
+}
+.foxTip button {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sub);
+}
+.foxTipOn .foxTip,
+.fox:focus-within .foxTip {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+}
+@media (hover: hover) {
+  .fox:hover .foxTip {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+  }
+  .foxTip button:hover {
+    color: var(--text);
+  }
+}
+/* 등장은 globals.css의 .rise(아래에서 떠오름), 동작 줄이기면 꺼진다 */
+@media (prefers-reduced-motion: no-preference) {
+  .foxTip {
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease,
+      visibility 0.25s;
+  }
+  .foxImg {
+    transition:
+      background-color 0.5s ease,
+      transform 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
+  }
+  @media (hover: hover) {
+    .foxBtn:hover .foxImg {
+      transform: rotate(-8deg) translateY(-2px);
+    }
   }
 }

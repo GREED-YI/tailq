@@ -3,7 +3,7 @@
 import { THEME_STORAGE_KEY, type ThemeName } from "@/lib/theme";
 
 // 지금 테마의 반대로 바꾸고 기억한다. 아이콘은 CSS(.only-dark/.only-light)로 골라서
-// 서버에서 그린 화면과 첫 그림이 같다.
+// 서버에서 그린 화면과 첫 그림이 같다. 바꿀 때 해·달이 돌며 엇갈리고, hover에 25° 돈다(globals.css .theme-toggle)
 export function ThemeToggle() {
   function toggle() {
     const root = document.documentElement;
@@ -17,7 +17,11 @@ export function ThemeToggle() {
   }
 
   return (
-    <button type="button" className="glass press icon-btn" onClick={toggle}>
+    <button
+      type="button"
+      className="glass press icon-btn theme-toggle"
+      onClick={toggle}
+    >
       <span className="only-dark">
         <SunIcon />
         <span className="sr-only">라이트 모드로 바꾸기</span>
