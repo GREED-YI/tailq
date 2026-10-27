@@ -36,14 +36,15 @@ flowchart LR
 | 함수 실행 시간 | Fluid compute를 켠다(무료 플랜 최대 300초). 라우트마다 `export const maxDuration`을 적는다: 채점(`/api/turns/{id}/answer`) 60, 프로젝트 질문 생성·다시 생성(`/api/projects`, `/api/projects/{id}/generations`) 300. `after()`도 그 라우트의 `maxDuration`을 따른다 | Fluid compute가 꺼진 무료 플랜은 기본 10초라 채점(최대 15초)과 `after()` 저장이 끊긴다. 질문 5개 생성은 30~60초 넘게 걸릴 수 있다 |
 | 런타임 | Node.js (Edge 아님) | `web-push`와 Anthropic SDK 스트리밍이 Node에서 돈다. 공유 카드 이미지(`next/og`)만 Edge |
 | 스트리밍 중단 | Claude 호출에 브라우저의 `request.signal`을 넘기지 않는다 | 사용자가 떠나도 채점을 끝까지 받아 저장해야 한다 |
-| 환경변수 | `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PUBLIC_KEY`·`VAPID_PRIVATE_KEY`·`VAPID_SUBJECT`, `CRON_SECRET`, `TRIAL_IP_HMAC_SECRET`, `AI_MONTHLY_BUDGET_USD`, `KRW_PER_USD`, `AI_MOCK` | 목록만 여기 두고 값·발급 방법은 #11. `NEXT_PUBLIC_` 둘만 브라우저에 간다 |
+| 환경변수 | `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PUBLIC_KEY`·`VAPID_PRIVATE_KEY`·`VAPID_SUBJECT`, `CRON_SECRET`, `TRIAL_IP_HMAC_SECRET`, `AI_MONTHLY_BUDGET_USD`, `KRW_PER_USD`, `AI_MOCK`, `ADMIN_USER_IDS`(운영 대시보드에 들어갈 사용자 id, 쉼표로 구분) | 목록만 여기 두고 값·발급 방법은 #11. `NEXT_PUBLIC_` 둘만 브라우저에 간다 |
 
 ### 데이터 읽고 쓰는 길
 
 브라우저에는 Supabase 공개 키와 로그인 토큰이 있으므로, 사용자 권한으로 할 수 있는 일은 브라우저에서도 직접 할 수 있다. 그래서 읽기와 쓰기를 나눈다.
 
 - **읽기**: 서버 컴포넌트가 사용자 권한으로 읽는다. 테이블에는 **읽기(SELECT) 정책만** 두고 "자기 행만"을 RLS로 강제한다. 쓰기 정책이 없으므로 브라우저에서 직접 쓰는 길은 없다. 브라우저가 직접 읽어도 되는 곳(프로젝트 질문 생성 상태 폴링)은 같은 정책 아래 supabase-js로 읽는다.
-  - **예외, 체험 화면**: 체험은 로그인 토큰이 없어 RLS로 읽을 수 없다. 서버가 쿠키의 체험 토큰으로 세션 소유를 확인한 뒤 `service_role`로 **그 세션과 턴만** 읽어 화면을 그린다. 다른 행을 읽는 코드 경로는 두지 않는다.
+  - **예외, 체험 화면**: 체험은 로그인 토큰이 없어 RLS로 읽을 수 없다. 서버가 쿠키의 체험 토큰으로 세션 소유를 확인한 뒤 `service_role`로 **그 세션과 턴만** 읽어 화면을 그린다. 이 경로는 다른 행을 읽지 않는다.
+  - **예외, 운영 대시보드**: `/admin`은 `ADMIN_USER_IDS`에 든 사용자만 연다(`proxy.ts`와 화면에서 두 번 확인). 확인을 마친 뒤에만 `service_role`로 RLS를 건너뛰어 모든 사용자의 프로필 id·가입·온보딩 시각, 최근 8주 답변 턴의 점수·판정·평가·상태, 질문의 숨김 여부·분야를 읽어 서버에서 집계하고 숫자만 화면에 보낸다. 답변 본문은 읽지 않고, 복습·북마크는 행을 읽지 않고 개수만 센다 (2026-10-27).
 - **쓰기**: Route Handler가 먼저 로그인한 사용자를 확인한 뒤, 서버 전용 권한(`service_role`)으로 **DB 함수**(plpgsql)를 부른다. 함수 실행 권한은 `service_role`에만 준다(브라우저가 부를 수 없다).
 - **DB 함수**는 Postgres 안에 저장해 두는 작은 프로그램이다. 여러 단계(확인 → 고르기 → 저장)를 DB 안에서 한 묶음으로 실행해서, 중간에 실패하면 전부 취소된다(은행 이체에서 출금과 입금이 같이 되거나 같이 안 되는 것과 같다). Next.js에서는 `supabase.rpc('함수이름')`으로 부른다.
 - **DB 함수로 묶는 쓰기**: 여러 문장이 한꺼번에 성공하거나 실패해야 하는 것들이다. supabase-js에는 트랜잭션이 없어서 함수 안에서 묶는다. 같은 사용자의 요청이 동시에 와도 꼬이지 않게 함수 안에서 사용자별 잠금(`pg_advisory_xact_lock`)을 잡고, 유일 인덱스로 한 번 더 막는다. 함수 목록은 [3장 "DB 함수"](#db-함수)에 있다.

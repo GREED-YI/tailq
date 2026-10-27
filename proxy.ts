@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isAdmin } from "@/lib/admin";
 
 // 로그인해야 들어가는 탭 화면(app/(app))과 면접 화면
 const APP_PATHS = [
@@ -52,6 +53,16 @@ export async function proxy(request: NextRequest) {
     response.cookies.getAll().forEach((cookie) => redirect.cookies.set(cookie));
     return redirect;
   };
+
+  // 운영자 화면은 운영자가 아니면 로그인으로도 보내지 않고 404로 숨긴다(화면 안에서도 다시 확인한다)
+  if (
+    (pathname === "/admin" || pathname.startsWith("/admin/")) &&
+    !isAdmin(userId, process.env.ADMIN_USER_IDS)
+  ) {
+    return NextResponse.rewrite(new URL("/_not-found", request.url), {
+      status: 404,
+    });
+  }
 
   if (!userId && (needsLogin || onOnboarding)) {
     const url = new URL("/login", request.url);

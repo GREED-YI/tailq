@@ -1,0 +1,434 @@
+/* 운영자 대시보드. Figma에 화면은 없고 리포트(S21)·MY(S27)의 카드·숫자·막대 부품 값을 따른다 */
+
+.page {
+  padding-bottom: 8px;
+}
+
+.top {
+  margin: 8px 0 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.top h1 {
+  font-size: 26px;
+  line-height: 34px;
+  font-weight: 700;
+  letter-spacing: -0.6px;
+}
+.top span {
+  font-size: 12px;
+  color: var(--sub);
+}
+
+/* 벤토 그리드. 모바일·태블릿은 2열, PC는 4열. 중요한 지표가 위·큰 칸에 온다 */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "hero hero"
+    "d7 thumbs"
+    "active users"
+    "score score"
+    "verdict verdict"
+    "onboard fail"
+    "bank bank"
+    "review bookmark"
+    "visit visit"
+    "cost cost";
+  gap: 10px;
+}
+@media (min-width: 1024px) {
+  .bento {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-areas:
+      "hero hero d7 thumbs"
+      "hero hero active users"
+      "score score verdict verdict"
+      "bank bank onboard fail"
+      "visit cost review bookmark";
+    gap: 12px;
+  }
+}
+
+/* 북극성: 이번 주 숫자 + 최근 8주 막대 */
+.hero {
+  border-radius: 28px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 18px;
+}
+.heroText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.heroText h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--sub);
+}
+.heroText strong {
+  font-size: 14px;
+  font-weight: 500;
+}
+.big {
+  font-size: 44px;
+  line-height: 52px;
+  font-weight: 600;
+  letter-spacing: -1px;
+  color: var(--accent);
+}
+.heroText > span {
+  font-size: 12px;
+  color: var(--sub);
+}
+.heroText [data-trend="up"] {
+  color: var(--good);
+}
+.heroText [data-trend="down"] {
+  color: var(--low);
+}
+
+.weeks {
+  list-style: none;
+  height: 132px;
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+}
+.weeks li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  min-width: 0;
+  border-radius: 8px;
+}
+.weeks li > span {
+  font-size: 11px;
+  color: var(--sub);
+}
+.weeks i {
+  width: 100%;
+  max-width: 32px;
+  min-height: 4px;
+  border-radius: 8px;
+  background: var(--track);
+  transition: background-color 0.2s ease;
+}
+.weeks i[data-now] {
+  background: var(--accent-fill);
+  box-shadow: 0 0 16px -2px var(--accent-fill);
+}
+.weeks small {
+  font-size: 10px;
+  color: var(--muted);
+}
+@media (min-width: 1024px) {
+  .hero {
+    padding: 24px 28px;
+  }
+  .big {
+    font-size: 56px;
+    line-height: 64px;
+  }
+  .weeks {
+    height: 156px;
+  }
+}
+
+/* 지표 칸 */
+.stat {
+  min-height: 96px;
+  border-radius: 22px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.stat > span {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--sub);
+}
+.stat strong {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 34px;
+}
+.value {
+  font-size: 26px;
+  font-weight: 600;
+}
+.value[data-met="true"] {
+  color: var(--good);
+}
+.value[data-met="false"],
+.value[data-warn] {
+  color: var(--low);
+}
+.stat small {
+  margin-top: auto;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--sub);
+}
+
+/* 목표 대비 막대. 세로 눈금(b)이 목표 위치 */
+.goal {
+  position: relative;
+  margin: 6px 0 8px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
+}
+.goal i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--good);
+}
+.goal i[data-met="false"] {
+  background: var(--low);
+}
+.goal b {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 12px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--text);
+  opacity: 0.6;
+}
+
+.card {
+  border-radius: 22px;
+  padding: 16px;
+}
+.head {
+  margin-bottom: 14px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.head h2,
+.head strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+.head > span {
+  font-size: 12px;
+  color: var(--sub);
+  text-align: right;
+}
+
+/* 가로 막대 목록: 이름 · 막대 · 숫자 */
+.bands {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.bands li {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+  border-radius: 8px;
+  font-size: 12px;
+  color: var(--sub);
+  transition: opacity 0.2s ease;
+}
+.bands li > :last-child {
+  text-align: right;
+  color: var(--text);
+}
+.track {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--track);
+  overflow: hidden;
+}
+.track i {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+}
+
+/* 꼬리질문 판정 한 줄 막대 + 범례. 말풍선이 잘리지 않게 overflow를 숨기지 않는다 */
+.stack {
+  height: 14px;
+  border-radius: 7px;
+  background: var(--track);
+  display: flex;
+  gap: 2px;
+}
+.stack i {
+  flex-basis: 0;
+  border-radius: 3px;
+  transition: opacity 0.2s ease;
+}
+.stack i:first-child {
+  border-radius: 7px 3px 3px 7px;
+}
+.stack i:last-child {
+  border-radius: 3px 7px 7px 3px;
+}
+.stack i:only-child {
+  border-radius: 7px;
+}
+.legend {
+  list-style: none;
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--sub);
+}
+.legend li > i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.legend li > span {
+  margin-left: auto;
+  color: var(--text);
+}
+
+/* 아직 데이터가 없는 지표: 점선 테두리의 빈 칸. 누르면 해당 이슈로 */
+.soonCard {
+  border-radius: 22px;
+  padding: 16px;
+  border: 1.5px dashed var(--ring);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.soonCard .head {
+  margin-bottom: 0;
+}
+.soonBody {
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--sub);
+}
+.badge {
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--tab-active);
+  color: var(--accent) !important;
+}
+
+/* 말풍선: 마우스를 올리거나(마우스가 있는 기기) 키보드로 골랐을 때 */
+.tip {
+  position: relative;
+  cursor: default;
+}
+.tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  z-index: 2;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  padding: 6px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--text);
+  background: var(--sheet);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-edge),
+    0 8px 24px -8px var(--glass-shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+/* 판정 막대는 바로 위가 카드 제목이라 말풍선을 아래로 */
+.stack .tip::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+}
+/* 줄 단위 막대는 말풍선을 왼쪽에 붙인다 */
+.bands .tip::after {
+  left: 64px;
+  transform: translate(0, 4px);
+}
+/* 맨 끝 막대의 말풍선은 화면 밖으로 나가지 않게 안쪽으로 */
+.weeks .tip:first-child::after {
+  left: 0;
+  transform: translate(0, 4px);
+}
+.weeks .tip:last-child::after {
+  left: auto;
+  right: 0;
+  transform: translate(0, 4px);
+}
+.tip:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.bands .tip:focus-visible::after,
+.weeks .tip:first-child:focus-visible::after,
+.weeks .tip:last-child:focus-visible::after {
+  transform: translate(0, 0);
+}
+
+@media (hover: hover) {
+  .tip:hover::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  .bands .tip:hover::after,
+  .weeks .tip:first-child:hover::after,
+  .weeks .tip:last-child:hover::after {
+    transform: translate(0, 0);
+  }
+  /* 올린 칸만 또렷하게, 나머지는 흐리게 */
+  .weeks:hover li:not(:hover),
+  .bands:hover li:not(:hover),
+  .stack:hover i:not(:hover) {
+    opacity: 0.45;
+  }
+  .weeks li {
+    transition: opacity 0.2s ease;
+  }
+  .weeks li:hover i:not([data-now]) {
+    background: var(--muted);
+  }
+  .soonCard:hover {
+    border-style: solid;
+    background: var(--glass);
+  }
+}
