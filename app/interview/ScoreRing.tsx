@@ -1,16 +1,20 @@
 import s from "./interview.module.css";
+import { scoreColor } from "./verdict";
 
 const RING = 2 * Math.PI * 40;
 
-// 점수 링. 면접 화면은 카운트업 중인 값을, 기록 상세는 최종 점수를 넘긴다
+// 점수 링. 면접 화면은 카운트업 중인 값을, 기록 상세는 최종 점수를 넘긴다.
+// 링 색은 점수 구간 색. 카운트업 중에 색이 바뀌지 않게 최종 점수(score)로 정한다
 export function ScoreRing({
   shown,
   label,
   value,
+  score = value,
 }: {
   shown: number;
   label: string;
   value?: number;
+  score?: number;
 }) {
   return (
     <div className={s.ring}>
@@ -36,7 +40,7 @@ export function ScoreRing({
             cy="48"
             r="40"
             fill="none"
-            stroke="var(--ring)"
+            stroke={scoreColor(score ?? 0)}
             strokeWidth="8"
             strokeLinecap="round"
             strokeDasharray={`${((RING * shown) / 100).toFixed(1)} ${RING.toFixed(1)}`}
