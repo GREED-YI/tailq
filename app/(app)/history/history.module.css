@@ -2,6 +2,12 @@
 
 /* PC: 처음엔 기록·상세 모두 가운데 열 720이었으나 넓은 화면에서 가운데로 몰려, 목록은 셸 폭을 다 쓰고
    상세는 읽기 좋은 폭(880)까지 넓혔다(#117) */
+/* 상세의 질문·답변·모범 답안·AI 코멘트는 사용자·AI 글이라 띄어쓰기 없는 긴 글이 올 수 있다.
+   상속되는 줄바꿈 규칙을 상세 전체에 걸어 어느 칸도 카드 밖으로 넘치지 않게 한다 */
+.detail {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 @media (min-width: 1024px) {
   .detail {
     width: 100%;
@@ -24,7 +30,7 @@
   }
 }
 
-/* 제목·필터 띠: 위에 붙어 있고 목록이 그 아래로 지나간다. 지나가는 내용은 유리 띠가 흐리게 가린다.
+/* 제목·필터 띠: 위에 붙어 있고 목록이 그 아래로 지나간다. 지나가는 내용은 띠가 가린다.
    모바일은 화면 끝까지(.main 좌우 여백 20), 태블릿·PC는 열 폭보다 조금 넓게 */
 .top {
   position: sticky;
@@ -32,9 +38,8 @@
   z-index: 5;
   margin: 0 -20px;
   padding: 0 20px 12px;
-  background: color-mix(in srgb, var(--bg) 90%, transparent);
-  backdrop-filter: blur(24px) saturate(160%);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  /* 처음엔 반투명 + 흐림이었으나 흐림을 못 그리는 환경에서 지나가는 글자가 읽혀, 배경 위 유리 색을 불투명하게 깔았다 */
+  background: linear-gradient(var(--glass), var(--glass)), var(--bg);
   box-shadow: inset 0 -1px 0 var(--glass-edge);
 }
 @media (min-width: 768px) {
@@ -231,8 +236,6 @@
   border-radius: 16px;
   padding: 12px 14px;
   white-space: pre-wrap;
-  /* 띄어쓰기 없는 긴 답변도 칸 밖으로 넘치지 않게 */
-  overflow-wrap: anywhere;
   font-size: 15px;
   line-height: 22px;
 }
