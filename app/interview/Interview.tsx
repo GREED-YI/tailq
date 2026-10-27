@@ -47,6 +47,7 @@ export function Interview({
   initialStatus,
   initialAnswer,
   initialResult,
+  trial = false,
 }: {
   initialTurn: Turn;
   question: SessionQuestion;
@@ -58,8 +59,11 @@ export function Interview({
   initialStatus: InterviewStatus;
   initialAnswer: string;
   initialResult: TurnResult | null;
+  // 로그인 없는 체험: 꼬리질문 1개까지, 북마크·평가 없음(04 기능 명세 10번)
+  trial?: boolean;
 }) {
   const router = useRouter();
+  const followUps = trial ? 1 : 3;
   const [turn, setTurn] = useState(initialTurn);
   const [phase, setPhase] = useState<Phase>(PHASE_OF[initialStatus]);
   const [answer, setAnswer] = useState(initialAnswer);
@@ -201,14 +205,14 @@ export function Interview({
         </button>
         <div className={s.steps}>
           <span className={`num ${s.stepLabel}`}>
-            {turn.idx === 0 ? "본 질문" : `꼬리질문 ${turn.idx} / 3`}
+            {turn.idx === 0 ? "본 질문" : `꼬리질문 ${turn.idx} / ${followUps}`}
           </span>
           <div
             className={s.dots}
             role="img"
-            aria-label={`4단계 중 ${turn.idx + 1}단계`}
+            aria-label={`${followUps + 1}단계 중 ${turn.idx + 1}단계`}
           >
-            {[0, 1, 2, 3].map((i) => (
+            {Array.from({ length: followUps + 1 }, (_, i) => (
               <span
                 key={i}
                 className={
@@ -220,11 +224,13 @@ export function Interview({
         </div>
         {/* 별표는 꼬리질문에서도 본 질문을 북마크한다(05 사용자 흐름). Figma 화면에는 자리가 없어 머리 오른쪽에 둔다 */}
         <div className={s.headerEnd}>
-          <BookmarkButton
-            questionId={question.id}
-            initial={bookmarked}
-            toastTop
-          />
+          {!trial && (
+            <BookmarkButton
+              questionId={question.id}
+              initial={bookmarked}
+              toastTop
+            />
+          )}
           <ThemeToggle />
         </div>
       </header>
@@ -286,6 +292,7 @@ export function Interview({
       >
         {showResultSheet ? (
           <ResultView
+            trial={trial}
             followUp={turn.idx > 0}
             resultHref={resultHref}
             result={phase === "result" ? result : null}
@@ -391,12 +398,14 @@ export function Interview({
 }
 
 function ResultView({
+  trial,
   followUp,
   resultHref,
   result,
   streamed,
   onNext,
 }: {
+  trial: boolean;
   followUp: boolean;
   resultHref: string;
   result: TurnResult | null;
@@ -407,6 +416,7 @@ function ResultView({
   if (followUp) {
     return (
       <FollowUpResult
+        trial={trial}
         result={result}
         streamed={streamed}
         onNext={onNext}
@@ -491,21 +501,30 @@ function ResultView({
           </div>
         )}
 
-        {!unknown && <Rating turnId={result.turnId} initial={result.rating} />}
+        {!unknown && !trial && (
+          <Rating turnId={result.turnId} initial={result.rating} />
+        )}
       </details>
 
-      <NextButton result={result} onNext={onNext} resultHref={resultHref} />
+      <NextButton
+        result={result}
+        onNext={onNext}
+        resultHref={resultHref}
+        followUps={trial ? 1 : 3}
+      />
     </div>
   );
 }
 
 // 꼬리질문 결과: 점수 대신 판정과 한 줄 피드백. "모르겠어요"면 기대 답안을 보여준다(docs/04 C-7)
 function FollowUpResult({
+  trial,
   result,
   streamed,
   onNext,
   resultHref,
 }: {
+  trial: boolean;
   result: TurnResult | null;
   streamed: string;
   onNext: (next: Turn) => void;
@@ -539,8 +558,15 @@ function FollowUpResult({
           <p className={s.well}>{result.modelAnswer}</p>
         </div>
       )}
-      {!unknown && <Rating turnId={result.turnId} initial={result.rating} />}
-      <NextButton result={result} onNext={onNext} resultHref={resultHref} />
+      {!unknown && !trial && (
+        <Rating turnId={result.turnId} initial={result.rating} />
+      )}
+      <NextButton
+        result={result}
+        onNext={onNext}
+        resultHref={resultHref}
+        followUps={trial ? 1 : 3}
+      />
     </div>
   );
 }
@@ -550,10 +576,12 @@ function NextButton({
   result,
   onNext,
   resultHref,
+  followUps,
 }: {
   result: TurnResult;
   onNext: (next: Turn) => void;
   resultHref: string;
+  followUps: number;
 }) {
   const next = result.nextTurn;
   return next ? (
@@ -562,12 +590,12 @@ function NextButton({
       className="btn btn-primary press"
       onClick={() => onNext(next)}
     >
-      꼬리질문 받기 · {next.idx}/3
+      꼬리질문 받기 · {next.idx}/{followUps}
     </button>
   ) : (
     <Link href={resultHref} className="btn btn-primary press">
-      {/* 프로젝트 질문 세션의 결과 주소는 ?session=이 붙는다 */}
-      {resultHref.includes("?") ? "결과 보기" : "오늘의 결과 보기"}
+      {/* 프로젝트 질문 세션(?session=)과 체험은 오늘의 결과가 아니다 */}
+      {resultHref === "/interview/result" ? "오늘의 결과 보기" : "결과 보기"}
     </Link>
   );
 }

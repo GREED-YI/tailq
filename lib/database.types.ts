@@ -302,11 +302,13 @@ export type Database = {
           created_at: string;
           day: string;
           id: string;
+          ip_hash: string | null;
           kind: string;
           pick: string | null;
           question_id: number;
           status: string;
-          user_id: string;
+          trial_token: string | null;
+          user_id: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -314,22 +316,26 @@ export type Database = {
           created_at?: string;
           day: string;
           id?: string;
+          ip_hash?: string | null;
           kind: string;
           pick?: string | null;
           question_id: number;
           status?: string;
-          user_id: string;
+          trial_token?: string | null;
+          user_id?: string | null;
         };
         Update: {
           completed_at?: string | null;
           created_at?: string;
           day?: string;
           id?: string;
+          ip_hash?: string | null;
           kind?: string;
           pick?: string | null;
           question_id?: number;
           status?: string;
-          user_id?: string;
+          trial_token?: string | null;
+          user_id?: string | null;
         };
         Relationships: [
           {
@@ -559,10 +565,15 @@ export type Database = {
       };
     };
     Functions: {
+      adopt_trial: {
+        Args: { p_trial_token: string; p_user_id: string };
+        Returns: string;
+      };
       apply_review: {
         Args: { p_good: boolean; p_question_id: number; p_user_id: string };
         Returns: string;
       };
+      cleanup_trials: { Args: Record<PropertyKey, never>; Returns: number };
       create_project: {
         Args: { p_content: string; p_name: string; p_user_id: string };
         Returns: {
@@ -654,11 +665,13 @@ export type Database = {
           created_at: string;
           day: string;
           id: string;
+          ip_hash: string | null;
           kind: string;
           pick: string | null;
           question_id: number;
           status: string;
-          user_id: string;
+          trial_token: string | null;
+          user_id: string | null;
         };
         SetofOptions: {
           from: "*";
@@ -674,11 +687,35 @@ export type Database = {
           created_at: string;
           day: string;
           id: string;
+          ip_hash: string | null;
           kind: string;
           pick: string | null;
           question_id: number;
           status: string;
-          user_id: string;
+          trial_token: string | null;
+          user_id: string | null;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "sessions";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      start_trial: {
+        Args: { p_field: string; p_ip_hash: string; p_trial_token: string };
+        Returns: {
+          completed_at: string | null;
+          created_at: string;
+          day: string;
+          id: string;
+          ip_hash: string | null;
+          kind: string;
+          pick: string | null;
+          question_id: number;
+          status: string;
+          trial_token: string | null;
+          user_id: string | null;
         };
         SetofOptions: {
           from: "*";
@@ -689,10 +726,11 @@ export type Database = {
       };
       submit_answer: {
         Args: {
-          p_answer: string;
-          p_dont_know: boolean;
+          p_answer?: string;
+          p_dont_know?: boolean;
+          p_trial_token?: string;
           p_turn_id: string;
-          p_user_id: string;
+          p_user_id?: string;
         };
         Returns: {
           answer: string | null;
