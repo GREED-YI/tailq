@@ -3,6 +3,7 @@ import { GeistMono } from "geist/font/mono";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
 import { Backdrop } from "@/components/Backdrop";
+import { FirstVisit } from "@/components/FirstVisit";
 import { themeCss, themeScript } from "@/lib/theme";
 
 export const metadata: Metadata = {
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body>
         <Backdrop />
+        <FirstVisit />
         {children}
       </body>
     </html>

@@ -68,6 +68,34 @@ export type Database = {
           },
         ];
       };
+      events: {
+        Row: {
+          anon_id: string | null;
+          created_at: string;
+          id: number;
+          name: string;
+          props: NonNullable<Json>;
+          user_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          anon_id?: string | null;
+          created_at?: string;
+          id?: never;
+          name: string;
+          props?: NonNullable<Json>;
+          user_id?: string | null;
+        };
+        Update: {
+          anon_id?: string | null;
+          created_at?: string;
+          id?: never;
+          name?: string;
+          props?: NonNullable<Json>;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       feedback: {
         Row: {
           body: string;
@@ -474,6 +502,23 @@ export type Database = {
           },
         ];
       };
+      metrics_weekly: {
+        Row: {
+          answers: number | null;
+          d7_cohort: number | null;
+          d7_rate: number | null;
+          d7_returned: number | null;
+          first_answer_rate: number | null;
+          first_visitors: number | null;
+          first_visitors_answered: number | null;
+          ratings: number | null;
+          thumbs_up: number | null;
+          thumbs_up_rate: number | null;
+          week: string | null;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
       turn_states: {
         Row: {
           answer: string | null;
@@ -560,6 +605,20 @@ export type Database = {
       };
       delete_project: {
         Args: { p_project_id: string; p_user_id: string };
+        Returns: undefined;
+      };
+      delete_user_events: { Args: { p_user_id: string }; Returns: undefined };
+      purge_old_events: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
+      record_event: {
+        Args: {
+          p_anon_id?: string;
+          p_name: string;
+          p_props?: Json;
+          p_user_id?: string;
+        };
         Returns: undefined;
       };
       restart_project_generation: {

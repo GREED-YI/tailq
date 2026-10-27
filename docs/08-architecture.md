@@ -328,7 +328,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `question_keys.rubric` | `{ "keywords": string[], "criteria": string[] }` — `keywords`는 보완할 개념 칩의 후보, `criteria`는 채점 기준 문장 |
 | `question_keys.links` | `[{ "title": string, "url": string }]` 1~3개. 프로젝트 질문은 null |
 | `turns.feedback` | `{ "summary": string, "good": string[], "improve": string[], "missing_keywords": string[], "criteria": { "concept": int, "reason": int, "application": int, "delivery": int } }` — `missing_keywords ⊆ rubric.keywords`를 서버가 검증. `good`은 0~3개(빈 배열이면 화면에서 잘한 점 줄을 숨긴다). `criteria`는 본 질문의 기준별 점수로 저장만 하고 화면에는 보여주지 않는다(약점 리포트용). 꼬리질문 턴은 `summary`만 있어도 된다. 처음엔 `criteria`를 둘 곳이 없었다 (2026-10-26) |
-| `events.props` | 1KB 이하의 평평한 객체. 이름별 허용 키는 지표 이슈에서 정한다 |
+| `events.props` | 1KB 이하의 평평한 객체. id와 종류만 넣고 답변 글은 넣지 않는다. 이름별 키: `first_visit`·`signup`·`notification_click` `{}`, `trial_start` `{field}`, `trial_complete`·`share` `{session_id}`, `session_start`·`session_complete` `{session_id, kind}`, `answer_submit` `{session_id, turn_id, kind, dont_know}`(본 질문만), `rating` `{turn_id, rating}`. 처음엔 "지표 이슈에서 정한다"였다 (2026-10-27, #44) |
 
 ### 공유 · 운영
 
@@ -336,7 +336,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 |---|---|---|
 | `shares` | `id`(짧은 무작위 문자열), `session_id`(유일), `nickname`(뺄 수 있음), `topic_name`(프로젝트 질문이면 "내 프로젝트"), `score`, `streak`, `created_at` | daily·project 세션 모두 공유할 수 있다. 읽기 정책 없음. 공유 페이지는 서버가 `id` 하나로만 읽고 누구의 세션인지는 내보내지 않는다. 만들 때는 `session_id`만 받고 점수·꼬리잇기는 서버가 계산한다(위조 방지). 세션당 하나라 다시 누르면 기존 카드를 돌려준다 |
 | `ai_usage` | `id`, `user_id`(체험이면 null), `purpose`(grade·follow_up·project_gen·trial), `status`(reserved·used·released·failed), `error_code`, `latency_ms`, `input_tokens`, `output_tokens`, `cost_usd`, `day`, `created_at` | 개인 하루 한도, 서비스 월 예산, 그리고 **AI 실패율·지연 관측**(7장) |
-| `events` | `id`, `name`, `user_id`, `anon_id`, `props`(jsonb), `created_at` | 지표 이벤트(첫 방문, 체험 시작·완료, 가입, 세션 시작, 본 질문 제출, 세션 완료, 👍/👎, 공유, 알림 클릭). 서버만 쓴다. 비로그인도 보낼 수 있는 입구라 이름은 허용 목록만, `props`는 1KB까지, `anon_id`당 하루 200건을 넘으면 버린다. 90일 지난 행은 새벽 정리에서 지운다 |
+| `events` | `id`, `name`, `user_id`, `anon_id`, `props`(jsonb), `created_at` | 지표 이벤트(첫 방문, 체험 시작·완료, 가입, 세션 시작, 본 질문 제출, 세션 완료, 👍/👎, 공유, 알림 클릭). 서버만 쓴다. 비로그인도 보낼 수 있는 입구라 이름은 허용 목록만, `props`는 1KB까지, `anon_id`당 하루 200건을 넘으면 버린다. 90일 지난 행은 새벽 정리에서 지운다. `anon_id`는 브라우저 쿠키 `tailq-anon`(무작위 UUID, 1년)이다. 첫 방문 신호를 보낼지 브라우저가 알아야 해서 `httpOnly`가 아니고, 아무 권한도 주지 않는다. 로그인한 뒤의 이벤트에도 함께 남겨 첫 방문 → 첫 답변을 잇는다 (2026-10-27, #44) |
 
 ### DB 함수
 
@@ -357,6 +357,8 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `restart_project_generation(user_id, project_id)` | 다시 생성: 주인 확인, `failed`일 때만 `generating`으로 되돌린다. 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-27, #39) |
 | `delete_project(user_id, project_id)` | 오늘 daily 세션이 이 프로젝트 질문이면 거부, 아니면 삭제(cascade) |
 | `adopt_trial(user_id, trial_token)` | 이어받기(2장) |
+| `record_event(name, user_id, anon_id, props)` | 지표 이벤트 한 줄. 같은 `anon_id`가 24시간에 200건을 넘으면 버린다. 서버는 응답을 보낸 뒤(`after()`) `lib/track.ts`의 `track()`으로 부르고, 실패해도 사용자 요청은 실패시키지 않는다 (2026-10-27, #44) |
+| `delete_user_events(user_id)` · `purge_old_events()` | 탈퇴 때 그 사용자와 그 사용자가 쓴 브라우저(`anon_id`)의 이벤트 삭제 · 90일 지난 이벤트 삭제(`pg_cron` 매일 4시 KST) |
 | `handle_new_user()` | `auth.users` insert 트리거. `profiles` 행 생성(닉네임·아바타는 소셜 메타데이터에서) |
 
 ### 탈퇴
@@ -388,7 +390,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `POST /api/push-subscriptions` · `DELETE /api/push-subscriptions/{id}` | 알림 구독·해제 | ○ |
 | `POST /api/shares` | 결과 공유 카드 만들기(`sessionId`만 받음). 이미 있으면 그것을 돌려줌 | ○ |
 | `POST /api/trial-sessions` | 체험 시작(브라우저 1번, IP 하루 20번) | ✕ |
-| `POST /api/events` | 지표 이벤트(허용 목록·크기·개수 제한) | ✕ |
+| `POST /api/events` | 브라우저가 보내는 지표 이벤트 `{ name }`. `first_visit`·`notification_click`만 받는다. `tailq-anon`이 없으면 여기서 준다. 첫 방문은 값을 처음 받는 비로그인 브라우저만 센다. 나머지 이벤트는 서버가 그 일을 처리하면서 남긴다 | ✕ |
 | `POST /api/cron/push` | 매시 알림 발송(`pg_cron` 전용, 비밀 헤더). 외부에 공개하는 API가 아니라 예약 작업이 부르는 내부 입구 | 비밀값 |
 
 처음엔 `PUT /api/trial-sessions/current/turns/{idx}/answer`(체험)와 `POST /api/turns/{id}/gradings`(다시 채점)가 따로 있었으나, 체험 턴도 같은 `turns`에 있고 다시 채점도 같은 상태 전이라 둘 다 `PUT /api/turns/{id}/answer`로 합쳤다. 스트리밍 코드가 한 벌이 된다 (2026-10-25).
@@ -474,7 +476,7 @@ Vercel 무료 플랜의 실행 로그는 **1시간**(확인 필요)만 남아 �
 
 - **AI 호출 기록**: 성공·실패 모두 `ai_usage` 한 행. `status`(used·failed), `error_code`(timeout·api_error·schema_invalid·budget), `latency_ms`, 토큰, `cost_usd`. 실패율·p95 지연·일별 비용을 SQL 한 번으로 본다.
 - **보는 방법**: Supabase SQL Editor에 저장한 쿼리 3개(오늘 실패율, 이번 달 비용, 어제 푸시 발송 수). 디스코드 웹훅으로 하루 요약을 보내는 것은 다음 버전 메모(9장)에 둔다.
-- **지표**: `events` 테이블(04 기능 명세 §12의 목록).
+- **지표**: `events` 테이블(04 기능 명세 §12의 목록). 성공 지표(01) 중 넷은 뷰 `metrics_weekly`(서버만 읽음)가 주(월요일 시작, KST)별로 센다: 주간 답변 제출 수(본 질문, `turn_id`별 한 번), 첫 방문 브라우저 중 언제든 답변까지 간 비율, D7(가입 다음 날부터 7일 안에 이벤트를 다시 남긴 비율, 7일이 다 지난 가입자만), 👍 비율(턴별 마지막 평가). 화면 방문 이벤트는 목록에 없어서 D7의 "다시 옴"은 홈을 열어 오늘의 세션이 시작되는 것(`session_start`) 같은 행동으로 잰다. 월 운영비는 `ai_usage`(#43)로 본다 (2026-10-27, #44).
 - **보관 기간**: 이어받지 않은 체험 세션은 다음 날 4시, `events`는 90일, `ai_usage`는 무기한(개인 내용 없음, 탈퇴 시 `user_id`만 비움), 그 외 사용자 데이터는 탈퇴까지. 정리는 `pg_cron` 4시 작업 하나에 SQL로 모은다.
 
 ## 8. 고르지 않은 것
