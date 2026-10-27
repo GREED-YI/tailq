@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   if ((count ?? 0) >= FEEDBACK_DAILY)
     return fail(
       429,
-      "LIMIT",
+      "FEEDBACK_LIMIT",
       "오늘은 피드백을 충분히 보냈어요. 내일 다시 보내 주세요.",
     );
 

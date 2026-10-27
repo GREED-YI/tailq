@@ -383,7 +383,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `PUT /api/turns/{id}/answer` | 답변 저장 → 채점 + 다음 꼬리질문(SSE). `{ text }` 또는 `{ dontKnow: true }`(AI를 부르지 않음, JSON 응답). 실패한 턴에 같은 요청을 다시 보내면 다시 채점이다. 체험 턴도 같은 주소(쿠키 토큰으로 소유 확인) | ○ 또는 체험 쿠키 |
 | `PUT /api/turns/{id}/rating` | 👍/👎 | ○ |
 | `PUT /api/bookmarks/{questionId}` · `DELETE` | 북마크 저장·해제 | ○ |
-| `POST /api/feedback` | 피드백 보내기 `{ body }`. 24시간에 5개를 넘으면 `429 LIMIT` | ○ |
+| `POST /api/feedback` | 피드백 보내기 `{ body }`. 24시간에 5개를 넘으면 `429 FEEDBACK_LIMIT` | ○ |
 | `POST /api/projects` | 프로젝트 등록(한도 예약) → `generating`으로 바로 응답. 질문 생성은 뒤에서 | ○ |
 | `POST /api/projects/{id}/generations` | 실패한 프로젝트의 질문 다시 생성 | ○ |
 | `DELETE /api/projects/{id}` | 프로젝트와 딸린 질문·기록 삭제. 오늘의 질문이면 `409 PROJECT_IN_TODAY_SESSION` | ○ |
@@ -413,6 +413,7 @@ HTTP 상태 코드에 더해 본문은 항상 `{ "error": { "code", "message" } 
 | `PROJECT_LIMIT` | 409 | 프로젝트 3개 초과 |
 | `SESSION_CLOSED` | 409 | 이미 닫힌 세션(지난 날 `expired`·`done`)의 턴에 답변. 처음엔 없었으나, 자정을 넘겨 어제 화면에서 제출하면 닫힌 세션에서 복습 칸이 옮겨져서 더했다 (2026-10-26, #31) |
 | `REGRADE_LIMIT` | 429 | 다시 채점 횟수 초과 |
+| `FEEDBACK_LIMIT` | 429 | 피드백 24시간 5개 초과 |
 | `LIMIT_EXCEEDED` | 429 | 개인 하루 한도 |
 | `BUDGET_EXCEEDED` | 429 | 서비스 월 예산 |
 | `TRIAL_LIMIT` | 429 | 체험 하루 제한 |
