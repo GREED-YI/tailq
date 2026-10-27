@@ -1,4 +1,4 @@
-/* 학습 기록(S19 목록, S20 상세). 꼬리잇기 달력 말풍선(GrassTip)도 여기 있다. 값은 Figma C안(모바일 390·PC 1440) */
+/* 학습 기록(S19 목록, S20 상세). 값은 Figma C안(모바일 390·PC 1440) */
 
 /* PC: 처음엔 기록·상세 모두 가운데 열 720이었으나 넓은 화면에서 가운데로 몰려, 목록은 셸 폭을 다 쓰고
    상세는 읽기 좋은 폭(880)까지 넓혔다(#117) */
@@ -450,26 +450,4 @@
   font-size: 15px;
   line-height: 23px;
   color: var(--text);
-}
-
-/* 칸 위에 뜨는 날짜 말풍선(GrassTip). 칸 가운데 위 6px에 놓는다 */
-.grassTip {
-  position: fixed;
-  z-index: 30;
-  transform: translate(-50%, calc(-100% - 6px));
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
-  box-shadow:
-    inset 0 0 0 1px var(--glass-edge),
-    0 8px 20px -8px var(--glass-shadow);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  color: var(--text);
-  pointer-events: none;
-}
-/* 화면 맨 위 칸은 말풍선을 칸 아래에 */
-.grassTipBelow {
-  transform: translate(-50%, 6px);
 }

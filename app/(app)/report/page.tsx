@@ -11,7 +11,7 @@ import {
 } from "@/lib/streak";
 import { loadStudy } from "@/lib/study";
 import { weaknessReport, type TopicScore } from "@/lib/weakness";
-import { GrassTip } from "../history/report/GrassTip";
+import { GrassTip } from "@/components/GrassTip";
 import h from "../history/history.module.css";
 import w from "./report.module.css";
 
