@@ -69,6 +69,7 @@ grant execute on function public.pick_push_targets(timestamptz, int) to service_
 
 -- 매시 정각 pg_cron → pg_net으로 POST /api/cron/push를 부른다. 주소와 비밀값은 vault.secrets에 두고
 -- cron.schedule 문장에는 쓰지 않는다. 둘 중 하나라도 없으면(로컬 등) 아무것도 하지 않는다.
+-- 비밀값을 머리글에 실어 보내므로 https 주소가 아니면 보내지 않는다.
 --   select vault.create_secret('https://<도메인>/api/cron/push', 'push_cron_url');
 --   select vault.create_secret('<CRON_SECRET과 같은 값>', 'cron_secret');
 create extension if not exists pg_net with schema extensions;
@@ -84,7 +85,7 @@ declare
 begin
   select decrypted_secret into v_url from vault.decrypted_secrets where name = 'push_cron_url';
   select decrypted_secret into v_secret from vault.decrypted_secrets where name = 'cron_secret';
-  if v_url is null or v_secret is null then
+  if v_url is null or v_secret is null or v_url not like 'https://%' then
     return;
   end if;
   perform net.http_post(

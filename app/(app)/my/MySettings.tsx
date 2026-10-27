@@ -136,17 +136,20 @@ export function NotifyRow({
         setBusy(false);
         return setError(SUBSCRIBE_ERRORS[result]);
       }
-    } else if (on) {
-      // 구독을 못 지워도 notify_on이 꺼지면 보내지 않는다
-      await unsubscribePush(subscriptions).catch(() => {});
     }
     const res = await fetch("/api/me", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ notifyOn: nextOn, notifyHour: nextHour }),
     }).catch(() => null);
+    if (!res?.ok) {
+      setBusy(false);
+      return setError("저장하지 못했어요. 다시 시도해 주세요.");
+    }
+    // 끄기는 저장된 뒤에 구독을 지운다(저장이 실패하면 켜진 채로 기기 구독만 사라지지 않게).
+    // 구독을 못 지워도 notify_on이 꺼졌으니 보내지 않는다
+    if (!nextOn && on) await unsubscribePush(subscriptions).catch(() => {});
     setBusy(false);
-    if (!res?.ok) return setError("저장하지 못했어요. 다시 시도해 주세요.");
     router.refresh();
     dialog.current?.close();
   }

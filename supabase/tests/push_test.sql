@@ -1,6 +1,6 @@
 -- 웹 푸시(#37, 08 설계 "웹 푸시"): 구독 테이블, 알림 대상 고르기, 매시 호출
 begin;
-select plan(15);
+select plan(16);
 
 insert into auth.users (id, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000003a', '{"name": "에이"}'),
@@ -134,8 +134,18 @@ select is(
   (select n from queued),
   'vault에 값이 없으면 부르지 않는다'
 );
-select vault.create_secret('https://app.example.test/api/cron/push', 'push_cron_url');
+select vault.create_secret('http://app.example.test/api/cron/push', 'push_cron_url');
 select vault.create_secret('test-cron-secret', 'cron_secret');
+select public.request_push_cron();
+select is(
+  (select count(*) from net.http_request_queue),
+  (select n from queued),
+  'https가 아닌 주소로는 비밀값을 보내지 않는다'
+);
+select vault.update_secret(
+  (select id from vault.secrets where name = 'push_cron_url'),
+  'https://app.example.test/api/cron/push'
+);
 select public.request_push_cron();
 select results_eq(
   $$select url, headers ->> 'authorization' from net.http_request_queue
