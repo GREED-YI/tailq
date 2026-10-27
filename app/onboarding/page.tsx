@@ -31,7 +31,7 @@ async function Onboarding() {
     await Promise.all([
       supabase
         .from("profiles")
-        .select("agreed_at, topics, levels, notify_hour, nickname")
+        .select("agreed_at, topics, levels, notify_hour")
         .maybeSingle(),
       supabase.from("topics").select("id, field, name").order("sort"),
       // 온보딩 전에는 세션이 없고, 체험을 이어받았으면 그 세션 하나뿐이다. 연습 범위에 체험한 분야를 미리 고른다(04 기능 명세 10번)
@@ -64,7 +64,7 @@ async function Onboarding() {
           : LEVELS.map((l) => l.id)
       }
       initialHour={profile.notify_hour}
-      nickname={profile.nickname}
+      vapidKey={process.env.VAPID_PUBLIC_KEY ?? ""}
     />
   );
 }

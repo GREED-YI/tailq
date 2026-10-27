@@ -114,7 +114,8 @@ export default function PrivacyPage() {
         </ul>
         <p>
           알림은 브라우저 회사(Google, Apple, Mozilla 등)의 푸시 서버를 거쳐
-          전달돼요.
+          전달돼요. 알림 내용은 &quot;오늘의 질문이 도착했어요&quot; 같은 안내
+          문구뿐이고 닉네임, 질문, 답변 같은 개인 내용은 넣지 않아요.
         </p>
         <p>
           AI 채점은 서비스의 핵심 기능이라, 국외 이전에 동의하지 않으면 가입할

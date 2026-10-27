@@ -256,6 +256,34 @@ export type Database = {
         };
         Relationships: [];
       };
+      push_subscriptions: {
+        Row: {
+          auth_key: string;
+          created_at: string;
+          endpoint: string;
+          id: string;
+          p256dh: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          auth_key: string;
+          created_at?: string;
+          endpoint: string;
+          id?: string;
+          p256dh: string;
+          user_id: string;
+        };
+        Update: {
+          auth_key?: string;
+          created_at?: string;
+          endpoint?: string;
+          id?: string;
+          p256dh?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       question_keys: {
         Row: {
           links: Json | null;
@@ -732,6 +760,13 @@ export type Database = {
         Returns: undefined;
       };
       delete_user_events: { Args: { p_user_id: string }; Returns: undefined };
+      pick_push_targets: {
+        Args: { p_now?: string };
+        Returns: {
+          review: boolean;
+          user_id: string;
+        }[];
+      };
       purge_old_events: {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
@@ -755,6 +790,10 @@ export type Database = {
         Returns: undefined;
       };
       release_ai_usage: { Args: { p_ref_id: string }; Returns: undefined };
+      request_push_cron: {
+        Args: Record<PropertyKey, never>;
+        Returns: undefined;
+      };
       restart_project_generation: {
         Args: {
           p_budget_usd?: number;

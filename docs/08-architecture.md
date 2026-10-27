@@ -150,7 +150,8 @@ sequenceDiagram
 2. Supabase `pg_cron`이 **매시 정각** `pg_net`으로 `POST /api/cron/push`를 부른다. 비밀 헤더 값은 `vault.secrets`에 두고 `cron.schedule` 문장에 직접 쓰지 않는다. 이 API는 바로 응답하고, 발송은 `after()`에서 한다(`pg_net` 요청 시간 제한 때문).
 3. 대상은 `notify_on`이고 `notify_hour`가 지금 KST 시각이며, **`last_notified_day < 오늘`**이고 **오늘 본 질문을 아직 제출하지 않은 사람**이다. 대상을 고르면서 같은 문장으로 `last_notified_day = 오늘`을 적어(`update … returning`) 핸들러가 두 번 돌아도 두 번 보내지 않는다. 처음엔 이 열이 없어 `pg_net` 재시도나 배포 중 겹침으로 중복 발송될 수 있었다 (2026-10-25).
 4. 문구는 세션을 만들지 않고 정한다. `reviews`에 `due_day <= 오늘`인 행이 있으면 "복습할 질문이 있어요", 없으면 "오늘의 질문이 도착했어요". 처음엔 "알림 보낼 때 질문을 고른다"(05)였으나, 매시 사용자마다 세션을 만들면 비용과 복잡도만 늘어서 복습 여부만 본다. 질문은 첫 접속 때 고른다 (2026-10-25).
-5. `web-push`(VAPID)로 20개씩 `Promise.allSettled`로 보낸다. 410·404 응답이 오면 구독을 지운다.
+5. `web-push`(VAPID)로 20개씩 `Promise.allSettled`로 보낸다. 410·404 응답이 오면 구독을 지운다. 다른 실패는 다시 보내지 않는다(그날은 보낸 것으로 친다). TTL은 4시간이다.
+6. 비밀 헤더는 `Authorization: Bearer <CRON_SECRET>`이다. vault에는 `cron_secret`(`CRON_SECRET`과 같은 값)과 `push_cron_url`(배포 주소의 `/api/cron/push`)을 둔다. 주소도 vault에 두어 로컬·운영 마이그레이션이 같다. 알림을 누르면 홈(`/home`)이 열리고 서비스 워커(`public/sw.js`)가 `notification_click` 이벤트를 보낸다. 문구는 잠금 화면에 보이므로 닉네임 같은 개인 내용을 넣지 않는다. 처음엔 온보딩 미리보기에 닉네임이 있었으나 실제 알림과 같게 뺐다 (2026-10-27, #37).
 
 Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로 고르는 알림 시각"을 맞출 수 없다. 이 호출은 매시 Supabase REST API를 1번 이상 치므로 무료 Supabase가 일주일 쉬면 멈추는 문제(#20)도 함께 막는다. **확인 필요**: Supabase의 정지 판단은 API 게이트웨이 요청 기준이라 `pg_cron`이 DB 안에서 도는 것만으로는 안 된다. 대상이 0명인 시각에도 핸들러가 조회 1번은 하도록 만든다.
 
@@ -365,6 +366,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `adopt_trial(user_id, trial_token)` | 이어받기(2장) |
 | `record_event(name, user_id, anon_id, props)` | 지표 이벤트 한 줄. 같은 `anon_id`가 24시간에 200건을 넘으면 버린다. 서버는 응답을 보낸 뒤(`after()`) `lib/track.ts`의 `track()`으로 부르고, 실패해도 사용자 요청은 실패시키지 않는다 (2026-10-27, #44) |
 | `delete_user_events(user_id)` · `purge_old_events()` | 탈퇴 때 그 사용자와 그 사용자가 쓴 브라우저(`anon_id`)의 이벤트 삭제 · 90일 지난 이벤트 삭제(`pg_cron` 매일 4시 KST) |
+| `pick_push_targets(now)` · `request_push_cron()` | 웹 푸시 대상 고르기와 `last_notified_day` 적기(2장 "웹 푸시" 3·4번, 한 문장의 `update … returning`) · 매시 `pg_cron`이 부르는 `pg_net` 호출(vault의 `push_cron_url`·`cron_secret`이 없으면 아무것도 안 한다). 구독 저장·해제는 한 문장이라 함수 없이 서버가 `service_role`로 `push_subscriptions`에 바로 쓴다(`/api/me`의 프로필 쓰기와 같다) (2026-10-27, #37) |
 | `handle_new_user()` | `auth.users` insert 트리거. `profiles` 행 생성(닉네임·아바타는 소셜 메타데이터에서) |
 
 ### 탈퇴

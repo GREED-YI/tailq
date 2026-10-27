@@ -13,6 +13,7 @@ import {
   type Level,
   type MeUpdate,
 } from "@/lib/profile";
+import { SUBSCRIBE_ERRORS, subscribePush } from "@/lib/push-client";
 import s from "./onboarding.module.css";
 
 type Topic = { id: string; field: string; name: string };
@@ -52,7 +53,7 @@ export function OnboardingFlow(props: {
   initialTopics: string[];
   initialLevels: Level[];
   initialHour: number;
-  nickname: string;
+  vapidKey: string;
 }) {
   const router = useRouter();
   const [step, setStep] = useState(props.initialStep);
@@ -100,7 +101,7 @@ export function OnboardingFlow(props: {
         </div>
       </header>
 
-      {step === 2 && <NotifyPreview nickname={props.nickname} hour={hour} />}
+      {step === 2 && <NotifyPreview hour={hour} />}
 
       <h1 ref={heading} tabIndex={-1} className={f.title}>
         {STEPS[step].title}
@@ -122,6 +123,7 @@ export function OnboardingFlow(props: {
       )}
       {step === 2 && (
         <NotifyStep
+          vapidKey={props.vapidKey}
           hour={hour}
           setHour={setHour}
           onDone={async (body) => {
@@ -347,8 +349,9 @@ export function RangeStep(props: {
   );
 }
 
-// 받게 될 알림 모양(S08). 시각은 고른 값을 따라간다
-function NotifyPreview({ nickname, hour }: { nickname: string; hour: number }) {
+// 받게 될 알림 모양(S08). 시각은 고른 값을 따라간다.
+// 실제 알림(lib/push.ts)과 같은 문구다. 잠금 화면에 보이므로 닉네임은 넣지 않는다
+function NotifyPreview({ hour }: { hour: number }) {
   return (
     <div className={s.previewWrap} aria-hidden>
       <div className={`glass ${s.preview}`}>
@@ -359,7 +362,7 @@ function NotifyPreview({ nickname, hour }: { nickname: string; hour: number }) {
             <span className="num">{hourLabel(hour)}</span>
           </p>
           <strong>오늘의 질문이 도착했어요</strong>
-          <p>{nickname}님, 오늘도 한 문제 풀어볼까요?</p>
+          <p>오늘도 한 문제 풀어볼까요?</p>
         </div>
       </div>
     </div>
@@ -379,21 +382,26 @@ const GUIDES = [
 ];
 
 function NotifyStep(props: {
+  vapidKey: string;
   hour: number;
   setHour: (hour: number) => void;
   onDone: (body: Body) => Promise<boolean>;
 }) {
   const [busy, run] = useBusy();
+  const [notice, setNotice] = useState("");
 
-  // 웹 푸시 구독은 알림 발송 작업에서 붙인다. 여기서는 권한을 받고 설정만 저장한다.
-  // 거부해도 온보딩은 끝내고, 홈에서 다시 켜도록 안내한다(05 사용자 흐름 "예외 상황").
+  // 권한을 받고 이 기기를 구독한 뒤 설정을 저장한다. 거부했거나 이 브라우저가 못 받으면
+  // 알림을 끈 채로 온보딩을 끝내고 MY에서 다시 켜게 한다(05 사용자 흐름 "예외 상황").
+  // 홈 화면에 추가하지 않은 아이폰과 저장 실패는 이 단계에 남아 안내한다.
   const allow = async () => {
-    const permission =
-      "Notification" in window
-        ? await Notification.requestPermission()
-        : "denied";
+    setNotice("");
+    const result = await subscribePush(props.vapidKey);
+    if (result === "install" || result === "failed") {
+      setNotice(SUBSCRIBE_ERRORS[result]);
+      return false;
+    }
     return props.onDone({
-      notifyOn: permission === "granted",
+      notifyOn: result === "ok",
       notifyHour: props.hour,
     });
   };
@@ -429,6 +437,12 @@ function NotifyStep(props: {
           </details>
         ))}
       </div>
+
+      {notice && (
+        <p role="alert" className={s.alert}>
+          {notice}
+        </p>
+      )}
 
       <div className={f.bottom}>
         <button

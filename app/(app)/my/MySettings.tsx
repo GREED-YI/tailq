@@ -10,6 +10,11 @@ import {
 } from "react";
 import { Icon } from "@/components/icons";
 import { hourLabel } from "@/lib/profile";
+import {
+  SUBSCRIBE_ERRORS,
+  subscribePush,
+  unsubscribePush,
+} from "@/lib/push-client";
 import { THEME_STORAGE_KEY, type ThemeName } from "@/lib/theme";
 import p from "../../my/my.module.css";
 import s from "./my.module.css";
@@ -95,9 +100,19 @@ export function LogoutButton() {
   );
 }
 
-// 알림 켜기·끄기와 시각(1시간 단위). 켤 때 브라우저 알림 권한을 받는다(온보딩 S08과 같다).
-// 웹 푸시 구독은 알림 발송 이슈(#37)에서 붙인다.
-export function NotifyRow({ on, hour }: { on: boolean; hour: number }) {
+// 알림 켜기·끄기와 시각(1시간 단위). 켜 둔 채 저장하면 이 기기의 권한을 받고 구독한다(온보딩 S08과 같다).
+// 못 켜면(거부, 홈 화면에 추가하지 않은 아이폰 등) 저장하지 않고 안내한다. 끄면 이 기기의 구독을 지운다.
+export function NotifyRow({
+  on,
+  hour,
+  vapidKey,
+  subscriptions,
+}: {
+  on: boolean;
+  hour: number;
+  vapidKey: string;
+  subscriptions: { id: string; endpoint: string }[];
+}) {
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
   const [nextOn, setNextOn] = useState(on);
@@ -115,26 +130,24 @@ export function NotifyRow({ on, hour }: { on: boolean; hour: number }) {
   async function save() {
     setBusy(true);
     setError("");
-    let notifyOn = nextOn;
-    if (notifyOn && !on) {
-      const permission =
-        "Notification" in window
-          ? await Notification.requestPermission()
-          : "denied";
-      notifyOn = permission === "granted";
+    if (nextOn) {
+      const result = await subscribePush(vapidKey);
+      if (result !== "ok") {
+        setBusy(false);
+        return setError(SUBSCRIBE_ERRORS[result]);
+      }
+    } else if (on) {
+      // 구독을 못 지워도 notify_on이 꺼지면 보내지 않는다
+      await unsubscribePush(subscriptions).catch(() => {});
     }
     const res = await fetch("/api/me", {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ notifyOn, notifyHour: nextHour }),
+      body: JSON.stringify({ notifyOn: nextOn, notifyHour: nextHour }),
     }).catch(() => null);
     setBusy(false);
     if (!res?.ok) return setError("저장하지 못했어요. 다시 시도해 주세요.");
     router.refresh();
-    if (nextOn && !notifyOn)
-      return setError(
-        "브라우저에서 알림이 막혀 있어요. 주소창 왼쪽 아이콘에서 알림을 허용해 주세요.",
-      );
     dialog.current?.close();
   }
 

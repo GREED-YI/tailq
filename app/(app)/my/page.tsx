@@ -35,7 +35,7 @@ export default function MyPage() {
 // RLS가 자기 프로필·북마크만 보여준다. 로그인 방법은 로그인 토큰에서 읽는다
 async function My() {
   const supabase = await createClient();
-  const [{ data: auth }, { data: profile }, topics, bookmarks, study] =
+  const [{ data: auth }, { data: profile }, topics, bookmarks, study, subs] =
     await Promise.all([
       supabase.auth.getClaims(),
       supabase
@@ -45,6 +45,8 @@ async function My() {
       supabase.from("topics").select("id, field"),
       supabase.from("bookmarks").select("*", { count: "exact", head: true }),
       loadStudy().catch(() => null),
+      // 알림을 끌 때 이 기기의 구독 id를 endpoint로 찾는다
+      supabase.from("push_subscriptions").select("id, endpoint"),
     ]);
   const nickname = profile?.nickname ?? "";
   const picked = new Set(profile?.topics);
@@ -110,6 +112,8 @@ async function My() {
         <NotifyRow
           on={profile?.notify_on ?? false}
           hour={profile?.notify_hour ?? 8}
+          vapidKey={process.env.VAPID_PUBLIC_KEY ?? ""}
+          subscriptions={subs.data ?? []}
         />
         <ThemeRow />
       </Group>
