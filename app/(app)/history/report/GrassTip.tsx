@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import s from "../history.module.css";
 
-type Tip = { text: string; x: number; y: number };
+type Tip = { text: string; x: number; y: number; below: boolean };
 
 // 학습 잔디: 칸에 마우스를 올리면(터치는 누르면) 그 날짜를 칸 위 말풍선으로 보여준다.
 // 칸이 365개라 칸마다 상태를 두지 않고 말풍선 하나를 옮긴다. 잔디는 가로 스크롤 안에 있어
@@ -19,17 +19,26 @@ export function GrassTip({
   children: ReactNode;
 }) {
   const [tip, setTip] = useState<Tip | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
-  // 스크롤하면 칸이 움직이니 닫는다
+  // 스크롤하면 칸이 움직이니 닫는다. 터치는 pointerleave로 닫지 않으니 잔디 밖을 누르면 닫는다
   useEffect(() => {
     if (!tip) return;
     const close = () => setTip(null);
+    const outside = (e: PointerEvent) => {
+      if (!ref.current?.contains(e.target as Node)) close();
+    };
     window.addEventListener("scroll", close, true);
-    return () => window.removeEventListener("scroll", close, true);
+    document.addEventListener("pointerdown", outside);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      document.removeEventListener("pointerdown", outside);
+    };
   }, [tip]);
 
   return (
     <div
+      ref={ref}
       className={className}
       role="img"
       aria-label={label}
@@ -43,15 +52,20 @@ export function GrassTip({
           Math.max(r.left + r.width / 2, 70),
           window.innerWidth - 70,
         );
-        setTip({ text, x, y: r.top });
+        // 칸 위 공간이 모자라면(화면 맨 위) 칸 아래에 띄운다
+        const below = r.top < 48;
+        setTip({ text, x, y: below ? r.bottom : r.top, below });
       }}
-      onPointerLeave={() => setTip(null)}
+      // 터치는 손을 떼자마자 pointerleave가 나서 마우스일 때만 닫는다
+      onPointerLeave={(e) => {
+        if (e.pointerType === "mouse") setTip(null);
+      }}
     >
       {children}
       {tip &&
         createPortal(
           <span
-            className={s.grassTip}
+            className={`${s.grassTip} ${tip.below ? s.grassTipBelow : ""}`}
             style={{ left: tip.x, top: tip.y }}
             aria-hidden="true"
           >

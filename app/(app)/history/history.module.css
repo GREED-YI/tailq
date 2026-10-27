@@ -461,6 +461,10 @@
   color: var(--text);
   pointer-events: none;
 }
+/* 화면 맨 위 칸은 말풍선을 칸 아래에 */
+.grassTipBelow {
+  transform: translate(-50%, 6px);
+}
 /* 마우스가 올라간 칸을 테두리로 짚는다 */
 @media (hover: hover) {
   .grass span[data-tip]:hover {
