@@ -53,14 +53,16 @@ async function Project({ id }: { id: string }) {
     const main = sessions
       .map((ss) => ss.turns.find((t) => t.idx === 0))
       .find((t) => t?.status === "graded");
+    const open = sessions.some((ss) => ss.status === "open");
     return {
       id: q.id,
       prompt: q.prompt,
+      open,
       state: main
         ? main.verdict === "unknown"
           ? "모르겠어요"
           : `${main.score}점`
-        : sessions.some((ss) => ss.status === "open")
+        : open
           ? "doing"
           : null,
     };

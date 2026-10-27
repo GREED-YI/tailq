@@ -9,7 +9,13 @@ import { LimitNotice, type Notice } from "@/components/LimitNotice";
 import s from "@/app/(app)/projects/projects.module.css";
 
 // state: 최근 점수("72점"·"모르겠어요"), 연습 중("doing"), 아직 안 함(null)
-export type QuestionRow = { id: number; prompt: string; state: string | null };
+// open: 열린 세션이 있으면 한도와 상관없이 이어 할 수 있다(점수가 있어도 꼬리질문 중일 수 있다)
+export type QuestionRow = {
+  id: number;
+  prompt: string;
+  state: string | null;
+  open: boolean;
+};
 
 // 월 예산에 닿으면 다시 만들기 대신 보여준다(04 기능 명세 12장. 서버 전용 모듈이라 문구만 둔다)
 const LIMIT_MESSAGE = "오늘은 사용 한도를 모두 썼어요. 내일 다시 만나요";
@@ -130,12 +136,8 @@ export function ProjectView({
                 <button
                   type="button"
                   className={`hover-row ${s.row} ${s.qRow}`}
-                  disabled={
-                    busy !== null || (notice !== null && q.state !== "doing")
-                  }
-                  data-locked={
-                    notice !== null && q.state !== "doing" ? "" : undefined
-                  }
+                  disabled={busy !== null || (notice !== null && !q.open)}
+                  data-locked={notice !== null && !q.open ? "" : undefined}
                   onClick={() => practice(q.id)}
                 >
                   <span className={`mono ${s.qNo}`}>
