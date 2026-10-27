@@ -929,7 +929,7 @@
 }
 .grass span {
   aspect-ratio: 1;
-  border-radius: 0;
+  border-radius: 4px;
   background: var(--grass-0);
 }
 .grass [data-level="1"] {
@@ -1284,6 +1284,9 @@
   }
   .grass {
     gap: 3px;
+  }
+  .grass span {
+    border-radius: 3px;
   }
   .trySection {
     padding: 96px 0 64px;
