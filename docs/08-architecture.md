@@ -34,7 +34,7 @@ flowchart LR
 | Vercel 함수 리전 | `icn1`(서울). 무료 플랜도 리전 1개를 고를 수 있다 | 기본 `iad1`(미국 동부)이면 Supabase 서울까지 왕복 200ms쯤 걸려, 서버 컴포넌트가 3~4번 읽으면 1초가 간다 |
 | Supabase 리전 | `ap-northeast-2`(서울) | 위와 같다 |
 | 함수 실행 시간 | Fluid compute를 켠다(무료 플랜 최대 300초). 라우트마다 `export const maxDuration`을 적는다: 채점(`/api/turns/{id}/answer`) 60, 프로젝트 질문 생성·다시 생성(`/api/projects`, `/api/projects/{id}/generations`) 300. `after()`도 그 라우트의 `maxDuration`을 따른다 | Fluid compute가 꺼진 무료 플랜은 기본 10초라 채점(최대 15초)과 `after()` 저장이 끊긴다. 질문 5개 생성은 30~60초 넘게 걸릴 수 있다 |
-| 런타임 | Node.js (Edge 아님) | `web-push`와 Anthropic SDK 스트리밍이 Node에서 돈다. 공유 카드 이미지(`next/og`)만 Edge |
+| 런타임 | Node.js (Edge 아님) | `web-push`와 Anthropic SDK 스트리밍이 Node에서 돈다. 공유 카드 이미지(`next/og`)도 Node다. 처음엔 Edge로 두었으나, Next 16 문서의 미리보기 이미지 예시가 Node에서 글꼴 파일을 읽는 방식이고 Edge는 한글 글꼴(서브셋 350KB×2)을 묶음 크기 제한 안에 넣기 번거로워 바꿨다 (2026-10-27, #41) |
 | 스트리밍 중단 | Claude 호출에 브라우저의 `request.signal`을 넘기지 않는다 | 사용자가 떠나도 채점을 끝까지 받아 저장해야 한다 |
 | 환경변수 | `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PUBLIC_KEY`·`VAPID_PRIVATE_KEY`·`VAPID_SUBJECT`, `CRON_SECRET`, `TRIAL_IP_HMAC_SECRET`, `AI_MONTHLY_BUDGET_USD`, `KRW_PER_USD`, `AI_MOCK`, `ADMIN_USER_IDS`(운영 대시보드에 들어갈 사용자 id, 쉼표로 구분) | 목록만 여기 두고 값·발급 방법은 #11. `NEXT_PUBLIC_` 둘만 브라우저에 간다 |
 
@@ -334,7 +334,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 
 | 테이블 | 주요 열 | 메모 |
 |---|---|---|
-| `shares` | `id`(짧은 무작위 문자열), `session_id`(유일), `nickname`(뺄 수 있음), `topic_name`(프로젝트 질문이면 "내 프로젝트"), `score`, `streak`, `created_at` | daily·project 세션 모두 공유할 수 있다. 읽기 정책 없음. 공유 페이지는 서버가 `id` 하나로만 읽고 누구의 세션인지는 내보내지 않는다. 만들 때는 `session_id`만 받고 점수·꼬리잇기는 서버가 계산한다(위조 방지). 세션당 하나라 다시 누르면 기존 카드를 돌려준다 |
+| `shares` | `id`(짧은 무작위 문자열), `session_id`(유일), `nickname`(뺄 수 있음), `topic_name`(프로젝트 질문이면 "내 프로젝트"), `score`, `streak`, `created_at` | daily·project 세션 모두 공유할 수 있다. 읽기 정책 없음. 공유 페이지는 서버가 `id` 하나로만 읽고 누구의 세션인지는 내보내지 않는다. 만들 때는 `session_id`만 받고 점수·꼬리잇기는 서버가 계산한다(위조 방지). 세션당 하나라 다시 누르면 기존 카드를 돌려준다. 이때 닉네임만 지금 설정(`profiles.share_nickname`)으로 고친다(닉네임 공개를 끄고 다시 공유하면 빠지게, 2026-10-27, #41). `id`는 16진수 12자, 체험 세션과 본 질문 점수가 없는 세션은 공유할 수 없다 |
 | `ai_usage` | `id`, `user_id`(체험이면 null), `purpose`(grade·follow_up·project_gen·trial), `status`(reserved·used·released·failed), `error_code`, `latency_ms`, `input_tokens`, `output_tokens`, `cost_usd`, `day`, `created_at` | 개인 하루 한도, 서비스 월 예산, 그리고 **AI 실패율·지연 관측**(7장) |
 | `events` | `id`, `name`, `user_id`, `anon_id`, `props`(jsonb), `created_at` | 지표 이벤트(첫 방문, 체험 시작·완료, 가입, 세션 시작, 본 질문 제출, 세션 완료, 👍/👎, 공유, 알림 클릭). 서버만 쓴다. 비로그인도 보낼 수 있는 입구라 이름은 허용 목록만, `props`는 1KB까지, `anon_id`당 하루 200건을 넘으면 버린다. 90일 지난 행은 새벽 정리에서 지운다. `anon_id`는 브라우저 쿠키 `tailq-anon`(무작위 UUID, 1년)이다. 첫 방문 신호를 보낼지 브라우저가 알아야 해서 `httpOnly`가 아니고, 아무 권한도 주지 않는다. 로그인한 뒤의 이벤트에도 함께 남겨 첫 방문 → 첫 답변을 잇는다 (2026-10-27, #44) |
 
