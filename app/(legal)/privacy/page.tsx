@@ -37,6 +37,9 @@ export default function PrivacyPage() {
             <b>내 프로젝트</b>: 프로젝트 이름과 설명
           </li>
           <li>
+            <b>피드백</b>: 피드백 화면에서 보낸 의견과 보낸 시각
+          </li>
+          <li>
             <b>알림</b>: 알림을 켠 기기의 웹 푸시 구독 정보(푸시 주소와 키)
           </li>
           <li>
@@ -64,7 +67,7 @@ export default function PrivacyPage() {
           <li>내 프로젝트를 바탕으로 한 질문 만들기</li>
           <li>매일 질문 알림 보내기</li>
           <li>체험 횟수 제한(같은 IP 하루 20번)과 AI 사용 한도 관리</li>
-          <li>서비스 개선을 위한 이용 통계</li>
+          <li>서비스 개선을 위한 이용 통계, 보내 주신 피드백 읽기</li>
         </ul>
 
         <h2>
@@ -162,11 +165,8 @@ export default function PrivacyPage() {
             확인 뒤 10일 안에 처리해요.
           </li>
           <li>
-            그 밖의 의견은{" "}
-            <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
-              피드백 창구
-            </a>
-            로 보내 주세요. 공개 게시판이라 개인정보는 적지 마세요.
+            그 밖의 의견은 <Link href={FEEDBACK_URL}>피드백 화면</Link>으로 보내
+            주세요. 운영자만 읽어요.
           </li>
         </ul>
 

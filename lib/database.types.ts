@@ -68,6 +68,28 @@ export type Database = {
           },
         ];
       };
+      feedback: {
+        Row: {
+          body: string;
+          created_at: string;
+          id: number;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          body: string;
+          created_at?: string;
+          id?: never;
+          user_id: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          id?: never;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           agreed_at: string | null;
