@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <>
       <h1>개인정보처리방침</h1>
       <p className={s.date}>시행일: 2026-10-26</p>
-      <div className={`glass ${s.card}`}>
+      <div className={s.card}>
         <p>
           TailQ는 서비스에 꼭 필요한 정보만 받아요. 어떤 정보를 왜 받고, 언제
           지우는지 알려 드려요.

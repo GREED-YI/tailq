@@ -85,19 +85,21 @@ export function OnboardingFlow(props: {
         {step > 0 && (
           <BackButton className={f.back} onClick={() => setStep(step - 1)} />
         )}
-        <div className={s.steps}>
-          <p className="mono" aria-label={`3단계 중 ${step + 1}단계`}>
-            {step + 1} / 3
-          </p>
-          <div className={s.dots} aria-hidden>
+        {/* progress-steps: 지난 단계 text, 지금 accent, 남은 단계 mark-empty 테두리 */}
+        <div
+          role="img"
+          aria-label={`3단계 중 ${step + 1}단계`}
+          className={s.steps}
+        >
+          <span className="mono">{step + 1} / 3</span>
+          <span className={s.bars}>
             {STEPS.map((_, i) => (
               <span
                 key={i}
-                data-on={i <= step || undefined}
-                data-now={i === step || undefined}
+                data-state={i < step ? "done" : i === step ? "now" : "next"}
               />
             ))}
-          </div>
+          </span>
         </div>
       </header>
 
@@ -155,7 +157,7 @@ function useBusy() {
   return [busy, run] as const;
 }
 
-// 둥근 체크(Figma Checkbox). 실제 입력은 감춘 checkbox라 행 전체를 눌러도 된다
+// 체크 상자. 실제 입력은 감춘 checkbox라 행 전체를 눌러도 된다
 function Check(props: {
   checked: boolean;
   onChange: (on: boolean) => void;
@@ -183,7 +185,7 @@ const AGREEMENTS = [
   {
     id: "privacy",
     text: "개인정보처리방침",
-    note: "국외 이전 포함. 답변은 AI 채점을 위해 미국의 AI 서비스(Anthropic)로 전송돼요.",
+    note: "국외 이전 포함. 답변은 AI 채점을 위해 미국의 AI 서비스(Anthropic)⁠로 전송돼요.",
     href: "/privacy",
   },
   { id: "age", text: "만 14세 이상이에요" },
@@ -196,16 +198,16 @@ function AgreeStep({ onNext }: { onNext: () => Promise<boolean | void> }) {
 
   return (
     <>
-      <div className={`glass ${s.allRow}`}>
+      <div className={s.allRow}>
         <Check
           checked={all}
           onChange={(on) => setChecked(on ? AGREEMENTS.map((a) => a.id) : [])}
           label={<strong>전체 동의</strong>}
         />
       </div>
-      <ul className={`glass ${f.rows} ${s.agreements}`}>
+      <ul className={s.rows}>
         {AGREEMENTS.map((a) => (
-          <li key={a.id} className={f.row}>
+          <li key={a.id} className={s.row}>
             <Check
               checked={checked.includes(a.id)}
               onChange={(on) =>
@@ -225,7 +227,7 @@ function AgreeStep({ onNext }: { onNext: () => Promise<boolean | void> }) {
                 href={a.href}
                 target="_blank"
                 rel="noopener"
-                className={`glass press ${s.pill}`}
+                className={`btn btn-secondary btn-md press ${s.view}`}
               >
                 보기
               </a>
@@ -238,6 +240,7 @@ function AgreeStep({ onNext }: { onNext: () => Promise<boolean | void> }) {
           type="button"
           className="btn btn-primary press"
           disabled={!all || busy}
+          aria-busy={busy}
           onClick={() => run(onNext)}
         >
           다음
@@ -279,10 +282,10 @@ export function RangeStep(props: {
           >
             <div className={s.fieldHead}>
               <h2 id={`field-${field.id}`}>{field.label}</h2>
-              {/* 칩과 헷갈리지 않게 선택 상태 대신 문구가 바뀌는 테두리 버튼 */}
+              {/* 칩과 헷갈리지 않게 선택 상태 대신 문구가 바뀌는 글자 버튼 */}
               <button
                 type="button"
-                className={`press ${s.all}`}
+                className={`btn btn-ghost press ${s.all}`}
                 aria-label={`${field.label} ${allOn ? "전체 해제" : "전체 선택"}`}
                 onClick={() =>
                   setTopics((list) =>
@@ -303,7 +306,7 @@ export function RangeStep(props: {
                   <button
                     key={t.id}
                     type="button"
-                    className="chip glass press"
+                    className="chip press"
                     aria-pressed={topics.includes(t.id)}
                     onClick={() => setTopics((list) => toggle(list, t.id))}
                   >
@@ -322,7 +325,7 @@ export function RangeStep(props: {
             <button
               key={l.id}
               type="button"
-              className="chip glass press"
+              className="chip press"
               aria-pressed={levels.includes(l.id)}
               onClick={() => setLevels((list) => toggle(list, l.id))}
             >
@@ -337,6 +340,7 @@ export function RangeStep(props: {
           type="button"
           className="btn btn-primary press"
           disabled={empty || busy}
+          aria-busy={busy}
           onClick={() => run(() => props.onNext({ topics, levels }))}
         >
           {props.label ?? "다음"} (주제 {topics.length}개 · 난이도{" "}
@@ -355,7 +359,7 @@ export function RangeStep(props: {
 function NotifyPreview({ hour }: { hour: number }) {
   return (
     <div className={s.previewWrap} aria-hidden>
-      <div className={`glass ${s.preview}`}>
+      <div className={s.preview}>
         <span className={s.symbol} />
         <div className={s.previewText}>
           <p className={s.previewHead}>
@@ -389,6 +393,8 @@ function NotifyStep(props: {
   onDone: (body: Body) => Promise<boolean>;
 }) {
   const [busy, run] = useBusy();
+  // 어느 버튼이 처리 중인지(로딩 표시용)
+  const [later, setLater] = useState(false);
   const [notice, setNotice] = useState("");
 
   // 권한을 받고 이 기기를 구독한 뒤 설정을 저장한다. 거부했거나 이 브라우저가 못 받으면
@@ -410,7 +416,7 @@ function NotifyStep(props: {
   return (
     <>
       {/* 화면엔 글자로 보이고, 누르면 기기의 선택 창이 열린다 */}
-      <label className={`glass ${s.hourRow}`}>
+      <label className={s.hourRow}>
         <span className={s.hourLabel}>알림 시각</span>
         <span className="num">{hourLabel(props.hour)}</span>
         <Icon name="chevronRight" size={18} />
@@ -427,10 +433,10 @@ function NotifyStep(props: {
         </select>
       </label>
 
-      <div className={`glass ${f.rows} ${s.guides}`}>
+      <div className={s.guides}>
         {GUIDES.map((g) => (
           <details key={g.title}>
-            <summary className={`hover-row ${f.row}`}>
+            <summary>
               <strong>{g.title}</strong>
               <Icon name="chevronRight" size={18} />
             </summary>
@@ -450,15 +456,23 @@ function NotifyStep(props: {
           type="button"
           className="btn btn-primary press"
           disabled={busy}
-          onClick={() => run(allow)}
+          aria-busy={busy && !later}
+          onClick={() => {
+            setLater(false);
+            run(allow);
+          }}
         >
           알림 켜기
         </button>
         <button
           type="button"
-          className="btn btn-secondary glass press"
+          className="btn btn-secondary press"
           disabled={busy}
-          onClick={() => run(() => props.onDone({}))}
+          aria-busy={busy && later}
+          onClick={() => {
+            setLater(true);
+            run(() => props.onDone({}));
+          }}
         >
           나중에 할게요
         </button>
