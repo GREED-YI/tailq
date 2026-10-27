@@ -13,6 +13,7 @@ import {
   type Signup,
 } from "@/lib/admin";
 import { kstDay } from "@/lib/daily-pick";
+import { categoryLabel, FEEDBACK_CATEGORIES } from "@/lib/feedback";
 import { FIELDS } from "@/lib/profile";
 import { addDays, studyDay } from "@/lib/streak";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -66,55 +67,67 @@ async function Dashboard() {
   // 운영자 확인을 마친 뒤에만 RLS를 건너뛰어 모든 사용자 행을 집계한다
   const db = createAdminClient();
   const today = kstDay(new Date());
-  const [profiles, turns, questions, reviewsDue, bookmarks, feedback, quota] =
-    await Promise.all([
-      readAll((from, to) =>
-        db
-          .from("profiles")
-          .select("id, created_at, onboarded_at")
-          .order("id")
-          .range(from, to),
-      ),
-      // 채점이 20초 넘게 멈춘 턴도 실패로 세도록 turn_states.effective_status를 읽는다
-      readAll((from, to) =>
-        db
-          .from("turn_states")
-          .select(
-            "id, idx, effective_status, answered_at, score, verdict, rating, sessions!inner(user_id)",
-          )
-          .gte("answered_at", `${answersSince(today)}T00:00:00+09:00`)
-          // 로그인 없는 체험(user_id 없음)은 회원 지표에서 뺀다. 체험은 지표 이벤트로 센다
-          .not("sessions.user_id", "is", null)
-          .order("id")
-          .range(from, to),
-      ),
-      readAll((from, to) =>
-        db
-          .from("questions")
-          .select("id, is_hidden, topics!inner(field)")
-          .order("id")
-          .range(from, to),
-      ),
+  const [
+    profiles,
+    turns,
+    questions,
+    reviewsDue,
+    bookmarks,
+    feedback,
+    feedbackKinds,
+    quota,
+  ] = await Promise.all([
+    readAll((from, to) =>
       db
-        .from("reviews")
-        .select("*", { count: "exact", head: true })
-        .not("box", "is", null)
-        .lte("due_day", today)
-        .throwOnError(),
+        .from("profiles")
+        .select("id, created_at, onboarded_at")
+        .order("id")
+        .range(from, to),
+    ),
+    // 채점이 20초 넘게 멈춘 턴도 실패로 세도록 turn_states.effective_status를 읽는다
+    readAll((from, to) =>
       db
-        .from("bookmarks")
-        .select("*", { count: "exact", head: true })
-        .throwOnError(),
-      // 전체 개수와 최근 3개
+        .from("turn_states")
+        .select(
+          "id, idx, effective_status, answered_at, score, verdict, rating, sessions!inner(user_id)",
+        )
+        .gte("answered_at", `${answersSince(today)}T00:00:00+09:00`)
+        // 로그인 없는 체험(user_id 없음)은 회원 지표에서 뺀다. 체험은 지표 이벤트로 센다
+        .not("sessions.user_id", "is", null)
+        .order("id")
+        .range(from, to),
+    ),
+    readAll((from, to) =>
       db
-        .from("feedback")
-        .select("id, body, created_at", { count: "exact" })
-        .order("created_at", { ascending: false })
-        .limit(3)
-        .throwOnError(),
-      // 이번 달(KST) AI 비용 합계와 예산 상태(ai_usage)
-      loadQuota(db, null),
-    ]);
+        .from("questions")
+        .select("id, is_hidden, topics!inner(field)")
+        .order("id")
+        .range(from, to),
+    ),
+    db
+      .from("reviews")
+      .select("*", { count: "exact", head: true })
+      .not("box", "is", null)
+      .lte("due_day", today)
+      .throwOnError(),
+    db
+      .from("bookmarks")
+      .select("*", { count: "exact", head: true })
+      .throwOnError(),
+    // 전체 개수와 최근 3개
+    db
+      .from("feedback")
+      .select("id, body, category, created_at", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .limit(3)
+      .throwOnError(),
+    // 분류별 개수를 세려고 분류만 읽는다
+    readAll((from, to) =>
+      db.from("feedback").select("category").order("id").range(from, to),
+    ),
+    // 이번 달(KST) AI 비용 합계와 예산 상태(ai_usage)
+    loadQuota(db, null),
+  ]);
 
   const signups: Signup[] = profiles.map((p) => ({
     userId: p.id,
@@ -328,13 +341,28 @@ async function Dashboard() {
               전체 {feedback.count ?? 0}개 · 모두 보기 ›
             </span>
           </span>
+          <ul className={s.kinds} aria-label="분류별 개수">
+            {FEEDBACK_CATEGORIES.map((c) => (
+              <li key={c.id} className="num">
+                {c.label}{" "}
+                <span className="mono">
+                  {feedbackKinds.filter((k) => k.category === c.id).length}
+                </span>
+              </li>
+            ))}
+          </ul>
           {feedback.data.length === 0 ? (
             <span className={s.empty}>아직 받은 피드백이 없어요</span>
           ) : (
             <ul className={s.voices}>
               {feedback.data.map((v) => (
                 <li key={v.id}>
-                  <p>{v.body}</p>
+                  <p>
+                    <span className={s.kind} data-kind={v.category}>
+                      {categoryLabel(v.category)}
+                    </span>
+                    {v.body}
+                  </p>
                   <time className="num" dateTime={v.created_at}>
                     {dot(studyDay(v.created_at))}
                   </time>
