@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { track } from "@/lib/track";
 import { dbErrorResponse, errorResponse } from "@/lib/turn";
 
 const Body = z.object({ rating: z.union([z.literal(1), z.literal(-1)]) });
@@ -35,5 +36,6 @@ export async function PUT(
   } catch (e) {
     return dbErrorResponse(e);
   }
+  await track("rating", { turn_id: id, rating: body.data.rating }, userId);
   return Response.json({ rating: body.data.rating });
 }
