@@ -3,6 +3,7 @@ import { z } from "zod";
 import { startDailySession } from "@/lib/daily";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { track } from "@/lib/track";
 
 const error = (status: number, code: string, message: string) =>
   NextResponse.json({ error: { code, message } }, { status });
@@ -41,6 +42,12 @@ export async function POST(request: Request) {
       console.error("start_project_session failed", e);
       return error(500, "INTERNAL", "연습을 시작하지 못했어요.");
     }
+    // 열린 세션을 이어 할 때도 남는다. 지표는 session_id로 한 번만 센다
+    await track(
+      "session_start",
+      { session_id: session.id, kind: "project" },
+      userId,
+    );
     return NextResponse.json({ session: { id: session.id } });
   }
 

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { needsReauth, REAUTH_COOKIE, Withdraw } from "@/lib/account";
+import { ANON_COOKIE } from "@/lib/events";
 import { MeUpdate, socialPhoto, toProfileUpdate } from "@/lib/profile";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -51,7 +52,8 @@ export async function PATCH(request: Request) {
 
 // 탈퇴(08 설계 "탈퇴"). '탈퇴합니다' 입력과 로그인 24시간 이내를 서버에서 다시 확인한 뒤
 // auth.users의 그 사용자를 지운다. 사용자 테이블은 모두 on delete cascade라 기록이 한 번에 지워진다.
-// ai_usage·events 테이블이 생기면 여기서 events 삭제와 ai_usage.user_id 비우기를 더한다(08 설계).
+// events는 외래키가 없어 먼저 지운다(같은 브라우저의 로그인 전 이벤트 포함).
+// ai_usage 테이블이 생기면(#43) 여기서 ai_usage.user_id 비우기를 더한다(08 설계).
 export async function DELETE(request: Request) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getClaims();
@@ -71,11 +73,19 @@ export async function DELETE(request: Request) {
       "처음 가입한 방법으로 다시 로그인해 주세요.",
     );
 
-  const { error } = await createAdminClient().auth.admin.deleteUser(claims.sub);
+  // 이벤트를 먼저 지운다. 계정 삭제가 실패하면 지표만 조금 비고, 반대 순서면 지울 이벤트가 남는다
+  const admin = createAdminClient();
+  const { error: eventsError } = await admin.rpc("delete_user_events", {
+    p_user_id: claims.sub,
+  });
+  if (eventsError) return fail(500, "INTERNAL", "탈퇴하지 못했어요.");
+  const { error } = await admin.auth.admin.deleteUser(claims.sub);
   if (error) return fail(500, "INTERNAL", "탈퇴하지 못했어요.");
 
   // 이미 발급된 로그인 토큰이 만료 전까지 살아 있으므로 이 기기의 로그인 쿠키를 바로 지운다
   await supabase.auth.signOut({ scope: "local" });
   jar.delete(REAUTH_COOKIE);
+  // 이 브라우저의 무작위 값도 바꿔, 탈퇴 뒤 이벤트가 지운 기록과 이어지지 않게 한다
+  jar.delete(ANON_COOKIE);
   return new NextResponse(null, { status: 204 });
 }

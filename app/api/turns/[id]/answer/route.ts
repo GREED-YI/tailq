@@ -9,7 +9,13 @@ import {
 } from "@/lib/grading";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { dbErrorResponse, errorResponse, turnResult } from "@/lib/turn";
+import { track } from "@/lib/track";
+import {
+  dbErrorResponse,
+  errorResponse,
+  turnResult,
+  type TurnResult,
+} from "@/lib/turn";
 
 // 채점(최대 15초)과 결과 저장(after)까지 끊기지 않게(08 설계 "실행 환경")
 export const maxDuration = 60;
@@ -52,7 +58,7 @@ export async function PUT(
   const { data: turn } = await db
     .from("turns")
     .select(
-      "idx, session_id, sessions(user_id, questions(prompt, level, topics(name, field), projects(name), question_keys(rubric, model_answer)))",
+      "idx, session_id, sessions(user_id, kind, questions(prompt, level, topics(name, field), projects(name), question_keys(rubric, model_answer)))",
     )
     .eq("id", id)
     .maybeSingle();
@@ -74,7 +80,25 @@ export async function PUT(
     return dbErrorResponse(e);
   }
 
-  if (dontKnow) return Response.json(await turnResult(db, id));
+  const session = { session_id: turn.session_id, kind: turn.sessions.kind };
+  // 본 질문 제출(다시 채점도 같은 turn_id로 남고, 지표는 turn_id로 한 번만 센다)
+  if (turn.idx === 0) {
+    await track(
+      "answer_submit",
+      { ...session, turn_id: id, dont_know: dontKnow },
+      userId,
+    );
+  }
+  const completed = (r: TurnResult) =>
+    r.session.status === "done"
+      ? track("session_complete", session, userId)
+      : undefined;
+
+  if (dontKnow) {
+    const result = await turnResult(db, id);
+    await completed(result);
+    return Response.json(result);
+  }
 
   const q = turn.sessions.questions;
   const keys = q.question_keys;
@@ -143,7 +167,9 @@ export async function PUT(
         .rpc("save_grading", { p_turn_id: id, p_result: result })
         .throwOnError();
       saved = true;
-      send("result", await turnResult(db, id));
+      const r = await turnResult(db, id);
+      send("result", r);
+      await completed(r);
     } catch (e) {
       // 저장은 끝났고 결과 조회만 실패했다. 채점 실패로 되돌리지 않고 새로고침으로 다시 읽게 한다
       if (saved) {

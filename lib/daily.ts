@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { kstDay, pickDailyQuestion, type Pick } from "@/lib/daily-pick";
 import { questionTags } from "@/lib/questions";
+import { track } from "@/lib/track";
 
 // 면접·결과 화면이 보여주는 질문. 복습으로 나온 프로젝트 질문이면 projectId가 있다
 export type SessionQuestion = {
@@ -106,6 +107,11 @@ export async function startDailySession(
       p_pick: result.pick,
     })
     .throwOnError();
+  await track(
+    "session_start",
+    { session_id: started.data.id, kind: "daily" },
+    userId,
+  );
   const created = await db
     .from("sessions")
     .select(SESSION_COLUMNS)
