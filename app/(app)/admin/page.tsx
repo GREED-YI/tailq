@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, type CSSProperties, type ReactNode } from "react";
 import { AppHeader } from "@/components/AppHeader";
@@ -13,7 +14,7 @@ import {
 } from "@/lib/admin";
 import { kstDay } from "@/lib/daily-pick";
 import { FIELDS } from "@/lib/profile";
-import { addDays } from "@/lib/streak";
+import { addDays, studyDay } from "@/lib/streak";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import s from "./admin.module.css";
@@ -64,8 +65,8 @@ async function Dashboard() {
   // 운영자 확인을 마친 뒤에만 RLS를 건너뛰어 모든 사용자 행을 집계한다
   const db = createAdminClient();
   const today = kstDay(new Date());
-  const [profiles, turns, questions, reviewsDue, bookmarks] = await Promise.all(
-    [
+  const [profiles, turns, questions, reviewsDue, bookmarks, feedback] =
+    await Promise.all([
       readAll((from, to) =>
         db
           .from("profiles")
@@ -101,8 +102,14 @@ async function Dashboard() {
         .from("bookmarks")
         .select("*", { count: "exact", head: true })
         .throwOnError(),
-    ],
-  );
+      // 전체 개수와 최근 3개
+      db
+        .from("feedback")
+        .select("id, body, created_at", { count: "exact" })
+        .order("created_at", { ascending: false })
+        .limit(3)
+        .throwOnError(),
+    ]);
 
   const signups: Signup[] = profiles.map((p) => ({
     userId: p.id,
@@ -304,6 +311,33 @@ async function Dashboard() {
             })}
           </ul>
         </Card>
+
+        <Link
+          href="/admin/feedback"
+          className={`glass press ${s.card} ${s.feedback}`}
+          style={{ gridArea: "feedback" }}
+        >
+          <span className={s.head}>
+            <strong>사용자 피드백</strong>
+            <span className="num">
+              전체 {feedback.count ?? 0}개 · 모두 보기 ›
+            </span>
+          </span>
+          {feedback.data.length === 0 ? (
+            <span className={s.empty}>아직 받은 피드백이 없어요</span>
+          ) : (
+            <ul className={s.voices}>
+              {feedback.data.map((v) => (
+                <li key={v.id}>
+                  <p>{v.body}</p>
+                  <time className="num" dateTime={v.created_at}>
+                    {dot(studyDay(v.created_at))}
+                  </time>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Link>
 
         <Stat
           area="onboard"

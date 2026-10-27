@@ -44,7 +44,7 @@ flowchart LR
 
 - **읽기**: 서버 컴포넌트가 사용자 권한으로 읽는다. 테이블에는 **읽기(SELECT) 정책만** 두고 "자기 행만"을 RLS로 강제한다. 쓰기 정책이 없으므로 브라우저에서 직접 쓰는 길은 없다. 브라우저가 직접 읽어도 되는 곳(프로젝트 질문 생성 상태 폴링)은 같은 정책 아래 supabase-js로 읽는다.
   - **예외, 체험 화면**: 체험은 로그인 토큰이 없어 RLS로 읽을 수 없다. 서버가 쿠키의 체험 토큰으로 세션 소유를 확인한 뒤 `service_role`로 **그 세션과 턴만** 읽어 화면을 그린다. 이 경로는 다른 행을 읽지 않는다.
-  - **예외, 운영 대시보드**: `/admin`은 `ADMIN_USER_IDS`에 든 사용자만 연다(`proxy.ts`와 화면에서 두 번 확인). 확인을 마친 뒤에만 `service_role`로 RLS를 건너뛰어 모든 사용자의 프로필 id·가입·온보딩 시각, 최근 8주 답변 턴의 점수·판정·평가·상태, 질문의 숨김 여부·분야를 읽어 서버에서 집계하고 숫자만 화면에 보낸다. 답변 본문은 읽지 않고, 복습·북마크는 행을 읽지 않고 개수만 센다 (2026-10-27).
+  - **예외, 운영 대시보드**: `/admin`은 `ADMIN_USER_IDS`에 든 사용자만 연다(`proxy.ts`와 화면에서 두 번 확인). 확인을 마친 뒤에만 `service_role`로 RLS를 건너뛰어 모든 사용자의 프로필 id·가입·온보딩 시각, 최근 8주 답변 턴의 점수·판정·평가·상태, 질문의 숨김 여부·분야, 피드백 본문·시각(보낸 사람은 읽지 않음)을 읽는다. 지표는 서버에서 집계해 숫자만 화면에 보내고, 피드백은 본문과 보낸 시각을 그대로 보낸다. 답변 본문은 읽지 않고, 복습·북마크는 행을 읽지 않고 개수만 센다 (2026-10-27).
 - **쓰기**: Route Handler가 먼저 로그인한 사용자를 확인한 뒤, 서버 전용 권한(`service_role`)으로 **DB 함수**(plpgsql)를 부른다. 함수 실행 권한은 `service_role`에만 준다(브라우저가 부를 수 없다).
 - **DB 함수**는 Postgres 안에 저장해 두는 작은 프로그램이다. 여러 단계(확인 → 고르기 → 저장)를 DB 안에서 한 묶음으로 실행해서, 중간에 실패하면 전부 취소된다(은행 이체에서 출금과 입금이 같이 되거나 같이 안 되는 것과 같다). Next.js에서는 `supabase.rpc('함수이름')`으로 부른다.
 - **DB 함수로 묶는 쓰기**: 여러 문장이 한꺼번에 성공하거나 실패해야 하는 것들이다. supabase-js에는 트랜잭션이 없어서 함수 안에서 묶는다. 같은 사용자의 요청이 동시에 와도 꼬이지 않게 함수 안에서 사용자별 잠금(`pg_advisory_xact_lock`)을 잡고, 유일 인덱스로 한 번 더 막는다. 함수 목록은 [3장 "DB 함수"](#db-함수)에 있다.
@@ -199,7 +199,7 @@ Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로
 | `questions` | 내 세션·복습·북마크·프로젝트의 질문만("질문" 절) |
 | `topics` | 로그인한 사람 누구나 |
 | `question_keys`, `turn_keys` | 정책 없음. 서버 전용, 서버가 조건을 확인한 뒤 `service_role`로 읽는다 |
-| `shares`, `ai_usage`, `events` | 정책 없음. 서버만 읽고 쓴다(공유 페이지는 서버가 `id`로 읽는다) |
+| `shares`, `ai_usage`, `events`, `feedback` | 정책 없음. 서버만 읽고 쓴다(공유 페이지는 서버가 `id`로 읽는다, 피드백은 운영 대시보드만 읽는다) |
 
 ```mermaid
 erDiagram
@@ -316,6 +316,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `turn_keys` | `turn_id`, `expected_answer` | 꼬리질문 기대 답안. 서버 전용 |
 | `reviews` | `user_id`, `question_id`, `box`(1~5, 익히면 null), `due_day` | PK `(user_id, question_id)`. 사용자에게는 칸 대신 다음 복습일·숙련도로 보여준다. 갱신은 본 질문 채점 때 |
 | `bookmarks` | `user_id`, `question_id`, `created_at` | PK `(user_id, question_id)` |
+| `feedback` | `id`, `user_id`, `body`(앞뒤 공백 빼고 5~1000자), `created_at` | 앱 안 피드백. 보낸 사람도 다시 읽지 못한다. 탈퇴하면 같이 지운다 |
 | `projects` | `id`, `user_id`, `name`, `content`(10,000자 이하), `status`(generating·ready·failed), `error_code`, `created_at` | 사용자당 3개. 지우면 그 질문·세션·복습이 함께 지워진다(`on delete cascade`). **오늘의 daily 세션이 이 프로젝트의 질문이면 그날은 지울 수 없다**(`delete_project`가 거부, 화면은 "오늘의 질문으로 나온 프로젝트는 내일 지울 수 있어요"). 처음엔 제한이 없었으나 cascade로 오늘 세션과 학습한 날이 사라지고 새 세션이 하나 더 만들어졌다 (2026-10-25) |
 
 ### jsonb 스키마
@@ -382,6 +383,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `PUT /api/turns/{id}/answer` | 답변 저장 → 채점 + 다음 꼬리질문(SSE). `{ text }` 또는 `{ dontKnow: true }`(AI를 부르지 않음, JSON 응답). 실패한 턴에 같은 요청을 다시 보내면 다시 채점이다. 체험 턴도 같은 주소(쿠키 토큰으로 소유 확인) | ○ 또는 체험 쿠키 |
 | `PUT /api/turns/{id}/rating` | 👍/👎 | ○ |
 | `PUT /api/bookmarks/{questionId}` · `DELETE` | 북마크 저장·해제 | ○ |
+| `POST /api/feedback` | 피드백 보내기 `{ body }`. 24시간에 5개를 넘으면 `429 FEEDBACK_LIMIT`. 세기와 넣기는 사용자별 잠금이 걸린 `send_feedback` 한 번으로 해 동시 요청에도 한도를 넘지 않는다 | ○ |
 | `POST /api/projects` | 프로젝트 등록(한도 예약) → `generating`으로 바로 응답. 질문 생성은 뒤에서 | ○ |
 | `POST /api/projects/{id}/generations` | 실패한 프로젝트의 질문 다시 생성 | ○ |
 | `DELETE /api/projects/{id}` | 프로젝트와 딸린 질문·기록 삭제. 오늘의 질문이면 `409 PROJECT_IN_TODAY_SESSION` | ○ |
@@ -411,6 +413,7 @@ HTTP 상태 코드에 더해 본문은 항상 `{ "error": { "code", "message" } 
 | `PROJECT_LIMIT` | 409 | 프로젝트 3개 초과 |
 | `SESSION_CLOSED` | 409 | 이미 닫힌 세션(지난 날 `expired`·`done`)의 턴에 답변. 처음엔 없었으나, 자정을 넘겨 어제 화면에서 제출하면 닫힌 세션에서 복습 칸이 옮겨져서 더했다 (2026-10-26, #31) |
 | `REGRADE_LIMIT` | 429 | 다시 채점 횟수 초과 |
+| `FEEDBACK_LIMIT` | 429 | 피드백 24시간 5개 초과 |
 | `LIMIT_EXCEEDED` | 429 | 개인 하루 한도 |
 | `BUDGET_EXCEEDED` | 429 | 서비스 월 예산 |
 | `TRIAL_LIMIT` | 429 | 체험 하루 제한 |

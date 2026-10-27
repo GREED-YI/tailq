@@ -96,6 +96,28 @@ export type Database = {
         };
         Relationships: [];
       };
+      feedback: {
+        Row: {
+          body: string;
+          created_at: string;
+          id: number;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          body: string;
+          created_at?: string;
+          id?: never;
+          user_id: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          id?: never;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           agreed_at: string | null;
@@ -638,6 +660,10 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      send_feedback: {
+        Args: { p_body: string; p_daily: number; p_user_id: string };
+        Returns: undefined;
       };
       set_bookmark: {
         Args: { p_on: boolean; p_question_id: number; p_user_id: string };

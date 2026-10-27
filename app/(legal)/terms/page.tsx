@@ -110,10 +110,8 @@ export default function TermsPage() {
           <span className="mono">09</span> 문의
         </h2>
         <p>
-          <a href={FEEDBACK_URL} target="_blank" rel="noopener noreferrer">
-            피드백 창구
-          </a>
-          로 보내 주세요. 출시 전에 전용 연락처를 이 자리에 적을게요.
+          <Link href={FEEDBACK_URL}>피드백 화면</Link>으로 보내 주세요. 출시
+          전에 전용 연락처를 이 자리에 적을게요.
         </p>
       </div>
     </>
