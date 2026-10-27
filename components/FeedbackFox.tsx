@@ -6,8 +6,9 @@ import { FEEDBACK_URL } from "@/lib/links";
 import { Icon } from "./icons";
 import s from "./AppShell.module.css";
 
-// 말풍선을 X로 닫으면 이 기기에서는 다시 띄우지 않는다(hover·초점에도).
-// 처음엔 hover·초점에는 다시 보였는데, X를 누른 순간에도 마우스·초점이 여우 위에 있어 말풍선이 안 닫혔다(#114)
+// X는 처음 저절로 뜨는 안내만 닫고, 이 기기에서는 다시 저절로 띄우지 않는다. hover·키보드 초점에는 늘 뜬다.
+// 처음엔 X를 누르면 hover·초점에도 다시 안 뜨게 했는데, 한 번 닫으면 여우에 올려도 아무 말이 없어 되돌렸다.
+// X를 누른 순간 마우스가 아직 여우 위에 있어도 닫히도록, 그 hover·초점이 끝날 때까지만 숨긴다(#114)
 const TIP_KEY = "tailq-fox-tip";
 const noSubscribe = () => () => {};
 function tipOpen() {
@@ -24,6 +25,7 @@ export function FeedbackFox() {
   const fresh = useSyncExternalStore(noSubscribe, tipOpen, () => false);
   const [closed, setClosed] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [hush, setHush] = useState(false);
   const link = useRef<HTMLAnchorElement>(null);
 
   // 처음 띄운 말풍선도 8초 뒤엔 접는다(거슬리지 않게)
@@ -34,6 +36,7 @@ export function FeedbackFox() {
 
   function close() {
     setDismissed(true);
+    setHush(true);
     // 닫기 버튼이 사라지니 초점은 여우 버튼으로
     link.current?.focus();
     try {
@@ -44,15 +47,21 @@ export function FeedbackFox() {
   }
 
   return (
-    <div className={`rise ${s.fox} ${fresh && !closed ? s.foxTipOn : ""}`}>
-      {fresh && !dismissed && (
-        <p className={`glass-strong ${s.foxTip}`}>
-          <span>피드백 사항이 있으면 저에게 알려주세요.</span>
+    <div
+      className={`rise ${s.fox} ${fresh && !closed && !dismissed ? s.foxTipOn : ""} ${hush ? s.foxHush : ""}`}
+      onMouseLeave={() => setHush(false)}
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setHush(false);
+      }}
+    >
+      <p className={`glass-strong ${s.foxTip}`}>
+        <span>피드백 사항이 있으면 저에게 알려주세요.</span>
+        {fresh && !dismissed && (
           <button type="button" aria-label="말풍선 닫기" onClick={close}>
             <Icon name="close" size={16} />
           </button>
-        </p>
-      )}
+        )}
+      </p>
       <Link
         ref={link}
         href={FEEDBACK_URL}

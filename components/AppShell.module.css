@@ -385,6 +385,10 @@
   opacity: 0;
   visibility: hidden;
 }
+/* hover·초점으로 뜬 말풍선엔 X가 없으니 오른쪽 여백도 왼쪽과 같게 */
+.foxTip:not(:has(button)) {
+  padding-right: 16px;
+}
 .foxTip button {
   flex-shrink: 0;
   width: 32px;
@@ -395,8 +399,9 @@
   justify-content: center;
   color: var(--sub);
 }
+/* 키보드 초점만 띄운다(:focus-visible). 마우스로 X를 누른 뒤 여우 버튼에 남은 초점으로는 안 뜬다 */
 .foxTipOn .foxTip,
-.fox:focus-within .foxTip {
+.fox:has(:focus-visible) .foxTip {
   opacity: 1;
   visibility: visible;
   transform: none;
@@ -411,13 +416,18 @@
     color: var(--text);
   }
 }
+/* X를 누른 그 hover·초점이 끝날 때까지는 숨긴다(FeedbackFox.tsx의 hush). 위 규칙보다 뒤에 둔다 */
+.fox.foxHush .foxTip {
+  opacity: 0;
+  visibility: hidden;
+}
 /* 등장은 globals.css의 .rise(아래에서 떠오름), 동작 줄이기면 꺼진다 */
 @media (prefers-reduced-motion: no-preference) {
   .foxTip {
     transition:
-      opacity 0.25s ease,
-      transform 0.25s ease,
-      visibility 0.25s;
+      opacity 0.18s ease,
+      transform 0.18s ease,
+      visibility 0.18s;
   }
   .foxImg {
     transition:
