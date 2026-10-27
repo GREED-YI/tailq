@@ -1,11 +1,11 @@
-/* 학습 기록(S19 목록, S20 상세, S21 리포트의 탭·잔디). 값은 Figma C안(모바일 390·PC 1440) */
+/* 학습 기록(S19 목록, S20 상세). 꼬리잇기 달력 말풍선(GrassTip)도 여기 있다. 값은 Figma C안(모바일 390·PC 1440) */
 
-/* PC: 기록·리포트·상세 모두 가운데 열 720 */
+/* PC: 처음엔 기록·상세 모두 가운데 열 720이었으나 넓은 화면에서 가운데로 몰려, 목록은 셸 폭을 다 쓰고
+   상세는 읽기 좋은 폭(880)까지 넓혔다(#117) */
 @media (min-width: 1024px) {
-  .page,
   .detail {
     width: 100%;
-    max-width: 720px;
+    max-width: 880px;
     margin: 0 auto;
   }
 }
@@ -24,83 +24,86 @@
   }
 }
 
-/* 탭 줄: 모바일은 탭(폭 전체) 아래 필터, PC는 탭(320) 왼쪽 · 필터 오른쪽 */
-.bar {
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+/* 제목·필터 띠: 위에 붙어 있고 목록이 그 아래로 지나간다. 지나가는 내용은 유리 띠가 흐리게 가린다.
+   모바일은 화면 끝까지(.main 좌우 여백 20), 태블릿·PC는 열 폭보다 조금 넓게 */
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 -20px;
+  padding: 0 20px 12px;
+  background: color-mix(in srgb, var(--bg) 84%, transparent);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  box-shadow: inset 0 -1px 0 var(--glass-edge);
 }
+@media (min-width: 768px) {
+  .top {
+    margin: 0 -16px;
+    padding: 0 16px 12px;
+    border-radius: 0 0 24px 24px;
+  }
+}
+/* PC는 .main 위 여백(40)만큼 띠를 위로 늘려, 붙었을 때 제목 위로 목록이 비치지 않게 */
 @media (min-width: 1024px) {
-  .bar {
-    margin-top: 20px;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
+  .top {
+    margin-top: -40px;
+    padding-top: 40px;
   }
 }
 
-/* 기록 / 리포트 나눔 막대 */
-.tabs {
-  height: 44px;
-  border-radius: 22px;
-  padding: 4px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-}
-@media (min-width: 1024px) {
-  .tabs {
-    width: 320px;
-  }
-}
-.tabs a {
-  border-radius: 18px;
+/* 필터 칩(전체·북마크)과 달 칩. 한 줄, 넘치면 가로로 넘긴다. 모바일은 화면 끝까지 */
+.filters {
+  margin: 8px -20px 0;
+  padding: 0 20px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--sub);
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
-.tabs a[aria-current="page"] {
-  background: var(--tab-active);
-  box-shadow:
-    inset 0 1px 0 var(--glass-hi),
-    0 4px 12px -6px var(--glass-shadow);
-  color: var(--accent);
-  font-weight: 700;
+@media (min-width: 768px) {
+  .filters {
+    margin: 8px 0 0;
+    padding: 0;
+  }
 }
-
-/* 필터·월 드롭다운: 유리 알약 안의 기본 select */
-.filters {
+@media (min-width: 1024px) {
+  .filters {
+    margin-top: 16px;
+  }
+}
+.chipGroup {
   display: flex;
   gap: 8px;
+  flex-shrink: 0;
 }
-.select {
-  position: relative;
-  height: 40px;
-  border-radius: 20px;
-  display: inline-flex;
-  align-items: center;
+/* 필터와 달 칩 사이 세로 줄 */
+.chipGroup + .chipGroup {
+  padding-left: 8px;
+  border-left: 1px solid var(--glass-edge);
 }
-.select select {
-  height: 100%;
-  padding: 0 38px 0 16px;
-  border: 0;
-  border-radius: inherit;
-  background: none;
-  color: var(--text);
-  font: inherit;
+.chipGroup > a {
+  flex-shrink: 0;
+}
+
+/* 한 달 묶음. 달 칩으로 건너뛰면 위 띠에 가리지 않게 띠 높이만큼 띄운다 */
+.month {
+  scroll-margin-top: 140px;
+}
+@media (min-width: 1024px) {
+  .month {
+    scroll-margin-top: 160px;
+  }
+}
+.monthHead {
+  margin: 24px 4px 0;
   font-size: 15px;
-  font-weight: 500;
-  appearance: none;
-  cursor: pointer;
-}
-.select svg {
-  position: absolute;
-  right: 15px;
-  pointer-events: none;
+  font-weight: 700;
   color: var(--sub);
+}
+.month:first-of-type .monthHead {
+  margin-top: 16px;
 }
 
 .empty {
@@ -118,15 +121,15 @@
   list-style: none;
 }
 .row {
-  min-height: 64px;
-  padding: 10px 0;
+  min-height: 72px;
+  padding: 12px 0;
   display: grid;
-  grid-template-columns: 42px minmax(0, 1fr) auto;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 .date {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 .text {
@@ -134,8 +137,8 @@
   flex-direction: column;
 }
 .meta {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 13px;
+  line-height: 18px;
   color: var(--sub);
 }
 .prompt {
@@ -147,11 +150,12 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+/* 점수는 구간 색(scoreColor)을 그대로, 굵게. 흐려 보이지 않게 투명도·그림자 없이 */
 .score {
-  min-width: 24px;
+  min-width: 32px;
   text-align: right;
   font-size: 22px;
-  font-weight: 600;
+  font-weight: 800;
   color: var(--sub);
 }
 
@@ -208,16 +212,17 @@
   color: var(--accent);
 }
 
+/* 카드 안쪽 여백 20: 안쪽 칸(.well, 반지름 16)이 카드 모서리(28) 곡선 안쪽에서 시작하게(#117) */
 .card {
   margin-top: 12px;
   border-radius: 28px;
-  padding: 16px;
+  padding: 20px;
 }
 .question + .card {
   margin-top: 20px;
 }
 .label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--sub);
 }
@@ -237,7 +242,7 @@
 }
 
 .scoreCard {
-  padding: 18px 16px;
+  padding: 20px;
   display: flex;
   align-items: center;
   gap: 16px;
@@ -271,14 +276,14 @@
 }
 
 .points {
-  padding: 20px 16px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 .points h3 {
   margin-bottom: 4px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 .points ul {
@@ -295,7 +300,7 @@
 
 /* 접힌 모범 답안·참고 자료: 줄 높이 60, 오른쪽 아래 화살표(펼치면 뒤집힌다) */
 .folds {
-  padding: 8px 16px;
+  padding: 8px 20px;
 }
 .folds summary,
 .followUp summary {
@@ -347,19 +352,21 @@
 }
 
 .followUps {
-  padding: 8px 16px;
+  padding: 8px 20px;
   list-style: none;
 }
+/* 왼쪽 번호·질문, 오른쪽 판정과 그 아래 "답변 보기 ⌄"(펼치면 "접기", 화살표가 뒤집힌다) */
 .followUp summary {
-  min-height: 60px;
-  padding: 8px 0;
+  min-height: 72px;
+  padding: 12px 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  column-gap: 12px;
+  column-gap: 16px;
+  row-gap: 2px;
 }
 .followUpIdx {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
 }
 .followUpPrompt {
@@ -370,80 +377,81 @@
 }
 .verdict {
   grid-column: 2;
-  grid-row: 1 / 3;
+  grid-row: 1;
+  justify-self: end;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--sub);
 }
-.followUpBody {
-  padding-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.feedbackLine {
-  font-size: 14px;
-  line-height: 22px;
+.more {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--sub);
 }
-
-/* 잔디는 모바일에서도 52주 전부, 가로 스크롤. rtl로 처음엔 최근 주(오른쪽 끝)가 보이고 왼쪽 끝은 흐리게(docs/07) */
-.grassScroll {
-  direction: rtl;
-  overflow-x: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--scroll) transparent;
-  mask-image: linear-gradient(to right, transparent, #000 28px);
+.more svg {
+  transition: transform 0.2s ease;
 }
-/* PC는 52주(673px)가 카드에 다 들어가 가운데 놓는다 */
-@media (min-width: 1024px) {
-  .grassScroll {
-    direction: ltr;
-    display: flex;
-    justify-content: center;
-    mask-image: none;
+.moreClose,
+.followUp[open] .moreOpen {
+  display: none;
+}
+.followUp[open] .moreClose {
+  display: inline;
+}
+.followUp[open] .more svg {
+  transform: rotate(180deg);
+}
+/* 누를 수 있다는 표시: 마우스를 올리면 "답변 보기"가 강조색 */
+@media (hover: hover) {
+  .followUp summary:hover .more {
+    color: var(--accent);
   }
 }
-.grass {
-  direction: ltr;
-  width: max-content;
-  display: grid;
-  grid-template-rows: repeat(7, 10px);
-  grid-auto-columns: 10px;
-  grid-auto-flow: column;
-  gap: 3px;
+@media (prefers-reduced-motion: reduce) {
+  .more svg {
+    transition: none;
+  }
 }
-.grass span {
-  border-radius: 3px;
+.followUpBody {
+  padding-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
-.grass [data-level="0"] {
-  background: var(--grass-0);
+/* AI 코멘트: Q 표시 + 이름표 아래 한 줄 피드백 */
+.comment {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
-.grass [data-level="1"] {
-  background: var(--grass-1);
+.aiLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
 }
-.grass [data-level="2"] {
-  background: var(--grass-2);
+.aiLabel::before {
+  content: "";
+  width: 15px;
+  height: 13px;
+  background: currentColor;
+  mask: url(/brand/symbol.svg) center / contain no-repeat;
+  -webkit-mask: url(/brand/symbol.svg) center / contain no-repeat;
 }
-.grass [data-level="3"] {
-  background: var(--grass-3);
+.feedbackLine {
+  font-size: 15px;
+  line-height: 23px;
+  color: var(--text);
 }
-.grass [data-level="4"] {
-  background: var(--grass-4);
-}
-/* 휴식권 쓴 날은 빗금 */
-.grass [data-rest] {
-  background:
-    repeating-linear-gradient(
-      135deg,
-      var(--grass-2) 0 2px,
-      transparent 2px 4px
-    ),
-    var(--grass-0);
-}
-.grass [data-future] {
-  visibility: hidden;
-}
+
 /* 칸 위에 뜨는 날짜 말풍선(GrassTip). 칸 가운데 위 6px에 놓는다 */
 .grassTip {
   position: fixed;
@@ -464,10 +472,4 @@
 /* 화면 맨 위 칸은 말풍선을 칸 아래에 */
 .grassTipBelow {
   transform: translate(-50%, 6px);
-}
-/* 마우스가 올라간 칸을 테두리로 짚는다 */
-@media (hover: hover) {
-  .grass span[data-tip]:hover {
-    box-shadow: 0 0 0 1.5px var(--accent);
-  }
 }

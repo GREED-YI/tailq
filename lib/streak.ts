@@ -64,7 +64,7 @@ export const ticketsLeft = (restDays: string[], today: string) =>
 
 export const GRASS_WEEKS = 52;
 
-// 잔디 칸 단계 0~4(docs/07 "학습 잔디"). 0은 학습하지 않은 날.
+// 잔디 칸 단계 0~4(docs/07 "학습 잔디", 리포트에서는 "꼬리잇기 달력"). 0은 학습하지 않은 날.
 // 점수 구간은 본 질문 점수 색(40·70, docs/09)에 90점 이상을 더했다. 모르겠어요(0점)와
 // 채점 전·채점 실패(점수 없음)도 학습한 날이라 1단계다.
 export function grassLevel(score: number | null | undefined): 1 | 2 | 3 | 4 {
@@ -82,15 +82,40 @@ export type GrassCell = {
   future: boolean;
 };
 
-// 최근 52주(이번 주 포함) 칸을 월요일부터 주 단위로 채운다. 이번 주의 오늘 뒤 칸은 future
+// 꼬리잇기 달력 보기(리포트). 기본은 3개월
+export type GrassView = "week" | "month" | "3m" | "year";
+
+// 보기마다 첫 칸(월요일)과 칸 수. 모두 주 단위라 월요일에 시작해 일요일에 끝난다.
+// 주: 이번 주, 월: 이번 달이 걸친 주 전부, 3개월: 이번 주까지 13주, 1년: 52주(잔디 전체)
+export function grassRange(
+  view: GrassView,
+  today: string,
+): { start: string; days: number } {
+  const thisWeek = weekStart(today);
+  if (view === "week") return { start: thisWeek, days: 7 };
+  if (view === "3m") return { start: addDays(thisWeek, -12 * 7), days: 13 * 7 };
+  if (view === "year")
+    return { start: grassStart(today), days: GRASS_WEEKS * 7 };
+  const [y, m] = today.split("-").map(Number);
+  const start = weekStart(`${today.slice(0, 7)}-01`);
+  // 다음 달 1일의 하루 전이 이번 달 마지막 날
+  const last = addDays(
+    new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 10),
+    -1,
+  );
+  const end = addDays(weekStart(last), 7);
+  return { start, days: (Date.parse(end) - Date.parse(start)) / DAY_MS };
+}
+
+// 기본은 최근 52주(이번 주 포함) 칸을 월요일부터 주 단위로 채운다. 오늘 뒤 칸은 future
 export function grassCells(
   scores: Map<string, number | null>,
   restDays: string[],
   today: string,
+  { start, days } = grassRange("year", today),
 ): GrassCell[] {
-  const start = grassStart(today);
   const rest = new Set(restDays);
-  return Array.from({ length: GRASS_WEEKS * 7 }, (_, i) => {
+  return Array.from({ length: days }, (_, i) => {
     const day = addDays(start, i);
     const studied = scores.has(day);
     const score = scores.get(day) ?? null;
