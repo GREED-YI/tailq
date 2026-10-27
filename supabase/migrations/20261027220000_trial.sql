@@ -35,6 +35,8 @@ begin
   end if;
   -- 같은 IP의 동시 요청을 한 줄로 세워 20번을 넘지 않게 한다(같은 브라우저도 같은 IP라 함께 묶인다)
   perform pg_advisory_xact_lock(hashtextextended('trial:' || p_ip_hash, 0));
+  -- 같은 체험 토큰을 서로 다른 IP에서 동시에 보내도 세션이 하나만 생기게 토큰으로도 한 줄로 세운다
+  perform pg_advisory_xact_lock(hashtextextended('trial-token:' || p_trial_token, 0));
 
   select * into result from public.sessions
   where trial_token = p_trial_token and kind = 'trial' and day = today;
