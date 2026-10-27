@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "복습 · TailQ" };
 export default function ReviewPage() {
   return (
     <div className={s.page}>
-      <AppHeader />
+      <AppHeader title="복습" />
       <h1 className={s.pageTitle}>복습</h1>
       <Suspense fallback={<Heading />}>
         <Reviews />

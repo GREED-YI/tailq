@@ -24,6 +24,8 @@ export const TOKENS = {
     blob3: "rgba(124,242,205,0.16)",
     halo: "rgba(52,199,154,0.55)",
     "tab-active": "rgba(255,255,255,0.12)",
+    // 누를 수 있는 행·메뉴·유리 버튼의 hover 면(선택 캡슐 tab-active보다 옅게)
+    hover: "rgba(255,255,255,0.06)",
     ph: "rgba(236,243,240,0.42)",
     scroll: "rgba(124,242,205,0.35)",
     "dot-off": "rgba(255,255,255,0.18)",
@@ -62,6 +64,7 @@ export const TOKENS = {
     blob3: "rgba(124,242,205,0.40)",
     halo: "rgba(52,199,154,0.50)",
     "tab-active": "rgba(255,255,255,0.88)",
+    hover: "rgba(15,26,23,0.05)",
     ph: "rgba(15,26,23,0.40)",
     scroll: "rgba(11,122,98,0.32)",
     "dot-off": "rgba(15,26,23,0.14)",

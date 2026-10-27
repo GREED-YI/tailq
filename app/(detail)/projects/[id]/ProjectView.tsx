@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
-import s from "../projects.module.css";
+import s from "@/app/(app)/projects/projects.module.css";
 
 // state: 최근 점수("72점"·"모르겠어요"), 연습 중("doing"), 아직 안 함(null)
 export type QuestionRow = { id: number; prompt: string; state: string | null };
@@ -119,7 +119,7 @@ export function ProjectView({
               <li key={q.id}>
                 <button
                   type="button"
-                  className={`press ${s.row} ${s.qRow}`}
+                  className={`hover-row ${s.row} ${s.qRow}`}
                   disabled={busy !== null}
                   onClick={() => practice(q.id)}
                 >

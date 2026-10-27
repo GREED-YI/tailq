@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "내 프로젝트 · TailQ" };
 export default function ProjectsPage() {
   return (
     <div className={s.page}>
-      <AppHeader />
+      <AppHeader title="내 프로젝트" />
       <h1 className={s.pageTitle}>내 프로젝트</h1>
       <div className={`${s.cols} ${s.list}`}>
         <div className={s.list}>
@@ -85,7 +85,7 @@ async function Projects() {
                 : `질문 ${p.questions.length}개 · ${practiced ? `${practiced}개 연습함` : "아직 연습 안 함"}`;
           return (
             <li key={p.id}>
-              <Link href={`/projects/${p.id}`} className={`press ${s.row}`}>
+              <Link href={`/projects/${p.id}`} className={`hover-row ${s.row}`}>
                 <span className={s.text}>
                   <span className={`num ${s.meta}`}>{meta}</span>
                   <span className={s.name}>{p.name}</span>

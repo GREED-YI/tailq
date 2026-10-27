@@ -421,7 +421,7 @@ function NotifyStep(props: {
       <div className={`glass ${f.rows} ${s.guides}`}>
         {GUIDES.map((g) => (
           <details key={g.title}>
-            <summary className={f.row}>
+            <summary className={`hover-row ${f.row}`}>
               <strong>{g.title}</strong>
               <Icon name="chevronRight" size={18} />
             </summary>

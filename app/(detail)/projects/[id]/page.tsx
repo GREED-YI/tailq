@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { ProjectView, type QuestionRow } from "./ProjectView";
-import s from "../projects.module.css";
+import s from "@/app/(app)/projects/projects.module.css";
 
 export const metadata: Metadata = { title: "프로젝트 질문 · TailQ" };
 

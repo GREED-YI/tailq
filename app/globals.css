@@ -200,11 +200,51 @@ button {
       box-shadow 0.2s ease,
       color 0.2s ease;
   }
-  .press:hover {
+  .press:not(:disabled):active {
+    transform: scale(0.96);
+  }
+  .hover-row::before {
+    transition: background-color 0.2s ease;
+  }
+}
+
+/* 상호작용 상태(docs/07). hover는 마우스가 있는 기기에서만 붙여 터치 뒤에 남지 않게 한다 */
+@media (hover: hover) {
+  .press:not(:disabled):hover {
     filter: brightness(1.06);
   }
-  .press:active {
-    transform: scale(0.96);
+  /* 유리 버튼(아이콘·보조 버튼·칩·알약)은 밝기만으로는 거의 안 보여 유리를 선택 캡슐만큼 진하게 한다 */
+  .glass.press:not(:disabled):hover {
+    background-color: var(--tab-active);
+  }
+}
+
+/* 동작 줄이기: 유리 버튼의 hover 배경은 전환 없이 바로 바뀐다(.glass의 테마 전환 0.5초도 끈다) */
+@media (prefers-reduced-motion: reduce) {
+  .glass.press {
+    transition: none;
+  }
+}
+
+/* 카드 안 목록 행: hover·키보드 초점·눌림에 옅은 면. 행은 카드 안쪽 여백(16)까지 8px 넓혀 칠하고 자리는 그대로 둔다 */
+.hover-row {
+  position: relative;
+  isolation: isolate;
+}
+.hover-row::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 -8px;
+  border-radius: 16px;
+}
+.hover-row:focus-visible::before,
+.hover-row:not(:disabled):active::before {
+  background: var(--hover);
+}
+@media (hover: hover) {
+  .hover-row:not(:disabled):hover::before {
+    background: var(--hover);
   }
 }
 /* 모바일은 배경을 느리게 */

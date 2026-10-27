@@ -16,6 +16,16 @@ describe.each(["dark", "light"] as const)("%s 테마 대비", (name) => {
     },
   );
 
+  // 행·메뉴·유리 버튼 hover는 유리 위에 hover 면을 한 겹 더 얹는다
+  it.each(["text", "sub", "accent"] as const)(
+    "hover 면 위 %s 글자가 4.5:1 이상",
+    (key) => {
+      expect(contrast(t[key], over(t.hover, glass))).toBeGreaterThanOrEqual(
+        4.5,
+      );
+    },
+  );
+
   it("주 버튼 글자가 4.5:1 이상", () => {
     expect(contrast(t["on-accent"], t["accent-fill"])).toBeGreaterThanOrEqual(
       4.5,

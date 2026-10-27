@@ -1,13 +1,8 @@
 /* 내 프로젝트(S22 목록 · S23 등록 · S24 질문 목록 · S25 삭제 확인). 숫자는 Figma C안(모바일 390 · PC 1440) */
 
-/* 모바일·태블릿은 Figma에서 제목이 헤더에 있다. 헤더(공용 셸)가 로고를 보여주는 동안은 읽기용으로만 둔다 */
+/* 모바일·태블릿은 Figma처럼 제목이 헤더(AppHeader title)의 h1이라 이 h1은 숨긴다. PC는 헤더가 숨고 이 h1이 보인다 */
 .pageTitle {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
+  display: none;
 }
 
 /* 아래 버튼을 화면 아래로 밀 수 있게 남은 높이를 채운다 */
@@ -101,6 +96,10 @@
   padding-top: 24px;
   display: flex;
   flex-direction: column;
+}
+/* 등록·질문 화면(S23·S24)은 탭바가 없어 화면 끝에서 16 위 */
+.detail .bottom {
+  bottom: calc(16px + env(safe-area-inset-bottom));
 }
 .bottom > * {
   width: 100%;
@@ -316,11 +315,7 @@
 /* PC: 목록(S22)은 왼쪽 640 + 오른쪽 안내 318, 질문 목록(S24)은 가운데 720, 등록(S23)은 그 열의 480 */
 @media (min-width: 1024px) {
   .pageTitle {
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    clip-path: none;
+    display: block;
     font-size: 28px;
     line-height: 44px;
     font-weight: 700;

@@ -153,7 +153,7 @@ export function ProfileForm(props: {
           role="switch"
           aria-checked={share}
           aria-labelledby="share-label"
-          className={s.switch}
+          className={`press ${s.switch}`}
           onClick={() => setShare(!share)}
         />
         {tip && (

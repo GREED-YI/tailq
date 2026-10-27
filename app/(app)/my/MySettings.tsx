@@ -46,7 +46,11 @@ function SettingRow(props: {
 }) {
   return (
     <li>
-      <button type="button" className={s.row} onClick={props.onClick}>
+      <button
+        type="button"
+        className={`hover-row ${s.row}`}
+        onClick={props.onClick}
+      >
         <span className={s.rowText}>
           <strong>{props.title}</strong>
           <span className="num">{props.meta}</span>
@@ -149,7 +153,7 @@ export function NotifyRow({ on, hour }: { on: boolean; hour: number }) {
             role="switch"
             aria-checked={nextOn}
             aria-labelledby="notify-label"
-            className={p.switch}
+            className={`press ${p.switch}`}
             onClick={() => setNextOn(!nextOn)}
           />
         </div>

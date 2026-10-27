@@ -60,7 +60,10 @@ export function ReviewList({ items, today }: { items: Item[]; today: string }) {
           <li key={r.id}>
             {/* 기록이 있으면 그 질문의 가장 최근 기록 상세로 */}
             {r.sessionId ? (
-              <Link href={`/history/${r.sessionId}`} className={s.row}>
+              <Link
+                href={`/history/${r.sessionId}`}
+                className={`hover-row ${s.row}`}
+              >
                 <Row r={r} today={today} />
                 <Icon name="chevronRight" size={18} />
               </Link>
