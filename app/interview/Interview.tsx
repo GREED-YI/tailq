@@ -236,7 +236,7 @@ export function Interview({
       </header>
 
       <div className={s.orb}>
-        <FloatingQ size={104} thinking={phase === "grading"} />
+        <FloatingQ size={120} thinking={phase === "grading"} />
         {/* 채점 실패는 아래 여우 안내가 대신하므로 줄만 비워 둔다(Figma S17) */}
         <p className={s.status} aria-live="polite">
           {STATUS_TEXT[phase]}
@@ -279,9 +279,10 @@ export function Interview({
 
       <section
         className={`glass-strong rise ${s.sheet}`}
-        // 답변 입력 시트만 화면 아래에 붙는다. 결과는 길어질 수 있어 질문 아래로 이어 붙인다
+        // 키보드가 올라온 답변 입력 시트만 화면 아래에 붙는다. 늘 붙여 두면 화면 높이가 낮을 때
+        // 시트가 질문을 덮는다. 결과는 길어질 수 있어 질문 아래로 이어 붙인다
         style={
-          showResultSheet
+          showResultSheet || keyboard === 0
             ? undefined
             : {
                 position: "sticky",
@@ -414,7 +415,6 @@ function ResultView({
   streamed: string;
   onNext: (next: Turn) => void;
 }) {
-  const shown = useCountUp(result?.score ?? 0, Boolean(result) && !followUp);
   if (followUp) {
     return (
       <FollowUpResult
@@ -441,10 +441,11 @@ function ResultView({
   return (
     <div className={s.result}>
       <div className={s.top}>
+        {/* 0에서 점수까지 차오르는 것은 ScoreRing이 맡는다 */}
         <ScoreRing
-          shown={shown}
+          shown={result.score ?? 0}
           label={`100점 만점에 ${result.score ?? 0}점`}
-          value={shown}
+          value={result.score ?? 0}
         />
         <div className={s.headline}>
           <strong>{unknown ? "모르겠어요" : result.feedback?.summary}</strong>
@@ -644,41 +645,35 @@ function Rating({
   );
 }
 
-// 0에서 점수까지 18ms마다 2씩(docs/07 "모션"). 동작 줄이기면 바로 최종 값
-function useCountUp(target: number, run: boolean) {
-  const [shown, setShown] = useState(0);
-  useEffect(() => {
-    if (!run) return;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      const t = setTimeout(() => setShown(target), 0);
-      return () => clearTimeout(t);
-    }
-    let v = 0;
-    const id = setInterval(() => {
-      v = Math.min(target, v + 2);
-      setShown(v);
-      if (v >= target) clearInterval(id);
-    }, 18);
-    return () => clearInterval(id);
-  }, [target, run]);
-  return shown;
-}
-
-// 키보드가 올라오면 시트도 그 위로(docs/07 "iOS 대응", visualViewport 기준)
+// 키보드가 올라오면 시트도 그 위로(docs/07 "iOS 대응", visualViewport 기준).
+// 주소창이 다시 보이거나 확대해도 visualViewport가 줄어드니, 입력 칸에 초점이 있고
+// 확대하지 않았고 줄어든 높이가 키보드만큼(120px 이상)일 때만 키보드로 본다
+const KEYBOARD_MIN = 120;
 function useKeyboardInset() {
   const [inset, setInset] = useState(0);
   useEffect(() => {
     const vv = window.visualViewport;
     if (!vv) return;
-    const update = () =>
+    const update = () => {
+      const el = document.activeElement;
+      const typing =
+        el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement;
+      const shrunk = Math.round(window.innerHeight - vv.height - vv.offsetTop);
       setInset(
-        Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop)),
+        typing && vv.scale <= 1.01 && shrunk >= KEYBOARD_MIN ? shrunk : 0,
       );
+    };
     vv.addEventListener("resize", update);
     vv.addEventListener("scroll", update);
+    // 초점이 빠지면(키보드 닫힘) 바로 원래대로. focusout 중에는 activeElement가 아직 바뀌기 전일 수 있다
+    const later = () => setTimeout(update, 0);
+    document.addEventListener("focusout", later);
+    document.addEventListener("focusin", later);
     return () => {
       vv.removeEventListener("resize", update);
       vv.removeEventListener("scroll", update);
+      document.removeEventListener("focusout", later);
+      document.removeEventListener("focusin", later);
     };
   }, []);
   return inset;

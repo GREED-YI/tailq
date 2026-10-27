@@ -7,6 +7,7 @@ const APP_PATHS = [
   "/home",
   "/review",
   "/history",
+  "/report",
   "/projects",
   "/my",
   "/interview",

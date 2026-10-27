@@ -6,6 +6,7 @@ import { Icon } from "@/components/icons";
 import { StreakTile } from "@/components/Streak";
 import { loadProjectSession, startDailySession } from "@/lib/daily";
 import { kstDay } from "@/lib/daily-pick";
+import { daysUntil, dueLabel } from "@/lib/review";
 import { loadStudy } from "@/lib/study";
 import { createClient } from "@/lib/supabase/server";
 import s from "../interview.module.css";
@@ -68,9 +69,6 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
   const followed = (turns ?? []).some(
     (t) => t.idx > 0 && t.status === "graded",
   );
-  const days =
-    review &&
-    (Date.parse(review.due_day) - Date.parse(kstDay(new Date()))) / 86_400_000;
 
   return (
     <div className={`${s.screen} ${s.summary} fade`}>
@@ -83,16 +81,22 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
         {q.label} · {q.topic}
       </span>
       <h1 className={s.title}>
-        {followed ? (
+        {/* 오늘의 질문은 꼬리질문까지 했는지와 상관없이 수고를 건넨다. 처음엔 "오늘 한 문제, 꼬리질문까지
+            마쳤어요"였는데 딱딱한 완료 보고처럼 읽혀 바꿨다(2026-10-27) */}
+        {!sessionId ? (
           <>
-            {sessionId ? "프로젝트 질문," : "오늘 한 문제,"}
+            오늘 하루 면접도
+            <br />
+            고생 많았어요
+          </>
+        ) : followed ? (
+          <>
+            프로젝트 질문,
             <br />
             꼬리질문까지 마쳤어요
           </>
-        ) : sessionId ? (
-          "프로젝트 질문을 마쳤어요"
         ) : (
-          "오늘 한 문제를 마쳤어요"
+          "프로젝트 질문을 마쳤어요"
         )}
       </h1>
 
@@ -108,10 +112,15 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
         {review && (
           <div className={`glass ${s.tile}`}>
             <span>다음 복습</span>
-            <strong>{review.box ? `${days}일 뒤` : "익힌 질문이에요"}</strong>
+            {/* "10/30"은 점수처럼 읽혀 "3일 뒤 다시 · 10월 30일(목)"로 쓴다(2026-10-27) */}
+            <strong>
+              {review.box
+                ? dueLabel(daysUntil(review.due_day, kstDay(new Date())))
+                : "복습 완료한 질문이에요"}
+            </strong>
             {review.box ? (
-              <span className={`mono ${s.date}`}>
-                {review.due_day.slice(5, 7)}/{review.due_day.slice(8, 10)}
+              <span className={`num ${s.date}`}>
+                {dayLabel(review.due_day)}
               </span>
             ) : null}
           </div>
@@ -126,4 +135,11 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
       </div>
     </div>
   );
+}
+
+// "2026-10-30" → "10월 30일(목)"
+function dayLabel(day: string) {
+  const [, m, d] = day.split("-").map(Number);
+  const dow = new Date(`${day}T00:00:00Z`).getUTCDay();
+  return `${m}월 ${d}일(${"일월화수목금토"[dow]})`;
 }
