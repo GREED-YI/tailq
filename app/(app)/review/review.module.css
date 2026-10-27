@@ -105,8 +105,17 @@
   border-radius: 50%;
   background: var(--dot-off);
 }
+/* 켜진 칸 색은 숙련도 단계 색: 1~2칸 낮음(--low), 3~4칸 중간(--mid), 5칸 완료(--good).
+   처음엔 몇 칸이든 링 색(--ring) 하나였는데 단계가 한눈에 안 들어와 바꿨다(#117).
+   몇 번째 칸까지 켜졌는지로 고르므로(:has) 홈처럼 이 클래스를 가져다 쓰는 곳도 고칠 게 없다 */
 .dots .on {
-  background: var(--ring);
+  background: var(--low);
+}
+.dots:has(> .on:nth-child(3)) .on {
+  background: var(--mid);
+}
+.dots:has(> .on:nth-child(5)) .on {
+  background: var(--good);
 }
 
 .empty {
