@@ -38,7 +38,7 @@ function Greeting({ name, title }: { name?: string; title: string }) {
   return (
     <div className={s.head}>
       <h1 className={s.title}>
-        {/* 닉네임 줄은 더 크게, 닉네임은 강조색(사용자 요청 #115) */}
+        {/* 닉네임 줄은 따로 한 줄, 닉네임만 강조색(사용자 요청 #115) */}
         {name && (
           <span className={s.hello}>
             <span className={s.name}>{name}</span>님,
@@ -53,7 +53,7 @@ function Greeting({ name, title }: { name?: string; title: string }) {
 const TITLES: Record<HomeState["kind"], string> = {
   todo: "오늘도 한 문제 도전해 볼까요?",
   doing: "하던 질문 마저 이어가 볼까요?",
-  done: "오늘 질문 끝냈어요",
+  done: "오늘 면접 응시 완료했어요",
 };
 
 // 홈을 열면 오늘의 세션을 연다(08 설계 "오늘의 질문 세션").
@@ -385,15 +385,14 @@ function DoneCard({
         {review && (
           <div className={s.next}>
             <span>다음 복습</span>
+            {/* "3일 뒤 (10/30)"은 점수처럼 읽혀 결과 화면처럼 두 줄로 쓴다(#115) */}
             {review.box === null ? (
-              <strong>익힌 질문이에요</strong>
+              <strong>복습 완료한 질문이에요</strong>
             ) : (
-              <strong className="num">
-                {daysUntil(review.due_day, today)}일 뒤
-                <span className="mono">
-                  ({review.due_day.slice(5).replace("-", "/")})
-                </span>
-              </strong>
+              <>
+                <strong>{dueLabel(daysUntil(review.due_day, today))}</strong>
+                <span className="num">{dayLabel(review.due_day)}</span>
+              </>
             )}
           </div>
         )}
@@ -406,6 +405,13 @@ function DoneCard({
       </Link>
     </section>
   );
+}
+
+// "2026-10-30" → "10월 30일(금)"(면접 결과 화면과 같다)
+function dayLabel(day: string) {
+  const [, m, d] = day.split("-").map(Number);
+  const dow = new Date(`${day}T00:00:00Z`).getUTCDay();
+  return `${m}월 ${d}일(${"일월화수목금토"[dow]})`;
 }
 
 function Tile({

@@ -22,12 +22,10 @@
   font-weight: 700;
   letter-spacing: -0.8px;
 }
-/* 닉네임 줄만 더 크게, 닉네임은 강조색(사용자 요청 #115, Figma와 다름) */
+/* 닉네임 줄은 따로 한 줄, 닉네임은 강조색(사용자 요청 #115, Figma와 다름).
+   처음엔 이 줄만 38px로 키웠는데 두 줄 크기를 맞춰 달라는 요청으로 되돌렸다 */
 .hello {
   display: block;
-  font-size: 38px;
-  line-height: 48px;
-  letter-spacing: -1px;
 }
 .name {
   color: var(--accent);
@@ -172,12 +170,6 @@
   line-height: 31px;
   font-weight: 700;
   color: var(--text);
-}
-.next strong :global(.mono) {
-  margin-left: 2px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--sub);
 }
 .again {
   width: 100%;
