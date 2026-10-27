@@ -1,6 +1,6 @@
 -- profiles: 가입하면 트리거가 행을 만들고, 사용자는 자기 행만 읽는다(08 설계 "RLS")
 begin;
-select plan(9);
+select plan(10);
 
 insert into auth.users (id, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000000a', '{"name": "  김테일  ", "avatar_url": "https://example.com/a.png"}'),
@@ -28,6 +28,10 @@ select is(
   (select (nickname, avatar, notify_hour, theme, onboarded_at is null)::text
    from public.profiles where id = '00000000-0000-0000-0000-00000000000d'),
   '("면접 준비생",https://example.com/d.png,8,system,t)', '이름이 없으면 기본값으로 만든다'
+);
+select is(
+  (select share_nickname from public.profiles where id = '00000000-0000-0000-0000-00000000000a'),
+  true, '공유 카드에는 처음엔 닉네임을 넣는다'
 );
 
 set local role anon;

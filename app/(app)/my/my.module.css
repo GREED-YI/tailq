@@ -1,0 +1,75 @@
+/* MY(S27). 숫자는 Figma C안(모바일 390, PC 내용 폭 720) */
+
+.my {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 모바일: 제목 MY + 테마 토글(높이 64). PC는 사이드 메뉴에 토글이 있다 */
+.header {
+  height: 64px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.title {
+  font-size: 22px;
+  line-height: 30px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* 프로필 줄: 아바타 56 + 닉네임·로그인 방법 + 편집 알약 */
+.profile {
+  margin-top: 8px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.who {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.who strong {
+  font-size: 18px;
+  line-height: 25px;
+}
+.who span {
+  font-size: 12px;
+  color: var(--sub);
+}
+.edit {
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+@media (min-width: 1024px) {
+  .my {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  .header {
+    height: auto;
+  }
+  .title {
+    font-size: 28px;
+    line-height: 36px;
+  }
+  .mobileOnly {
+    display: none;
+  }
+  .profile {
+    margin-top: 20px;
+  }
+}

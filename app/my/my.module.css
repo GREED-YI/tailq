@@ -1,0 +1,197 @@
+/* MY 아래 한 줄 화면(S28 프로필 편집). 뼈대는 components/Flow.module.css, 숫자는 Figma C안 */
+
+/* 위에서부터 쌓는다 */
+main.main {
+  justify-content: flex-start;
+}
+
+/* 오른쪽 위 저장 알약(높이 36). 뒤로 버튼과 같은 거리만큼 화면 끝에 붙인다 */
+.top .back {
+  left: -10px;
+}
+.save {
+  position: absolute;
+  right: -14px;
+}
+.pill {
+  height: 36px;
+  padding: 0 13px;
+  border-radius: 18px;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+.pill:disabled {
+  color: var(--ghost-text);
+  cursor: not-allowed;
+}
+
+/* 칸 제목(13 Bold)은 칸 밖 위, 안내 글씨(12)는 칸 밖 아래(docs/07 결정 4) */
+.label {
+  display: block;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.gap {
+  margin-top: 26px;
+}
+.help,
+.helpRow {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 18px;
+  color: var(--sub);
+}
+.helpRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.helpRow :global(.mono) {
+  font-size: 11px;
+}
+.helpRow[data-invalid] {
+  color: var(--danger);
+}
+
+/* 프로필 이미지: 미리보기 72 + 선택지 44 네 개 */
+.avatarCard {
+  margin-top: 8px;
+  padding: 16px 0;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.preview {
+  --avatar-bg: var(--tab-active);
+  --avatar-fg: var(--accent);
+}
+.choices {
+  display: flex;
+  gap: 12px;
+}
+.choice {
+  --avatar-bg: var(--tab-active);
+  --avatar-fg: var(--accent);
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  display: inline-flex;
+}
+.choice[aria-checked="true"] {
+  box-shadow: 0 0 0 1.5px var(--accent);
+}
+/* 색 원은 테두리가 묻히지 않게 2px 띄운다 */
+.choice[aria-checked="true"]:not(:first-child) {
+  box-shadow: none;
+  outline: 1.5px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.input {
+  margin-top: 8px;
+  width: 100%;
+  height: 52px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 18px;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text);
+}
+.input[aria-invalid="true"] {
+  box-shadow:
+    inset 0 0 0 1.5px var(--danger),
+    0 20px 40px -20px var(--glass-shadow);
+}
+
+/* 켜고 끄는 줄(높이 56) */
+.switchRow {
+  position: relative;
+  margin-top: 24px;
+  min-height: 56px;
+  padding: 0 16px;
+  border-radius: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.switchTitle {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+.info {
+  width: 44px;
+  height: 44px;
+  margin: 0 -14px 0 -10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sub);
+}
+.tip {
+  position: absolute;
+  z-index: 1;
+  left: 16px;
+  top: calc(100% + 6px);
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  line-height: 19px;
+  color: var(--text);
+}
+
+/* 토글 51×31, 손잡이 27 */
+.switch {
+  position: relative;
+  width: 51px;
+  height: 31px;
+  flex-shrink: 0;
+  border-radius: 15.5px;
+  background: var(--track);
+  transition: background-color 0.2s ease;
+}
+.switch::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease;
+}
+.switch[aria-checked="true"] {
+  background: var(--accent-fill);
+}
+.switch[aria-checked="true"]::after {
+  transform: translateX(20px);
+}
+
+.alert {
+  margin-top: 16px;
+  font-size: 14px;
+  color: var(--danger);
+  text-align: center;
+}
+
+/* PC: 폭 480 열은 그대로, 뒤로·저장은 열 밖(Figma 360·1084) */
+@media (min-width: 1024px) {
+  main.main {
+    padding-top: 30px;
+  }
+  .top .back {
+    left: -120px;
+  }
+  .save {
+    right: -124px;
+  }
+}

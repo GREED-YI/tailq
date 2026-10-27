@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { MeUpdate, toProfileUpdate } from "@/lib/profile";
+import { MeUpdate, socialPhoto, toProfileUpdate } from "@/lib/profile";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,7 +31,13 @@ export async function PATCH(request: Request) {
 
   const { error } = await admin
     .from("profiles")
-    .update(toProfileUpdate(input, new Date().toISOString()))
+    .update(
+      toProfileUpdate(
+        input,
+        new Date().toISOString(),
+        socialPhoto(auth?.claims.user_metadata),
+      ),
+    )
     .eq("id", userId);
   // 23514: 동의·연습 범위 없이 온보딩을 마치려 함(profiles_onboarded_ready 제약)
   if (error?.code === "23514")

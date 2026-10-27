@@ -80,6 +80,7 @@ export type Database = {
           notify_hour: number;
           notify_on: boolean;
           onboarded_at: string | null;
+          share_nickname: boolean;
           theme: string;
           topics: string[];
         };
@@ -95,6 +96,7 @@ export type Database = {
           notify_hour?: number;
           notify_on?: boolean;
           onboarded_at?: string | null;
+          share_nickname?: boolean;
           theme?: string;
           topics?: string[];
         };
@@ -109,6 +111,7 @@ export type Database = {
           notify_hour?: number;
           notify_on?: boolean;
           onboarded_at?: string | null;
+          share_nickname?: boolean;
           theme?: string;
           topics?: string[];
         };
