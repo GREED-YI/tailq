@@ -4,6 +4,7 @@ import { scoreColor } from "@/app/interview/verdict";
 import { AppHeader } from "@/components/AppHeader";
 import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
+import { LimitNotice } from "@/components/LimitNotice";
 import { startDailySession, type DailySession } from "@/lib/daily";
 import { kstDay } from "@/lib/daily-pick";
 import { dayLabel, homeState, type HomeState } from "@/lib/home";
@@ -71,7 +72,7 @@ async function Home() {
   const userId = data?.claims?.sub;
   const today = kstDay(new Date());
 
-  const [session, profile, reviews, recent, study] = await Promise.all([
+  const [started, profile, reviews, recent, study] = await Promise.all([
     userId ? startDailySession(userId) : null,
     supabase
       .from("profiles")
@@ -100,6 +101,9 @@ async function Home() {
       .limit(5),
     loadStudy().catch(() => null),
   ]);
+  // 서비스 월 예산에 닿으면 오늘의 질문도 새로 시작하지 않고 안내만 보여준다(04 기능 명세 12장)
+  const budget = started === "budget";
+  const session = budget ? null : started;
   const turns = session
     ? (
         await supabase
@@ -149,7 +153,12 @@ async function Home() {
       />
 
       <div className={s.main}>
-        {!session || !state ? (
+        {budget ? (
+          <LimitNotice
+            title="오늘은 사용 한도를 모두 썼어요"
+            lines={["내일 다시 만나요."]}
+          />
+        ) : !session || !state ? (
           <EmptyCard />
         ) : done ? (
           <DoneCard

@@ -11,8 +11,14 @@ import {
 import { MOCK_PROJECT_QUESTIONS } from "@/lib/project-questions";
 
 vi.mock("server-only", () => ({}));
-const { grade, gradeFollowUp, generateProjectQuestions, GradingError } =
-  await import("@/lib/ai");
+const {
+  costUsd,
+  grade,
+  gradeFollowUp,
+  generateProjectQuestions,
+  GradingError,
+} = await import("@/lib/ai");
+type AiUsage = import("@/lib/ai").AiUsage;
 
 const input: GradeInput = {
   question: "N+1 문제란?",
@@ -199,5 +205,118 @@ describe("generateProjectQuestions (Claude API는 MSW 가짜 응답)", () => {
     expect(await generateProjectQuestions(project)).toEqual(
       MOCK_PROJECT_QUESTIONS,
     );
+  });
+});
+
+describe("사용량 기록(ai_usage, 하루 사용 상한)", () => {
+  it("비용은 모델 가격으로 셈하고 캐시 읽기는 0.1배, 캐시 쓰기는 1.25배다", () => {
+    // 3차 평가의 본 질문 채점 1번: 입력 540 + 캐시 읽기 3,100 + 출력 580(Sonnet 5.5 $2/$10)
+    expect(
+      costUsd("claude-sonnet-5-5", {
+        input_tokens: 540,
+        cache_read_input_tokens: 3100,
+        output_tokens: 580,
+      }),
+    ).toBeCloseTo(0.0075, 10);
+    expect(
+      costUsd("claude-haiku-5-5", {
+        input_tokens: 1000,
+        cache_creation_input_tokens: 1000,
+        output_tokens: 1000,
+      }),
+    ).toBeCloseTo((100 + 125 + 500) / 1_000_000, 12);
+    // 모르는 모델은 표에서 가장 비싼 값(Opus 5.5 $4/$20)으로 넉넉히 잡는다
+    expect(
+      costUsd("claude-unknown", { input_tokens: 1000, output_tokens: 1000 }),
+    ).toBeCloseTo(0.024, 10);
+  });
+
+  it("호출이 끝나면 토큰·비용·지연을 넘긴다", async () => {
+    server.use(
+      http.post("https://api.anthropic.com/v1/messages", () =>
+        sseMessage(JSON.stringify(MOCK_GRADE), {
+          usage: { input_tokens: 540, cache_read_input_tokens: 3100 },
+        }),
+      ),
+    );
+    const seen: AiUsage[] = [];
+    await grade(input, () => {}, { onUsage: (u) => void seen.push(u) });
+    expect(seen).toHaveLength(1);
+    expect(seen[0]).toMatchObject({
+      status: "used",
+      model: "claude-sonnet-5-5",
+      error_code: null,
+      input_tokens: 540,
+      output_tokens: 10,
+      cache_read_tokens: 3100,
+    });
+    expect(seen[0].cost_usd).toBeCloseTo(
+      (540 * 2 + 3100 * 0.2 + 10 * 10) / 1_000_000,
+      12,
+    );
+    expect(seen[0].latency_ms).toBeGreaterThanOrEqual(0);
+  });
+
+  it("예산 80% 뒤 세션(light)은 본 질문도 Haiku로, 대체 모델 없이 채점한다", async () => {
+    let body: Record<string, unknown> = {};
+    server.use(
+      http.post(
+        "https://api.anthropic.com/v1/messages",
+        async ({ request }) => {
+          body = (await request.json()) as Record<string, unknown>;
+          return sseMessage(JSON.stringify(MOCK_GRADE));
+        },
+      ),
+    );
+    await grade(input, () => {}, { light: true });
+    expect(body.model).toBe("claude-haiku-5-5");
+    expect(body).not.toHaveProperty("fallbacks");
+  });
+
+  it("실패한 호출도 이유와 함께 넘긴다", async () => {
+    server.use(streamMessage("", { stopReason: "refusal" }));
+    const seen: AiUsage[] = [];
+    await expect(
+      gradeFollowUp(
+        followInput,
+        () => {},
+        (u) => void seen.push(u),
+      ),
+    ).rejects.toEqual(new GradingError("refusal"));
+    expect(seen[0]).toMatchObject({
+      status: "failed",
+      error_code: "refusal",
+      output_tokens: 10,
+    });
+
+    server.use(streamMessage(JSON.stringify(MOCK_GRADE)));
+    seen.length = 0;
+    await expect(
+      generateProjectQuestions(
+        { name: "혜자", content: "README" },
+        (u) => void seen.push(u),
+      ),
+    ).rejects.toEqual(new GradingError("schema_invalid"));
+    expect(seen[0]).toMatchObject({
+      status: "failed",
+      error_code: "schema_invalid",
+    });
+  });
+
+  it("AI_MOCK=1이어도 비용 0인 기록을 넘겨 예약 정리 흐름을 탄다", async () => {
+    process.env.AI_MOCK = "1";
+    const seen: AiUsage[] = [];
+    const onUsage = (u: AiUsage) => void seen.push(u);
+    await grade(input, () => {}, { light: true, onUsage });
+    await gradeFollowUp(followInput, () => {}, onUsage);
+    await generateProjectQuestions(
+      { name: "혜자", content: "README" },
+      onUsage,
+    );
+    expect(seen.map((u) => [u.model, u.status, u.cost_usd])).toEqual([
+      ["claude-haiku-5-5", "used", 0],
+      ["claude-haiku-5-5", "used", 0],
+      ["claude-sonnet-5-5", "used", 0],
+    ]);
   });
 });

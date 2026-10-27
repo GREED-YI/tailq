@@ -17,6 +17,7 @@ import { FIELDS } from "@/lib/profile";
 import { addDays, studyDay } from "@/lib/streak";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { budgetUsd, loadQuota } from "@/lib/usage";
 import s from "./admin.module.css";
 
 export const metadata: Metadata = {
@@ -65,7 +66,7 @@ async function Dashboard() {
   // 운영자 확인을 마친 뒤에만 RLS를 건너뛰어 모든 사용자 행을 집계한다
   const db = createAdminClient();
   const today = kstDay(new Date());
-  const [profiles, turns, questions, reviewsDue, bookmarks, feedback] =
+  const [profiles, turns, questions, reviewsDue, bookmarks, feedback, quota] =
     await Promise.all([
       readAll((from, to) =>
         db
@@ -111,6 +112,8 @@ async function Dashboard() {
         .order("created_at", { ascending: false })
         .limit(3)
         .throwOnError(),
+      // 이번 달(KST) AI 비용 합계와 예산 상태(ai_usage)
+      loadQuota(db, null),
     ]);
 
   const signups: Signup[] = profiles.map((p) => ({
@@ -375,15 +378,27 @@ async function Dashboard() {
           body="첫 방문자 중 첫 답변까지 간 비율(목표 50%)을 보여줄 자리예요."
           issue={44}
         />
-        <Soon
+        <Stat
           area="cost"
-          title="AI 비용 · 월 예산"
-          body="월 $20 중 사용량과 80% 경고를 보여줄 자리예요."
-          issue={43}
+          label="AI 비용 · 이번 달 예산"
+          value={Math.round((quota.spentUsd / budgetUsd()) * 100)}
+          unit="%"
+          note={costNote(quota.spentUsd, budgetUsd())}
+          // 80%를 넘으면 새 세션의 본 질문 채점이 Haiku로 낮아진다(09 채점 5장)
+          warn={quota.budget !== "ok"}
         />
       </div>
     </>
   );
+}
+
+// "$3.21 / $20 · 약 4,494원". 원화는 보여줄 때만 고정 환율 KRW_PER_USD로 바꾼다(08 설계)
+function costNote(spent: number, budget: number) {
+  const krw = Number(process.env.KRW_PER_USD);
+  const usd = `$${spent.toFixed(2)} / $${budget}`;
+  return krw > 0
+    ? `${usd} · 약 ${Math.round(spent * krw).toLocaleString()}원`
+    : usd;
 }
 
 const trend = (c: number) => (c === 0 ? undefined : c > 0 ? "up" : "down");

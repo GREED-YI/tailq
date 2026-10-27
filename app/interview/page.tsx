@@ -39,7 +39,10 @@ async function SessionInterview({ sessionId }: { sessionId?: string }) {
   const session = sessionId
     ? await loadProjectSession(userId, sessionId)
     : await startDailySession(userId);
-  if (!session) redirect(sessionId ? "/projects" : "/home");
+  // 월 예산에 닿아 오늘 세션을 새로 열 수 없으면 홈이 안내한다
+  if (!session || session === "budget") {
+    redirect(sessionId ? "/projects" : "/home");
+  }
   const projectHref = sessionId && `/projects/${session.question.projectId}`;
 
   // 이어하기: 턴마다 저장하므로 가장 마지막 턴(본 질문 또는 꼬리질문)부터 이어간다(08 설계 "이어하기").

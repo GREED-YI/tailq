@@ -41,10 +41,11 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
         router.push("/trial");
         return;
       }
-      if (res.status === 429) {
+      const json = await res.json().catch(() => null);
+      // 서비스 월 예산 소진(BUDGET_EXCEEDED)은 체험 횟수 안내가 아니라 한도 문구를 그대로 보여준다
+      if (res.status === 429 && json?.error?.code === "TRIAL_LIMIT") {
         limitRef.current?.showModal();
       } else {
-        const json = await res.json().catch(() => null);
         setError(json?.error?.message ?? "잠시 뒤에 다시 시도해 주세요.");
       }
     } catch {

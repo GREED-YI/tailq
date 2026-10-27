@@ -34,6 +34,64 @@ export type Database = {
   };
   public: {
     Tables: {
+      ai_usage: {
+        Row: {
+          cache_read_tokens: number | null;
+          cache_write_tokens: number | null;
+          cost_usd: number;
+          created_at: string;
+          day: string;
+          error_code: string | null;
+          id: number;
+          input_tokens: number | null;
+          latency_ms: number | null;
+          model: string | null;
+          output_tokens: number | null;
+          purpose: string;
+          quota: string | null;
+          ref_id: string | null;
+          status: string;
+          user_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          cache_read_tokens?: number | null;
+          cache_write_tokens?: number | null;
+          cost_usd?: number;
+          created_at?: string;
+          day?: string;
+          error_code?: string | null;
+          id?: never;
+          input_tokens?: number | null;
+          latency_ms?: number | null;
+          model?: string | null;
+          output_tokens?: number | null;
+          purpose: string;
+          quota?: string | null;
+          ref_id?: string | null;
+          status: string;
+          user_id?: string | null;
+        };
+        Update: {
+          cache_read_tokens?: number | null;
+          cache_write_tokens?: number | null;
+          cost_usd?: number;
+          created_at?: string;
+          day?: string;
+          error_code?: string | null;
+          id?: never;
+          input_tokens?: number | null;
+          latency_ms?: number | null;
+          model?: string | null;
+          output_tokens?: number | null;
+          purpose?: string;
+          quota?: string | null;
+          ref_id?: string | null;
+          status?: string;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       bookmarks: {
         Row: {
           created_at: string;
@@ -323,6 +381,7 @@ export type Database = {
           completed_at: string | null;
           created_at: string;
           day: string;
+          grade_model: string;
           id: string;
           ip_hash: string | null;
           kind: string;
@@ -337,6 +396,7 @@ export type Database = {
           completed_at?: string | null;
           created_at?: string;
           day: string;
+          grade_model?: string;
           id?: string;
           ip_hash?: string | null;
           kind: string;
@@ -350,6 +410,7 @@ export type Database = {
           completed_at?: string | null;
           created_at?: string;
           day?: string;
+          grade_model?: string;
           id?: string;
           ip_hash?: string | null;
           kind?: string;
@@ -630,13 +691,22 @@ export type Database = {
         Args: { p_trial_token: string; p_user_id: string };
         Returns: string;
       };
+      ai_quota: {
+        Args: { p_budget_usd: number; p_user_id: string };
+        Returns: Json;
+      };
       apply_review: {
         Args: { p_good: boolean; p_question_id: number; p_user_id: string };
         Returns: string;
       };
       cleanup_trials: { Args: Record<PropertyKey, never>; Returns: number };
       create_project: {
-        Args: { p_content: string; p_name: string; p_user_id: string };
+        Args: {
+          p_budget_usd?: number;
+          p_content: string;
+          p_name: string;
+          p_user_id: string;
+        };
         Returns: {
           content: string;
           created_at: string;
@@ -666,6 +736,15 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
+      record_ai_usage: {
+        Args: {
+          p_purpose: string;
+          p_ref_id: string;
+          p_usage: Json;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
       record_event: {
         Args: {
           p_anon_id?: string;
@@ -675,8 +754,13 @@ export type Database = {
         };
         Returns: undefined;
       };
+      release_ai_usage: { Args: { p_ref_id: string }; Returns: undefined };
       restart_project_generation: {
-        Args: { p_project_id: string; p_user_id: string };
+        Args: {
+          p_budget_usd?: number;
+          p_project_id: string;
+          p_user_id: string;
+        };
         Returns: {
           content: string;
           created_at: string;
@@ -728,11 +812,17 @@ export type Database = {
         Returns: undefined;
       };
       start_daily_session: {
-        Args: { p_pick: string; p_question_id: number; p_user_id: string };
+        Args: {
+          p_budget_usd?: number;
+          p_pick: string;
+          p_question_id: number;
+          p_user_id: string;
+        };
         Returns: {
           completed_at: string | null;
           created_at: string;
           day: string;
+          grade_model: string;
           id: string;
           ip_hash: string | null;
           kind: string;
@@ -750,11 +840,16 @@ export type Database = {
         };
       };
       start_project_session: {
-        Args: { p_question_id: number; p_user_id: string };
+        Args: {
+          p_budget_usd?: number;
+          p_question_id: number;
+          p_user_id: string;
+        };
         Returns: {
           completed_at: string | null;
           created_at: string;
           day: string;
+          grade_model: string;
           id: string;
           ip_hash: string | null;
           kind: string;
@@ -772,11 +867,17 @@ export type Database = {
         };
       };
       start_trial: {
-        Args: { p_field: string; p_ip_hash: string; p_trial_token: string };
+        Args: {
+          p_budget_usd?: number;
+          p_field: string;
+          p_ip_hash: string;
+          p_trial_token: string;
+        };
         Returns: {
           completed_at: string | null;
           created_at: string;
           day: string;
+          grade_model: string;
           id: string;
           ip_hash: string | null;
           kind: string;

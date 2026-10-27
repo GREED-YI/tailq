@@ -40,7 +40,9 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
   const session = sessionId
     ? await loadProjectSession(userId, sessionId)
     : await startDailySession(userId);
-  if (!session) redirect(sessionId ? "/projects" : "/home");
+  if (!session || session === "budget") {
+    redirect(sessionId ? "/projects" : "/home");
+  }
   // 아직 진행 중이면 멈춘 곳으로
   if (session.status === "open") {
     redirect(sessionId ? `/interview?session=${sessionId}` : "/interview");

@@ -5,10 +5,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
+import { LimitNotice, type Notice } from "@/components/LimitNotice";
 import s from "@/app/(app)/projects/projects.module.css";
 
 // state: 최근 점수("72점"·"모르겠어요"), 연습 중("doing"), 아직 안 함(null)
 export type QuestionRow = { id: number; prompt: string; state: string | null };
+
+// 월 예산에 닿으면 다시 만들기 대신 보여준다(04 기능 명세 12장. 서버 전용 모듈이라 문구만 둔다)
+const LIMIT_MESSAGE = "오늘은 사용 한도를 모두 썼어요. 내일 다시 만나요";
 
 // 생성 상태를 다시 읽는 간격(08 설계 "내 프로젝트 질문 생성": 2초마다)
 const POLL_MS = 2000;
@@ -18,11 +22,16 @@ export function ProjectView({
   name,
   status,
   questions,
+  notice,
+  canRetry,
 }: {
   id: string;
   name: string;
   status: "generating" | "ready" | "failed";
   questions: QuestionRow[];
+  // 하루 연습 한도나 월 예산에 닿았으면 안내(S26). 새 연습은 막고 하던 연습만 이어 할 수 있다
+  notice: Notice | null;
+  canRetry: boolean;
 }) {
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -114,13 +123,19 @@ export function ProjectView({
             면접관이 물을 법한 질문 {questions.length}개
           </h2>
           <p className={s.desc}>질문을 누르면 바로 연습해요</p>
+          {notice && <LimitNotice {...notice} />}
           <ol className={`glass ${s.rows}`}>
             {questions.map((q, i) => (
               <li key={q.id}>
                 <button
                   type="button"
                   className={`hover-row ${s.row} ${s.qRow}`}
-                  disabled={busy !== null}
+                  disabled={
+                    busy !== null || (notice !== null && q.state !== "doing")
+                  }
+                  data-locked={
+                    notice !== null && q.state !== "doing" ? "" : undefined
+                  }
                   onClick={() => practice(q.id)}
                 >
                   <span className={`mono ${s.qNo}`}>
@@ -160,19 +175,25 @@ export function ProjectView({
           ) : (
             <>
               <strong>질문을 만들지 못했어요</strong>
-              <p>
-                쓴 README는 그대로 있어요.
-                <br />
-                다시 만들어 볼까요?
-              </p>
-              <button
-                type="button"
-                className="btn btn-md btn-primary press"
-                disabled={busy !== null}
-                onClick={retry}
-              >
-                다시 만들기
-              </button>
+              {canRetry ? (
+                <>
+                  <p>
+                    쓴 README는 그대로 있어요.
+                    <br />
+                    다시 만들어 볼까요?
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-md btn-primary press"
+                    disabled={busy !== null}
+                    onClick={retry}
+                  >
+                    다시 만들기
+                  </button>
+                </>
+              ) : (
+                <p>{LIMIT_MESSAGE}</p>
+              )}
             </>
           )}
         </section>
