@@ -23,12 +23,43 @@
   color: var(--sub);
 }
 
+/* 벤토 그리드. 모바일·태블릿은 2열, PC는 4열. 중요한 지표가 위·큰 칸에 온다 */
+.bento {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "hero hero"
+    "d7 thumbs"
+    "active users"
+    "score score"
+    "verdict verdict"
+    "onboard fail"
+    "bank bank"
+    "review bookmark"
+    "visit visit"
+    "cost cost";
+  gap: 10px;
+}
+@media (min-width: 1024px) {
+  .bento {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-areas:
+      "hero hero d7 thumbs"
+      "hero hero active users"
+      "score score verdict verdict"
+      "bank bank onboard fail"
+      "visit cost review bookmark";
+    gap: 12px;
+  }
+}
+
 /* 북극성: 이번 주 숫자 + 최근 8주 막대 */
 .hero {
   border-radius: 28px;
   padding: 20px;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 18px;
 }
 .heroText {
@@ -37,6 +68,9 @@
   gap: 2px;
 }
 .heroText h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
   font-weight: 500;
   color: var(--sub);
@@ -77,6 +111,7 @@
   justify-content: flex-end;
   gap: 4px;
   min-width: 0;
+  border-radius: 8px;
 }
 .weeks li > span {
   font-size: 11px;
@@ -84,10 +119,11 @@
 }
 .weeks i {
   width: 100%;
-  max-width: 28px;
+  max-width: 32px;
   min-height: 4px;
   border-radius: 8px;
   background: var(--track);
+  transition: background-color 0.2s ease;
 }
 .weeks i[data-now] {
   background: var(--accent-fill);
@@ -97,14 +133,20 @@
   font-size: 10px;
   color: var(--muted);
 }
-
-/* 핵심 지표 칸: 모바일 2열, PC 4열 */
-.stats {
-  margin-top: 12px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+@media (min-width: 1024px) {
+  .hero {
+    padding: 24px 28px;
+  }
+  .big {
+    font-size: 56px;
+    line-height: 64px;
+  }
+  .weeks {
+    height: 156px;
+  }
 }
+
+/* 지표 칸 */
 .stat {
   min-height: 96px;
   border-radius: 22px;
@@ -135,15 +177,38 @@
   color: var(--low);
 }
 .stat small {
+  margin-top: auto;
   font-size: 11px;
   line-height: 16px;
   color: var(--sub);
 }
 
-.grid {
-  margin-top: 12px;
-  display: grid;
-  gap: 12px;
+/* 목표 대비 막대. 세로 눈금(b)이 목표 위치 */
+.goal {
+  position: relative;
+  margin: 6px 0 8px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--track);
+}
+.goal i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--good);
+}
+.goal i[data-met="false"] {
+  background: var(--low);
+}
+.goal b {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 12px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--text);
+  opacity: 0.6;
 }
 
 .card {
@@ -157,7 +222,8 @@
   justify-content: space-between;
   gap: 12px;
 }
-.head h2 {
+.head h2,
+.head strong {
   font-size: 15px;
   font-weight: 700;
 }
@@ -172,15 +238,18 @@
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 .bands li {
   display: grid;
   grid-template-columns: 64px minmax(0, 1fr) 48px;
   align-items: center;
   gap: 10px;
+  padding: 3px 0;
+  border-radius: 8px;
   font-size: 12px;
   color: var(--sub);
+  transition: opacity 0.2s ease;
 }
 .bands li > :last-child {
   text-align: right;
@@ -198,17 +267,27 @@
   border-radius: 5px;
 }
 
-/* 꼬리질문 판정 한 줄 막대 + 범례 */
+/* 꼬리질문 판정 한 줄 막대 + 범례. 말풍선이 잘리지 않게 overflow를 숨기지 않는다 */
 .stack {
   height: 14px;
   border-radius: 7px;
   background: var(--track);
   display: flex;
   gap: 2px;
-  overflow: hidden;
 }
 .stack i {
   flex-basis: 0;
+  border-radius: 3px;
+  transition: opacity 0.2s ease;
+}
+.stack i:first-child {
+  border-radius: 7px 3px 3px 7px;
+}
+.stack i:last-child {
+  border-radius: 3px 7px 7px 3px;
+}
+.stack i:only-child {
+  border-radius: 7px;
 }
 .legend {
   list-style: none;
@@ -235,20 +314,19 @@
   color: var(--text);
 }
 
-/* 아직 데이터가 없는 지표: 점선 테두리의 빈 카드 */
-.soon {
-  display: grid;
-  gap: 12px;
-}
+/* 아직 데이터가 없는 지표: 점선 테두리의 빈 칸. 누르면 해당 이슈로 */
 .soonCard {
   border-radius: 22px;
   padding: 16px;
   border: 1.5px dashed var(--ring);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .soonCard .head {
-  margin-bottom: 6px;
+  margin-bottom: 0;
 }
-.soonCard p {
+.soonBody {
   font-size: 12px;
   line-height: 18px;
   color: var(--sub);
@@ -259,34 +337,98 @@
   border-radius: 11px;
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
   font-size: 11px;
   font-weight: 700;
   background: var(--tab-active);
   color: var(--accent) !important;
 }
 
-@media (min-width: 1024px) {
-  .top {
-    margin-top: 0;
+/* 말풍선: 마우스를 올리거나(마우스가 있는 기기) 키보드로 골랐을 때 */
+.tip {
+  position: relative;
+  cursor: default;
+}
+.tip::after {
+  content: attr(data-tip);
+  position: absolute;
+  z-index: 2;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  padding: 6px 10px;
+  border-radius: 10px;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  color: var(--text);
+  background: var(--sheet);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-edge),
+    0 8px 24px -8px var(--glass-shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+/* 판정 막대는 바로 위가 카드 제목이라 말풍선을 아래로 */
+.stack .tip::after {
+  bottom: auto;
+  top: calc(100% + 8px);
+}
+/* 줄 단위 막대는 말풍선을 왼쪽에 붙인다 */
+.bands .tip::after {
+  left: 64px;
+  transform: translate(0, 4px);
+}
+/* 맨 끝 막대의 말풍선은 화면 밖으로 나가지 않게 안쪽으로 */
+.weeks .tip:first-child::after {
+  left: 0;
+  transform: translate(0, 4px);
+}
+.weeks .tip:last-child::after {
+  left: auto;
+  right: 0;
+  transform: translate(0, 4px);
+}
+.tip:focus-visible::after {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+.bands .tip:focus-visible::after,
+.weeks .tip:first-child:focus-visible::after,
+.weeks .tip:last-child:focus-visible::after {
+  transform: translate(0, 0);
+}
+
+@media (hover: hover) {
+  .tip:hover::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
   }
-  .hero {
-    flex-direction: row;
-    align-items: flex-end;
-    justify-content: space-between;
-    padding: 24px 28px;
+  .bands .tip:hover::after,
+  .weeks .tip:first-child:hover::after,
+  .weeks .tip:last-child:hover::after {
+    transform: translate(0, 0);
   }
-  .heroText {
-    flex-shrink: 0;
-    width: 200px;
+  /* 올린 칸만 또렷하게, 나머지는 흐리게 */
+  .weeks:hover li:not(:hover),
+  .bands:hover li:not(:hover),
+  .stack:hover i:not(:hover) {
+    opacity: 0.45;
   }
-  .weeks {
-    flex: 1;
-    height: 148px;
+  .weeks li {
+    transition: opacity 0.2s ease;
   }
-  .stats {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .weeks li:hover i:not([data-now]) {
+    background: var(--muted);
   }
-  .grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .soonCard:hover {
+    border-style: solid;
+    background: var(--glass);
   }
 }
