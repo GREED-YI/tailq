@@ -4,6 +4,7 @@ import { Suspense, type ReactNode } from "react";
 import { AdminHeaderLink } from "@/components/AdminMenu";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/icons";
+import { TailIcon } from "@/components/Streak";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { FEEDBACK_URL } from "@/lib/links";
 import { FIELDS, LEVELS, providerName } from "@/lib/profile";
@@ -89,7 +90,12 @@ async function My() {
 
       <section className={s.stats} aria-label="요약">
         <Stat
-          label="꼬리잇기"
+          label={
+            <>
+              <TailIcon />
+              꼬리잇기
+            </>
+          }
           value={study?.streak.current}
           unit="일째"
           accent
@@ -151,7 +157,7 @@ function Stat({
   unit,
   accent = false,
 }: {
-  label: string;
+  label: ReactNode;
   value: number | null | undefined;
   unit: string;
   accent?: boolean;
