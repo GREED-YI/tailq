@@ -72,5 +72,6 @@ function blockedHeight() {
     if (top === undefined) break;
     y = top;
   }
-  return innerHeight - y;
+  // 긴 결과 시트를 스크롤해 시트 위쪽이 화면 밖이면 그 위에 띄울 자리가 없다. 화면 안 기본 자리로 둔다
+  return y < 120 ? 0 : innerHeight - y;
 }
