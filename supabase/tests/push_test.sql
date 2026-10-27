@@ -1,6 +1,6 @@
 -- 웹 푸시(#37, 08 설계 "웹 푸시"): 구독 테이블, 알림 대상 고르기, 매시 호출
 begin;
-select plan(13);
+select plan(15);
 
 insert into auth.users (id, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000003a', '{"name": "에이"}'),
@@ -73,6 +73,16 @@ select results_eq(
            ('00000000-0000-0000-0000-00000000003b'::uuid),
            ('00000000-0000-0000-0000-00000000003d'::uuid)$$,
   '다음 날 같은 시각에는 다시 고른다(어제 푼 사람 포함)'
+);
+select is(
+  (select count(*)::int from public.pick_push_targets('2026-10-29 23:30+00', 2)),
+  2,
+  'p_limit명까지만 고른다'
+);
+select is(
+  (select count(*)::int from public.pick_push_targets('2026-10-29 23:30+00', 2)),
+  1,
+  '다시 부르면 아직 안 고른 나머지를 고른다'
 );
 
 -- 구독: endpoint는 하나만, 형식 검사

@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { isPushEndpoint } from "@/lib/push";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { errorResponse } from "@/lib/turn";
 
-// 브라우저 PushSubscription.toJSON() 모양. 길이는 DB 제약과 같다
+// 브라우저 PushSubscription.toJSON() 모양. 길이는 DB 제약과 같다. 주소는 알려진 푸시 서비스만
 const Body = z.object({
-  endpoint: z.url({ protocol: /^https$/ }).max(1000),
+  endpoint: z
+    .url({ protocol: /^https$/ })
+    .max(1000)
+    .refine(isPushEndpoint),
   keys: z.object({
     p256dh: z.string().min(1).max(200),
     auth: z.string().min(1).max(100),

@@ -29,31 +29,68 @@ export function isCronAuthorized(
 }
 
 const GONE = [404, 410];
+// 한 번에 고르는 사람 수와 구독을 읽는 쪽 크기. API 최대 행 수(max_rows 1000)보다 작게 둔다
+export const PICK_LIMIT = 100;
+const SUBS_PAGE = 1000;
+// 응답하지 않는 푸시 서버가 다음 묶음을 막지 않게 요청마다 끊는다
+const SEND_TIMEOUT_MS = 10_000;
 
-// 대상을 고르고(같은 문장으로 last_notified_day를 적는다) 그 사람들의 기기에 20개씩 보낸다.
+// 브라우저가 실제로 쓰는 푸시 서비스 주소만 받는다(Chrome·Edge·Firefox·Safari).
+// 서버가 이 주소로 요청을 보내므로 아무 주소나 받으면 서버를 통해 다른 곳을 부를 수 있다
+const PUSH_HOSTS = [
+  "fcm.googleapis.com",
+  "push.services.mozilla.com",
+  "push.apple.com",
+  "notify.windows.com",
+];
+export function isPushEndpoint(endpoint: string) {
+  const host = new URL(endpoint).hostname;
+  return PUSH_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
+}
+
+type Db = SupabaseClient<Database>;
+
+// 대상을 PICK_LIMIT명씩 고르고(같은 문장으로 last_notified_day를 적는다) 빈 묶음이 올 때까지 되풀이한다.
 // 대상이 0명이어도 rpc 한 번은 친다(무료 Supabase가 쉬어서 멈추지 않게, #20).
 // 없어진 구독(404·410)은 지운다. 실패한 발송은 다시 보내지 않는다(그날은 이미 보낸 것으로 친다).
-export async function sendDailyPushes(
-  db: SupabaseClient<Database>,
-  now = new Date(),
-) {
-  const { data: targets } = await db
-    .rpc("pick_push_targets", { p_now: now.toISOString() })
-    .throwOnError();
-  if (!targets.length) return { targets: 0, sent: 0, gone: 0 };
+export async function sendDailyPushes(db: Db, now = new Date()) {
+  const total = { targets: 0, sent: 0, gone: 0 };
+  for (;;) {
+    const { data: targets } = await db
+      .rpc("pick_push_targets", {
+        p_now: now.toISOString(),
+        p_limit: PICK_LIMIT,
+      })
+      .throwOnError();
+    if (!targets.length) return total;
+    const { sent, gone } = await sendTo(db, targets);
+    total.targets += targets.length;
+    total.sent += sent;
+    total.gone += gone;
+    if (targets.length < PICK_LIMIT) return total;
+  }
+}
 
+// 고른 사람들의 기기에 20개씩 보낸다
+async function sendTo(db: Db, targets: { user_id: string; review: boolean }[]) {
   const vapidDetails = {
     subject: process.env.VAPID_SUBJECT ?? "",
     publicKey: process.env.VAPID_PUBLIC_KEY ?? "",
     privateKey: process.env.VAPID_PRIVATE_KEY ?? "",
   };
   const review = new Map(targets.map((t) => [t.user_id, t.review]));
-  // ponytail: 대상 id를 한 번에 in()으로 읽는다. 한 시각에 수천 명이 되면 나눠 읽는다
-  const { data: subs } = await db
-    .from("push_subscriptions")
-    .select("id, user_id, endpoint, p256dh, auth_key")
-    .in("user_id", [...review.keys()])
-    .throwOnError();
+  const subs = [];
+  for (let from = 0; ; from += SUBS_PAGE) {
+    const { data: page } = await db
+      .from("push_subscriptions")
+      .select("id, user_id, endpoint, p256dh, auth_key")
+      .in("user_id", [...review.keys()])
+      .order("id")
+      .range(from, from + SUBS_PAGE - 1)
+      .throwOnError();
+    subs.push(...page);
+    if (page.length < SUBS_PAGE) break;
+  }
 
   let sent = 0;
   const gone: string[] = [];
@@ -68,7 +105,7 @@ export async function sendDailyPushes(
           },
           pushPayload(review.get(s.user_id) ?? false),
           // 몇 시간 안에 못 받으면 버린다(오늘의 알림이라 다음 날 받으면 틀린 말이 된다)
-          { vapidDetails, TTL: 4 * 60 * 60 },
+          { vapidDetails, TTL: 4 * 60 * 60, timeout: SEND_TIMEOUT_MS },
         ),
       ),
     );
@@ -82,5 +119,5 @@ export async function sendDailyPushes(
   if (gone.length) {
     await db.from("push_subscriptions").delete().in("id", gone).throwOnError();
   }
-  return { targets: targets.length, sent, gone: gone.length };
+  return { sent, gone: gone.length };
 }

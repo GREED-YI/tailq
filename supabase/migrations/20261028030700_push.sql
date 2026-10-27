@@ -19,12 +19,13 @@ create policy "push_subscriptions: 자기 행만 읽기"
   to authenticated
   using (user_id = (select auth.uid()));
 
--- 이번 시각(KST)에 알림을 받을 사람을 고르면서 같은 문장으로 last_notified_day를 오늘로 적는다.
+-- 이번 시각(KST)에 알림을 받을 사람을 p_limit명까지 고르면서 같은 문장으로 last_notified_day를 오늘로 적는다.
+-- 한 번에 돌려주는 행이 API 최대 행 수(max_rows)를 넘지 않게 묶음으로 나눈다. 서버는 빈 묶음이 올 때까지 다시 부른다.
 -- 핸들러가 두 번 돌아도(pg_net 재시도, 배포 중 겹침) 같은 날 두 번 고르지 않는다. 동시에 돌면
--- 뒤 문장이 앞 문장의 행 잠금을 기다렸다가 바뀐 last_notified_day를 보고 건너뛴다.
+-- 다른 실행이 잠근 행은 건너뛰고(skip locked), 이미 적힌 행은 last_notified_day를 다시 보고 건너뛴다.
 -- 대상: 알림 켬 · 이 시각을 골랐음 · 오늘 아직 안 보냄 · 구독한 기기가 있음 · 오늘 본 질문을 아직 제출하지 않음.
 -- review: 복습일이 된 질문(숨긴 질문 제외)이 있으면 true. 세션은 만들지 않는다(질문은 첫 접속 때 고른다).
-create function public.pick_push_targets(p_now timestamptz default now())
+create function public.pick_push_targets(p_now timestamptz default now(), p_limit int default 100)
 returns table (user_id uuid, review boolean)
 language sql
 set search_path = ''
@@ -32,21 +33,28 @@ as $$
   with now_kst as (
     select (p_now at time zone 'Asia/Seoul')::date as day,
            extract(hour from p_now at time zone 'Asia/Seoul')::int as hour
+  ),
+  picked as (
+    select p.id
+    from public.profiles p, now_kst n
+    where p.notify_on
+      and p.notify_hour = n.hour
+      and (p.last_notified_day is null or p.last_notified_day < n.day)
+      and exists (select 1 from public.push_subscriptions s where s.user_id = p.id)
+      and not exists (
+        select 1
+        from public.sessions se
+        join public.turns t on t.session_id = se.id
+        where se.user_id = p.id and se.kind = 'daily' and se.day = n.day
+          and t.idx = 0 and t.answered_at is not null
+      )
+    limit p_limit
+    for update of p skip locked
   )
   update public.profiles p
   set last_notified_day = n.day
-  from now_kst n
-  where p.notify_on
-    and p.notify_hour = n.hour
-    and (p.last_notified_day is null or p.last_notified_day < n.day)
-    and exists (select 1 from public.push_subscriptions s where s.user_id = p.id)
-    and not exists (
-      select 1
-      from public.sessions se
-      join public.turns t on t.session_id = se.id
-      where se.user_id = p.id and se.kind = 'daily' and se.day = n.day
-        and t.idx = 0 and t.answered_at is not null
-    )
+  from now_kst n, picked
+  where p.id = picked.id
   returning p.id, exists (
     select 1
     from public.reviews r
@@ -56,8 +64,8 @@ as $$
   );
 $$;
 
-revoke execute on function public.pick_push_targets(timestamptz) from public, anon, authenticated;
-grant execute on function public.pick_push_targets(timestamptz) to service_role;
+revoke execute on function public.pick_push_targets(timestamptz, int) from public, anon, authenticated;
+grant execute on function public.pick_push_targets(timestamptz, int) to service_role;
 
 -- 매시 정각 pg_cron → pg_net으로 POST /api/cron/push를 부른다. 주소와 비밀값은 vault.secrets에 두고
 -- cron.schedule 문장에는 쓰지 않는다. 둘 중 하나라도 없으면(로컬 등) 아무것도 하지 않는다.

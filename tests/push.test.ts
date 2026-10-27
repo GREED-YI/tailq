@@ -5,8 +5,14 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 import { server } from "./setup";
 
 vi.mock("server-only", () => ({}));
-const { isCronAuthorized, pushPayload, sendDailyPushes, PUSH_BATCH } =
-  await import("@/lib/push");
+const {
+  isCronAuthorized,
+  isPushEndpoint,
+  pushPayload,
+  sendDailyPushes,
+  PICK_LIMIT,
+  PUSH_BATCH,
+} = await import("@/lib/push");
 
 describe("알림 문구", () => {
   it("복습일이 된 질문이 있으면 복습 문구, 없으면 오늘의 질문 문구", () => {
@@ -35,6 +41,25 @@ describe("크론 비밀 헤더", () => {
   });
 });
 
+describe("구독 주소 허용 목록", () => {
+  it("브라우저 푸시 서비스 주소만 받는다", () => {
+    for (const ok of [
+      "https://fcm.googleapis.com/fcm/send/abc",
+      "https://updates.push.services.mozilla.com/wpush/v2/abc",
+      "https://web.push.apple.com/abc",
+      "https://wns2-par02p.notify.windows.com/w/?token=abc",
+    ])
+      expect(isPushEndpoint(ok), ok).toBe(true);
+    for (const bad of [
+      "https://example.com/push",
+      "https://fcm.googleapis.com.evil.test/x",
+      "https://evilpush.apple.com/x",
+      "https://127.0.0.1/x",
+    ])
+      expect(isPushEndpoint(bad), bad).toBe(false);
+  });
+});
+
 // 브라우저가 만드는 것과 같은 모양의 구독 키(P-256 공개 키 + 16바이트 auth)
 const b64url = (b: Buffer) => b.toString("base64url");
 function subscription(id: string, userId: string) {
@@ -55,16 +80,23 @@ function fakeDb(
   subs: ReturnType<typeof subscription>[],
 ) {
   const deleted: string[] = [];
-  const rpc = vi.fn(() => ({
-    throwOnError: async () => ({ data: targets }),
+  const left = [...targets];
+  const rpc = vi.fn((_: string, args: { p_limit: number }) => ({
+    throwOnError: async () => ({ data: left.splice(0, args.p_limit) }),
   }));
   const db = {
     rpc,
     from: () => ({
       select: () => ({
         in: (_: string, ids: string[]) => ({
-          throwOnError: async () => ({
-            data: subs.filter((s) => ids.includes(s.user_id)),
+          order: () => ({
+            range: (from: number, to: number) => ({
+              throwOnError: async () => ({
+                data: subs
+                  .filter((s) => ids.includes(s.user_id))
+                  .slice(from, to + 1),
+              }),
+            }),
           }),
         }),
       }),
@@ -99,6 +131,7 @@ describe("매시 알림 발송", () => {
     });
     expect(rpc).toHaveBeenCalledWith("pick_push_targets", {
       p_now: now.toISOString(),
+      p_limit: PICK_LIMIT,
     });
   });
 
@@ -147,6 +180,22 @@ describe("매시 알림 발송", () => {
     expect(maxInFlight).toBeLessThanOrEqual(PUSH_BATCH);
     expect(deleted.sort()).toEqual(["b3", "b7"]);
     expect(ttl.a1).toBe(String(4 * 60 * 60));
+  });
+
+  it("대상이 많으면 빈 묶음이 올 때까지 나눠 고르고 모두 보낸다", async () => {
+    const send = vi
+      .spyOn(webpush, "sendNotification")
+      .mockResolvedValue({ statusCode: 201, body: "", headers: {} });
+    const n = PICK_LIMIT * 2;
+    const ids = Array.from({ length: n }, (_, i) => `u${i}`);
+    const { db, rpc } = fakeDb(
+      ids.map((user_id) => ({ user_id, review: false })),
+      ids.map((u) => subscription(`${u}d`, u)),
+    );
+    expect(await sendDailyPushes(db)).toEqual({ targets: n, sent: n, gone: 0 });
+    // 꽉 찬 묶음 둘 + 빈 묶음 하나
+    expect(rpc).toHaveBeenCalledTimes(3);
+    send.mockRestore();
   });
 
   it("복습 여부에 따라 사용자마다 다른 문구를 보낸다", async () => {

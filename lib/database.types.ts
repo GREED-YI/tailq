@@ -761,7 +761,7 @@ export type Database = {
       };
       delete_user_events: { Args: { p_user_id: string }; Returns: undefined };
       pick_push_targets: {
-        Args: { p_now?: string };
+        Args: { p_limit?: number; p_now?: string };
         Returns: {
           review: boolean;
           user_id: string;

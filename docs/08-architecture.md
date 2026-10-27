@@ -366,7 +366,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `adopt_trial(user_id, trial_token)` | 이어받기(2장) |
 | `record_event(name, user_id, anon_id, props)` | 지표 이벤트 한 줄. 같은 `anon_id`가 24시간에 200건을 넘으면 버린다. 서버는 응답을 보낸 뒤(`after()`) `lib/track.ts`의 `track()`으로 부르고, 실패해도 사용자 요청은 실패시키지 않는다 (2026-10-27, #44) |
 | `delete_user_events(user_id)` · `purge_old_events()` | 탈퇴 때 그 사용자와 그 사용자가 쓴 브라우저(`anon_id`)의 이벤트 삭제 · 90일 지난 이벤트 삭제(`pg_cron` 매일 4시 KST) |
-| `pick_push_targets(now)` · `request_push_cron()` | 웹 푸시 대상 고르기와 `last_notified_day` 적기(2장 "웹 푸시" 3·4번, 한 문장의 `update … returning`) · 매시 `pg_cron`이 부르는 `pg_net` 호출(vault의 `push_cron_url`·`cron_secret`이 없으면 아무것도 안 한다). 구독 저장·해제는 한 문장이라 함수 없이 서버가 `service_role`로 `push_subscriptions`에 바로 쓴다(`/api/me`의 프로필 쓰기와 같다) (2026-10-27, #37) |
+| `pick_push_targets(now, limit)` · `request_push_cron()` | 웹 푸시 대상 고르기와 `last_notified_day` 적기(2장 "웹 푸시" 3·4번, 한 문장의 `update … returning`. 응답 행 수 제한을 넘지 않게 `limit`명씩 고르고 서버가 빈 묶음까지 되풀이한다) · 매시 `pg_cron`이 부르는 `pg_net` 호출(vault의 `push_cron_url`·`cron_secret`이 없으면 아무것도 안 한다). 구독 저장·해제는 한 문장이라 함수 없이 서버가 `service_role`로 `push_subscriptions`에 바로 쓴다(`/api/me`의 프로필 쓰기와 같다) (2026-10-27, #37) |
 | `handle_new_user()` | `auth.users` insert 트리거. `profiles` 행 생성(닉네임·아바타는 소셜 메타데이터에서) |
 
 ### 탈퇴
