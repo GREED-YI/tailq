@@ -64,6 +64,11 @@ export async function proxy(request: NextRequest) {
     });
   }
 
+  // 랜딩은 처음 온 사람의 화면이다. 로그인한 사람이 직접 들어오면 홈으로(05 사용자 흐름 2번)
+  if (userId && pathname === "/") {
+    return redirectTo(new URL("/home", request.url));
+  }
+
   if (!userId && (needsLogin || onOnboarding)) {
     const url = new URL("/login", request.url);
     url.searchParams.set("next", pathname + search);
