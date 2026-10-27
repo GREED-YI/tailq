@@ -8,7 +8,7 @@ import s from "./landing.module.css";
 //   화면 밖으로 완전히 나가면 떼어 다시 숨긴다. 나간 쪽을 data-from(top|bottom)에 적어 두면
 //   다시 들어올 때 그쪽에서 들어온다(위로 스크롤하면 위에서, 아래로 스크롤하면 아래에서)
 // - 패럴랙스: 배경 빛은 스크롤의 0.12~0.32배(--sy), 여우는 화면 안 위치에 따라 ±60px(--fy)
-// 768px 이하·동작 줄이기에서는 둘 다 끈다(CSS가 data-motion이 있을 때만 숨기고 움직인다)
+// 동작 줄이기에서는 둘 다 끄고, 768px 이하에서는 패럴랙스만 끈다(CSS가 data-motion이 있을 때만 숨긴다)
 export function LandingMotion() {
   useEffect(() => {
     const root = document.querySelector<HTMLElement>(`.${s.root}`);
@@ -16,6 +16,7 @@ export function LandingMotion() {
     const calm = matchMedia(
       "(max-width: 768px), (prefers-reduced-motion: reduce)",
     );
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
     const items = root.querySelectorAll<HTMLElement>("[data-reveal]");
     const fox = root.querySelector<HTMLElement>(`.${s.fox}`);
 
@@ -54,7 +55,7 @@ export function LandingMotion() {
     };
 
     const apply = () => {
-      if (calm.matches) {
+      if (reduce.matches) {
         root.removeAttribute("data-motion");
         show.disconnect();
         hide.disconnect();
@@ -69,6 +70,7 @@ export function LandingMotion() {
     };
     apply();
     calm.addEventListener("change", apply);
+    reduce.addEventListener("change", apply);
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
@@ -76,6 +78,7 @@ export function LandingMotion() {
       hide.disconnect();
       cancelAnimationFrame(frame);
       calm.removeEventListener("change", apply);
+      reduce.removeEventListener("change", apply);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };

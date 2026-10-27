@@ -1120,8 +1120,8 @@
 }
 
 /* 차례 등장: 첫 화면(배지 → 제목 → 설명 → 데모 → 버튼, 0.08초 간격)과 스크롤(data-reveal).
-   768px 이하·동작 줄이기에서는 처음부터 보인다 */
-@media (prefers-reduced-motion: no-preference) and (min-width: 769px) {
+   모바일도 PC와 같다. 동작 줄이기에서는 처음부터 보인다 */
+@media (prefers-reduced-motion: no-preference) {
   .in {
     animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   }
