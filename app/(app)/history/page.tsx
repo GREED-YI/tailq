@@ -11,7 +11,8 @@ export const metadata: Metadata = { title: "기록 · TailQ" };
 
 // 학습 기록 목록(04 기능 명세 E-1, S19). 끝난 세션을 날짜 역순으로, 달마다 나눠 한 피드로 본다.
 // ?filter=bookmark면 북마크한 질문의 세션만(E-4).
-// 처음엔 ?month로 한 달씩 보여줬으나 목록이 달 끝에서 끊겨 보여, 모든 달을 이어 붙이고 달 칩은 그 달로 건너뛰게 바꿨다(#117)
+// 처음엔 ?month로 한 달씩 보여줬으나 목록이 달 끝에서 끊겨 보여, 모든 달을 이어 붙이고 달 칩은 그 달로 건너뛰게 바꿨다(#117).
+// 그 뒤 띠 오른쪽 끝의 달 칩이 필터와 너무 떨어져 어색해, 달 고르기를 달 머리 옆 화살표로 옮겼다(#117, 사용자 요청)
 export default function HistoryPage({ searchParams }: PageProps<"/history">) {
   return (
     <div className={s.page}>
@@ -27,16 +28,16 @@ export default function HistoryPage({ searchParams }: PageProps<"/history">) {
 // 제목과 필터는 위에 붙어 있고, 목록은 그 아래로 지나간다(유리 띠가 가린다)
 function Top({
   bookmarkOnly = false,
-  months = [],
+  counts,
 }: {
   bookmarkOnly?: boolean;
-  months?: string[];
+  counts?: { all: number; bookmark: number };
 }) {
   return (
     <div className={s.top}>
       <AppHeader title="기록" />
       <h1 className={s.pageTitle}>기록</h1>
-      <HistoryFilters bookmarkOnly={bookmarkOnly} months={months} />
+      <HistoryFilters bookmarkOnly={bookmarkOnly} counts={counts} />
     </div>
   );
 }
@@ -58,7 +59,7 @@ async function Sessions({ bookmarkOnly }: { bookmarkOnly: boolean }) {
     .order("idx", { referencedTable: "turns" })
     .throwOnError();
 
-  const items = data
+  const all = data
     .filter((r) => r.turns[0]?.idx === 0 && r.turns[0].status === "graded")
     .map((r) => ({
       id: r.id,
@@ -68,14 +69,18 @@ async function Sessions({ bookmarkOnly }: { bookmarkOnly: boolean }) {
       // RLS가 내 북마크만 붙여 준다
       bookmarked: r.questions.bookmarks.length > 0,
       turns: r.turns,
-    }))
-    .filter((r) => !bookmarkOnly || r.bookmarked);
+    }));
+  const marked = all.filter((r) => r.bookmarked);
+  const items = bookmarkOnly ? marked : all;
   // 날짜 역순이라 첫 달이 가장 최근 달
   const months = [...new Set(items.map((r) => r.day.slice(0, 7)))];
 
   return (
     <>
-      <Top bookmarkOnly={bookmarkOnly} months={months} />
+      <Top
+        bookmarkOnly={bookmarkOnly}
+        counts={{ all: all.length, bookmark: marked.length }}
+      />
       {months.length === 0 ? (
         <p className={`glass ${s.empty}`}>
           {bookmarkOnly
@@ -87,6 +92,7 @@ async function Sessions({ bookmarkOnly }: { bookmarkOnly: boolean }) {
           <HistoryList
             key={m}
             month={m}
+            months={months}
             items={items.filter((r) => r.day.startsWith(m))}
           />
         ))

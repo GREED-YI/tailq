@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { scoreColor } from "@/app/interview/verdict";
+import { MonthJump } from "./MonthJump";
 import s from "./history.module.css";
 
 type Item = {
@@ -16,18 +17,24 @@ type Item = {
   }[];
 };
 
-// 한 달 치 기록. 달 머리(달 칩이 건너뛰는 곳) 아래 행을 누르면 기록 상세로 간다(Figma C안 S19는 PC도 한 열)
+// 한 달 치 기록. 달 머리는 띠 아래에 붙어 지금 보는 달을 알려 주고, 옆 화살표로 다른 달로 간다.
+// 행을 누르면 기록 상세로 간다(Figma C안 S19는 PC도 한 열)
 export function HistoryList({
   month,
+  months,
   items,
 }: {
   month: string;
+  months: string[];
   items: Item[];
 }) {
   const head = `${month.slice(0, 4)}년 ${Number(month.slice(5))}월`;
   return (
     <section id={`m-${month}`} className={s.month}>
-      <h2 className={`num ${s.monthHead}`}>{head}</h2>
+      <div className={s.monthHead}>
+        <h2 className="num">{head}</h2>
+        {months.length > 1 && <MonthJump month={month} months={months} />}
+      </div>
       <ul className={`glass ${s.rows}`}>
         {items.map((r) => {
           const main = r.turns[0];

@@ -17,6 +17,33 @@
   }
 }
 
+/* 목록 끝 아래 빈 공간: 마지막 기록도 화면 가운데까지 올려 볼 수 있고, 아래 페이드에 가리지 않는다 */
+.page {
+  padding-bottom: clamp(120px, 25vh, 240px);
+}
+/* PC: 화면 아래 가장자리에서 목록이 바탕으로 흐려지며 사라진다(아래로 더 있다는 표시).
+   모바일·태블릿은 공통 탭바 위 페이드(components/AppShell.module.css)가 같은 일을 해서 PC에만 둔다.
+   그 페이드와 같은 방식: 화면 전체 고정 층에 배경(바탕색 + 은은한 그라디언트)을 그리고 아래 96px만 보이게 가린다.
+   사이드 메뉴(z 10)·달 머리(z 4) 아래, 목록 위 */
+@media (min-width: 1024px) {
+  .page::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background:
+      linear-gradient(160deg, var(--wash1, transparent) 0%, transparent 55%),
+      linear-gradient(340deg, var(--wash2, transparent) 0%, transparent 60%),
+      var(--bg);
+    -webkit-mask: linear-gradient(to top, #000, transparent 96px);
+    mask: linear-gradient(to top, #000, transparent 96px);
+  }
+  :global([data-bg="glow"]) .page::after {
+    background: var(--bg);
+  }
+}
+
 /* 모바일·태블릿은 Figma처럼 제목이 헤더(AppHeader title)의 h1이라 이 h1은 숨긴다. PC는 헤더가 숨고 이 h1이 보인다 */
 .pageTitle {
   display: none;
@@ -44,8 +71,10 @@
    처음엔 반투명 + 흐림이었으나 흐림을 못 그리는 환경에서 글자가 읽혀 불투명하게 깔았고, 그다음엔 유리 색 상자·화면 배경 복사를 깔았는데
    어느 쪽이든 배경과 다른 사각형 틀과 아래 구분선이 보였다. 지금은 가장자리를 마스크로 흐려 틀·구분선을 없앴다(#117, 사용자 요청).
    아래 꼬리 16px는 띠 아래 여백(12) + 첫 달 머리 위 여백(16) 안에서 끝나 처음 위치의 목록을 가리지 않는다.
-   좌우는 태블릿·PC에서 띠보다 24px 더(셸 내용 영역 여백 안) 깔고 그만큼 페이드한다 */
-.top::before {
+   좌우는 태블릿·PC에서 띠보다 24px 더(셸 내용 영역 여백 안) 깔고 그만큼 페이드한다.
+   붙어 있는 달 머리(.monthHead)도 같은 흐림 층을 쓴다 */
+.top::before,
+.monthHead::before {
   --fx: 0px;
   content: "";
   position: absolute;
@@ -81,7 +110,8 @@
 @supports not (
   (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
 ) {
-  .top::before {
+  .top::before,
+  .monthHead::before {
     background: color-mix(in srgb, var(--bg) 94%, transparent);
   }
 }
@@ -90,7 +120,8 @@
     margin: 0 -16px;
     padding: 0 16px 12px;
   }
-  .top::before {
+  .top::before,
+  .monthHead::before {
     --fx-out: 24px;
     --fx: 40px;
   }
@@ -104,17 +135,27 @@
   }
 }
 
-/* 거르기(전체·북마크)와 달 칩. 한 줄, 넘치면 가로로 넘긴다. 모바일은 화면 끝까지.
+/* 거르기(전체·북마크): 복습 화면과 같은 따로 떨어진 칩 + 개수. 한 줄, 넘치면 가로로 넘긴다. 모바일은 화면 끝까지.
    가로 넘김 칸은 세로로도 잘라서, 칩의 초점 테두리가 잘리지 않게 위아래·양옆 4px 여유를 둔다 */
 .filters {
   margin: 4px -20px 0;
   padding: 4px 20px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
+}
+.filters > a {
+  flex-shrink: 0;
+  gap: 6px;
+}
+.filters > a:not([aria-current]) {
+  color: var(--sub);
+}
+@media (hover: hover) {
+  .filters > a:not([aria-current]):hover {
+    color: var(--text);
+  }
 }
 @media (min-width: 768px) {
   .filters {
@@ -128,97 +169,146 @@
   }
 }
 
-/* 거르기: 한 덩어리 세그먼트. 고른 쪽만 떠오른 캡슐 + 강조색 */
-.segment {
-  flex-shrink: 0;
-  display: flex;
-  gap: 2px;
-  padding: 4px;
-  border-radius: 22px;
-  background: var(--well);
-  box-shadow: inset 0 0 0 1px var(--glass-edge);
-}
-.segment > a {
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 18px;
-  display: inline-flex;
-  align-items: center;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--sub);
-}
-.segment > a[aria-current="page"] {
-  background: var(--tab-active);
-  color: var(--accent);
-  font-weight: 700;
-  /* 다른 칩의 선택 표시(app/globals.css .chip[aria-current])와 같은 강조색 테두리 */
-  box-shadow:
-    inset 0 0 0 1.5px var(--accent),
-    0 2px 6px -2px var(--glass-shadow);
-}
-
-/* 달로 건너뛰기: "바로 가기" 이름표 + 테두리만 있는 칩(누르면 그 달로 이동) */
-.months {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.monthsLabel {
-  margin-right: 2px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--sub);
-  white-space: nowrap;
-}
-.months > a {
-  flex-shrink: 0;
-  height: 36px;
-  padding: 0 14px;
-  font-size: 14px;
-  font-weight: 600;
-  box-shadow: inset 0 0 0 1px var(--dot-off);
-}
-/* 보이는 칩은 36px 그대로 두고 누르는 영역만 위아래 4px씩 넓혀 44px(터치 기준)로.
-   세그먼트 안쪽 여백(4)·.filters 위아래 여백(4) 안이라 잘리지 않고, 위아래로만 넓혀 이웃 칩과 겹치지 않는다 */
-.segment > a,
-.months > a {
-  position: relative;
-}
-.segment > a::after,
-.months > a::after {
-  content: "";
-  position: absolute;
-  inset: -4px 0;
-}
-@media (hover: hover) {
-  .segment > a:not([aria-current="page"]):hover,
-  .months > a:hover {
-    color: var(--accent);
-  }
-  .months > a:hover {
-    box-shadow: inset 0 0 0 1px var(--accent);
-  }
-}
-
-/* 한 달 묶음. 달 칩으로 건너뛰면 위 띠에 가리지 않게 띠 높이만큼 띄운다 */
-.month {
-  scroll-margin-top: 140px;
+/* 한 달 묶음. 달 머리는 띠 바로 아래(띠 높이 --band-h)에 붙어 지금 보는 달을 보여 주고, 그 달 묶음이 끝나면 다음 달 머리에 밀려난다.
+   다른 달로 건너뛰면 묶음 맨 위가 띠 바로 아래에 오게 띠 높이만큼 띄운다.
+   ponytail: 띠 높이는 재서 적은 고정값이라 띠 내용(헤더·칩 크기)이 바뀌면 같이 고친다 */
+.page {
+  --band-h: 128px;
 }
 @media (min-width: 1024px) {
-  .month {
-    scroll-margin-top: 160px;
+  .page {
+    --band-h: 127px;
   }
 }
+.month {
+  scroll-margin-top: var(--band-h);
+}
+/* 달 머리: 틀·구분선 없이 띠와 같은 흐림 층(위 .top::before 규칙을 같이 쓴다).
+   위 여백 16은 띠의 흐림 꼬리(16)가 지나가는 자리라 붙었을 때 글자가 흐려지지 않는다.
+   띠보다 아래 층(z 4)이라 다음 달 머리에 밀려 올라가면 띠 뒤로 들어간다 */
 .monthHead {
-  margin: 24px 4px 0;
+  position: sticky;
+  top: var(--band-h);
+  z-index: 4;
+  margin: 0 -20px;
+  padding: 16px 24px 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.monthHead h2 {
   font-size: 15px;
   font-weight: 700;
   color: var(--sub);
 }
-.month:first-of-type .monthHead {
+/* 흐림 층을 위로 16px 더 깔아, 붙었을 때 띠의 흐림이 옅어지는 꼬리 자리에서 지나가는 글자가 비치지 않게 한다.
+   붙지 않은 달 머리에서는 그 16px가 달 묶음 사이 간격(16) 안이다 */
+.monthHead::before {
+  top: -16px;
+}
+@media (min-width: 768px) {
+  .monthHead {
+    margin: 0 -16px;
+    padding: 16px 20px 4px;
+  }
+}
+.month + .month {
   margin-top: 16px;
+}
+
+/* 달 고르기: 화살표 버튼 + 그 아래 펼침 목록 */
+.jump {
+  position: relative;
+}
+.jumpButton {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sub);
+}
+/* 보이는 버튼은 32, 누르는 영역은 44 */
+.jumpButton::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+}
+.jumpButton[aria-expanded="true"] {
+  background: var(--tab-active);
+  color: var(--accent);
+}
+.jumpButton svg {
+  transition: transform 0.2s ease;
+}
+.jumpButton[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+@media (hover: hover) {
+  .jumpButton:hover {
+    background: var(--hover);
+    color: var(--accent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jumpButton svg {
+    transition: none;
+  }
+}
+/* 펼침 목록: 아래 글자가 비치지 않게 시트 색 아래에 화면 바탕을 깐다(토스트·확인 창과 같다) */
+.jumpList {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: -12px;
+  width: 248px;
+  padding: 14px 12px;
+  border-radius: 20px;
+  background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-edge),
+    0 16px 40px -16px var(--glass-shadow);
+}
+.jumpList > div + div {
+  margin-top: 12px;
+}
+.jumpYear {
+  margin: 0 4px 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sub);
+}
+.jumpList ul {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+.jumpList a {
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 600;
+}
+/* 지금 보는 달: 칩의 선택 상태와 같다(app/globals.css .chip[aria-current]) */
+.jumpList a[aria-current] {
+  background: var(--tab-active);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+  color: var(--accent);
+  font-weight: 700;
+}
+.jumpList a:not([aria-current]):focus-visible {
+  background: var(--hover);
+}
+@media (hover: hover) {
+  .jumpList a:not([aria-current]):hover {
+    background: var(--hover);
+    color: var(--accent);
+  }
 }
 
 .empty {
