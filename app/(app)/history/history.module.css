@@ -414,7 +414,7 @@
   gap: 3px;
 }
 .grass span {
-  border-radius: 3px;
+  border-radius: 0;
 }
 .grass [data-level="0"] {
   background: var(--grass-0);
