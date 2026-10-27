@@ -196,7 +196,9 @@
   font: inherit;
   font-size: 14px;
 }
-.dialogError {
+/* .dialog > p보다 우선하게 같은 구체성으로 쓴다(오류는 경고색) */
+.dialogError,
+.dialog > p.dialogError {
   margin-top: 8px;
   font-size: 13px;
   line-height: 19px;

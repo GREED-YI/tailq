@@ -18,6 +18,7 @@ import { weaknessReport } from "@/lib/weakness";
 import h from "../history/history.module.css";
 import rv from "../review/review.module.css";
 import s from "./home.module.css";
+import { NotifyPrompt } from "./NotifyPrompt";
 
 // 홈(S10 오늘 안 풂 · S11 하던 중 · S12 오늘 완료). 모바일은 카드와 통계,
 // 태블릿·PC는 복습할 질문·최근 기록 미리보기를 더하고, PC는 오른쪽 열에 통계·이번 주·약한 주제를 둔다(docs/07)
@@ -173,6 +174,10 @@ async function Home() {
           <TodayCard session={session} state={state} />
         )}
         {note && <div className={s.pcOnly}>{note}</div>}
+        {/* 오늘 질문을 끝냈고 알림이 꺼져 있으면 알림 권한 사전 안내(S32) */}
+        {done && profile.data && !profile.data.notify_on && (
+          <NotifyPrompt vapidKey={process.env.VAPID_PUBLIC_KEY ?? ""} />
+        )}
 
         <section
           aria-label="통계"
