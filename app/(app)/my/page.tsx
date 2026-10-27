@@ -4,7 +4,6 @@ import { Suspense, type ReactNode } from "react";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { isAdmin } from "@/lib/admin";
 import { FEEDBACK_URL } from "@/lib/links";
 import { FIELDS, LEVELS, providerName } from "@/lib/profile";
 import { ticketsLeft } from "@/lib/streak";
@@ -113,13 +112,6 @@ async function My() {
         />
         <ThemeRow />
       </Group>
-
-      {/* 운영자에게만 보인다(ADMIN_USER_IDS) */}
-      {isAdmin(auth?.claims.sub, process.env.ADMIN_USER_IDS) && (
-        <Group title="운영">
-          <Row href="/admin" title="운영 대시보드" meta="운영자에게만 보여요" />
-        </Group>
-      )}
 
       <Group title="정보">
         <Row href="/terms" title="이용약관" />

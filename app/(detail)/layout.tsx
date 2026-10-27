@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { AppNav, NavBar } from "@/components/AppNav";
+import { AppNavForViewer } from "@/components/AdminMenu";
+import { NavBar } from "@/components/AppNav";
 import s from "@/components/AppShell.module.css";
 
 // 탭 화면에서 들어가는 하위 화면(기록 상세·프로젝트 등록·프로젝트 질문) 뼈대.
@@ -8,7 +9,7 @@ export default function DetailLayout({ children }: LayoutProps<"/">) {
   return (
     <>
       <Suspense fallback={<NavBar pathname="" sub />}>
-        <AppNav sub />
+        <AppNavForViewer sub />
       </Suspense>
       <main className={`${s.main} ${s.mainSub}`}>{children}</main>
     </>

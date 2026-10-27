@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BellLink } from "./AppHeader";
+import { BellLink } from "./BellLink";
 import { Icon, type IconName } from "./icons";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
@@ -16,15 +16,27 @@ const TABS: { href: string; label: string; icon: IconName }[] = [
   { href: "/my", label: "MY", icon: "my" },
 ];
 
+// 운영자 메뉴(#104). PC 사이드 메뉴에만 두고, 모바일·태블릿은 헤더 아이콘(AdminMenu.tsx)으로 간다
+const ADMIN_TAB = { href: "/admin", label: "운영", icon: "chart" } as const;
+
 // 모바일·태블릿은 떠 있는 유리 탭바, PC(1024px~)는 왼쪽 유리 사이드 메뉴(docs/07 "PC·태블릿 앱")
 // sub: 하위 화면이라 모바일·태블릿에서는 탭바를 숨긴다(app/(detail)/layout.tsx)
-export function AppNav({ sub }: { sub?: boolean }) {
-  return <NavBar pathname={usePathname()} sub={sub} />;
+// admin: 운영자면 사이드 메뉴 아래에 운영 항목(서버가 정한다, AdminMenu.tsx)
+export function AppNav({ sub, admin }: { sub?: boolean; admin?: boolean }) {
+  return <NavBar pathname={usePathname()} sub={sub} admin={admin} />;
 }
 
 // 주소를 미리 알 수 없는 화면(기록 상세처럼 [id]가 있는 주소)은 미리 그릴 때 주소를 몰라
 // 선택한 탭 없이 그리고, 요청 때 AppNav로 바꾼다(app/(app)/layout.tsx의 Suspense)
-export function NavBar({ pathname, sub }: { pathname: string; sub?: boolean }) {
+export function NavBar({
+  pathname,
+  sub,
+  admin,
+}: {
+  pathname: string;
+  sub?: boolean;
+  admin?: boolean;
+}) {
   return (
     <nav
       className={`glass ${s.nav} ${sub ? s.navSub : ""}`}
@@ -34,11 +46,14 @@ export function NavBar({ pathname, sub }: { pathname: string; sub?: boolean }) {
         <Logo />
       </div>
       <ul className={s.navList}>
-        {TABS.map((t) => {
+        {(admin ? [...TABS, ADMIN_TAB] : TABS).map((t) => {
           const active =
             pathname === t.href || pathname.startsWith(`${t.href}/`);
           return (
-            <li key={t.href}>
+            <li
+              key={t.href}
+              className={t === ADMIN_TAB ? s.navAdmin : undefined}
+            >
               <Link
                 href={t.href}
                 className={`press ${s.navItem}`}
