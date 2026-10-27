@@ -74,6 +74,12 @@ export function LandingMotion() {
         hide.disconnect();
       } else {
         root.setAttribute("data-motion", "");
+        // 동작 줄이기가 켜진 동안 창 높이가 바뀌었으면 관찰 영역을 지금 높이로 다시 만든다
+        if (window.innerHeight !== shownFor) {
+          show.disconnect();
+          show = makeShow();
+          shownFor = window.innerHeight;
+        }
         items.forEach((el) => {
           show.observe(el);
           hide.observe(el);
