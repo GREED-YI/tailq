@@ -34,7 +34,7 @@
   gap: 6px;
 }
 .stepLabel {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--sub);
   letter-spacing: 0.4px;
 }
@@ -71,7 +71,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 .thinking {
@@ -92,12 +92,12 @@
   gap: 8px;
 }
 .tag {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--accent);
 }
 .prompt {
-  font-size: 22px;
-  line-height: 31px;
+  font-size: 24px;
+  line-height: 34px;
   font-weight: 700;
   letter-spacing: -0.5px;
 }
@@ -117,7 +117,7 @@
 }
 
 .label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--sub);
 }
@@ -130,8 +130,8 @@
   color: var(--text);
   font: inherit;
   /* iOS가 입력할 때 화면을 확대하지 않게 16 이상 */
-  font-size: 16px;
-  line-height: 25px;
+  font-size: 17px;
+  line-height: 27px;
   padding: 0 10px 0 0;
   scrollbar-width: thin;
   scrollbar-color: var(--scroll) transparent;
@@ -154,7 +154,7 @@
 }
 
 .error {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--low);
 }
 
@@ -172,14 +172,14 @@
 }
 .fail strong {
   margin-top: 12px;
-  font-size: 18px;
-  line-height: 25px;
+  font-size: 19px;
+  line-height: 26px;
   letter-spacing: -0.3px;
 }
 .fail p {
   margin-top: 7px;
-  font-size: 14px;
-  line-height: 21px;
+  font-size: 15px;
+  line-height: 22px;
   color: var(--sub);
 }
 /* 여우(Figma Mascot/Fox)는 마스크로 그려 테마 글자색을 입힌다 */
@@ -205,15 +205,15 @@
   background: var(--scrim);
 }
 .dialog h2 {
-  font-size: 18px;
-  line-height: 25px;
+  font-size: 19px;
+  line-height: 26px;
   font-weight: 700;
   letter-spacing: -0.3px;
 }
 .dialog p {
   margin-top: 8px;
-  font-size: 14px;
-  line-height: 21px;
+  font-size: 15px;
+  line-height: 22px;
   color: var(--sub);
 }
 .dialogActions {
@@ -232,7 +232,7 @@
   height: 36px;
   padding: 0 14px;
   border-radius: 18px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 .pill:disabled {
@@ -241,7 +241,7 @@
 }
 .count {
   flex: 1;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
 }
 .count[data-over] {
@@ -295,32 +295,32 @@
   justify-content: center;
 }
 .ringText span:first-child {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 600;
-  line-height: 30px;
+  line-height: 32px;
 }
 .ringText span:last-child {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--sub);
 }
 .headline {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 13px;
-  line-height: 20px;
+  font-size: 14px;
+  line-height: 22px;
   color: var(--sub);
 }
 .headline strong {
-  font-size: 18px;
-  line-height: 25px;
+  font-size: 19px;
+  line-height: 26px;
   letter-spacing: -0.3px;
   color: var(--text);
 }
 .streaming {
   white-space: pre-line;
-  font-size: 14px;
-  line-height: 22px;
+  font-size: 15px;
+  line-height: 24px;
   color: var(--sub);
 }
 .block {
@@ -330,8 +330,8 @@
 }
 .list {
   padding-left: 18px;
-  font-size: 14px;
-  line-height: 22px;
+  font-size: 15px;
+  line-height: 24px;
 }
 .list li::marker {
   color: var(--low);
@@ -343,7 +343,7 @@
   gap: 6px;
 }
 .chip {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   padding: 5px 9px;
   border-radius: 9px;
@@ -352,15 +352,15 @@
   background: var(--well);
   border-radius: 16px;
   padding: 12px 14px;
-  font-size: 14px;
-  line-height: 22px;
+  font-size: 15px;
+  line-height: 24px;
 }
 .links {
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 14px;
+  font-size: 15px;
 }
 .links a {
   color: var(--accent);
@@ -369,7 +369,7 @@
 }
 .more summary {
   cursor: pointer;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--sub);
 }
@@ -392,8 +392,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 18px;
-  line-height: 25px;
+  font-size: 19px;
+  line-height: 26px;
   letter-spacing: -0.3px;
 }
 .verdictDot {
@@ -403,8 +403,8 @@
   flex-shrink: 0;
 }
 .feedbackLine {
-  font-size: 14px;
-  line-height: 22px;
+  font-size: 15px;
+  line-height: 24px;
   color: var(--sub);
 }
 
@@ -421,8 +421,8 @@
 }
 .title {
   margin-top: 8px;
-  font-size: 30px;
-  line-height: 38px;
+  font-size: 32px;
+  line-height: 41px;
   font-weight: 700;
   letter-spacing: -0.8px;
 }
@@ -446,22 +446,22 @@
   gap: 2px;
 }
 .rowText span {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--sub);
 }
 .rowText p {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .rowScore {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 600;
 }
 .rowVerdict {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   flex-shrink: 0;
   color: var(--sub);
@@ -480,15 +480,15 @@
   gap: 4px;
 }
 .tile span {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
 }
 .tile strong {
-  font-size: 22px;
-  line-height: 32px;
+  font-size: 24px;
+  line-height: 35px;
 }
 .tile .date {
-  font-size: 12px;
+  font-size: 13px;
 }
 .actions {
   margin-top: auto;
@@ -531,8 +531,8 @@
     padding-top: 28px;
   }
   .prompt {
-    font-size: 26px;
-    line-height: 36px;
+    font-size: 28px;
+    line-height: 39px;
   }
   .input {
     height: 198px;
@@ -540,6 +540,22 @@
 }
 
 /* PC: 720 묶음을 위에서 띄워 놓고(Figma 1440x900에서 108), 시트와 버튼은 아래에 붙이지 않고 내용 바로 뒤에 */
+/* 모바일·태블릿: 질문과 답변 칸 사이가 비지 않게 답변 칸이 남은 높이를 채운다.
+   키보드가 올라오면(data-typing) 원래 높이로 돌아가 화면 아래에 붙는다. 결과는 질문 바로 아래에 붙인다(#110) */
+@media (max-width: 1023px) {
+  .sheet:not([data-result]):not([data-typing]) {
+    flex: 1 0 auto;
+    margin-top: 8px;
+  }
+  .sheet:not([data-result]):not([data-typing]) .input {
+    flex: 1 1 auto;
+    min-height: 112px;
+  }
+  .sheet[data-result] {
+    margin-top: 8px;
+  }
+}
+
 @media (min-width: 1024px) {
   .screen {
     padding-top: clamp(24px, 12dvh, 108px);

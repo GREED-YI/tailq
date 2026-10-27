@@ -25,8 +25,8 @@
 }
 /* 탭 화면 제목(Figma S18·S19·S21·S22): 홈만 로고, 나머지는 왼쪽 위에 제목 */
 .headerTitle {
-  font-size: 22px;
-  line-height: 30px;
+  font-size: 24px;
+  line-height: 33px;
   font-weight: 700;
   letter-spacing: -0.5px;
 }
@@ -35,7 +35,7 @@
   margin-top: auto;
   padding-top: 32px;
   text-align: center;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
 }
 @media (hover: hover) {
@@ -75,7 +75,7 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  font-size: 10px;
+  font-size: 11px;
   color: var(--sub);
 }
 .navItem[aria-current="page"] {
@@ -162,7 +162,7 @@
     justify-content: flex-start;
     gap: 12px;
     padding: 0 16px;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 500;
   }
   .navTools {
@@ -172,7 +172,8 @@
   }
 }
 
-/* 토스트(components/Toast.tsx): 모바일·태블릿은 탭바 12px 위 가운데, PC는 오른쪽 아래(S34) */
+/* 토스트(components/Toast.tsx): 모든 기기에서 하단 가운데. 모바일·태블릿은 탭바 12px 위, PC는 사이드 메뉴를 뺀 내용 영역의 가운데.
+   처음엔 PC만 오른쪽 아래(S34)였는데, 시선이 흩어져 하단 가운데로 맞췄다(#110) */
 .toastArea {
   position: fixed;
   z-index: 20;
@@ -190,7 +191,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
 }
 .toast svg {
@@ -204,8 +205,8 @@
 }
 @media (min-width: 1024px) {
   .toastArea {
-    left: auto;
-    right: 32px;
+    left: 272px;
+    right: 0;
     bottom: 32px;
   }
 }

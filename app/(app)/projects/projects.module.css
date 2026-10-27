@@ -23,15 +23,15 @@
 
 .title {
   margin-top: 8px;
-  font-size: 26px;
-  line-height: 34px;
+  font-size: 28px;
+  line-height: 37px;
   font-weight: 700;
   letter-spacing: -0.6px;
 }
 .desc {
   margin-top: 8px;
-  font-size: 14px;
-  line-height: 21px;
+  font-size: 15px;
+  line-height: 22px;
   color: var(--sub);
 }
 
@@ -71,13 +71,13 @@
   gap: 2px;
 }
 .meta {
-  font-size: 11px;
-  line-height: 16px;
+  font-size: 12px;
+  line-height: 17px;
   color: var(--sub);
 }
 .name {
-  font-size: 15px;
-  line-height: 22px;
+  font-size: 16px;
+  line-height: 23px;
   font-weight: 700;
   overflow-wrap: anywhere;
 }
@@ -85,13 +85,13 @@
   min-height: 64px;
   display: flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--sub);
 }
 .count {
   margin-top: 12px;
   align-self: flex-end;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
 }
 /* 한도 안내(S26)가 붙으면 Figma처럼 왼쪽에 둔다 */
@@ -117,8 +117,8 @@
 }
 .error {
   margin-bottom: 10px;
-  font-size: 13px;
-  line-height: 19px;
+  font-size: 14px;
+  line-height: 20px;
   color: var(--danger);
   text-align: center;
 }
@@ -136,21 +136,21 @@
 }
 .qNo {
   padding-top: 3px;
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--sub);
 }
 .qPrompt {
   display: block;
-  font-size: 15px;
-  line-height: 22px;
+  font-size: 16px;
+  line-height: 23px;
   font-weight: 700;
 }
 .qState {
   display: block;
   margin-top: 6px;
-  font-size: 12px;
-  line-height: 17px;
+  font-size: 13px;
+  line-height: 18px;
   color: var(--sub);
 }
 .done {
@@ -168,7 +168,7 @@
   align-items: center;
 }
 .top h1 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   text-align: center;
   white-space: nowrap;
@@ -180,7 +180,7 @@
   height: 36px;
   padding: 0 13px;
   border-radius: 18px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--danger);
 }
@@ -194,7 +194,7 @@
 .label {
   display: block;
   margin-top: 12px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 .gap {
@@ -209,7 +209,7 @@
   padding: 0 16px;
   font: inherit;
   /* iOS가 입력할 때 화면을 확대하지 않게 16 이상 */
-  font-size: 16px;
+  font-size: 17px;
   color: var(--text);
 }
 .input {
@@ -237,12 +237,12 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--sub);
 }
 .help :global(.mono) {
-  font-size: 11px;
+  font-size: 12px;
   white-space: nowrap;
 }
 .help[data-over] :global(.mono) {
@@ -265,12 +265,12 @@
 }
 .state strong {
   margin-top: 8px;
-  font-size: 17px;
-  line-height: 24px;
+  font-size: 18px;
+  line-height: 25px;
 }
 .state p {
-  font-size: 14px;
-  line-height: 21px;
+  font-size: 15px;
+  line-height: 22px;
   color: var(--sub);
 }
 .state :global(.btn) {
@@ -293,16 +293,16 @@
   background: var(--scrim);
 }
 .dialog h2 {
-  font-size: 18px;
-  line-height: 25px;
+  font-size: 19px;
+  line-height: 26px;
   font-weight: 700;
   letter-spacing: -0.3px;
   overflow-wrap: anywhere;
 }
 .dialog p {
   margin-top: 8px;
-  font-size: 14px;
-  line-height: 21px;
+  font-size: 15px;
+  line-height: 22px;
   color: var(--sub);
 }
 .dialog .error {
@@ -327,8 +327,8 @@
 @media (min-width: 1024px) {
   .pageTitle {
     display: block;
-    font-size: 28px;
-    line-height: 44px;
+    font-size: 30px;
+    line-height: 47px;
     font-weight: 700;
     letter-spacing: -0.8px;
     margin-bottom: 20px;
@@ -356,8 +356,8 @@
     padding: 18px 16px 16px;
   }
   .guide h3 {
-    font-size: 15px;
-    line-height: 22px;
+    font-size: 16px;
+    line-height: 23px;
     font-weight: 700;
   }
   .guide ol {
@@ -369,25 +369,25 @@
     flex-direction: column;
   }
   .guide li :global(.mono) {
-    font-size: 11px;
-    line-height: 16px;
+    font-size: 12px;
+    line-height: 17px;
     color: var(--sub);
   }
   .guide li strong {
-    font-size: 15px;
-    line-height: 22px;
+    font-size: 16px;
+    line-height: 23px;
   }
   .guide li span:last-child {
-    font-size: 12px;
-    line-height: 18px;
+    font-size: 13px;
+    line-height: 20px;
     color: var(--sub);
   }
   .guideNote {
     display: block;
     margin-top: 16px;
     padding-left: 4px;
-    font-size: 12px;
-    line-height: 18px;
+    font-size: 13px;
+    line-height: 20px;
     color: var(--sub);
   }
 
@@ -402,7 +402,7 @@
     gap: 12px;
   }
   .top h1 {
-    font-size: 28px;
+    font-size: 30px;
     letter-spacing: -0.8px;
     text-align: left;
   }

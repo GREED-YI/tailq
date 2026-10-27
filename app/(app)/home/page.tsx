@@ -196,7 +196,7 @@ async function Home() {
           )}
         </section>
 
-        <Section title="복습할 질문" href="/review">
+        <Section title="복습할 질문" href="/review" show="">
           {reviewing.length === 0 && (
             <li className={rv.empty}>복습할 질문이 없어요</li>
           )}
@@ -228,8 +228,10 @@ async function Home() {
       </div>
 
       <aside className={s.side} aria-label="학습 현황">
-        {streakTile(true)}
-        {reviewTile(true)}
+        <div className={s.sideStats}>
+          {streakTile(true)}
+          {reviewTile(true)}
+        </div>
         {study && <Week study={study} />}
         <section className={`glass ${s.panel}`} aria-label="약한 주제">
           <div className={s.panelHead}>
@@ -433,7 +435,8 @@ function Dots({ level }: { level: number }) {
   );
 }
 
-// 복습할 질문은 태블릿·PC, 최근 기록은 PC만(Figma C안 태블릿 홈에는 최근 기록이 없다)
+// 복습할 질문은 모든 기기(처음엔 태블릿·PC만이었는데 모바일 홈 아래가 비어 보여 넣었다, #110),
+// 최근 기록은 PC만(Figma C안 태블릿 홈에는 최근 기록이 없다)
 function Section({
   title,
   href,

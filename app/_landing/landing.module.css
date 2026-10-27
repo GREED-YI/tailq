@@ -139,7 +139,7 @@
   border-radius: 20px;
   display: inline-flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--sub);
   transition: color 0.2s ease;
@@ -154,7 +154,7 @@
   height: 44px;
   padding: 0 20px;
   border-radius: 22px;
-  font-size: 14px;
+  font-size: 15px;
 }
 @media (hover: hover) {
   .nav a:hover,
@@ -194,7 +194,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 .badgeDot {
@@ -218,8 +218,8 @@
 .heroSub {
   margin-top: 28px;
   max-width: 500px;
-  font-size: 19px;
-  line-height: 32px;
+  font-size: 20px;
+  line-height: 34px;
   color: var(--sub);
 }
 .heroActions {
@@ -260,7 +260,7 @@
 }
 .heroNote {
   margin-top: 20px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -282,7 +282,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 .dots {
@@ -317,7 +317,7 @@
   }
 }
 .tag {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--accent);
 }
 .demo .tag {
@@ -326,8 +326,8 @@
 .demoQ {
   max-width: 330px;
   margin-top: 8px;
-  font-size: 20px;
-  line-height: 29px;
+  font-size: 22px;
+  line-height: 32px;
   font-weight: 700;
   letter-spacing: -0.4px;
 }
@@ -336,13 +336,13 @@
   border-radius: 20px;
   padding: 16px;
   background: var(--well);
-  font-size: 14px;
-  line-height: 23px;
+  font-size: 15px;
+  line-height: 25px;
 }
 .demoAnswer span {
   display: block;
   margin-bottom: 6px;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--muted);
 }
 .demoRegion {
@@ -394,7 +394,7 @@
   justify-content: center;
   gap: 8px;
   background: var(--well);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: var(--sub);
 }
@@ -416,18 +416,18 @@
 }
 .demoNum small {
   margin-left: 2px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
 }
 .demoVerdict {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 .demoVerdict strong {
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text);
 }
 .demoTail {
@@ -452,17 +452,17 @@
   }
 }
 .demoTail span {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--accent);
 }
 .demoTail strong {
-  font-size: 14px;
-  line-height: 21px;
+  font-size: 15px;
+  line-height: 22px;
 }
 .demoAgain {
   height: 44px;
   border-radius: 22px;
-  font-size: 14px;
+  font-size: 15px;
 }
 
 /* 주제 마퀴 2줄: 본문 폭 안에서만, 양 끝은 흐리게, 반대 방향, 마우스를 올리면 멈춘다 */
@@ -505,7 +505,7 @@
   border-radius: 22px;
   display: inline-flex;
   align-items: center;
-  font-size: 14px;
+  font-size: 15px;
   white-space: nowrap;
   color: var(--sub);
   box-shadow: inset 0 0 0 1px var(--glass-edge);
@@ -546,8 +546,8 @@
 }
 .lead {
   margin-top: 20px;
-  font-size: 17px;
-  line-height: 29px;
+  font-size: 18px;
+  line-height: 31px;
   color: var(--sub);
 }
 
@@ -575,14 +575,14 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 17px;
+  line-height: 26px;
 }
 .bubbleAi:nth-of-type(3) {
   margin-left: 28px;
 }
 .bubbleLabel {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--accent);
 }
 .bubbleMe {
@@ -590,8 +590,8 @@
   max-width: 500px;
   border-radius: 22px;
   padding: 14px 18px;
-  font-size: 15px;
-  line-height: 24px;
+  font-size: 16px;
+  line-height: 26px;
   background: var(--mine);
   box-shadow: inset 0 0 0 1px var(--glass-edge);
 }
@@ -600,17 +600,17 @@
   display: flex;
   align-items: baseline;
   gap: 8px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 .grade span,
 .grade strong {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--accent);
 }
 .grade strong {
-  font-size: 14px;
+  font-size: 15px;
 }
 
 /* 기능 벤토: 4열 · 행 232(900px 이하 2열, 560px 이하 1열) */
@@ -677,16 +677,16 @@
   }
 }
 .tileText h3 {
-  font-size: 22px;
-  line-height: 30px;
+  font-size: 24px;
+  line-height: 33px;
   font-weight: 700;
   letter-spacing: -0.4px;
 }
 .tileText p {
   max-width: 420px;
   margin-top: 6px;
-  font-size: 14px;
-  line-height: 22px;
+  font-size: 15px;
+  line-height: 24px;
   color: var(--sub);
 }
 .tileArt {
@@ -701,13 +701,13 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  font-size: 14px;
+  font-size: 15px;
 }
 .noticeHead {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--sub);
 }
 .notice > div:last-child {
@@ -723,8 +723,8 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 17px;
-  line-height: 25px;
+  font-size: 18px;
+  line-height: 26px;
 }
 .miniRing {
   position: relative;
@@ -753,7 +753,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 600;
 }
 .tailChain {
@@ -777,7 +777,7 @@
   border-radius: 14px;
   display: inline-flex;
   align-items: center;
-  font-size: 13px;
+  font-size: 14px;
   white-space: nowrap;
   color: var(--accent);
 }
@@ -788,7 +788,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
 }
 .days span:not([aria-hidden]) {
@@ -816,7 +816,7 @@
   border-radius: 14px;
   display: inline-flex;
   align-items: center;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
 }
 .qGrid {
@@ -831,7 +831,7 @@
   display: inline-flex;
   align-items: center;
   background: var(--mine);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--accent);
 }
 .expected {
@@ -843,12 +843,12 @@
   gap: 6px;
 }
 .expected span {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--accent);
 }
 .expected p {
-  font-size: 13px;
-  line-height: 21px;
+  font-size: 14px;
+  line-height: 23px;
 }
 
 /* 진행 방식 3단계: 01·02는 외곽선 숫자, 03은 채운 숫자(본문 글꼴 굵게) */
@@ -873,13 +873,13 @@
 }
 .steps h3 {
   margin-top: 20px;
-  font-size: 24px;
-  line-height: 32px;
+  font-size: 26px;
+  line-height: 35px;
   font-weight: 700;
 }
 .steps p {
   margin-top: 10px;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--sub);
 }
 
@@ -979,7 +979,7 @@
   height: 48px;
   padding: 0 20px;
   border-radius: 24px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   background: var(--glass);
   box-shadow: inset 0 0 0 1px var(--glass-edge);
@@ -1005,21 +1005,21 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  font-size: 20px;
-  line-height: 29px;
+  font-size: 22px;
+  line-height: 32px;
 }
 .tryBtn {
   width: 100%;
   padding: 0 24px;
 }
 .tryError {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--low);
   text-align: center;
 }
 .tryNote {
-  font-size: 12px;
-  line-height: 18px;
+  font-size: 13px;
+  line-height: 20px;
   color: var(--muted);
   text-align: center;
 }
@@ -1048,14 +1048,14 @@
   mask: url(/brand/fox.svg) center / contain no-repeat;
 }
 .dialog h2 {
-  font-size: 19px;
-  line-height: 26px;
+  font-size: 20px;
+  line-height: 27px;
   font-weight: 700;
 }
 .dialog p {
   margin-top: 8px;
-  font-size: 14px;
-  line-height: 21px;
+  font-size: 15px;
+  line-height: 22px;
   color: var(--sub);
 }
 .dialogActions {
@@ -1083,12 +1083,12 @@
   display: inline-flex;
   align-items: center;
   border-radius: 12px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--sub);
   transition: color 0.2s ease;
 }
 .copy {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted);
 }
 
@@ -1198,7 +1198,7 @@
     gap: 48px;
   }
   .badge {
-    font-size: 12px;
+    font-size: 13px;
   }
   .heroTitle {
     margin-top: 20px;
@@ -1208,8 +1208,8 @@
   }
   .heroSub {
     margin-top: 20px;
-    font-size: 16px;
-    line-height: 27px;
+    font-size: 17px;
+    line-height: 29px;
   }
   .heroActions {
     margin-top: 28px;
@@ -1220,7 +1220,7 @@
     border-radius: 36px;
   }
   .demoQ {
-    font-size: 20px;
+    font-size: 22px;
   }
   .section,
   .chatSection,
@@ -1231,14 +1231,14 @@
     gap: 40px;
   }
   .h2 {
-    font-size: 32px;
-    line-height: 42px;
+    font-size: 34px;
+    line-height: 45px;
     letter-spacing: -0.9px;
   }
   .lead {
     margin-top: 16px;
-    font-size: 15px;
-    line-height: 26px;
+    font-size: 16px;
+    line-height: 28px;
   }
   .bubbleAi:nth-of-type(3) {
     margin-left: 28px;
@@ -1296,12 +1296,12 @@
     padding: 28px;
   }
   .tryTitle {
-    font-size: 28px;
-    line-height: 37px;
+    font-size: 30px;
+    line-height: 40px;
     letter-spacing: -0.7px;
   }
   .tryQ {
-    font-size: 20px;
+    font-size: 22px;
   }
   .footer {
     flex-wrap: wrap;

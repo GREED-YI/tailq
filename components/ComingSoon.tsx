@@ -8,7 +8,7 @@ export function ComingSoon({ title, issue }: { title: string; issue: number }) {
       <h1
         style={{
           marginTop: 8,
-          fontSize: 26,
+          fontSize: 28,
           lineHeight: "34px",
           fontWeight: 700,
           letterSpacing: -0.6,
@@ -16,7 +16,7 @@ export function ComingSoon({ title, issue }: { title: string; issue: number }) {
       >
         {title}
       </h1>
-      <p style={{ marginTop: 8, fontSize: 14, color: "var(--sub)" }}>
+      <p style={{ marginTop: 8, fontSize: 15, color: "var(--sub)" }}>
         준비하고 있어요 (#{issue})
       </p>
     </>
