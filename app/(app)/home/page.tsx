@@ -39,7 +39,7 @@ export default function HomePage() {
 const TITLES: Record<HomeState["kind"], string> = {
   todo: "오늘 면접 잘 봐요",
   doing: "하던 질문 마저 이어가 볼까요?",
-  done: "오늘 면접을 마쳤어요",
+  done: "오늘도 수고했어요",
 };
 
 // 닉네임 인사 한 줄. 닉네임은 사용자 요청(#115). 날짜는 뺐다(#146)
