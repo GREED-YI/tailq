@@ -6,14 +6,7 @@ import type { z } from "zod";
 import { BackButton } from "@/components/BackButton";
 import f from "@/components/Flow.module.css";
 import { Icon } from "@/components/icons";
-import {
-  FIELDS,
-  hourLabel,
-  LEVELS,
-  type Level,
-  type MeUpdate,
-} from "@/lib/profile";
-import { SUBSCRIBE_ERRORS, subscribePush } from "@/lib/push-client";
+import { FIELDS, LEVELS, type Level, type MeUpdate } from "@/lib/profile";
 import s from "./onboarding.module.css";
 
 type Topic = { id: string; field: string; name: string };
@@ -29,22 +22,6 @@ const STEPS: { title: ReactNode; desc: ReactNode }[] = [
     title: "연습할 범위를 골라주세요",
     desc: "여러 개 고를 수 있고, 나중에 MY에서 바꿀 수 있어요",
   },
-  {
-    title: (
-      <>
-        매일 질문을 알림으로
-        <br />
-        받을까요?
-      </>
-    ),
-    desc: (
-      <>
-        정한 시각에 오늘의 질문을 알려드려요.
-        <br />
-        이미 푼 날은 보내지 않아요.
-      </>
-    ),
-  },
 ];
 
 export function OnboardingFlow(props: {
@@ -52,13 +29,10 @@ export function OnboardingFlow(props: {
   topics: Topic[];
   initialTopics: string[];
   initialLevels: Level[];
-  initialHour: number;
-  vapidKey: string;
 }) {
   const router = useRouter();
   const [step, setStep] = useState(props.initialStep);
   const [failed, setFailed] = useState(false);
-  const [hour, setHour] = useState(props.initialHour);
   const heading = useRef<HTMLHeadingElement>(null);
   const firstStep = useRef(step);
 
@@ -88,10 +62,12 @@ export function OnboardingFlow(props: {
         {/* progress-steps: 지난 단계 text, 지금 accent, 남은 단계 mark-empty 테두리 */}
         <div
           role="img"
-          aria-label={`3단계 중 ${step + 1}단계`}
+          aria-label={`${STEPS.length}단계 중 ${step + 1}단계`}
           className={s.steps}
         >
-          <span className="mono">{step + 1} / 3</span>
+          <span className="mono">
+            {step + 1} / {STEPS.length}
+          </span>
           <span className={s.bars}>
             {STEPS.map((_, i) => (
               <span
@@ -102,8 +78,6 @@ export function OnboardingFlow(props: {
           </span>
         </div>
       </header>
-
-      {step === 2 && <NotifyPreview hour={hour} />}
 
       <h1 ref={heading} tabIndex={-1} className={f.title}>
         {STEPS[step].title}
@@ -120,15 +94,9 @@ export function OnboardingFlow(props: {
           topics={props.topics}
           initialTopics={props.initialTopics}
           initialLevels={props.initialLevels}
-          onNext={async (body) => (await save(body)) && setStep(2)}
-        />
-      )}
-      {step === 2 && (
-        <NotifyStep
-          vapidKey={props.vapidKey}
-          hour={hour}
-          setHour={setHour}
-          onDone={async (body) => {
+          label="시작하기"
+          // 범위를 저장하면서 온보딩을 끝낸다. 알림은 첫 세션을 마친 뒤 홈에서 묻는다(NotifyPrompt)
+          onNext={async (body) => {
             if (await save({ ...body, onboarded: true })) {
               router.replace("/home");
               return true;
@@ -349,133 +317,6 @@ export function RangeStep(props: {
         {empty && (
           <p className={s.hint}>주제와 난이도를 하나 이상 골라 주세요.</p>
         )}
-      </div>
-    </>
-  );
-}
-
-// 받게 될 알림 모양(S08). 시각은 고른 값을 따라간다.
-// 실제 알림(lib/push.ts)과 같은 문구다. 잠금 화면에 보이므로 닉네임은 넣지 않는다
-function NotifyPreview({ hour }: { hour: number }) {
-  return (
-    <div className={s.previewWrap} aria-hidden>
-      <div className={s.preview}>
-        <span className={s.symbol} />
-        <div className={s.previewText}>
-          <p className={s.previewHead}>
-            <strong>TailQ</strong>
-            <span className="num">{hourLabel(hour)}</span>
-          </p>
-          <strong>오늘의 질문이 도착했어요</strong>
-          <p>오늘도 한 문제 풀어볼까요?</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 아이폰은 홈 화면에 추가해야 알림을 받을 수 있다(03 요구사항 B-8, iOS 16.4 이상)
-const GUIDES = [
-  {
-    title: "아이폰 알림 설정 방법 보기",
-    body: "Safari에서 공유 버튼 → '홈 화면에 추가'를 누르고, 홈 화면의 TailQ로 들어와 알림을 켜 주세요. iOS 16.4 이상에서 돼요.",
-  },
-  {
-    title: "안드로이드 알림 설정 방법 보기",
-    body: "'알림 켜기'를 누른 뒤 브라우저 창에서 '허용'을 눌러 주세요. 막아 두었다면 주소창 왼쪽 아이콘 → 권한 → 알림에서 허용으로 바꿔요.",
-  },
-];
-
-function NotifyStep(props: {
-  vapidKey: string;
-  hour: number;
-  setHour: (hour: number) => void;
-  onDone: (body: Body) => Promise<boolean>;
-}) {
-  const [busy, run] = useBusy();
-  // 어느 버튼이 처리 중인지(로딩 표시용)
-  const [later, setLater] = useState(false);
-  const [notice, setNotice] = useState("");
-
-  // 권한을 받고 이 기기를 구독한 뒤 설정을 저장한다. 거부했거나 이 브라우저가 못 받으면
-  // 알림을 끈 채로 온보딩을 끝내고 MY에서 다시 켜게 한다(05 사용자 흐름 "예외 상황").
-  // 홈 화면에 추가하지 않은 아이폰과 저장 실패는 이 단계에 남아 안내한다.
-  const allow = async () => {
-    setNotice("");
-    const result = await subscribePush(props.vapidKey);
-    if (result === "install" || result === "failed") {
-      setNotice(SUBSCRIBE_ERRORS[result]);
-      return false;
-    }
-    return props.onDone({
-      notifyOn: result === "ok",
-      notifyHour: props.hour,
-    });
-  };
-
-  return (
-    <>
-      {/* 화면엔 글자로 보이고, 누르면 기기의 선택 창이 열린다 */}
-      <label className={s.hourRow}>
-        <span className={s.hourLabel}>알림 시각</span>
-        <span className="num">{hourLabel(props.hour)}</span>
-        <Icon name="chevronRight" size={18} />
-        <select
-          aria-label="알림 시각"
-          value={props.hour}
-          onChange={(e) => props.setHour(Number(e.target.value))}
-        >
-          {Array.from({ length: 24 }, (_, h) => (
-            <option key={h} value={h}>
-              {hourLabel(h)}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <div className={s.guides}>
-        {GUIDES.map((g) => (
-          <details key={g.title}>
-            <summary>
-              <strong>{g.title}</strong>
-              <Icon name="chevronRight" size={18} />
-            </summary>
-            <p>{g.body}</p>
-          </details>
-        ))}
-      </div>
-
-      {notice && (
-        <p role="alert" className={s.alert}>
-          {notice}
-        </p>
-      )}
-
-      <div className={f.bottom}>
-        <button
-          type="button"
-          className="btn btn-primary press"
-          disabled={busy}
-          aria-busy={busy && !later}
-          onClick={() => {
-            setLater(false);
-            run(allow);
-          }}
-        >
-          알림 켜기
-        </button>
-        <button
-          type="button"
-          className="btn btn-secondary press"
-          disabled={busy}
-          aria-busy={busy && later}
-          onClick={() => {
-            setLater(true);
-            run(() => props.onDone({}));
-          }}
-        >
-          나중에 할게요
-        </button>
       </div>
     </>
   );
