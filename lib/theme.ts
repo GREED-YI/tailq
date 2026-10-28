@@ -49,48 +49,6 @@ export const ADMIN_TOKENS = {
   light: { accent: "#2E45B8", "accent-soft": "#E6EBFF" },
 } as const satisfies Record<ThemeName, Partial<Record<string, string>>>;
 
-// 예전 이름(C안 글라스 디자인). 화면을 새 이름으로 옮기는 동안만 남기고, 다 옮기면 지운다.
-// 글라스·빛 덩어리·그라디언트 색은 투명이 되어 장식이 사라진다
-export const LEGACY_ALIASES: Record<string, string> = {
-  bg: "var(--canvas)",
-  sub: "var(--text-sub)",
-  muted: "var(--text-muted)",
-  "accent-fill": "var(--primary)",
-  "on-accent": "var(--on-primary)",
-  ring: "var(--accent)",
-  glass: "var(--surface)",
-  "glass-hi": "transparent",
-  "glass-edge": "var(--line)",
-  "glass-shadow": "transparent",
-  sheet: "var(--surface)",
-  track: "var(--line)",
-  ghost: "var(--line)",
-  "ghost-text": "var(--text-muted)",
-  blob1: "transparent",
-  blob2: "transparent",
-  blob3: "transparent",
-  wash1: "transparent",
-  wash2: "transparent",
-  halo: "transparent",
-  hero1: "transparent",
-  hero2: "transparent",
-  "tab-active": "var(--surface)",
-  hover: "var(--surface)",
-  ph: "var(--text-muted)",
-  scroll: "var(--line-strong)",
-  "dot-off": "var(--mark-empty)",
-  // 점수 구간: 높음 text, 중간 text-sub, 낮음 danger(DESIGN.md Foundation rules)
-  good: "var(--text)",
-  mid: "var(--text-sub)",
-  low: "var(--danger)",
-  well: "var(--canvas)",
-  "grass-0": "var(--line)",
-  "grass-1": "color-mix(in srgb, var(--accent) 35%, transparent)",
-  "grass-2": "color-mix(in srgb, var(--accent) 60%, transparent)",
-  "grass-3": "color-mix(in srgb, var(--accent) 80%, transparent)",
-  "grass-4": "var(--accent)",
-};
-
 const vars = (t: Record<string, string>) =>
   Object.entries(t)
     .map(([k, v]) => `--${k}:${v};`)
@@ -100,15 +58,13 @@ const vars = (t: Record<string, string>) =>
 // 운영 화면은 :has([data-admin])로 같은 자리에서 덮어쓴다.
 // 처음엔 [data-admin]이 있기만 하면 덮었는데, 다른 화면으로 가도 운영 화면이 숨겨진 채(display: none) 문서에 남아
 // 운영 색이 그대로였다(cacheComponents). 숨겨진 운영 화면은 빼고 센다
-// 별칭은 모두 html 한 곳에 걸려 테마·운영 덮어쓰기를 그대로 따라간다
 const ADMIN_SHOWN =
   ':has([data-admin]:not([style*="display: none"],[style*="display: none"] *))';
 export const themeCss =
   `:root,[data-theme="dark"]{${vars(TOKENS.dark)}color-scheme:dark}` +
   `[data-theme="light"]{${vars(TOKENS.light)}color-scheme:light}` +
   `:root:not([data-theme="light"])${ADMIN_SHOWN}{${vars(ADMIN_TOKENS.dark)}}` +
-  `[data-theme="light"]${ADMIN_SHOWN}{${vars(ADMIN_TOKENS.light)}}` +
-  `:root{${vars(LEGACY_ALIASES)}}`;
+  `[data-theme="light"]${ADMIN_SHOWN}{${vars(ADMIN_TOKENS.light)}}`;
 
 export const THEME_STORAGE_KEY = "tailq-theme";
 

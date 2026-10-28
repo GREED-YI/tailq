@@ -11,10 +11,11 @@ export function BottomSheet({
 }) {
   return (
     <section
-      className="glass-strong rise"
+      className="rise"
       aria-label={label}
       style={{
         background: "var(--canvas)",
+        boxShadow: "inset 0 0 0 1px var(--line), var(--shadow-overlay)",
         borderRadius: "var(--radius-panel)",
         padding: "20px 20px 16px",
       }}

@@ -73,7 +73,7 @@ export function NotifyPrompt({
   return (
     <dialog
       ref={dialog}
-      className={`glass-strong ${s.dialog}`}
+      className={s.dialog}
       aria-labelledby="notify-prompt-title"
       // Esc로 닫아도 "나중에"와 같다
       onCancel={close}

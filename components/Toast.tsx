@@ -39,7 +39,7 @@ export function useToast({ top = false }: { top?: boolean } = {}) {
             toast.bottom === undefined ? undefined : { bottom: toast.bottom }
           }
         >
-          <p key={toast.id} className={`glass-strong fade ${s.toast}`}>
+          <p key={toast.id} className={`fade ${s.toast}`}>
             {toast.icon && <Icon name={toast.icon} size={18} />}
             {toast.text}
           </p>
@@ -51,13 +51,13 @@ export function useToast({ top = false }: { top?: boolean } = {}) {
   return [node, show] as const;
 }
 
-// 화면 아래쪽(160px 안) 가운데에 있는 시트(.glass-strong)·버튼(.btn)과 그 위로 쌓인 것까지의 높이.
+// 화면 아래쪽(160px 안) 가운데에 있는 버튼(.btn)과 그 위로 쌓인 것까지의 높이.
 // 버튼 사이 틈(12px 이하)은 건너 잰다. 토스트 자신은 pointer-events: none이라 잡히지 않는다
 function blockedHeight() {
   const at = (y: number) =>
     document
       .elementFromPoint(innerWidth / 2, y)
-      ?.closest(".glass-strong, .btn")
+      ?.closest(".btn")
       ?.getBoundingClientRect().top;
   let y = innerHeight;
   for (let probe = innerHeight - 8; probe > innerHeight - 160; probe -= 8) {
