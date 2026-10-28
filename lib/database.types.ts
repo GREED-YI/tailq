@@ -329,6 +329,7 @@ export type Database = {
           id: number;
           is_hidden: boolean;
           level: string | null;
+          note_id: string | null;
           project_id: string | null;
           prompt: string;
           topic_id: string | null;
@@ -339,6 +340,7 @@ export type Database = {
           id?: number;
           is_hidden?: boolean;
           level?: string | null;
+          note_id?: string | null;
           project_id?: string | null;
           prompt: string;
           topic_id?: string | null;
@@ -348,12 +350,20 @@ export type Database = {
           id?: number;
           is_hidden?: boolean;
           level?: string | null;
+          note_id?: string | null;
           project_id?: string | null;
           prompt?: string;
           topic_id?: string | null;
           trial_field?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: "questions_note_id_fkey";
+            columns: ["note_id"];
+            isOneToOne: false;
+            referencedRelation: "study_notes";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "questions_project_id_fkey";
             columns: ["project_id"];
@@ -506,6 +516,37 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      study_notes: {
+        Row: {
+          content: string;
+          created_at: string;
+          error_code: string | null;
+          id: string;
+          status: string;
+          title: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          content: string;
+          created_at?: string;
+          error_code?: string | null;
+          id?: string;
+          status?: string;
+          title: string;
+          user_id: string;
+        };
+        Update: {
+          content?: string;
+          created_at?: string;
+          error_code?: string | null;
+          id?: string;
+          status?: string;
+          title?: string;
+          user_id?: string;
+        };
+        Relationships: [];
       };
       topics: {
         Row: {
@@ -731,6 +772,29 @@ export type Database = {
         Returns: string;
       };
       cleanup_trials: { Args: Record<PropertyKey, never>; Returns: number };
+      create_note: {
+        Args: {
+          p_budget_usd?: number;
+          p_content: string;
+          p_title: string;
+          p_user_id: string;
+        };
+        Returns: {
+          content: string;
+          created_at: string;
+          error_code: string | null;
+          id: string;
+          status: string;
+          title: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "study_notes";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       create_project: {
         Args: {
           p_budget_usd?: number;
@@ -757,6 +821,10 @@ export type Database = {
       create_share: {
         Args: { p_session_id: string; p_streak: number; p_user_id: string };
         Returns: string;
+      };
+      delete_note: {
+        Args: { p_note_id: string; p_user_id: string };
+        Returns: undefined;
       };
       delete_project: {
         Args: { p_project_id: string; p_user_id: string };
@@ -797,6 +865,24 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: undefined;
       };
+      restart_note_generation: {
+        Args: { p_budget_usd?: number; p_note_id: string; p_user_id: string };
+        Returns: {
+          content: string;
+          created_at: string;
+          error_code: string | null;
+          id: string;
+          status: string;
+          title: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "study_notes";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       restart_project_generation: {
         Args: {
           p_budget_usd?: number;
@@ -822,6 +908,24 @@ export type Database = {
       save_grading: {
         Args: { p_result: Json; p_turn_id: string };
         Returns: Json;
+      };
+      save_note_questions: {
+        Args: { p_error_code: string; p_note_id: string; p_questions: Json };
+        Returns: {
+          content: string;
+          created_at: string;
+          error_code: string | null;
+          id: string;
+          status: string;
+          title: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "study_notes";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       save_project_questions: {
         Args: { p_error_code: string; p_project_id: string; p_questions: Json };
