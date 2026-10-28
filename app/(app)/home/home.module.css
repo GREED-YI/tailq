@@ -178,10 +178,11 @@
 
 /* ---------- 학습 현황(stat-tiles home) ---------- */
 /* 묶음 바탕을 line 색으로 칠하고 1px 간격으로 타일 사이 선을 만든다 */
+/* 모바일 1열 · 태블릿 한 줄 2칸 · PC 오른쪽 4칸에 세로 2칸 */
 .stats {
   align-self: stretch;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
@@ -219,31 +220,12 @@ a.tile:active {
   font-weight: 600;
   color: var(--text-sub);
 }
-.tileValue {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  font-size: 13px;
-  font-weight: 600;
-}
-.tileValue b {
-  font-size: 28px;
-  line-height: 1;
-  font-weight: 600;
-  letter-spacing: -0.04em;
-}
-.accent {
-  color: var(--accent);
-}
 .tileNote {
   font-size: 14px;
   line-height: 1.5;
   color: var(--text-sub);
 }
-/* 약한 주제: 모바일은 두 칸을 다 쓰고, 모바일·태블릿은 가장 약한 하나만 */
-.weak {
-  grid-column: span 2;
-}
+/* 약한 주제: 모바일은 가장 약한 하나만 */
 .weakList {
   list-style: none;
   display: flex;
@@ -257,8 +239,10 @@ a.tile:active {
   justify-content: space-between;
   gap: 4px 12px;
 }
-.weakList li + li {
-  display: none;
+@media (width < 768px) {
+  .weakList li + li {
+    display: none;
+  }
 }
 .weakName {
   min-width: 0;
@@ -274,31 +258,13 @@ a.tile:active {
   font-size: 13px;
   color: var(--text-sub);
 }
-/* 이번 주는 PC만 */
-.week {
-  display: none;
-}
-
 @media (min-width: 768px) {
   .stats {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .tile {
     padding: 18px 20px;
     gap: 10px;
-  }
-  .tileValue {
-    font-size: 14px;
-  }
-  .tileValue b {
-    font-size: 34px;
-  }
-  .weak {
-    grid-column: auto;
-  }
-  .weakList li {
-    flex-direction: column;
-    align-items: flex-start;
   }
 }
 
@@ -338,11 +304,6 @@ a.tile:active {
     font-size: 16px;
   }
 }
-/* 최근 기록은 PC만(태블릿·모바일 시안에는 없다) */
-.recent {
-  display: none;
-}
-
 /* 이번 주 7칸: 칸 색은 GrassTip.module.css. 오늘 요일 글자는 accent */
 .weekNote {
   font-weight: 500;
@@ -370,7 +331,7 @@ a.tile:active {
   color: var(--accent);
 }
 
-/* ---------- PC: 12칸 격자(간격 40). 오늘의 질문 8칸 · 학습 현황 4칸, 아래 두 목록 6칸씩 ---------- */
+/* ---------- PC: 12칸 격자(간격 40). 오늘의 질문 8칸 · 학습 현황 4칸, 아래 복습할 질문 폭 가득 ---------- */
 @media (min-width: 1024px) {
   .home {
     display: grid;
@@ -388,28 +349,12 @@ a.tile:active {
   }
   .stats {
     grid-column: span 4;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
   .tile {
     padding: 20px;
   }
-  .tileValue b {
-    font-size: 40px;
-  }
-  .week,
-  .weak {
-    display: flex;
-    grid-column: span 2;
-  }
-  .weakList li,
-  .weakList li + li {
-    display: flex;
-    flex-direction: row;
-    align-items: baseline;
-  }
-  .reviews,
-  .recent {
-    display: block;
-    grid-column: span 6;
+  .reviews {
+    grid-column: 1 / -1;
   }
 }

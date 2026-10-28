@@ -194,7 +194,8 @@ function MonthLabels({
   );
 }
 
-// 주제 이름 · 평균 점수와 20칸 막대 · 지난주 대비 변화(S21). 오르면 text, 내리면 danger(색과 ▲▼를 같이 쓴다)
+// 주제 이름 · 평균 점수와 20칸 막대 · 지난주 대비 변화(S21). 오르면 text, 내리면 danger(색과 ▲▼를 같이 쓴다).
+// 변화가 없거나 지난주 기록이 없으면 오른쪽 칸을 그리지 않는다(R13)
 function TopicRow({ t }: { t: TopicScore }) {
   return (
     <li className={w.row}>
@@ -206,22 +207,17 @@ function TopicRow({ t }: { t: TopicScore }) {
         </span>
         <ScoreBar value={t.average} small />
       </span>
-      <span className={w.right}>
-        <span>{t.change == null ? "지난주 기록 없음" : "지난주 대비"}</span>
-        {t.change != null && (
-          <strong className="num" data-trend={trend(t.change)}>
-            {changeText(t.change)}
+      {t.change != null && t.change !== 0 && (
+        <span className={w.right}>
+          <span>지난주 대비</span>
+          <strong className="num" data-trend={t.change > 0 ? "up" : "down"}>
+            {`${t.change > 0 ? "▲" : "▼"} ${Math.abs(t.change)}점`}
           </strong>
-        )}
-      </span>
+        </span>
+      )}
     </li>
   );
 }
-
-const trend = (c: number) => (c === 0 ? undefined : c > 0 ? "up" : "down");
-
-const changeText = (c: number) =>
-  c === 0 ? "– 같음" : `${c > 0 ? "▲" : "▼"} ${Math.abs(c)}점`;
 
 // 칸마다 날짜·점수 말풍선(docs/07 "학습 잔디"). 홈 이번 주 칸과 같은 문구:
 // 학습하지 않은 날은 "기록 없음", 아직 안 푼 오늘은 "오늘"

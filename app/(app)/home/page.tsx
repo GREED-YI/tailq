@@ -19,8 +19,9 @@ import s from "./home.module.css";
 import { NotifyPrompt } from "./NotifyPrompt";
 
 // 홈(S10 오늘 안 풂 · S11 하던 중 · S12 오늘 완료). DESIGN.md와 시안 MainM·HomeTabletM·HomeMobileM:
-// 인사·날짜 → 오늘의 질문(상자 없이 큰 글, 주 버튼 하나) → 학습 현황 숫자 타일 → 복습할 질문 → 최근 기록(PC).
-// PC는 12칸 격자에 오늘의 질문 8칸 · 학습 현황 4칸, 그 아래 두 목록을 나란히 둔다. 폭이 바뀌어도 순서는 같다
+// 인사·날짜 → 오늘의 질문(상자 없이 큰 글, 주 버튼 하나) → 학습 현황(이번 주 · 약한 주제) → 복습할 질문.
+// PC는 12칸 격자에 오늘의 질문 8칸 · 학습 현황 4칸, 그 아래 복습할 질문을 폭 가득 둔다. 폭이 바뀌어도 순서는 같다.
+// 꼬리잇기는 머리 막대에, 복습 대기 수는 복습할 질문 제목에 있어 타일로 두지 않는다(R4·R5). 최근 기록은 내 질문에서 본다(R6)
 export default function HomePage() {
   return (
     <>
@@ -91,9 +92,12 @@ async function Home() {
   const userId = data?.claims?.sub;
   const today = kstDay(new Date());
 
-  const [started, profile, reviews, recent, study] = await Promise.all([
+  const [started, profile, reviews, study] = await Promise.all([
     userId ? startDailySession(userId) : null,
-    supabase.from("profiles").select("nickname, notify_on").maybeSingle(),
+    supabase
+      .from("profiles")
+      .select("nickname, notify_on, notify_hour")
+      .maybeSingle(),
     // 숨긴 질문은 다시 나오지 않으므로 뺀다(복습 화면과 같은 기준)
     supabase
       .from("reviews")
@@ -103,18 +107,6 @@ async function Home() {
       .eq("questions.is_hidden", false)
       .order("due_day")
       .order("question_id"),
-    // 기록 화면과 같은 기준: 본 질문을 채점받은 끝난 세션
-    // ponytail: 최근 5개만 읽어 거른다. 채점 실패로 끝난 세션이 3개 넘게 몰리면 3개보다 적게 보인다
-    supabase
-      .from("sessions")
-      .select(
-        "id, day, questions(id, prompt, project_id), turns(idx, status, score, verdict)",
-      )
-      .eq("status", "done")
-      .order("day", { ascending: false })
-      .order("created_at", { ascending: false })
-      .order("idx", { referencedTable: "turns" })
-      .limit(5),
     loadStudy().catch(() => null),
   ]);
   // 서비스 월 예산에 닿으면 오늘의 질문도 새로 시작하지 않고 안내만 보여준다(04 기능 명세 12장)
@@ -134,7 +126,10 @@ async function Home() {
 
   const state = session ? homeState(session.status, turns) : null;
   const allReviews = reviews.data ?? [];
-  const reviewing = allReviews.filter((r) => r.box !== null);
+  // 오늘의 질문은 위에 이미 크게 있으니 복습할 질문에서 뺀다(R5)
+  const reviewing = allReviews.filter(
+    (r) => r.box !== null && r.questions.id !== session?.question.id,
+  );
   const weak = study ? weaknessReport(study.attempts, today).topics : [];
   const done = state?.kind === "done";
 
@@ -170,27 +165,17 @@ async function Home() {
         )}
         {/* 오늘 질문을 끝냈고 알림이 꺼져 있으면 알림 권한 사전 안내(S32) */}
         {done && profile.data && !profile.data.notify_on && (
-          <NotifyPrompt vapidKey={process.env.VAPID_PUBLIC_KEY ?? ""} />
+          <NotifyPrompt
+            vapidKey={process.env.VAPID_PUBLIC_KEY ?? ""}
+            initialHour={profile.data.notify_hour}
+          />
         )}
       </section>
 
-      {/* 학습 현황(stat-tiles home): 모바일 2열, 태블릿 3열, PC 2열. 이번 주는 PC만 */}
+      {/* 학습 현황(stat-tiles home): 이번 주 · 약한 주제. 모바일 1열, 태블릿 한 줄 2칸, PC 오른쪽에 세로 2칸 */}
       <aside className={s.stats} aria-label="학습 현황">
-        <div className={s.tile}>
-          <span className={s.tileLabel}>꼬리잇기</span>
-          <p className={s.tileValue}>
-            <b className="mono">{study?.streak.current ?? "–"}</b>
-            {study && study.streak.current > 0 ? "일째" : "일"}
-          </p>
-        </div>
-        <Link href="/review" className={s.tile}>
-          <span className={s.tileLabel}>복습 대기 →</span>
-          <p className={s.tileValue}>
-            <b className={`mono ${s.accent}`}>{reviewing.length}</b>개
-          </p>
-        </Link>
         {study && <Week study={study} />}
-        <Link href="/report" className={`${s.tile} ${s.weak}`}>
+        <Link href="/report" className={s.tile}>
           <span className={s.tileLabel}>약한 주제 →</span>
           {weak.length > 0 ? (
             <ul className={s.weakList}>
@@ -212,9 +197,14 @@ async function Home() {
         </Link>
       </aside>
 
-      {/* 복습할 질문(list-row review): 태블릿·PC는 한 줄, 모바일은 위 줄 복습 시기·숙련도 + 아래 줄 질문 */}
+      {/* 복습할 질문(list-row question): 태블릿·PC는 한 줄, 모바일은 위 줄 복습 시기·숙련도 + 아래 줄 질문.
+          이번 주 필터에 밀린 것·오늘 다시가 함께 있다 */}
       <section className={s.reviews} aria-labelledby="home-reviews">
-        <ListHead id="home-reviews" title="복습할 질문" href="/review">
+        <ListHead
+          id="home-reviews"
+          title="복습할 질문"
+          href="/questions?filter=week"
+        >
           {reviewing.length > 0 && (
             <span className={`mono ${h.count}`}>{reviewing.length}</span>
           )}
@@ -227,7 +217,10 @@ async function Home() {
             const days = daysUntil(r.due_day, today);
             return (
               <li key={r.questions.id}>
-                <Link href="/review" className={`${h.rowLink} ${s.reviewRow}`}>
+                <Link
+                  href={`/questions/${r.questions.id}`}
+                  className={`${h.rowLink} ${s.reviewRow}`}
+                >
                   {/* 오늘 다시(밀린 것 포함)만 accent 라벨 */}
                   <span
                     className={`num tag ${days <= 0 ? "tag-today" : "tag-neutral"} ${h.due} ${s.due}`}
@@ -246,8 +239,6 @@ async function Home() {
           })}
         </ul>
       </section>
-
-      <Recent rows={recent.data ?? []} />
     </div>
   );
 }
@@ -270,7 +261,7 @@ function ListHead({
         {children}
       </h2>
       <Link href={href} className={h.more}>
-        전체 보기 →
+        내 질문에서 보기 →
       </Link>
     </div>
   );
@@ -400,54 +391,7 @@ function dayLabel(day: string) {
   return `${m}월 ${d}일(${dow})`;
 }
 
-type RecentRow = {
-  id: string;
-  day: string;
-  questions: { id: number; prompt: string; project_id: string | null };
-  turns: {
-    idx: number;
-    status: string;
-    score: number | null;
-    verdict: string | null;
-  }[];
-};
-
-// 최근 기록(list-row history, PC만): 날짜 · 질문(한 줄) · 점수
-function Recent({ rows }: { rows: RecentRow[] }) {
-  const items = rows
-    .filter((r) => r.turns[0]?.idx === 0 && r.turns[0].status === "graded")
-    .slice(0, 3);
-  return (
-    <section className={s.recent} aria-labelledby="home-recent">
-      <ListHead id="home-recent" title="최근 기록" href="/history" />
-      <ul className={h.list}>
-        {items.length === 0 && (
-          <li className={h.rowEmpty}>
-            오늘의 질문을 마치면 여기에 기록이 남아요
-          </li>
-        )}
-        {items.map((r) => {
-          const main = r.turns[0];
-          return (
-            <li key={r.id}>
-              <Link href={`/history/${r.id}`} className={h.rowLink}>
-                <span className={`mono ${h.rowDate}`}>
-                  {r.day.slice(5).replace("-", ".")}
-                </span>
-                <span className={h.rowText}>{r.questions.prompt}</span>
-                <Score
-                  value={main.verdict === "unknown" ? null : (main.score ?? 0)}
-                />
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
-
-// 이번 주 월~일 7칸(PC 학습 현황): 리포트 꼬리잇기 달력과 같은 칸 색(GrassTip.module.css), 오늘 요일 글자는 accent
+// 이번 주 월~일 7칸(학습 현황): 리포트 꼬리잇기 달력과 같은 칸 색(GrassTip.module.css), 오늘 요일 글자는 accent
 function Week({ study }: { study: Study }) {
   const cells = grassCells(
     study.scores,
