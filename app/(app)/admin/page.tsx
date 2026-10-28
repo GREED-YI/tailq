@@ -1,35 +1,47 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense, type CSSProperties, type ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { LoadingStatus } from "@/components/LoadingStatus";
-import { scoreColor, VERDICTS } from "@/app/interview/verdict";
+import { ScoreBar } from "@/app/interview/ScoreRing";
+import { VERDICTS } from "@/app/interview/verdict";
 import {
+  alerts,
   answersSince,
+  FAIL_LIMIT,
+  funnelSteps,
+  goalRates,
+  goalSince,
   isAdmin,
+  latency,
+  monthForecast,
+  numericDate,
   opsStats,
+  ratio,
+  recentSince,
   SCORE_BANDS,
+  thumbsDownQuestions,
+  visitFunnel,
   type Answer,
   type Signup,
 } from "@/lib/admin";
 import { kstDay } from "@/lib/daily-pick";
 import { FEEDBACK_CATEGORIES } from "@/lib/feedback";
 import { FIELDS } from "@/lib/profile";
-import { addDays, studyDay } from "@/lib/streak";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { budgetUsd, loadQuota } from "@/lib/usage";
 import s from "./admin.module.css";
-import { FeedbackTable, Table } from "./Table";
+import { countFeedback, FeedbackList, Table } from "./Table";
 
 export const metadata: Metadata = {
   title: "운영 · TailQ",
   robots: { index: false },
 };
 
-// 운영자 대시보드: 성공 지표(01 프로젝트 정의)와 채점·질문 은행 상태를 한 화면에서 본다.
-// 운영자가 아니면 화면이 있다는 것도 알리지 않도록 404로 보낸다
+// 운영자 대시보드. 위에서 아래로 확인할 것 → 성공 지표 → 가입 흐름 → 채점 품질 → 운영 상태 → 사용자 피드백
+// (DESIGN 운영 대시보드 순서). 운영자가 아니면 화면이 있다는 것도 알리지 않도록 404로 보낸다
 export default function AdminPage() {
   return (
     <div className={s.page} data-admin>
@@ -41,43 +53,71 @@ export default function AdminPage() {
   );
 }
 
-// 불러오는 동안: 머리 · 숫자 타일 두 묶음 자리(레이아웃이 밀리지 않게).
-// 운영자가 아니어도 받는 미리 그린 화면이라 운영 화면임을 알 수 있는 글은 넣지 않고 칸만 둔다
-const TILE_AREAS = [
-  ["hero", "d7", "thumbs", "active", "users"],
-  ["onboard", "fail", "review", "bookmark", "cost", "visit"],
-];
-
+// 불러오는 동안: 머리 · 확인할 것 한 줄 · 성공 지표 타일 · 아래 구획 자리(레이아웃이 밀리지 않게).
+// 운영자가 아니어도 받는 미리 그린 화면이라 운영 화면임을 알 수 있는 글(구획 제목 포함)은 넣지 않고 칸만 둔다
 function Loading() {
   return (
     <>
       <LoadingStatus />
       <div aria-busy="true" aria-hidden="true">
         <div className={s.top}>
-          <span className="skeleton" style={{ width: 200, height: 30 }} />
+          <h1 className="skeleton" style={{ width: 200 }} />
         </div>
-        {TILE_AREAS.map((areas, i) => (
-          <section key={i} className={s.block}>
-            <div className={s.blockHead} />
-            <div className={`${s.tiles} ${i === 0 ? s.core : s.state}`}>
-              {areas.map((area) =>
-                area === "hero" ? (
-                  <div key={area} className={s.hero} style={{ gridArea: area }}>
-                    <span
-                      className="skeleton"
-                      style={{ width: "40%", height: 96 }}
-                    />
-                    <div className={s.weeks} />
-                  </div>
-                ) : (
-                  <div key={area} className={s.stat} style={{ gridArea: area }}>
-                    <span className="skeleton" style={{ width: "50%" }} />
-                  </div>
-                ),
-              )}
+        <section className={s.block}>
+          <div className={s.blockHead} />
+          <div className={s.calm}>
+            <span className="skeleton" style={{ width: "40%" }} />
+          </div>
+        </section>
+        <section className={s.block}>
+          <div className={s.blockHead} />
+          <div className={`${s.tiles} ${s.goals}`}>
+            <div className={s.hero}>
+              <div className={s.heroText}>
+                <span className="skeleton" style={{ width: 160 }} />
+                <strong>
+                  <span className={`skeleton ${s.big}`} style={{ width: 96 }} />
+                </strong>
+                <p className={s.heroNotes}>
+                  <span className="skeleton" style={{ width: 140 }} />
+                  <span className="skeleton" style={{ width: 88 }} />
+                </p>
+              </div>
+              <div>
+                <div className={s.weeks} />
+                <p className={s.ticks}>
+                  <span className="skeleton" style={{ width: 40 }} />
+                  <span className="skeleton" style={{ width: 40 }} />
+                </p>
+              </div>
             </div>
-          </section>
-        ))}
+            {[0, 1, 2].map((i) => (
+              <div key={i} className={s.stat}>
+                <span className="skeleton" style={{ width: "50%" }} />
+                <strong>
+                  <span
+                    className={`skeleton ${s.value}`}
+                    style={{ width: "30%" }}
+                  />
+                </strong>
+                <div className="skeleton" style={{ height: 6 }} />
+                <span
+                  className={`skeleton ${s.state}`}
+                  style={{ width: "70%" }}
+                />
+                <small className="skeleton" style={{ width: "60%" }} />
+              </div>
+            ))}
+          </div>
+        </section>
+        <div className={s.grid}>
+          {[0, 1].map((i) => (
+            <section key={i} className={s.block}>
+              <div className={s.blockHead} />
+              <span className="skeleton" style={{ height: 240 }} />
+            </section>
+          ))}
+        </div>
       </div>
     </>
   );
@@ -104,6 +144,8 @@ async function readAll<T>(
   }
 }
 
+const kst = (day: string) => `${day}T00:00:00+09:00`;
+
 async function Dashboard() {
   const { data: auth } = await (await createClient()).auth.getClaims();
   if (!isAdmin(auth?.claims.sub, process.env.ADMIN_USER_IDS)) notFound();
@@ -115,10 +157,12 @@ async function Dashboard() {
     profiles,
     turns,
     questions,
-    reviewsDue,
-    bookmarks,
     feedback,
     feedbackKinds,
+    recentFeedback,
+    metrics,
+    visits,
+    grades,
     quota,
   ] = await Promise.all([
     readAll((from, to) =>
@@ -133,9 +177,9 @@ async function Dashboard() {
       db
         .from("turn_states")
         .select(
-          "id, idx, effective_status, answered_at, score, verdict, rating, sessions!inner(user_id)",
+          "id, idx, effective_status, answered_at, score, verdict, rating, sessions!inner(user_id, question_id)",
         )
-        .gte("answered_at", `${answersSince(today)}T00:00:00+09:00`)
+        .gte("answered_at", kst(answersSince(today)))
         // 로그인 없는 체험(user_id 없음)은 회원 지표에서 뺀다. 체험은 지표 이벤트로 센다
         .not("sessions.user_id", "is", null)
         .order("id")
@@ -148,16 +192,6 @@ async function Dashboard() {
         .order("id")
         .range(from, to),
     ),
-    db
-      .from("reviews")
-      .select("*", { count: "exact", head: true })
-      .not("box", "is", null)
-      .lte("due_day", today)
-      .throwOnError(),
-    db
-      .from("bookmarks")
-      .select("*", { count: "exact", head: true })
-      .throwOnError(),
     // 전체 개수와 최근 3개
     db
       .from("feedback")
@@ -165,16 +199,46 @@ async function Dashboard() {
       .order("created_at", { ascending: false })
       .limit(3)
       .throwOnError(),
-    // 분류별 개수는 행을 내려받지 않고 DB에서 센다(분류마다 head 개수 조회)
-    Promise.all(
-      FEEDBACK_CATEGORIES.map((c) =>
-        db
-          .from("feedback")
-          .select("*", { count: "exact", head: true })
-          .eq("category", c.id)
-          .throwOnError()
-          .then((r) => r.count ?? 0),
-      ),
+    countFeedback(db),
+    // 최근 7일에 온 피드백 분류(확인할 것·새 글 수)
+    readAll((from, to) =>
+      db
+        .from("feedback")
+        .select("id, category")
+        .gte("created_at", kst(recentSince(today)))
+        .order("id")
+        .range(from, to),
+    ),
+    // 첫 방문 → 첫 답변, D7(이벤트 기준, #44·#133). 최근 4주 행만
+    db
+      .from("metrics_weekly")
+      .select(
+        "week, first_visitors, first_visitors_answered, d7_cohort, d7_returned",
+      )
+      .gte("week", goalSince(today))
+      .throwOnError(),
+    // 방문 흐름 앞단: 최근 4주 첫 방문·체험 완료(브라우저 단위)
+    readAll((from, to) =>
+      db
+        .from("events")
+        .select("id, name, anon_id")
+        .in("name", ["first_visit", "trial_complete"])
+        .not("anon_id", "is", null)
+        .gte("created_at", kst(goalSince(today)))
+        .order("id")
+        .range(from, to),
+    ),
+    // 채점 지연: 최근 7일 본 질문 채점 호출
+    readAll((from, to) =>
+      db
+        .from("ai_usage")
+        .select("id, latency_ms")
+        .eq("purpose", "grade")
+        .eq("status", "used")
+        .not("latency_ms", "is", null)
+        .gte("day", recentSince(today))
+        .order("id")
+        .range(from, to),
     ),
     // 이번 달(KST) AI 비용 합계와 예산 상태(ai_usage)
     loadQuota(db, null),
@@ -187,6 +251,7 @@ async function Dashboard() {
   }));
   const answers: Answer[] = turns.map((t) => ({
     userId: t.sessions.user_id!,
+    questionId: t.sessions.question_id,
     idx: t.idx!,
     answeredAt: t.answered_at!,
     status: t.effective_status!,
@@ -195,221 +260,373 @@ async function Dashboard() {
     rating: t.rating,
   }));
   const st = opsStats(signups, answers, today);
-  const peak = Math.max(...st.weekly.map((w) => w.count), 1);
-  const bandPeak = Math.max(...st.scoreBands, 1);
+  const goal = goalRates(
+    metrics.data.map((r) => ({
+      week: r.week!,
+      first_visitors: r.first_visitors ?? 0,
+      first_visitors_answered: r.first_visitors_answered ?? 0,
+      d7_cohort: r.d7_cohort ?? 0,
+      d7_returned: r.d7_returned ?? 0,
+    })),
+    today,
+  );
+  const front = visitFunnel(visits);
+  const recentBy = (c: string) =>
+    recentFeedback.filter((f) => f.category === c).length;
+  const alertRows = alerts(st.fail7d, quota.budget, {
+    bug: recentBy("bug"),
+    report: recentBy("report"),
+  });
+  const lag = latency(grades.map((g) => g.latency_ms!));
+  const disliked = thumbsDownQuestions(answers);
+  // 싫어요가 많은 질문의 글은 그 몇 개만 따로 읽는다
+  const prompts = disliked.length
+    ? (
+        await db
+          .from("questions")
+          .select("id, prompt")
+          .in(
+            "id",
+            disliked.map((q) => q.questionId),
+          )
+          .throwOnError()
+      ).data
+    : [];
+  const spentPct = Math.round((quota.spentUsd / budgetUsd()) * 100);
+  const forecast = monthForecast(quota.spentUsd, today);
   const gradedTotal = st.scoreBands.reduce((a, b) => a + b, 0);
+  const mainTotal = gradedTotal + st.unknownMain;
   const verdictTotal = Object.values(st.verdicts).reduce((a, b) => a + b, 0);
-  const diff = st.thisWeek - st.lastWeek;
+  const diff = st.thisWeek - st.lastWeekSoFar;
+  const peak = Math.max(...st.weekly.map((w) => w.count), 1);
+  const steps = funnelSteps([
+    // 첫 방문 기록이 있을 때만 앞단을 붙인다(없으면 가입부터)
+    ...(front.visitors > 0
+      ? [
+          { label: "첫 방문", n: front.visitors },
+          { label: "체험 완료", n: front.trialed, skippable: true },
+        ]
+      : []),
+    { label: "가입", n: st.funnel.signed },
+    { label: "온보딩 마침", n: st.funnel.onboarded },
+    { label: "첫 답변", n: st.funnel.answered },
+  ]);
+  const publicCount = questions.filter((q) => !q.is_hidden).length;
 
-  // 숫자는 stat-tiles 두 묶음(성공 지표: 북극성 답변 수·D7·채점 만족 / 상태 지표), 그 아래 분포·은행·피드백은 표와 막대.
-  // 타일 배치는 CSS grid-template-areas가 화면 폭마다 정한다
   return (
     <>
       <header className={s.top}>
         <h1>운영 대시보드</h1>
         <span className="num">
-          {today.replaceAll("-", ".")} 기준 · 한국 시간
+          <span className="mono">{today.replaceAll("-", ".")}</span> 기준 · 한국
+          시간
         </span>
       </header>
 
-      <section className={s.block} aria-labelledby="core-head">
-        <h2 id="core-head" className={s.blockHead}>
-          성공 지표
-        </h2>
-        <div className={`${s.tiles} ${s.core}`}>
-          <div className={s.hero} style={{ gridArea: "hero" }}>
-            <div className={s.heroText}>
-              <h3>
-                이번 주 답변 제출 <span className="tag tag-today">북극성</span>
-              </h3>
-              <strong>
-                <span className={`mono ${s.big}`}>{st.thisWeek}</span> 개
-              </strong>
-              <span className="num" data-trend={trend(diff)}>
-                지난주 {st.lastWeek}개
-                {diff !== 0 && ` · ${diff > 0 ? "▲" : "▼"} ${Math.abs(diff)}`}
-              </span>
-            </div>
-            <ol className={s.weeks} aria-label="최근 8주 답변 제출 수">
-              {st.weekly.map((w, i) => {
-                const prev = st.weekly[i - 1]?.count;
-                const tip = `${dot(w.week)}~${dot(addDays(w.week, 6))} · ${w.count}개${
-                  prev == null || prev === w.count
-                    ? ""
-                    : ` (${w.count > prev ? "▲" : "▼"} ${Math.abs(w.count - prev)})`
-                }`;
-                return (
-                  <Tip key={w.week} as="li" tip={tip}>
-                    <span className="mono">{w.count}</span>
-                    <i
-                      style={{ height: `${(w.count / peak) * 100}%` }}
-                      data-now={i === st.weekly.length - 1 || undefined}
-                    />
-                    <small className="num">{dot(w.week)}</small>
-                  </Tip>
-                );
-              })}
-            </ol>
-          </div>
-
-          <Stat
-            area="d7"
-            label="D7 재방문"
-            value={st.d7.rate}
-            unit="%"
-            goal={20}
-            note={`가입 7~35일 ${st.d7.cohort}명 중`}
-          />
-          <Stat
-            area="thumbs"
-            label="채점 만족"
-            value={st.thumbsUp.rate}
-            unit="%"
-            goal={70}
-            note={`좋아요 평가 ${st.thumbsUp.count}개 중`}
-          />
-          <Stat
-            area="active"
-            label="이번 주 답한 사람"
-            value={st.activeThisWeek}
-            unit="명"
-          />
-          <Stat
-            area="users"
-            label="가입자"
-            value={st.users.total}
-            unit="명"
-            note={`이번 주 +${st.users.newThisWeek}`}
-          />
-        </div>
-      </section>
-
-      <section className={s.block} aria-labelledby="state-head">
-        <h2 id="state-head" className={s.blockHead}>
-          상태 지표
-        </h2>
-        <div className={`${s.tiles} ${s.state}`}>
-          <Stat
-            area="onboard"
-            label="온보딩 완료"
-            value={st.users.onboardRate}
-            unit="%"
-            note="가입자 중"
-          />
-          <Stat
-            area="fail"
-            label="채점 실패"
-            value={st.failRate}
-            unit="%"
-            note="최근 8주 답변 중"
-            warn={(st.failRate ?? 0) > 5}
-          />
-          <Stat
-            area="review"
-            label="복습 대기"
-            value={reviewsDue.count}
-            unit="개"
-          />
-          <Stat
-            area="bookmark"
-            label="북마크"
-            value={bookmarks.count}
-            unit="개"
-          />
-          <Stat
-            area="cost"
-            label="AI 비용 · 이번 달 예산"
-            value={Math.round((quota.spentUsd / budgetUsd()) * 100)}
-            unit="%"
-            note={costNote(quota.spentUsd, budgetUsd())}
-            // 80%를 넘으면 새 세션의 본 질문 채점이 Haiku로 낮아진다(09 채점 5장)
-            warn={quota.budget !== "ok"}
-          />
-          <Soon
-            area="visit"
-            title="첫 방문 → 첫 답변"
-            body="첫 방문자 중 첫 답변을 제출한 비율(목표 50%)을 보여 줄 자리예요."
-            issue={44}
-          />
-        </div>
-      </section>
-
-      <div className={s.charts}>
-        <Card
-          title="본 질문 점수 분포"
-          meta={
-            st.average == null ? "최근 8주" : `최근 8주 · 평균 ${st.average}점`
-          }
-        >
-          <Table label="본 질문 점수 분포">
-            <thead>
-              <tr>
-                <th scope="col">점수 구간</th>
-                <th scope="col">분포</th>
-                <th scope="col" className={s.numCol}>
-                  개수
-                </th>
-                <th scope="col" className={s.numCol}>
-                  비율
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {SCORE_BANDS.map((band, i) => {
-                const n = st.scoreBands[i];
-                return (
-                  <tr key={band}>
-                    <td className="num">{band}점</td>
-                    <td className={s.barCell}>
-                      <span className={s.bar}>
-                        <i
-                          style={{
-                            width: `${(n / bandPeak) * 100}%`,
-                            background: scoreColor(i * 20),
-                          }}
-                        />
-                      </span>
-                    </td>
-                    <td className={`mono ${s.numCol}`}>{n}</td>
-                    <td className={`mono ${s.numCol}`}>
-                      {share(n, gradedTotal)}%
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
-        </Card>
-
-        <Card title="꼬리질문 판정" meta={`최근 8주 · ${verdictTotal}개`}>
-          <div className={s.stack}>
-            {Object.entries(VERDICTS)
-              .filter(([key]) => st.verdicts[key])
-              .map(([key, v]) => (
-                <Tip
-                  key={key}
-                  as="i"
-                  tip={`${v.label} · ${share(st.verdicts[key], verdictTotal)}%`}
-                  verdict={key}
-                  style={{ flexGrow: st.verdicts[key] }}
-                />
-              ))}
-          </div>
-          <ul className={s.legend}>
-            {Object.entries(VERDICTS).map(([key, v]) => (
-              <li key={key}>
-                <i data-verdict={key} aria-hidden="true" />
-                {v.label}
-                <span className="mono">{st.verdicts[key] ?? 0}</span>
+      <Block title="확인할 것">
+        {alertRows.length === 0 ? (
+          <p className={s.calm}>지금 확인할 문제가 없어요</p>
+        ) : (
+          <ul className={s.rows}>
+            {alertRows.map((a) => (
+              <li key={a.text}>
+                <Link href={a.href} className={`hover-row ${s.alert}`}>
+                  <span className="tag tag-neutral">{a.label}</span>
+                  <span className={s.alertText}>{a.text}</span>
+                  <span aria-hidden="true">→</span>
+                </Link>
               </li>
             ))}
           </ul>
-        </Card>
+        )}
+      </Block>
 
-        <Card
-          title="질문 은행"
-          meta={`공개 ${questions.filter((q) => !q.is_hidden).length}개 · 숨김 ${questions.filter((q) => q.is_hidden).length}개`}
+      <Block title="성공 지표" meta="최근 4주 · 북극성 8주">
+        <div className={`${s.tiles} ${s.goals}`}>
+          <div className={s.hero}>
+            <div className={s.heroText}>
+              <h3>북극성 · 이번 주 답변 제출</h3>
+              <strong>
+                <span className={`mono ${s.big}`}>{st.thisWeek}</span>개
+              </strong>
+              <p className={s.heroNotes}>
+                {st.weekly.every((w) => w.count === 0) ? (
+                  <span>아직 답변이 없어요</span>
+                ) : (
+                  <span className="num">
+                    지난주 같은 때 {st.lastWeekSoFar}개
+                    {diff !== 0 && (
+                      <span data-trend={diff > 0 ? "up" : "down"}>
+                        {" "}
+                        · {diff > 0 ? "+" : "−"}
+                        {Math.abs(diff)}
+                      </span>
+                    )}
+                  </span>
+                )}
+                <span className="num">답한 사람 {st.activeThisWeek}명</span>
+              </p>
+            </div>
+            <div>
+              <ol className={s.weeks} aria-label="최근 8주 답변 제출 수">
+                {st.weekly.map((w, i) => (
+                  <li key={w.week}>
+                    <span className="sr-only">
+                      {numericDate(kst(w.week))} 주 {w.count}개
+                    </span>
+                    <span className="mono" aria-hidden="true">
+                      {w.count}
+                    </span>
+                    <i
+                      aria-hidden="true"
+                      style={{ height: `${(w.count / peak) * 100}%` }}
+                      data-now={i === st.weekly.length - 1 || undefined}
+                      data-zero={w.count === 0 || undefined}
+                    />
+                  </li>
+                ))}
+              </ol>
+              <p className={s.ticks} aria-hidden="true">
+                <span>7주 전</span>
+                <span>이번 주</span>
+              </p>
+            </div>
+          </div>
+
+          <Goal
+            label="첫 방문 → 첫 답변"
+            rate={goal.firstAnswer.rate}
+            target={50}
+            sample={`첫 방문 ${goal.firstAnswer.visitors}명 중 ${goal.firstAnswer.answered}명`}
+            empty="최근 4주에 처음 온 사람이 없어요"
+          />
+          <Goal
+            label="D7 재방문"
+            help="가입 다음 날부터 7일 안에 다시 와서 연습을 시작하거나 답한 비율이에요"
+            rate={goal.d7.rate}
+            target={20}
+            sample={`가입하고 7일 지난 ${goal.d7.cohort}명 중 ${goal.d7.returned}명`}
+            empty="가입하고 7일이 지난 사람이 아직 없어요"
+          />
+          <Goal
+            label="채점 만족"
+            rate={st.thumbsUp.rate}
+            target={70}
+            sample={`평가 ${st.thumbsUp.rated}개 중 좋아요 ${st.thumbsUp.liked}개`}
+            empty="최근 4주에 남긴 평가가 없어요"
+          />
+        </div>
+      </Block>
+
+      <div className={s.grid}>
+        <Block
+          title="가입 흐름"
+          meta={`최근 4주 · 전체 ${st.users.total}명 · 이번 주 +${st.users.newThisWeek}`}
         >
+          {st.funnel.signed === 0 && front.visitors === 0 ? (
+            <p className={s.empty}>최근 4주에 가입한 사람이 없어요</p>
+          ) : (
+            <ul className={s.funnel}>
+              {steps.map((step) => (
+                <li key={step.label}>
+                  <span className={s.stepName}>{step.label}</span>
+                  <ScoreBar value={step.ofFirst} small decorative />
+                  <span>
+                    <span className="mono">{step.n}</span>명
+                  </span>
+                  <span className="mono">
+                    {step.ofBase != null && (
+                      <>
+                        <span className="sr-only">{step.base}의 </span>
+                        {pctText(step.n, step.ofBase)}%
+                      </>
+                    )}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </Block>
+
+        <Block title="채점 품질" meta="최근 8주">
+          <div className={s.pair}>
+            <div>
+              <Sub
+                title="본 질문 점수"
+                meta={
+                  st.average == null
+                    ? `${mainTotal}개`
+                    : `평균 ${st.average}점${st.unknownMain ? "(모르겠어요 빼고)" : ""} · ${mainTotal}개`
+                }
+              />
+              {mainTotal === 0 ? (
+                <p className={s.empty}>최근 8주에 채점된 답변이 없어요</p>
+              ) : (
+                <Table label="본 질문 점수 분포">
+                  <thead>
+                    <tr>
+                      <th scope="col">점수 구간</th>
+                      <th scope="col">분포</th>
+                      <th scope="col" className={s.numCol}>
+                        개수
+                      </th>
+                      <th scope="col" className={s.numCol}>
+                        비율
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ...SCORE_BANDS.map((band, i) => ({
+                        name: `${band}점`,
+                        n: st.scoreBands[i],
+                      })).reverse(),
+                      { name: "모르겠어요", n: st.unknownMain },
+                    ].map((row) => (
+                      <RatioRow
+                        key={row.name}
+                        name={row.name}
+                        n={row.n}
+                        pct={ratio(row.n, mainTotal) ?? 0}
+                      />
+                    ))}
+                  </tbody>
+                </Table>
+              )}
+            </div>
+
+            <div>
+              <Sub title="꼬리질문 판정" meta={`${verdictTotal}개`} />
+              {verdictTotal === 0 ? (
+                <p className={s.empty}>최근 8주에 꼬리질문 답변이 없어요</p>
+              ) : (
+                <ul className={s.legend}>
+                  {Object.entries(VERDICTS).map(([key, v]) => {
+                    const n = st.verdicts[key] ?? 0;
+                    const pct = ratio(n, verdictTotal) ?? 0;
+                    return (
+                      <li key={key}>
+                        <i data-verdict={key} aria-hidden="true" />
+                        <span className={s.stepName}>{v.label}</span>
+                        <ScoreBar value={pct} small decorative />
+                        <span className="mono">{n}</span>
+                        <span className="mono">{pctText(n, pct)}%</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          <Sub
+            title="싫어요가 많은 질문"
+            meta={disliked.length ? `${disliked.length}개` : ""}
+          />
+          {disliked.length === 0 ? (
+            <p className={s.empty}>최근 8주에 싫어요를 받은 질문이 없어요</p>
+          ) : (
+            <Table label="싫어요가 많은 질문">
+              <thead>
+                <tr>
+                  <th scope="col">번호</th>
+                  <th scope="col">질문</th>
+                  <th scope="col" className={s.numCol}>
+                    싫어요/평가
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {disliked.map((q) => (
+                  <tr key={q.questionId}>
+                    <td className={`mono ${s.nameCol}`}>#{q.questionId}</td>
+                    <td className={s.clip}>
+                      {prompts.find((p) => p.id === q.questionId)?.prompt ?? ""}
+                    </td>
+                    <td className={`mono ${s.numCol}`}>
+                      {q.down}/{q.rated}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          )}
+        </Block>
+
+        <Block id="ops" title="운영 상태">
+          <div className={`${s.tiles} ${s.opsTiles}`}>
+            <div className={s.stat}>
+              <span>AI 비용 · 이번 달 예산</span>
+              <strong>
+                <span className={`mono ${s.value}`}>{spentPct}</span>%
+              </strong>
+              <ScoreBar value={spentPct} small decorative />
+              <span
+                className={s.state}
+                data-warn={quota.budget !== "ok" || undefined}
+              >
+                {BUDGET_STATE[quota.budget]}
+              </span>
+              <small className="num">
+                {costNote(quota.spentUsd, budgetUsd())}
+                {forecast != null && (
+                  <>
+                    <br />
+                    지금 속도면 월말 약 ${forecast.toFixed(2)}
+                  </>
+                )}
+              </small>
+            </div>
+            <div className={s.stat}>
+              <span>채점 실패 · 최근 7일</span>
+              <strong>
+                <span className={`mono ${s.value}`}>
+                  {st.fail7d.rate ?? "–"}
+                </span>
+                {st.fail7d.rate != null && "%"}
+              </strong>
+              {st.fail7d.rate == null ? (
+                <small>최근 7일에 답변이 없어요</small>
+              ) : (
+                <>
+                  <span
+                    className={s.state}
+                    data-warn={st.fail7d.rate > FAIL_LIMIT || undefined}
+                  >
+                    기준 {FAIL_LIMIT}%{" "}
+                    {st.fail7d.rate > FAIL_LIMIT ? "넘음" : "아래"}
+                  </span>
+                  <small className="num">
+                    답변 {st.fail7d.n}개 중 {st.fail7d.failed}개
+                  </small>
+                </>
+              )}
+            </div>
+            <div className={s.stat}>
+              <span>채점 시간 · 최근 7일</span>
+              <strong>
+                <span className={`mono ${s.value}`}>
+                  {lag ? seconds(lag.p50) : "–"}
+                </span>
+                {lag && "초"}
+              </strong>
+              {lag ? (
+                <>
+                  <span className={`num ${s.state}`}>
+                    95%는 {seconds(lag.p95)}초 안에 끝나요
+                  </span>
+                  <small className="num">중간값 · 채점 {lag.n}번</small>
+                </>
+              ) : (
+                <small>최근 7일에 채점이 없어요</small>
+              )}
+            </div>
+          </div>
+
+          <Sub
+            title="질문 은행"
+            meta={`공개 ${publicCount} · 숨김 ${questions.length - publicCount}`}
+          />
           <Table label="분야별 공개 질문 수">
             <thead>
               <tr>
@@ -430,16 +647,13 @@ async function Dashboard() {
                 ).length;
                 return (
                   <tr key={f.id}>
-                    <td>{f.label}</td>
+                    <td className={s.nameCol}>{f.label}</td>
                     <td className={s.barCell}>
-                      <span className={s.bar}>
-                        <i
-                          style={{
-                            width: `${Math.min(n / BANK_GOAL, 1) * 100}%`,
-                          }}
-                          data-met={n >= BANK_GOAL}
-                        />
-                      </span>
+                      <ScoreBar
+                        value={Math.min(n / BANK_GOAL, 1) * 100}
+                        small
+                        decorative
+                      />
                     </td>
                     <td className={`mono ${s.numCol}`}>
                       {n}/{BANK_GOAL}
@@ -452,34 +666,41 @@ async function Dashboard() {
               })}
             </tbody>
           </Table>
-        </Card>
+        </Block>
 
-        <Card
+        <Block
           title="사용자 피드백"
-          meta={`전체 ${feedback.count ?? 0}개`}
-          link={{ href: "/admin/feedback", label: "모두 보기 →" }}
+          meta={`전체 ${feedback.count ?? 0}개 · 최근 7일 ${recentFeedback.length}개`}
         >
-          <ul className={s.kinds} aria-label="분류별 개수">
-            {FEEDBACK_CATEGORIES.map((c, i) => (
-              <li key={c.id} className="num">
-                {c.label} <span className="mono">{feedbackKinds[i]}</span>
-              </li>
-            ))}
-          </ul>
+          <div className={s.kindsRow}>
+            <ul className={s.kinds} aria-label="분류별 개수">
+              {FEEDBACK_CATEGORIES.map((c) => (
+                <li key={c.id} className="num">
+                  {c.label} <span className="mono">{feedbackKinds[c.id]}</span>
+                </li>
+              ))}
+            </ul>
+            <Link href="/admin/feedback" className={`press ${s.more}`}>
+              모두 보기 →
+            </Link>
+          </div>
           {feedback.data.length === 0 ? (
             <p className={s.empty}>아직 받은 피드백이 없어요</p>
           ) : (
-            <FeedbackTable
-              rows={feedback.data}
-              date={(iso) => dot(studyDay(iso))}
-              clamp
-            />
+            <FeedbackList rows={feedback.data} clamp />
           )}
-        </Card>
+        </Block>
       </div>
     </>
   );
 }
+
+// 예산 상태 글(색만으로 말하지 않는다). 80%를 넘으면 새 세션의 본 질문 채점이 Haiku로 낮아진다(09 채점 5장)
+const BUDGET_STATE = {
+  ok: "예산 안이에요",
+  downgrade: "80%를 넘어 가벼운 모델로 채점해요",
+  exceeded: "예산을 다 써서 새로 시작할 수 없어요",
+};
 
 // "$3.21 / $20 · 약 4,494원". 원화는 보여줄 때만 고정 환율 KRW_PER_USD로 바꾼다(08 설계)
 function costNote(spent: number, budget: number) {
@@ -490,150 +711,105 @@ function costNote(spent: number, budget: number) {
     : usd;
 }
 
-const trend = (c: number) => (c === 0 ? undefined : c > 0 ? "up" : "down");
+// 0이 아닌데 반올림으로 0이 되면 "<1"(2/469가 "0%"로 보이지 않게)
+const pctText = (n: number, pct: number) => (n > 0 && pct === 0 ? "<1" : pct);
 
-const share = (n: number, total: number) =>
-  total ? Math.round((n / total) * 100) : 0;
+// 3518ms → "3.5"
+const seconds = (ms: number) => (ms / 1000).toFixed(1);
 
-// "2026-10-26" → "10.26"
-const dot = (day: string) => day.slice(5).replace("-", ".");
-
-// 차트 한 칸: 마우스를 올리거나 키보드로 고르면 자세한 값을 말풍선으로 보여준다
-function Tip({
-  as: Tag,
-  tip,
-  verdict,
-  style,
-  children,
-}: {
-  as: "li" | "i";
-  tip: string;
-  verdict?: string;
-  style?: CSSProperties;
-  children?: ReactNode;
-}) {
-  return (
-    <Tag
-      className={s.tip}
-      data-tip={tip}
-      data-verdict={verdict}
-      aria-label={tip}
-      tabIndex={0}
-      style={style}
-    >
-      {children}
-    </Tag>
-  );
-}
-
-// 숫자 타일(stat-tiles 한 칸). 목표가 있으면 목표 대비 막대를 단다
-function Stat({
-  area,
+// 목표 칸(stat-tiles admin): 숫자 · 20칸 막대 · 목표와 상태 글 · 표본. 기록이 모자라면 "–"와 이유
+function Goal({
   label,
-  value,
-  unit,
-  note,
-  goal,
-  warn = false,
+  help,
+  rate,
+  target,
+  sample,
+  empty,
 }: {
-  area: string;
   label: string;
-  value: number | null | undefined;
-  unit: string;
-  note?: string;
-  goal?: number;
-  warn?: boolean;
+  help?: string;
+  rate: number | null;
+  target: number;
+  sample: string;
+  empty: string;
 }) {
-  const met = goal != null && value != null ? value >= goal : undefined;
+  const met = rate != null && rate >= target;
   return (
-    <div className={s.stat} style={{ gridArea: area }}>
-      <span>{label}</span>
+    <div className={s.stat}>
+      <span title={help}>
+        {label}
+        {help && <span className="sr-only"> · {help}</span>}
+      </span>
       <strong>
         <span
           className={`mono ${s.value}`}
-          data-met={met}
-          data-warn={warn || undefined}
+          data-empty={rate == null || undefined}
         >
-          {value ?? "–"}
-        </span>{" "}
-        {unit}
-      </strong>
-      {goal != null && (
-        // 목표 대비 막대. 세로 눈금이 목표 위치다
-        <span className={s.goal} aria-hidden>
-          <i
-            style={{ width: `${Math.min(value ?? 0, 100)}%` }}
-            data-met={met}
-          />
-          <b style={{ left: `${goal}%` }} />
+          {rate ?? "–"}
         </span>
-      )}
-      {(note || goal != null) && (
-        <small className="num">
-          {[note, goal != null && `목표 ${goal}${unit}`]
-            .filter(Boolean)
-            .join(" · ")}
-        </small>
+        {rate != null && "%"}
+      </strong>
+      <ScoreBar value={rate ?? 0} small decorative />
+      {rate == null ? (
+        <>
+          <span className={s.state}>아직 기록이 모자라요</span>
+          <small>{empty}</small>
+        </>
+      ) : (
+        <>
+          <span className={`num ${s.state}`}>
+            목표 {target}% · {met ? "목표 넘음" : `목표까지 ${target - rate}%p`}
+          </span>
+          <small className="num">{sample}</small>
+        </>
       )}
     </div>
   );
 }
 
-// 표·막대 구획: 2px 머리선 위에 제목·기준, 오른쪽에 이동 링크(선택)
-function Card({
+// 비율 표 한 줄: 이름 · 20칸 막대 · 개수 · 비율
+function RatioRow({ name, n, pct }: { name: string; n: number; pct: number }) {
+  return (
+    <tr>
+      <td className={`num ${s.nameCol}`}>{name}</td>
+      <td className={s.barCell}>
+        <ScoreBar value={pct} small decorative />
+      </td>
+      <td className={`mono ${s.numCol}`}>{n}</td>
+      <td className={`mono ${s.numCol}`}>{pctText(n, pct)}%</td>
+    </tr>
+  );
+}
+
+// 구획: 2px 머리선 위에 제목·기준
+function Block({
+  id,
   title,
   meta,
-  link,
   children,
 }: {
+  id?: string;
   title: string;
-  meta: string;
-  link?: { href: string; label: string };
+  meta?: string;
   children: ReactNode;
 }) {
   return (
-    <section className={s.card} aria-label={title}>
-      <div className={s.head}>
+    <section id={id} className={s.block} aria-label={title}>
+      <div className={s.blockHead}>
         <h2>{title}</h2>
-        <span className="num">{meta}</span>
-        {link && (
-          <Link href={link.href} className={s.more}>
-            {link.label}
-          </Link>
-        )}
+        {meta && <span className="num">{meta}</span>}
       </div>
       {children}
     </section>
   );
 }
 
-// 아직 데이터가 없는 지표 자리(링크 타일). 누르면 기록을 시작할 이슈로 간다
-function Soon({
-  area,
-  title,
-  body,
-  issue,
-}: {
-  area: string;
-  title: string;
-  body: string;
-  issue: number;
-}) {
+// 구획 안 소제목 줄
+function Sub({ title, meta }: { title: string; meta: string }) {
   return (
-    <a
-      href={`https://github.com/GREED-YI/tailq/issues/${issue}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`${s.stat} ${s.soon}`}
-      style={{ gridArea: area }}
-    >
-      <span>
-        {title} <span className="tag tag-neutral">준비 중</span>
-      </span>
-      <span className={s.soonBody}>
-        {body} <span className="num">#{issue}</span>에서 기록을 시작하면
-        채워져요.
-      </span>
-    </a>
+    <div className={s.sub}>
+      <h3>{title}</h3>
+      <span className="num">{meta}</span>
+    </div>
   );
 }
