@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./icons";
 import { Logo } from "./Logo";
-import { ThemeToggle } from "./ThemeToggle";
 import s from "./AppShell.module.css";
 
 // where: 어느 폭에서 보이는지. wide는 태블릿·PC 상단 메뉴에만, mobile은 모바일 하단 탭에만
@@ -42,7 +41,7 @@ export type Viewer = {
 };
 
 // 앱 머리 막대(DESIGN.md app-nav).
-// 모바일(~767): 위 56px(로고 · 꼬리잇기) + 아래 탭 5개. 태블릿·PC: 위 64px 한 줄(로고 · 메뉴 · 꼬리잇기 · 테마 · MY).
+// 모바일(~767): 위 56px(로고 · 꼬리잇기) + 아래 탭 5개. 태블릿·PC: 위 64px 한 줄(로고 · 메뉴 · 꼬리잇기 · MY).
 // 처음엔 모바일·태블릿은 떠 있는 유리 탭바, PC는 왼쪽 유리 사이드 메뉴였다(C안)
 // sub: 하위 화면이라 모바일에서는 머리 막대와 탭을 숨긴다(화면이 뒤로 버튼 머리를 그린다)
 export function AppNav({ sub, ...viewer }: { sub?: boolean } & Viewer) {
@@ -114,9 +113,6 @@ export function NavBar({
               <Icon name="shield" />
             </Link>
           )}
-          <span className={s.wideOnly}>
-            <ThemeToggle />
-          </span>
           <Link
             href="/my"
             className={`press ${s.me} ${s.wideOnly}`}

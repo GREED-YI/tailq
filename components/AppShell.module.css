@@ -36,7 +36,8 @@
 .main {
   flex: 1 0 auto;
   padding-top: 20px;
-  padding-bottom: 40px;
+  /* 모바일은 화면 아래 붙은 탭에 끝 내용이 가리지 않게 탭 높이만큼 더 띄운다 */
+  padding-bottom: calc(40px + var(--tab-h) + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
 }
@@ -56,6 +57,7 @@
 @media (width < 768px) {
   .mainSub {
     padding-top: 0;
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
   }
 }
 
@@ -224,12 +226,6 @@
     gap: 12px;
   }
 }
-/* 태블릿·PC 막대는 surface라 아이콘 버튼(테마 토글) hover를 바탕색으로 */
-@media (min-width: 768px) and (hover: hover) {
-  .bar :global(.icon-btn.press:not(:disabled):hover) {
-    background-color: var(--canvas);
-  }
-}
 /* 모바일 하위 화면은 막대·탭을 숨긴다 */
 @media (width < 768px) {
   .barSub {
@@ -280,62 +276,6 @@
   }
 }
 
-/* 앱 화면 맨 아래 푸터(SiteFooter: 로고 · 약관 · ©). 화면 폭 가득 위 1px 선, 안쪽은 내용 폭에 맞춘다.
-   모바일은 아래 탭에 가리지 않게 탭 높이만큼 더 띄운다 */
-.siteFooter {
-  flex-shrink: 0;
-  border-top: 1px solid var(--line);
-  padding: 8px max(var(--gutter), calc((100% - 1200px) / 2));
-  padding-bottom: calc(8px + var(--tab-h) + env(safe-area-inset-bottom));
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: 24px;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-/* 로고는 글자색(text)을 따른다 */
-.siteFooter > [role="img"] {
-  color: var(--text);
-}
-.footerSub {
-  padding-bottom: calc(8px + env(safe-area-inset-bottom));
-}
-.siteFooter nav {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 24px;
-}
-.siteFooter nav a {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  color: var(--text-sub);
-  transition: color var(--dur-fast) var(--ease);
-}
-.siteFooter small {
-  margin-left: auto;
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 13px;
-}
-@media (hover: hover) {
-  .siteFooter nav a:hover {
-    color: var(--text);
-  }
-}
-@media (min-width: 768px) {
-  .siteFooter {
-    background: var(--surface);
-    padding-bottom: 8px;
-  }
-}
-/* PC는 오른쪽 아래 여우(right 28 + 폭 56 = 끝에서 84px)가 ©를 덮지 않게 비켜 둔다 */
-@media (min-width: 1024px) {
-  .siteFooter {
-    padding-right: max(96px, calc((100% - 1200px) / 2));
-  }
-}
-
 /* 토스트(components/Toast.tsx): 하단 가운데. 모바일은 아래 탭 12px 위 */
 .toastArea {
   position: fixed;
@@ -379,139 +319,3 @@
 }
 /* 아래가 답변 칸·버튼으로 막힌 화면(useToast({ top: true }))은 그 위쪽 하단 가운데.
    bottom은 Toast.tsx가 막힌 높이를 재서 inline으로 준다 */
-
-/* 여우 피드백 버튼(FeedbackFox.tsx): PC 오른쪽 아래에 떠 있고, 처음 한 번·hover·초점에 말풍선.
-   말풍선은 여우 왼쪽 위에 떠서 꼬리가 여우 머리를 가리킨다.
-   작은 화면에선 내용을 가려 PC에만 둔다(#114). 모바일·태블릿의 피드백은 MY > 피드백 보내기로 간다 */
-.fox {
-  display: none;
-}
-@media (min-width: 1024px) {
-  .fox {
-    display: block;
-    position: fixed;
-    z-index: 15;
-    right: 28px;
-    bottom: 28px;
-  }
-}
-/* 숨겨진 채 남은 운영 화면(cacheComponents)은 빼고 센다. 안 빼면 운영 화면을 다녀온 뒤 다른 화면에서도 여우가 안 보였다 */
-:global(body):has(
-    [data-admin]:not([style*="display: none"], [style*="display: none"] *)
-  )
-  .fox {
-  display: none;
-}
-.foxBtn {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface);
-  box-shadow:
-    inset 0 0 0 1px var(--line),
-    var(--shadow-overlay);
-}
-.foxImg {
-  width: 30px;
-  height: 39px;
-  background: var(--text);
-  -webkit-mask: url(/brand/fox.svg) center / contain no-repeat;
-  mask: url(/brand/fox.svg) center / contain no-repeat;
-}
-.foxTip {
-  position: absolute;
-  /* 오른쪽 끝은 여우 왼쪽 가장자리에서 2px 왼쪽, 아래쪽은 여우 위 6px(#114, 사용자 요청) */
-  right: calc(100% + 2px);
-  bottom: calc(100% + 6px);
-  width: max-content;
-  max-width: 240px;
-  padding: 10px 8px 10px 16px;
-  border-radius: var(--radius-panel) var(--radius-panel) 4px var(--radius-panel);
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(6px);
-}
-/* 꼬리: 말풍선 오른쪽 아래 모서리에서 여우 머리 쪽으로 뾰족하게 뻗는다(#114, 사용자 요청) */
-.foxTip::after {
-  content: "";
-  position: absolute;
-  right: -12px;
-  bottom: -12px;
-  width: 20px;
-  height: 20px;
-  background: inherit;
-  clip-path: polygon(0 8px, 8px 0, 100% 100%);
-}
-/* 토스트가 떠 있는 동안은 말풍선을 접는다(겹치지 않게) */
-:global(body):has(.toastArea) .fox .foxTip {
-  opacity: 0;
-  visibility: hidden;
-}
-/* hover·초점으로 뜬 말풍선엔 X가 없으니 오른쪽 여백도 왼쪽과 같게 */
-.foxTip:not(:has(button)) {
-  padding-right: 16px;
-}
-/* X: 보이는 원은 32px, 누르는 영역은 44px */
-.foxTip button {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-control);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-sub);
-  position: relative;
-}
-.foxTip button::before {
-  content: "";
-  position: absolute;
-  inset: -6px;
-}
-/* 키보드 초점만 띄운다(:focus-visible). 마우스로 X를 누른 뒤 여우 버튼에 남은 초점으로는 안 뜬다 */
-.foxTipOn .foxTip,
-.fox:has(:focus-visible) .foxTip {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
-}
-@media (hover: hover) {
-  .fox:hover .foxTip {
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-  }
-  .foxTip button:hover {
-    color: var(--text);
-  }
-}
-/* X를 누른 그 hover·초점이 끝날 때까지는 숨긴다(FeedbackFox.tsx의 hush). 위 규칙보다 뒤에 둔다 */
-.fox.foxHush .foxTip {
-  opacity: 0;
-  visibility: hidden;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .foxTip {
-    transition:
-      opacity var(--dur-base) var(--ease),
-      transform var(--dur-base) var(--ease),
-      visibility var(--dur-base);
-  }
-  .foxImg {
-    transition: transform var(--dur-base) var(--ease);
-  }
-  @media (hover: hover) {
-    .foxBtn:hover .foxImg {
-      transform: rotate(-8deg) translateY(-2px);
-    }
-  }
-}
