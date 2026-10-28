@@ -371,10 +371,6 @@
   .format:nth-child(n + 5):not([data-md]) {
     display: none;
   }
-  .fileLead,
-  .fileDesc {
-    display: none;
-  }
   .fileAct {
     margin-top: 0;
   }

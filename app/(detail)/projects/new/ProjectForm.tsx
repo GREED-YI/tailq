@@ -281,10 +281,12 @@ export function ProjectForm({
                   <strong className={s.fileLead}>
                     {dragging === "zone"
                       ? "여기에 놓으면 불러와요"
-                      : "파일을 끌어다 놓거나 눌러서 골라 주세요"}
+                      : "파일을 올리면 내용이 아래 칸에 자동으로 채워져요"}
                   </strong>
+                  {/* 주어가 서비스라는 게 드러나게 '자동 변환돼요'(사용자가 바꾸라는 말로 읽히지 않게) */}
                   <span className={s.fileDesc}>
-                    읽은 글을 마크다운으로 바꿔 아래 입력칸에 넣어 줘요
+                    PDF·Word·한글 등은 마크다운으로 자동 변환돼요. 채워진 글은
+                    고쳐서 등록하면 돼요.
                   </span>
                   <span className={s.fileAct}>
                     {/* 버튼 모양만(진짜 버튼이 아니다). 읽는 중 진행 표시는 .btn[aria-busy] 전역 규칙 */}
