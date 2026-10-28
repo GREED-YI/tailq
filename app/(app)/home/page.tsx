@@ -21,7 +21,7 @@ import { HomeGuide } from "./HomeGuide";
 import { NotifyPrompt } from "./NotifyPrompt";
 
 // 홈(S10 오늘 안 풂 · S11 하던 중 · S12 오늘 완료). DESIGN.md와 시안 MainM·HomeTabletM·HomeMobileM:
-// 인사 → 첫 방문 안내(한 번만) → 오늘의 질문(상자 없이 큰 글, 주 버튼 하나) → 학습 현황(이번 주 · 약한 주제) → 복습할 질문.
+// 인사 → 오늘의 질문(상자 없이 큰 글, 주 버튼 하나) → 첫 방문 안내(한 번만) → 학습 현황(이번 주 · 약한 주제) → 복습할 질문.
 // PC는 12칸 격자에 오늘의 질문 8칸 · 학습 현황 4칸, 그 아래 복습할 질문을 폭 가득 둔다. 폭이 바뀌어도 순서는 같다.
 // 꼬리잇기는 머리 막대에, 복습 대기 수는 복습할 질문 제목에 있어 타일로 두지 않는다(R4·R5). 최근 기록은 Q노트에서 본다(R6)
 export default function HomePage() {
@@ -35,10 +35,10 @@ export default function HomePage() {
   );
 }
 
-// 오늘 안 풂(낼 질문이 없거나 예산에 닿은 날 포함)은 응원 한 줄, 하던 중·오늘 완료는 상태 문구(#146)
+// 오늘 안 풂은 응원 한 줄, 하던 중·오늘 완료는 상태 문구. 풀 수 없는 날(낼 질문이 없거나 예산에 닿음)은 인사만(#146)
 const TITLES: Record<HomeState["kind"], string> = {
   todo: "오늘 면접 잘 봐요",
-  doing: "하던 질문 마저 이어가 볼까요?",
+  doing: "하던 질문 마저 이어 가 볼까요?",
   done: "오늘도 수고했어요",
 };
 
@@ -53,7 +53,7 @@ function Greeting({ name, title }: { name?: string | null; title: string }) {
 }
 
 // 불러오는 동안: 같은 자리에 같은 모양의 빈 칸(레이아웃이 밀리지 않게).
-// 인사 자리에는 준비 중 글을 둔다. 첫 방문 안내는 불러온 뒤에만 보인다
+// 인사 자리에는 준비 중 글을 둔다. 첫 방문 안내는 주 버튼 아래라 불러온 뒤에 나타나도 버튼이 밀리지 않는다
 function Loading() {
   return (
     <>
@@ -150,9 +150,8 @@ async function Home() {
       <section className={s.today} aria-label="오늘의 질문">
         <Greeting
           name={profile.data?.nickname}
-          title={state ? TITLES[state.kind] : TITLES.todo}
+          title={state ? TITLES[state.kind] : "안녕하세요"}
         />
-        <HomeGuide />
         {budget ? (
           <>
             <h1 className="sr-only">오늘의 질문</h1>
@@ -175,6 +174,8 @@ async function Home() {
         ) : (
           <Today session={session} state={state} />
         )}
+        {/* 첫 방문 안내는 주 행동 아래(DESIGN.md inline-notice guide). 375×667에서도 주 버튼이 첫 화면에 보인다 */}
+        <HomeGuide />
         {/* 오늘 질문을 끝냈고 알림이 꺼져 있으면 알림 권한 사전 안내(S32) */}
         {done && profile.data && !profile.data.notify_on && (
           <NotifyPrompt

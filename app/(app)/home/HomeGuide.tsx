@@ -7,9 +7,9 @@ import s from "./home.module.css";
 // 홈 첫 방문 안내(#146). 서버는 늘 그리고, 닫은 브라우저는 app/layout.tsx의 첫 그림 전 스크립트가
 // html에 data-home-guide를 달아 CSS로 숨긴다(lib/home.ts homeGuideScript).
 // "알겠어요"를 누르면 이 브라우저에 남기고 바로 숨긴다. 저장소를 못 쓰면 이 페이지를 떠나기 전까지만 숨긴다.
-// 닫은 뒤에는 오늘의 질문 버튼(없으면 제목)으로 포커스를 옮긴다
+// 닫은 뒤에는 오늘의 질문 버튼으로, 버튼이 없는 예산 소진 날은 보이는 한도 안내 제목으로 포커스를 옮긴다
 export function HomeGuide() {
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   function close() {
     try {
@@ -21,15 +21,20 @@ export function HomeGuide() {
     const today = ref.current?.parentElement;
     const next =
       today?.querySelector<HTMLElement>("a.btn") ??
-      today?.querySelector<HTMLElement>("h1");
-    if (next?.tagName === "H1") next.tabIndex = -1;
+      today?.querySelector<HTMLElement>("strong");
+    if (next?.tagName === "STRONG") next.tabIndex = -1;
     next?.focus();
   }
 
   return (
-    <section ref={ref} className={s.guide} aria-labelledby="home-guide-title">
+    <div
+      ref={ref}
+      className={s.guide}
+      role="note"
+      aria-labelledby="home-guide-title"
+    >
       <strong id="home-guide-title">TailQ는 이렇게 써요</strong>
-      <ol>
+      <ol role="list">
         <li>
           <span className="mono" aria-hidden="true">
             01
@@ -51,8 +56,8 @@ export function HomeGuide() {
             03
           </span>
           <p>
-            <b>Q메이커</b>에 README나 학습 자료를 넣으면 내 자료로 질문을
-            만들어요
+            <b>Q메이커</b>에 프로젝트 README나 학습 자료를 넣으면 내 자료로
+            질문을 만들어요
           </p>
         </li>
       </ol>
@@ -63,6 +68,6 @@ export function HomeGuide() {
       >
         알겠어요
       </button>
-    </section>
+    </div>
   );
 }
