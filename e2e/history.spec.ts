@@ -8,6 +8,16 @@ test("로그인하지 않으면 옛 기록 목록 대신 로그인으로 간다"
   await expect(page).toHaveURL("/login?next=%2Fhistory");
 });
 
+// 옛 북마크 필터 주소는 로그인 뒤 돌아올 주소에 쿼리를 그대로 남겨 북마크 필터로 넘어가게 한다
+test("옛 기록 북마크 주소는 쿼리를 남긴 채 로그인으로 간다", async ({
+  page,
+}) => {
+  await page.goto("/history?filter=bookmark");
+  await expect(page).toHaveURL(
+    `/login?next=${encodeURIComponent("/history?filter=bookmark")}`,
+  );
+});
+
 test("로그인하지 않으면 기록 상세 대신 로그인으로 간다", async ({ page }) => {
   const id = "00000000-0000-0000-0000-000000000001";
   await page.goto(`/history/${id}`);
