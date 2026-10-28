@@ -40,25 +40,28 @@ async function ShareView({ id }: { id: string }) {
   const [line1, line2] = shareSentence(card, kstDay(new Date()));
 
   return (
-    <main className={`${s.page} fade`}>
+    <div className={`${s.page} fade`}>
+      {/* 로그인 없이 보는 화면이라 앱 메뉴 없이 로고만 */}
       <header className={s.header}>
-        <Link href="/" className={s.logo} aria-label="TailQ 처음으로">
-          <Logo />
-        </Link>
+        <div className={s.headerIn}>
+          <Link href="/" className={s.logo} aria-label="TailQ 처음으로">
+            <Logo height="var(--logo-h)" />
+          </Link>
+        </div>
       </header>
 
-      <div className={s.body}>
-        <section className={`glass ${s.card}`} aria-label="결과 카드">
-          <p className={s.kicker}>오늘의 기술면접</p>
-          <p className={`mono ${s.date}`}>{shareDate(card)}</p>
-          <h1 className={s.topic}>{card.topic_name}</h1>
-          <div className={s.ring}>
-            <ScoreRing
-              shown={card.score}
-              value={card.score}
-              label={`100점 만점에 ${card.score}점`}
-            />
+      <main className={s.main}>
+        <section className={s.card} aria-label="결과 카드">
+          <div className={s.meta}>
+            <span className="tag tag-today">오늘의 기술면접</span>
+            <span className={`mono ${s.date}`}>{shareDate(card)}</span>
           </div>
+          <h1 className={s.topic}>{card.topic_name}</h1>
+          <ScoreRing
+            shown={card.score}
+            value={card.score}
+            label={`100점 만점에 ${card.score}점`}
+          />
           <p className={s.who}>
             <b>{shareName(card)}</b>
             {card.streak > 0 && (
@@ -79,17 +82,17 @@ async function ShareView({ id }: { id: string }) {
           <Icon name="lock" size={14} />
           질문 원문과 답변은 공유되지 않아요
         </p>
-      </div>
 
-      <div className={s.actions}>
-        {/* 랜딩의 체험 구역(#try)으로 */}
-        <Link href="/#try" className="btn btn-primary press">
-          나도 한 문제 풀어보기
-        </Link>
-        <Link href="/" className="glass btn btn-secondary press">
-          TailQ 알아보기
-        </Link>
-      </div>
-    </main>
+        <div className={s.actions}>
+          {/* 랜딩의 체험 구역(#try)으로 */}
+          <Link href="/#try" className="btn btn-primary press">
+            나도 한 문제 풀어보기
+          </Link>
+          <Link href="/" className="btn btn-secondary press">
+            TailQ 알아보기
+          </Link>
+        </div>
+      </main>
+    </div>
   );
 }

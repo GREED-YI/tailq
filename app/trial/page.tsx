@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { loadTrialSession } from "@/lib/trial-session";
 import { turnResult } from "@/lib/turn";
 import { Interview, type InterviewStatus } from "../interview/Interview";
+import { steps } from "../interview/steps";
 
 export const metadata: Metadata = { title: "체험 · TailQ" };
 
@@ -39,6 +40,7 @@ async function TrialInterview() {
         idx: turn.idx,
         prompt: turn.follow_up_prompt ?? session.question.prompt,
       }}
+      initialSteps={steps(session.turns, session.question.prompt)}
       question={session.question}
       exitHref="/"
       resultHref="/trial/result"

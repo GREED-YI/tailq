@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
-import { shareName } from "@/lib/share";
+import { shareDate, shareName } from "@/lib/share";
 import { TOKENS } from "@/lib/theme";
 import { loadShare } from "./load";
 
@@ -15,124 +15,95 @@ export const contentType = "image/png";
 // 경로를 글자 그대로 써야 배포 묶음(파일 추적)에 이 파일들만 들어간다
 
 const C = TOKENS.dark;
-const R = 120;
-const RING = 2 * Math.PI * R;
 
 export default async function Image({ params }: PageProps<"/s/[id]">) {
   const card = await loadShare((await params).id);
-  const [regular, bold, wordmark] = await Promise.all([
+  const font = (file: string) =>
     readFile(
       join(
         process.cwd(),
-        "node_modules/pretendard/dist/web/static/woff-subset/Pretendard-Regular.subset.woff",
+        "node_modules/pretendard/dist/web/static/woff-subset",
+        file,
       ),
-    ),
+    );
+  const [regular, bold, mono, wordmark] = await Promise.all([
+    font("Pretendard-Regular.subset.woff"),
+    font("Pretendard-Bold.subset.woff"),
+    // 점수·날짜 숫자는 화면과 같이 Geist Mono(SIL OFL 1.1, geist 패키지)
     readFile(
       join(
         process.cwd(),
-        "node_modules/pretendard/dist/web/static/woff-subset/Pretendard-Bold.subset.woff",
+        "node_modules/geist/dist/fonts/geist-mono/GeistMono-SemiBold.ttf",
       ),
     ),
     // 워드마크를 다크 글자색으로 칠해 넣는다
     readFile(join(process.cwd(), "public/brand/wordmark.svg"), "utf8"),
   ]);
   const logo = `data:image/svg+xml;base64,${Buffer.from(wordmark.replaceAll("currentColor", C.text)).toString("base64")}`;
+  // 20칸 점수 막대(DESIGN.md score-bar): 5점마다 한 칸
+  const on = card ? Math.round(card.score / 5) : 0;
 
+  // 화면의 결과 카드와 같은 결: 평평한 바탕, 1px 선, 큰 모노 점수와 20칸 막대. 글래스·그라디언트 없음
   return new ImageResponse(
     <div
       style={{
         width: "100%",
         height: "100%",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        flexDirection: "column",
+        padding: "56px 72px 64px",
         background: C.canvas,
         color: C.text,
         fontFamily: "Pretendard",
       }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse는 img만 그린다 */}
-      <img
-        src={logo}
-        alt=""
-        width={141}
-        height={48}
-        style={{ position: "absolute", top: 48, left: 64 }}
-      />
-      {card ? (
-        <div style={{ display: "flex", alignItems: "center", gap: 72 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingBottom: 32,
+          borderBottom: `2px solid ${C.text}`,
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element -- ImageResponse는 img만 그린다 */}
+        <img src={logo} alt="" width={141} height={48} />
+        {card && (
           <div
             style={{
-              position: "relative",
-              width: 300,
-              height: 300,
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              fontFamily: "Geist Mono",
+              fontSize: 26,
+              color: C["text-muted"],
             }}
           >
-            <svg
-              width="300"
-              height="300"
-              viewBox="0 0 300 300"
-              style={{ position: "absolute" }}
-            >
-              <circle
-                cx="150"
-                cy="150"
-                r={R}
-                fill="none"
-                stroke={C.line}
-                strokeWidth="24"
-              />
-              {card.score > 0 && (
-                <circle
-                  cx="150"
-                  cy="150"
-                  r={R}
-                  fill="none"
-                  stroke={C.accent}
-                  strokeWidth="24"
-                  strokeLinecap="round"
-                  strokeDasharray={`${(RING * card.score) / 100} ${RING}`}
-                  transform="rotate(-90 150 150)"
-                />
-              )}
-            </svg>
+            {shareDate(card)}
+          </div>
+        )}
+      </div>
+      {card ? (
+        <div
+          style={{ flex: 1, display: "flex", alignItems: "center", gap: 72 }}
+        >
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              minWidth: 0,
+            }}
+          >
             <div
               style={{
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
+                alignSelf: "flex-start",
+                padding: "8px 20px",
+                borderRadius: 999,
+                background: C["accent-soft"],
+                color: C.accent,
+                fontSize: 26,
+                fontWeight: 700,
               }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: 104,
-                  fontWeight: 700,
-                  lineHeight: 1,
-                }}
-              >
-                {card.score}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  fontSize: 26,
-                  color: C["text-sub"],
-                  marginTop: 8,
-                }}
-              >
-                /100
-              </div>
-            </div>
-          </div>
-          <div
-            style={{ display: "flex", flexDirection: "column", maxWidth: 560 }}
-          >
-            <div
-              style={{ display: "flex", fontSize: 30, color: C["text-sub"] }}
             >
               오늘의 기술면접
             </div>
@@ -142,8 +113,8 @@ export default async function Image({ params }: PageProps<"/s/[id]">) {
                 fontSize: 76,
                 fontWeight: 700,
                 letterSpacing: -2,
-                marginTop: 12,
-                lineHeight: 1.15,
+                marginTop: 24,
+                lineHeight: 1.2,
               }}
             >
               {card.topic_name}
@@ -152,7 +123,7 @@ export default async function Image({ params }: PageProps<"/s/[id]">) {
               style={{
                 display: "flex",
                 fontSize: 32,
-                marginTop: 36,
+                marginTop: 28,
                 color: C["text-sub"],
               }}
             >
@@ -170,9 +141,72 @@ export default async function Image({ params }: PageProps<"/s/[id]">) {
               )}
             </div>
           </div>
+          <div
+            style={{
+              width: 380,
+              display: "flex",
+              flexDirection: "column",
+              gap: 24,
+              padding: 32,
+              background: C.surface,
+              border: `1px solid ${C.line}`,
+              borderRadius: 8,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+              <span
+                style={{
+                  fontFamily: "Geist Mono",
+                  fontSize: 132,
+                  lineHeight: 0.9,
+                  letterSpacing: -6,
+                  color:
+                    card.score < 40
+                      ? C.danger
+                      : card.score < 70
+                        ? C["text-sub"]
+                        : C.text,
+                }}
+              >
+                {card.score}
+              </span>
+              <span
+                style={{
+                  fontFamily: "Geist Mono",
+                  fontSize: 30,
+                  color: C["text-muted"],
+                }}
+              >
+                /100
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: 4 }}>
+              {Array.from({ length: 20 }, (_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    flex: 1,
+                    height: 20,
+                    borderRadius: 2,
+                    background: i < on ? C.text : "transparent",
+                    border: i < on ? "none" : `2px solid ${C["mark-empty"]}`,
+                  }}
+                />
+              ))}
+            </div>
+          </div>
         </div>
       ) : (
-        <div style={{ display: "flex", fontSize: 56, fontWeight: 700 }}>
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            alignItems: "center",
+            fontSize: 64,
+            fontWeight: 700,
+            letterSpacing: -1.5,
+          }}
+        >
           매일 기술면접 질문 하나
         </div>
       )}
@@ -182,6 +216,7 @@ export default async function Image({ params }: PageProps<"/s/[id]">) {
       fonts: [
         { name: "Pretendard", data: regular, weight: 400, style: "normal" },
         { name: "Pretendard", data: bold, weight: 700, style: "normal" },
+        { name: "Geist Mono", data: mono, weight: 600, style: "normal" },
       ],
     },
   );

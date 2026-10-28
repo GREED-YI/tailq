@@ -1,5 +1,6 @@
 import s from "./interview.module.css";
-import { scoreColor, VERDICTS } from "./verdict";
+import { scoreVerdict } from "./verdict";
+import { VerdictMark } from "./VerdictMark";
 
 export type TurnRow = {
   idx: number;
@@ -9,7 +10,7 @@ export type TurnRow = {
   follow_up_prompt: string | null;
 };
 
-// 단계별 결과(본 질문은 점수, 꼬리질문은 판정 점). 오늘의 결과와 기록 요약이 같이 쓴다
+// 단계별 결과(본 질문은 점수, 꼬리질문은 판정). 모양 점은 판정과 같은 규칙(점수는 구간으로 읽는다)
 export function TurnRows({
   turns,
   prompt,
@@ -18,46 +19,36 @@ export function TurnRows({
   prompt: string;
 }) {
   return (
-    <ol className={`glass ${s.rows}`} aria-label="단계별 결과">
-      {turns.map((t) => {
-        // 본 질문은 점수, 꼬리질문은 판정. 날짜를 넘겨 닫힌 꼬리질문은 건너뜀
-        const v = t.verdict ? VERDICTS[t.verdict] : null;
-        const color = v
-          ? v.color
-          : t.status === "graded"
-            ? scoreColor(t.score ?? 0)
-            : "var(--dot-off)";
-        return (
-          <li key={t.idx} className={s.rowItem}>
-            <span
-              className={s.verdictDot}
-              style={{ background: color }}
-              aria-hidden="true"
-            />
-            <div className={s.rowText}>
-              <span className="num">
-                {t.idx === 0 ? "본 질문" : `꼬리질문 ${t.idx}`}
-              </span>
-              <p>{t.follow_up_prompt ?? prompt}</p>
-            </div>
-            {v ? (
-              // 모르겠어요의 점 색(--dot-off)은 글자로 읽기 어려워 글자는 보조색으로 둔다
-              <span
-                className={s.rowVerdict}
-                style={t.verdict === "unknown" ? undefined : { color }}
-              >
-                {v.label}
-              </span>
+    <section className={s.steplist} aria-labelledby="steps-title">
+      <h2 id="steps-title">단계별 결과</h2>
+      <ol>
+        {turns.map((t) => (
+          <li
+            key={t.idx}
+            className={s.stepRow}
+            data-main={t.idx === 0 || undefined}
+          >
+            <span className={s.stepRowLabel}>
+              {t.idx === 0 ? "본 질문" : `꼬리질문 ${t.idx}`}
+            </span>
+            {t.verdict ? (
+              <VerdictMark verdict={t.verdict} className={s.stepRowResult} />
             ) : t.status === "graded" ? (
-              <span className={`mono ${s.rowScore}`} style={{ color }}>
-                {t.score}
-              </span>
+              <VerdictMark
+                verdict={scoreVerdict(t.score ?? 0)}
+                className={s.stepRowResult}
+              >
+                <span className="mono">{t.score}</span>
+                <span className="sr-only">점</span>
+              </VerdictMark>
             ) : (
-              <span className={s.rowVerdict}>건너뜀</span>
+              // 날짜를 넘겨 닫힌 꼬리질문
+              <span className={s.stepRowSkip}>건너뜀</span>
             )}
+            <p className={s.stepRowPrompt}>{t.follow_up_prompt ?? prompt}</p>
           </li>
-        );
-      })}
-    </ol>
+        ))}
+      </ol>
+    </section>
   );
 }

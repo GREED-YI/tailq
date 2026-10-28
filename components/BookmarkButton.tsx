@@ -42,7 +42,7 @@ export function BookmarkButton({
     <>
       <button
         type="button"
-        className={`glass press icon-btn ${s.button}`}
+        className={`press icon-btn ${s.button}`}
         aria-label="북마크"
         aria-pressed={on}
         onClick={toggle}

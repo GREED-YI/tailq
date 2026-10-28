@@ -4,14 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { BookmarkButton } from "@/components/BookmarkButton";
-import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import type { SessionQuestion } from "@/lib/daily";
 import type { TurnResult } from "@/lib/turn";
 import s from "./interview.module.css";
 import { ScoreRing } from "./ScoreRing";
-import { VERDICTS } from "./verdict";
+import type { Step } from "./steps";
+import { scoreVerdict, VERDICTS } from "./verdict";
+import { VerdictMark } from "./VerdictMark";
 import { openModal, useCloseOnLeave } from "@/lib/dialog";
 
 export type InterviewStatus = "answering" | "grading" | "graded" | "failed";
@@ -24,6 +25,8 @@ const MAX = 2000;
 const CLIENT_TIMEOUT_MS = 15_000;
 const FAILED = "채점하지 못했어요. 다시 채점해 주세요.";
 
+// 읽기 프로그램에 알리는 지금 상태. 처음엔 3D Q 아래 글자로 보였는데, 마스코트를 걷어 내고
+// 채점 중은 제출 버튼의 진행 표시와 점수 자리 표시가 보여 준다(2026-10-28)
 const STATUS_TEXT: Record<Phase, string> = {
   answer: "답변을 기다리고 있어요",
   grading: "채점하고 있어요",
@@ -38,8 +41,11 @@ const PHASE_OF: Record<InterviewStatus, Phase> = {
   failed: "failed",
 };
 
+const stepName = (idx: number) => (idx === 0 ? "본 질문" : `꼬리질문 ${idx}`);
+
 export function Interview({
   initialTurn,
+  initialSteps,
   question,
   exitHref,
   resultHref,
@@ -51,6 +57,7 @@ export function Interview({
   trial = false,
 }: {
   initialTurn: Turn;
+  initialSteps: Step[];
   question: SessionQuestion;
   // 나가기와 끝난 뒤 결과 화면. 프로젝트 질문 세션은 프로젝트 질문 목록으로 돌아간다
   exitHref: string;
@@ -66,6 +73,7 @@ export function Interview({
   const router = useRouter();
   const followUps = trial ? 1 : 3;
   const [turn, setTurn] = useState(initialTurn);
+  const [steps, setSteps] = useState(initialSteps);
   const [phase, setPhase] = useState<Phase>(PHASE_OF[initialStatus]);
   const [answer, setAnswer] = useState(initialAnswer);
   const [streamed, setStreamed] = useState("");
@@ -176,8 +184,19 @@ export function Interview({
     }
   }
 
-  // 다음 꼬리질문으로: 질문이 바뀌며 페이드되고(0.45초) 시트는 답변 입력으로 돌아간다
+  // 다음 꼬리질문으로: 끝낸 단계를 흐름에 더하고, 질문이 바뀌며 페이드되고 답변 입력으로 돌아간다
   function goNext(next: Turn) {
+    if (result) {
+      setSteps((v) => [
+        ...v,
+        {
+          idx: turn.idx,
+          prompt: turn.prompt,
+          score: result.score,
+          verdict: result.verdict,
+        },
+      ]);
+    }
     setTurn(next);
     setPhase("answer");
     setAnswer("");
@@ -190,200 +209,248 @@ export function Interview({
   const tag =
     turn.idx === 0
       ? `${question.label} · ${question.topic}`
-      : `↳ 꼬리질문 ${turn.idx}`;
-  const showResultSheet =
-    phase === "result" || (phase === "grading" && streamed);
+      : stepName(turn.idx);
+  const showResult =
+    phase === "result" || (phase === "grading" && Boolean(streamed));
+  const grading = phase === "grading";
 
   return (
     <div className={`${s.screen} fade`}>
       <header className={s.header}>
-        <button
-          type="button"
-          className="glass press icon-btn"
-          aria-label="면접 나가기"
-          onClick={() => openModal(exitRef.current)}
-        >
-          <Icon name="close" />
-        </button>
-        <div className={s.steps}>
-          <span className={`num ${s.stepLabel}`}>
-            {turn.idx === 0 ? "본 질문" : `꼬리질문 ${turn.idx} / ${followUps}`}
-          </span>
-          <div
-            className={s.dots}
-            role="img"
-            aria-label={`${followUps + 1}단계 중 ${turn.idx + 1}단계`}
+        <div className={s.headerIn}>
+          <button
+            type="button"
+            className="press icon-btn"
+            aria-label="면접 나가기"
+            onClick={() => openModal(exitRef.current)}
           >
-            {Array.from({ length: followUps + 1 }, (_, i) => (
-              <span
-                key={i}
-                className={
-                  i === turn.idx ? s.dotOn : i < turn.idx ? s.dotDone : s.dot
-                }
-              />
-            ))}
+            <Icon name="close" />
+          </button>
+          <div className={s.steps}>
+            <span className={s.stepLabel}>
+              {turn.idx === 0 ? (
+                "본 질문"
+              ) : (
+                <>
+                  꼬리질문{" "}
+                  <span className="mono">
+                    {turn.idx} / {followUps}
+                  </span>
+                </>
+              )}
+            </span>
+            <div
+              className={s.stepBars}
+              role="img"
+              aria-label={`${followUps + 1}단계 중 ${turn.idx + 1}단계`}
+            >
+              {Array.from({ length: followUps + 1 }, (_, i) => (
+                <span
+                  key={i}
+                  data-state={
+                    i === turn.idx ? "current" : i < turn.idx ? "done" : "next"
+                  }
+                />
+              ))}
+            </div>
           </div>
-        </div>
-        {/* 별표는 꼬리질문에서도 본 질문을 북마크한다(05 사용자 흐름). Figma 화면에는 자리가 없어 머리 오른쪽에 둔다 */}
-        <div className={s.headerEnd}>
-          {!trial && (
-            <BookmarkButton
-              questionId={question.id}
-              initial={bookmarked}
-              toastTop
-            />
-          )}
-          <ThemeToggle />
+          {/* 별표는 꼬리질문에서도 본 질문을 북마크한다(05 사용자 흐름) */}
+          <div className={s.headerEnd}>
+            {!trial && (
+              <BookmarkButton
+                questionId={question.id}
+                initial={bookmarked}
+                toastTop
+              />
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
-      <div className={s.orb}>
-        <FloatingQ size={120} thinking={phase === "grading"} />
-        {/* 채점 실패는 아래 여우 안내가 대신하므로 줄만 비워 둔다(Figma S17) */}
-        <p className={s.status} aria-live="polite">
-          {STATUS_TEXT[phase]}
-          {phase === "grading" && (
-            <span className={s.thinking} aria-hidden="true">
-              <span />
-              <span />
-              <span />
-            </span>
-          )}
-        </p>
-      </div>
+      <main className={s.main}>
+        {/* 지금까지의 흐름(DESIGN.md thread). 데스크톱 왼쪽 4칸에만 보인다. 좁은 폭은 머리의 단계 표시가 맡는다 */}
+        <aside className={s.thread} aria-label="지금까지의 흐름">
+          <span className={s.threadTitle}>지금까지</span>
+          <ol>
+            {steps.map((st) => {
+              const v =
+                st.idx === 0 && st.verdict !== "unknown"
+                  ? scoreVerdict(st.score ?? 0)
+                  : (st.verdict ?? "unknown");
+              return (
+                <li key={st.idx}>
+                  <span
+                    className={s.threadDot}
+                    data-shape={VERDICTS[v]?.shape}
+                    style={{ color: VERDICTS[v]?.color }}
+                    aria-hidden="true"
+                  />
+                  <span className={s.threadHead}>
+                    <span>{stepName(st.idx)}</span>
+                    {st.idx === 0 && st.verdict !== "unknown" ? (
+                      <b className="mono" style={{ color: VERDICTS[v]?.color }}>
+                        {st.score}
+                      </b>
+                    ) : (
+                      <b style={{ color: VERDICTS[v]?.color }}>
+                        {VERDICTS[v]?.label}
+                      </b>
+                    )}
+                  </span>
+                  <p>{st.prompt}</p>
+                </li>
+              );
+            })}
+            <li aria-current="step">
+              <span className={s.threadDot} data-current aria-hidden="true" />
+              <span className={s.threadNow}>{stepName(turn.idx)} · 지금</span>
+            </li>
+          </ol>
+        </aside>
 
-      <div key={turn.id} className={`fade ${s.question}`}>
-        <span
-          className={`${turn.idx === 0 && !question.projectId ? "mono" : ""} ${s.tag}`}
-        >
-          {tag}
-        </span>
-        <h1 className={s.prompt}>{turn.prompt}</h1>
-      </div>
-
-      {phase === "failed" && (
-        <div className={s.fail} role="alert">
-          <span className={s.fox} aria-hidden="true" />
-          <strong>채점이 늦어지고 있어요</strong>
-          <p>
-            {error && error !== FAILED ? (
-              error
-            ) : (
-              <>
-                쓴 답변은 그대로 있어요.
-                <br />
-                잠시 후 다시 시도해 주세요.
-              </>
-            )}
+        <section className={s.stage}>
+          <p className="sr-only" aria-live="polite">
+            {STATUS_TEXT[phase]}
           </p>
-        </div>
-      )}
+          <div
+            key={turn.id}
+            className={`fade ${s.question}`}
+            data-compact={showResult || undefined}
+          >
+            <span
+              className={`${turn.idx === 0 && !question.projectId ? "mono" : ""} ${s.tag}`}
+            >
+              {tag}
+            </span>
+            <h1 className={s.prompt}>{turn.prompt}</h1>
+          </div>
 
-      <section
-        className={`glass-strong rise ${s.sheet}`}
-        // 키보드가 올라온 답변 입력 시트만 화면 아래에 붙는다. 늘 붙여 두면 화면 높이가 낮을 때
-        // 시트가 질문을 덮는다. 결과는 길어질 수 있어 질문 아래로 이어 붙인다
-        style={
-          showResultSheet || keyboard === 0
-            ? undefined
-            : {
-                position: "sticky",
-                bottom: `calc(12px + env(safe-area-inset-bottom) + ${keyboard}px)`,
-              }
-        }
-        aria-label={showResultSheet ? "채점 결과" : "답변 입력"}
-        data-result={showResultSheet || undefined}
-        data-typing={keyboard > 0 || undefined}
-      >
-        {showResultSheet ? (
-          <ResultView
-            trial={trial}
-            followUp={turn.idx > 0}
-            resultHref={resultHref}
-            result={phase === "result" ? result : null}
-            streamed={streamed}
-            onNext={goNext}
-          />
-        ) : (
-          <>
-            <label htmlFor="answer" className={s.label}>
-              내 답변
-            </label>
-            <textarea
-              id="answer"
-              className={s.input}
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value)}
-              placeholder={`${nickname ? `${nickname}님의` : "내"} 생각을 자유롭게 적어보세요`}
-              spellCheck={false}
-              autoComplete="off"
-              readOnly={phase === "grading"}
-              aria-describedby="answer-count"
-            />
-            {error && phase !== "failed" && (
-              <p className={s.error} role="alert">
-                {error}
+          {phase === "failed" && (
+            <div className={s.fail} role="alert">
+              <strong>채점이 늦어지고 있어요</strong>
+              <p>
+                {error && error !== FAILED
+                  ? error
+                  : "쓴 답변은 그대로 있어요. 잠시 후 다시 시도해 주세요."}
               </p>
-            )}
-            <div className={s.row}>
-              {phase !== "failed" && (
-                <button
-                  type="button"
-                  className={`glass press ${s.pill}`}
-                  disabled={phase === "grading"}
-                  onClick={() => submit({ dontKnow: true })}
-                >
-                  모르겠어요
-                </button>
-              )}
-              {/* 한글이 섞이면 본문 글꼴, 숫자만이면 mono(globals.css 규칙) */}
-              <span
-                id="answer-count"
-                className={`${hint ? "num" : "mono"} ${s.count}`}
-                data-over={length > MAX || undefined}
-              >
-                {hint}
-                {length.toLocaleString()} / 2,000
-              </span>
-              {phase === "failed" ? (
-                <button
-                  type="button"
-                  className="btn btn-md btn-primary press"
-                  disabled={!lastDontKnow && !valid}
-                  onClick={() =>
-                    submit(lastDontKnow ? { dontKnow: true } : { text: answer })
-                  }
-                >
-                  다시 채점하기
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className={`press ${s.submit}`}
-                  disabled={!valid || phase === "grading"}
-                  onClick={() => submit({ text: answer })}
-                  aria-label="제출하고 채점받기"
-                >
-                  <Icon name="arrowUp" bold />
-                </button>
-              )}
             </div>
-          </>
-        )}
-      </section>
+          )}
+
+          {showResult ? (
+            <ResultView
+              trial={trial}
+              followUp={turn.idx > 0}
+              resultHref={resultHref}
+              result={phase === "result" ? result : null}
+              streamed={streamed}
+              onNext={goNext}
+            />
+          ) : (
+            <section
+              className={s.answer}
+              aria-label="답변 입력"
+              // 키보드가 올라온 답변 입력만 화면 아래에 붙는다. 늘 붙여 두면 화면 높이가 낮을 때 질문을 덮는다
+              style={
+                keyboard === 0
+                  ? undefined
+                  : {
+                      position: "sticky",
+                      bottom: `calc(12px + env(safe-area-inset-bottom) + ${keyboard}px)`,
+                    }
+              }
+              data-typing={keyboard > 0 || undefined}
+            >
+              <label htmlFor="answer" className={s.label}>
+                내 답변
+              </label>
+              <textarea
+                id="answer"
+                className={s.input}
+                value={answer}
+                onChange={(e) => setAnswer(e.target.value)}
+                placeholder={`${nickname ? `${nickname}님의` : "내"} 생각을 자유롭게 적어보세요`}
+                spellCheck={false}
+                autoComplete="off"
+                readOnly={grading}
+                aria-describedby="answer-count"
+                data-error={length > MAX || undefined}
+              />
+              {error && phase !== "failed" && (
+                <p className={s.error} role="alert">
+                  {error}
+                </p>
+              )}
+              <div className={s.row}>
+                {/* 한글이 섞이면 본문 글꼴, 숫자만이면 mono(globals.css 규칙) */}
+                <span
+                  id="answer-count"
+                  className={`${hint ? "num" : "mono"} ${s.count}`}
+                  data-over={length > MAX || undefined}
+                >
+                  {hint}
+                  {length.toLocaleString()} / 2,000
+                </span>
+                {phase !== "failed" && (
+                  <button
+                    type="button"
+                    className="btn btn-md btn-secondary press"
+                    disabled={grading}
+                    onClick={() => submit({ dontKnow: true })}
+                  >
+                    모르겠어요
+                  </button>
+                )}
+                {phase === "failed" ? (
+                  <button
+                    type="button"
+                    className={`btn btn-primary press ${s.submit}`}
+                    disabled={!lastDontKnow && !valid}
+                    onClick={() =>
+                      submit(
+                        lastDontKnow ? { dontKnow: true } : { text: answer },
+                      )
+                    }
+                  >
+                    다시 채점하기
+                  </button>
+                ) : (
+                  // 채점 중에는 글자 대신 진행 표시를 보이고 폭은 그대로 둔다(DESIGN.md button loading)
+                  <button
+                    type="button"
+                    className={`btn btn-primary press ${s.submit}`}
+                    disabled={!valid || grading}
+                    data-loading={grading || undefined}
+                    aria-busy={grading}
+                    onClick={() => submit({ text: answer })}
+                  >
+                    <span className={s.submitLabel}>
+                      제출하기
+                      <Icon name="arrowRight" size={18} bold />
+                    </span>
+                    {grading && (
+                      <span className={s.loader} aria-hidden="true">
+                        <span />
+                        <span />
+                        <span />
+                      </span>
+                    )}
+                  </button>
+                )}
+              </div>
+            </section>
+          )}
+        </section>
+      </main>
 
       {/* 세션 나가기(S31). 턴마다 저장하므로 다시 들어오면 이어간다. 쓰던 답변은 이 기기에 남긴다 */}
-      <dialog
-        ref={exitRef}
-        className={`glass-strong ${s.dialog}`}
-        aria-labelledby="exit-title"
-      >
+      <dialog ref={exitRef} className={s.dialog} aria-labelledby="exit-title">
         <h2 id="exit-title">지금 나가도 현재 시점까지 저장돼요</h2>
         <p>다음에 이어서 할 수 있어요.</p>
         <div className={s.dialogActions}>
           <Link
             href={exitHref}
-            className="glass btn btn-md btn-secondary press"
+            className="btn btn-md btn-secondary press"
             onClick={() => {
               saveDraft();
               // 열린 채로 떠나면 돌아왔을 때 창이 반쯤 열린 상태로 남는다
@@ -433,86 +500,108 @@ function ResultView({
     );
   }
   if (!result) {
-    // 채점 중: 점수는 아직 없고, 피드백 글이 생기는 대로 보인다
+    // 채점 중: 끝난 화면과 같은 자리에 점수 자리 표시(··와 빈 막대)를 두고, 피드백 글이 생기는 대로 보인다
     return (
       <div className={s.result}>
-        <div className={s.top}>
-          <ScoreRing shown={0} label="채점하고 있어요" />
+        <section className={s.panel} aria-label="채점 결과">
+          <ScoreRing
+            shown={0}
+            label="채점하고 있어요"
+            aside={<span className={s.pending}>채점하고 있어요</span>}
+          />
           <p className={s.streaming}>{streamed}</p>
-        </div>
+        </section>
       </div>
     );
   }
   const unknown = result.verdict === "unknown";
+  const score = result.score ?? 0;
   return (
     <div className={s.result}>
-      <div className={s.top}>
+      <section className={s.panel} aria-label="채점 결과">
         {/* 0에서 점수까지 차오르는 것은 ScoreRing이 맡는다 */}
         <ScoreRing
-          shown={result.score ?? 0}
-          label={`100점 만점에 ${result.score ?? 0}점`}
-          value={result.score ?? 0}
+          shown={score}
+          label={`100점 만점에 ${score}점`}
+          value={score}
+          aside={
+            <VerdictMark verdict={unknown ? "unknown" : scoreVerdict(score)} />
+          }
         />
-        <div className={s.headline}>
-          <strong>{unknown ? "모르겠어요" : result.feedback?.summary}</strong>
-          {result.feedback?.good.map((g) => (
-            <span key={g}>{g}</span>
-          ))}
-        </div>
-      </div>
+        {!unknown && result.feedback?.summary && (
+          <p className={s.summary}>{result.feedback.summary}</p>
+        )}
+      </section>
 
       {result.missingKeywords.length > 0 && (
-        <div className={s.chips}>
+        <div className={s.block}>
           <span className={s.label}>보완할 개념</span>
-          {result.missingKeywords.map((k) => (
-            <span
-              key={k}
-              className={`glass ${s.chip} ${/[가-힣]/.test(k) ? "" : "mono"}`}
-            >
-              {k}
-            </span>
-          ))}
+          <div className={s.chips}>
+            {result.missingKeywords.map((k) => (
+              <span
+                key={k}
+                className={`tag tag-concept ${/[가-힣]/.test(k) ? "" : "mono"}`}
+              >
+                {k}
+              </span>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Figma S14는 점수·한 줄·보완할 개념만 보인다. 모범 답안·보완할 점·참고 자료·평가(04 기능 명세)는
-          기록 상세(S20)처럼 접어 둔다. 모르겠어요는 모범 답안이 전부라 펼친 채로 */}
+      {/* 점수·한 줄·보완할 개념만 바로 보이고, 잘한 점·보완할 점·모범 답안·참고 자료·평가(04 기능 명세)는
+          접어 둔다. 모르겠어요는 모범 답안이 전부라 펼친 채로 */}
       <details className={s.more} open={unknown}>
-        <summary>모범 답안과 피드백 자세히 보기</summary>
-        {!!result.feedback?.improve.length && (
-          <div className={s.block}>
-            <span className={s.label}>보완할 점</span>
-            <ul className={s.list}>
-              {result.feedback.improve.map((t) => (
-                <li key={t}>{t}</li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <summary>
+          모범 답안과 피드백 자세히 보기
+          <Icon name="chevronDown" size={18} />
+        </summary>
+        <div className={s.moreBody}>
+          {!!result.feedback?.good.length && (
+            <div className={s.block}>
+              <span className={s.label}>잘한 점</span>
+              <ul className={s.list}>
+                {result.feedback.good.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {!!result.feedback?.improve.length && (
+            <div className={s.block}>
+              <span className={s.label}>보완할 점</span>
+              <ul className={s.list}>
+                {result.feedback.improve.map((t) => (
+                  <li key={t}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-        <div className={s.block}>
-          <span className={s.label}>모범 답안</span>
-          <p className={s.well}>{result.modelAnswer}</p>
+          <div className={s.block}>
+            <span className={s.label}>모범 답안</span>
+            <p className={s.well}>{result.modelAnswer}</p>
+          </div>
+
+          {result.links.length > 0 && (
+            <div className={s.block}>
+              <span className={s.label}>참고 자료</span>
+              <ul className={s.links}>
+                {result.links.map((l) => (
+                  <li key={l.url}>
+                    <a href={l.url} target="_blank" rel="noopener noreferrer">
+                      {l.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {!unknown && !trial && (
+            <Rating turnId={result.turnId} initial={result.rating} />
+          )}
         </div>
-
-        {result.links.length > 0 && (
-          <div className={s.block}>
-            <span className={s.label}>참고 자료</span>
-            <ul className={s.links}>
-              {result.links.map((l) => (
-                <li key={l.url}>
-                  <a href={l.url} target="_blank" rel="noopener noreferrer">
-                    {l.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {!unknown && !trial && (
-          <Rating turnId={result.turnId} initial={result.rating} />
-        )}
       </details>
 
       <NextButton
@@ -525,7 +614,7 @@ function ResultView({
   );
 }
 
-// 꼬리질문 결과: 점수 대신 판정과 한 줄 피드백. "모르겠어요"면 기대 답안을 보여준다(docs/04 C-7)
+// 꼬리질문 결과: 점수 없이 판정과 한 줄 피드백. "모르겠어요"면 기대 답안을 보여준다(docs/04 C-7)
 function FollowUpResult({
   trial,
   result,
@@ -542,25 +631,24 @@ function FollowUpResult({
   if (!result) {
     return (
       <div className={s.result}>
-        <p className={s.streaming}>{streamed}</p>
+        <section className={s.panel} aria-label="채점 결과">
+          <span className={`${s.verdictLine} ${s.pending}`}>
+            채점하고 있어요
+          </span>
+          <p className={s.streaming}>{streamed}</p>
+        </section>
       </div>
     );
   }
-  const verdict = VERDICTS[result.verdict ?? ""] ?? VERDICTS.unknown;
   const unknown = result.verdict === "unknown";
   return (
     <div className={s.result}>
-      <div className={s.verdict}>
-        <span
-          className={s.verdictDot}
-          style={{ background: verdict.color }}
-          aria-hidden="true"
-        />
-        <strong>{verdict.label}</strong>
-      </div>
-      {result.feedback?.summary && (
-        <p className={s.feedbackLine}>{result.feedback.summary}</p>
-      )}
+      <section className={s.panel} aria-label="채점 결과">
+        <VerdictMark verdict={result.verdict ?? ""} className={s.verdictLine} />
+        {result.feedback?.summary && (
+          <p className={s.summary}>{result.feedback.summary}</p>
+        )}
+      </section>
       {unknown && (
         <div className={s.block}>
           <span className={s.label}>기대 답안</span>
@@ -596,15 +684,20 @@ function NextButton({
   return next ? (
     <button
       type="button"
-      className="btn btn-primary press"
+      className={`btn btn-primary press ${s.next}`}
       onClick={() => onNext(next)}
     >
-      꼬리질문 받기 · {next.idx}/{followUps}
+      꼬리질문 받기
+      <span className="mono">
+        {next.idx}/{followUps}
+      </span>
+      <Icon name="arrowRight" size={18} bold />
     </button>
   ) : (
-    <Link href={resultHref} className="btn btn-primary press">
+    <Link href={resultHref} className={`btn btn-primary press ${s.next}`}>
       {/* 프로젝트 질문 세션(?session=)과 체험은 오늘의 결과가 아니다 */}
       {resultHref === "/interview/result" ? "오늘의 결과 보기" : "결과 보기"}
+      <Icon name="arrowRight" size={18} bold />
     </Link>
   );
 }
@@ -631,7 +724,7 @@ function Rating({
     <div className={s.rating}>
       <button
         type="button"
-        className="glass press icon-btn"
+        className="press icon-btn"
         aria-label="채점이 도움이 됐어요"
         aria-pressed={rating === 1}
         onClick={() => rate(1)}
@@ -640,7 +733,7 @@ function Rating({
       </button>
       <button
         type="button"
-        className="glass press icon-btn"
+        className="press icon-btn"
         aria-label="채점이 도움이 안 됐어요"
         aria-pressed={rating === -1}
         onClick={() => rate(-1)}
@@ -651,7 +744,7 @@ function Rating({
   );
 }
 
-// 키보드가 올라오면 시트도 그 위로(docs/07 "iOS 대응", visualViewport 기준).
+// 키보드가 올라오면 답변 입력도 그 위로(docs/07 "iOS 대응", visualViewport 기준).
 // 주소창이 다시 보이거나 확대해도 visualViewport가 줄어드니, 입력 칸에 초점이 있고
 // 확대하지 않았고 줄어든 높이가 키보드만큼(120px 이상)일 때만 키보드로 본다
 const KEYBOARD_MIN = 120;
