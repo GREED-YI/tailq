@@ -10,10 +10,11 @@ import {
   CONTENT_MIN,
   NAME_MAX,
   NOTE_CONTENT_MAX,
+  NOTE_FILE_ACCEPT,
 } from "@/lib/questions";
 import s from "@/app/(app)/projects/projects.module.css";
 
-// 프로젝트와 학습 자료(#141)는 같은 등록 화면을 쓰고 API·글·내용 한도만 다르다. 학습 자료는 .md 파일을 불러올 수 있다
+// 프로젝트와 학습 자료(#141)는 같은 등록 화면을 쓰고 API·글·내용 한도만 다르다. 학습 자료는 파일을 불러올 수 있다(#144)
 const COPY = {
   project: {
     api: "/api/projects",
@@ -35,7 +36,7 @@ const COPY = {
     namePlaceholder: "예: 운영체제 - 프로세스와 스레드",
     contentLabel: "학습 자료(마크다운·텍스트)",
     contentPlaceholder:
-      "정리한 글이나 수업 자료를 붙여넣거나 .md 파일을 불러와 주세요",
+      "정리한 글을 붙여넣거나 수업 자료 파일(PDF·Word·PPT·한글 등)을 불러와 주세요",
     // 375에서 글자 수와 한 줄에 들어가게 짧게 둔다
     help: "개념 질문 5개를 만들어 줘요",
     back: "학습 자료 목록으로",
@@ -58,8 +59,10 @@ export function ProjectForm({
   const [content, setContent] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  // .md 파일을 읽지 못했거나 너무 길 때의 안내. 파일 칸에 묶어 보여 주고, 이미 쓴 글은 그대로 둔다
+  // 파일을 읽지 못했거나 글이 한도를 넘을 때의 안내. 파일 칸에 묶어 보여 주고, 읽지 못했으면 이미 쓴 글은 그대로 둔다
   const [fileError, setFileError] = useState("");
+  // 파일을 글로 바꾸는 중(큰 PDF는 몇 초 걸린다)
+  const [reading, setReading] = useState(false);
   // 요청 중인지와 등록했는지. 등록하면 이동하는 동안 잠금을 유지하고, 화면이 보관되어 숨겨지거나 다시 보일 때
   // 요청 중이 아니면 잠금을 푼다(cacheComponents라 상태를 그대로 들고 다시 보인다. TrialPicker와 같다).
   // 등록한 뒤라면 칸도 비워 새 등록 화면이 빈 칸으로 열리게 한다
@@ -85,7 +88,7 @@ export function ProjectForm({
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!valid || busy) return;
+    if (!valid || busy || reading) return;
     setBusy(true);
     inFlight.current = true;
     setError("");
@@ -111,26 +114,34 @@ export function ProjectForm({
     setError(json?.error?.message ?? "잠시 뒤에 다시 시도해 주세요.");
   }
 
-  // .md 파일은 브라우저에서 글로 읽어 입력칸에 넣는다. 파일 자체는 서버로 보내지도 저장하지도 않는다(#141)
+  // 파일은 브라우저에서 글로 바꿔 입력칸에 넣는다. 파일 자체는 서버로 보내지도 저장하지도 않는다(#141, #144).
+  // 변환 코드와 형식별 라이브러리는 파일을 고를 때 불러온다. 한도를 넘는 글도 넣어 두고 줄이면 등록할 수 있게 한다
   async function load(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     // 같은 파일을 다시 골라도 change가 일어나게 비운다
     e.target.value = "";
     if (!file) return;
-    const text = await file.text().catch(() => null);
-    if (text === null) {
-      setFileError("파일을 읽지 못했어요. 내용을 복사해 붙여넣어 주세요.");
-      return;
-    }
-    const n = text.trim().length;
-    if (n > c.max) {
-      setFileError(
-        `파일이 ${n.toLocaleString()}자예요. ${c.max.toLocaleString()}자 이하로 줄여서 다시 불러와 주세요.`,
-      );
-      return;
-    }
+    setReading(true);
     setFileError("");
-    setContent(text);
+    try {
+      const { fileToText } = await import("@/lib/note-file");
+      const { text, truncated } = await fileToText(file);
+      const n = text.trim().length;
+      setContent(text);
+      if (n > c.max) {
+        setFileError(
+          `${truncated ? "글이 너무 길어 앞부분만 넣었어요. " : ""}${n.toLocaleString()}자예요. ${c.max.toLocaleString()}자 이하로 줄이면 등록할 수 있어요.`,
+        );
+      }
+    } catch (err) {
+      setFileError(
+        (err as Error).name === "NoteFileError"
+          ? (err as Error).message
+          : "파일을 읽지 못했어요. 내용을 복사해 붙여넣어 주세요.",
+      );
+    } finally {
+      setReading(false);
+    }
   }
 
   return (
@@ -208,9 +219,9 @@ export function ProjectForm({
                 id="project-file"
                 type="file"
                 className={`sr-only ${s.fileInput}`}
-                accept=".md,.markdown,.txt"
+                accept={NOTE_FILE_ACCEPT}
                 onChange={load}
-                disabled={busy}
+                disabled={busy || reading}
                 aria-invalid={fileError ? true : undefined}
                 aria-describedby={fileError ? "project-file-error" : undefined}
               />
@@ -218,7 +229,7 @@ export function ProjectForm({
                 htmlFor="project-file"
                 className="btn btn-md btn-secondary press"
               >
-                .md 파일 불러오기
+                {reading ? "파일을 읽고 있어요" : "파일 불러오기"}
               </label>
               {fileError && (
                 <p
@@ -241,7 +252,7 @@ export function ProjectForm({
             <button
               type="submit"
               className="btn btn-primary press"
-              disabled={!valid || busy}
+              disabled={!valid || busy || reading}
               aria-busy={busy || undefined}
             >
               {busy ? "등록하고 있어요" : "질문 5개 생성"}

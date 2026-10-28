@@ -74,3 +74,23 @@ export const CONTENT_MAX = 10_000;
 // 내용은 수업 자료 파일(PDF·PPT·한글)을 글로 바꿔 넣으면 길어서 30,000자까지 받는다(#144)
 export const MAX_NOTES = 3;
 export const NOTE_CONTENT_MAX = 30_000;
+// 학습 자료 파일 고르기 창에 보일 형식(#144, 변환은 lib/note-file). 옛 형식(.doc·.ppt·.xls)도 넣어야 골랐을 때 새 형식으로 저장하라는 안내를 볼 수 있다
+export const NOTE_FILE_ACCEPT = [
+  ".pdf",
+  ".docx",
+  ".pptx",
+  ".xlsx",
+  ".hwp",
+  ".hwpx",
+  ".epub",
+  ".html",
+  ".htm",
+  ".txt",
+  ".md",
+  ".markdown",
+  ".csv",
+  ".json",
+  ".doc",
+  ".ppt",
+  ".xls",
+].join(",");
