@@ -26,20 +26,20 @@ describe("limitNotice (시작 버튼 대신 보일 안내)", () => {
   it("연습 한도는 질문 목록에, 등록 한도는 등록 화면에만 보인다", () => {
     const practice = q({ sessionsLeft: 0 });
     expect(limitNotice(practice, "practice")?.title).toBe(
-      "오늘 프로젝트 연습 한도를 모두 썼어요",
+      "오늘 연습 한도를 모두 썼어요",
     );
     expect(limitNotice(practice, "register")).toBeNull();
 
     const register = q({ gensLeft: 0 });
     expect(limitNotice(register, "register")?.title).toBe(
-      "오늘 프로젝트 등록 한도를 모두 썼어요",
+      "오늘 질문 만들기 한도를 모두 썼어요",
     );
     expect(limitNotice(register, "practice")).toBeNull();
     // 둘 다 쓴 목록 화면은 Figma S26처럼 연습 안내를 먼저
     expect(
       limitNotice(q({ sessionsLeft: 0, gensLeft: 0 }), "both")?.lines,
     ).toEqual([
-      "프로젝트 연습은 내일 다시 할 수 있어요.",
+      "내일 다시 할 수 있어요.",
       "오늘의 질문은 한도 없이 풀 수 있어요.",
     ]);
   });

@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-// 옛 기록 목록(/history)은 내 질문으로 넘기지만(#136) 상세(/history/[id])와 같은 보호 목록이라 로그인부터 묻는다
+// 옛 기록 목록(/history)은 Q노트로 넘기지만(#136) 상세(/history/[id])와 같은 보호 목록이라 로그인부터 묻는다
 test("로그인하지 않으면 옛 기록 목록 대신 로그인으로 간다", async ({
   page,
 }) => {
@@ -35,7 +35,7 @@ test("옛 리포트 주소도 로그인하지 않으면 로그인으로 간다",
   await expect(page).toHaveURL("/login?next=%2Fhistory%2Freport");
 });
 
-// 복습·기록을 합친 내 질문(#128)
+// 복습·기록을 합친 Q노트(#128)
 for (const path of ["/questions", "/questions/1"]) {
   test(`로그인하지 않으면 ${path} 대신 로그인으로 간다`, async ({ page }) => {
     await page.goto(path);
@@ -43,8 +43,8 @@ for (const path of ["/questions", "/questions/1"]) {
   });
 }
 
-// 옛 복습 목록은 내 질문의 오늘 필터로 넘어간 뒤 로그인을 묻는다(#136)
-test("옛 복습 주소는 내 질문 오늘 필터로 넘어간다", async ({ page }) => {
+// 옛 복습 목록은 Q노트의 오늘 필터로 넘어간 뒤 로그인을 묻는다(#136)
+test("옛 복습 주소는 Q노트 오늘 필터로 넘어간다", async ({ page }) => {
   await page.goto("/review");
   await expect(page).toHaveURL(
     `/login?next=${encodeURIComponent("/questions?filter=today")}`,

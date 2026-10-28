@@ -34,7 +34,7 @@ export default function HistoryDetailPage({
 }
 
 // 모바일은 뒤로 · 가운데 제목 · 북마크, PC는 뒤로 + 큰 제목(Figma S20).
-// 뒤로는 이 기록의 질문 상세(W3). 질문을 읽기 전(불러오는 중)에는 내 질문으로
+// 뒤로는 이 기록의 질문 상세(W3). 질문을 읽기 전(불러오는 중)에는 Q노트로
 function Header({
   backHref = "/questions",
   children,
@@ -60,7 +60,7 @@ async function Detail({ id }: { id: string }) {
   const { data: session } = await supabase
     .from("sessions")
     .select(
-      "day, status, questions(id, prompt, topic_id, level, topics(field), projects(name), bookmarks(question_id)), turns(id, idx, status, answer, follow_up_prompt)",
+      "day, status, questions(id, prompt, topic_id, level, topics(field), projects(name), study_notes(title), bookmarks(question_id)), turns(id, idx, status, answer, follow_up_prompt)",
     )
     .eq("id", id)
     .order("idx", { referencedTable: "turns" })

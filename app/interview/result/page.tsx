@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Icon } from "@/components/icons";
-import { loadProjectSession, startDailySession } from "@/lib/daily";
+import { loadProjectSession, sourceHref, startDailySession } from "@/lib/daily";
 import { kstDay } from "@/lib/daily-pick";
 import { daysUntil, dueLabel } from "@/lib/review";
 import { loadStudy } from "@/lib/study";
@@ -44,6 +44,7 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
   const session = sessionId
     ? await loadProjectSession(userId, sessionId)
     : await startDailySession(userId);
+  // 연습 세션을 못 찾으면(자료와 함께 지워졌거나 잘못된 주소) 어느 구획 것인지 알 수 없어 Q메이커 첫 구획으로
   if (!session || session === "budget") {
     redirect(sessionId ? "/projects" : "/home");
   }
@@ -51,7 +52,7 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
   if (session.status === "open") {
     redirect(sessionId ? `/interview?session=${sessionId}` : "/interview");
   }
-  const back = sessionId ? `/projects/${session.question.projectId}` : "/home";
+  const back = sessionId ? sourceHref(session.question) : "/home";
 
   const [{ data: turns }, { data: review }, study] = await Promise.all([
     supabase
@@ -69,6 +70,8 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
   ]);
   const streak = study?.streak.current;
   const q = session.question;
+  // 연습 세션의 종류 이름(라벨과 제목이 같이 쓴다)
+  const kindLabel = q.noteId ? "학습 자료 질문" : "프로젝트 질문";
   const followed = (turns ?? []).some(
     (t) => t.idx > 0 && t.status === "graded",
   );
@@ -95,11 +98,11 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
       <main className={s.summaryMain}>
         <div className={s.hero}>
           <div className={s.heroMeta}>
-            {/* today 라벨은 오늘의 질문에만. 프로젝트 질문은 neutral(DESIGN.md label) */}
+            {/* today 라벨은 오늘의 질문에만. 프로젝트·학습 자료 질문은 neutral(DESIGN.md label) */}
             <span className={`tag ${sessionId ? "tag-neutral" : "tag-today"}`}>
-              {sessionId ? "프로젝트 질문" : "오늘의 결과"}
+              {sessionId ? kindLabel : "오늘의 결과"}
             </span>
-            <span className={q.projectId ? "" : "mono"}>
+            <span className={q.projectId || q.noteId ? "" : "mono"}>
               {q.label} · {q.topic}
             </span>
           </div>
@@ -114,12 +117,12 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
               </>
             ) : followed ? (
               <>
-                프로젝트 질문,
+                {kindLabel},
                 <br />
                 꼬리질문까지 마쳤어요
               </>
             ) : (
-              "프로젝트 질문을 마쳤어요"
+              `${kindLabel}을 마쳤어요`
             )}
           </h1>
         </div>

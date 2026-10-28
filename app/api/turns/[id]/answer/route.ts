@@ -62,7 +62,7 @@ export const PUT = withApiErrors(async function PUT(
   const { data: turn } = await db
     .from("turns")
     .select(
-      "idx, session_id, sessions(user_id, kind, trial_token, grade_model, questions(prompt, level, topics(name, field), projects(name), question_keys(rubric, model_answer)))",
+      "idx, session_id, sessions(user_id, kind, trial_token, grade_model, questions(prompt, level, topics(name, field), projects(name), study_notes(title), question_keys(rubric, model_answer)))",
     )
     .eq("id", id)
     .maybeSingle();
@@ -158,9 +158,10 @@ export const PUT = withApiErrors(async function PUT(
   // 본 질문은 점수(Sonnet), 꼬리질문은 판정(Haiku). 둘 다 다음 꼬리질문을 함께 만든다(08 설계 "핵심 흐름")
   const gradeTurn = async () => {
     if (turn.idx === 0) {
-      // 프로젝트 질문은 세부 주제·난이도 대신 프로젝트 이름(docs/09 "채점 사용자 메시지")
-      const topic =
-        q.projects || !q.topics
+      // 프로젝트·학습 자료 질문은 세부 주제·난이도 대신 프로젝트 이름·학습 자료 제목(docs/09 "채점 사용자 메시지")
+      const topic = q.study_notes
+        ? { noteTitle: q.study_notes.title }
+        : q.projects || !q.topics
           ? { projectName: q.projects?.name ?? "" }
           : {
               field: q.topics.field,

@@ -26,7 +26,7 @@ test("로그인하지 않고 프로젝트를 등록·다시 생성·삭제할 �
   expect(session.status()).toBe(401);
 });
 
-test("로그인하지 않고 내 프로젝트에 오면 로그인으로 간다", async ({ page }) => {
+test("로그인하지 않고 Q메이커에 오면 로그인으로 간다", async ({ page }) => {
   await page.goto("/projects/new");
   await expect(page).toHaveURL(/\/login\?next=%2Fprojects%2Fnew/);
 });

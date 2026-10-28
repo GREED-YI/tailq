@@ -61,4 +61,19 @@ describe("질문 표시", () => {
     expect(qLabel({ id: 7, project_id: null })).toBe("Q.007");
     expect(qLabel({ id: 151, project_id: "p" })).toBe("내 프로젝트");
   });
+
+  it("학습 자료 질문은 내 학습 자료와 학습 자료 제목", () => {
+    expect(
+      tagLine({
+        id: 152,
+        topic_id: null,
+        topics: null,
+        projects: null,
+        study_notes: { title: "운영체제" },
+      }),
+    ).toBe("내 학습 자료 · 운영체제");
+    expect(qLabel({ id: 152, project_id: null, note_id: "n" })).toBe(
+      "내 학습 자료",
+    );
+  });
 });

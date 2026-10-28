@@ -25,7 +25,28 @@ const LIMIT_MESSAGE = "오늘은 사용 한도를 모두 썼어요. 내일 다�
 // 생성 상태를 다시 읽는 간격(08 설계 "내 프로젝트 질문 생성": 2초마다)
 const POLL_MS = 2000;
 
+// 프로젝트와 학습 자료(#141)는 같은 화면을 쓰고 API 주소와 글만 다르다
+const COPY = {
+  project: {
+    api: "/api/projects",
+    noun: "프로젝트",
+    nameLabel: "프로젝트 이름",
+    source: "쓴 README",
+    back: "프로젝트 목록으로",
+    backHref: "/projects",
+  },
+  note: {
+    api: "/api/notes",
+    noun: "학습 자료",
+    nameLabel: "학습 자료 제목",
+    source: "넣은 학습 자료",
+    back: "학습 자료 목록으로",
+    backHref: "/projects/notes",
+  },
+};
+
 export function ProjectView({
+  kind = "project",
   id,
   name,
   status,
@@ -33,6 +54,7 @@ export function ProjectView({
   notice,
   canRetry,
 }: {
+  kind?: keyof typeof COPY;
   id: string;
   name: string;
   status: "generating" | "ready" | "failed";
@@ -41,6 +63,7 @@ export function ProjectView({
   notice: Notice | null;
   canRetry: boolean;
 }) {
+  const c = COPY[kind];
   const router = useRouter();
   const dialogRef = useRef<HTMLDialogElement>(null);
   useCloseOnLeave(dialogRef);
@@ -57,7 +80,7 @@ export function ProjectView({
   }, []);
   const [error, setError] = useState("");
   const [deleteError, setDeleteError] = useState("");
-  // 삭제 확인 창에 다시 쓴 프로젝트 이름. 똑같이 써야 삭제 버튼이 켜진다(#118, 사용자 요청)
+  // 삭제 확인 창에 다시 쓴 프로젝트 이름(학습 자료 제목). 똑같이 써야 삭제 버튼이 켜진다(#118, 사용자 요청)
   const [typedName, setTypedName] = useState("");
   const nameMatches = typedName.trim() === name.trim();
 
@@ -91,25 +114,27 @@ export function ProjectView({
   async function retry() {
     setBusy("retry");
     setError("");
-    const res = await fetch(`/api/projects/${id}/generations`, {
+    const res = await fetch(`${c.api}/${id}/generations`, {
       method: "POST",
     }).catch(() => null);
     if (res?.ok || res?.status === 409) {
       router.refresh();
       return;
     }
+    // 페이지를 연 뒤 월 예산이 바닥났으면(429) 서버 문구로 알린다
+    const json = await res?.json().catch(() => null);
     setBusy(null);
-    setError("잠시 뒤에 다시 시도해 주세요.");
+    setError(json?.error?.message ?? "잠시 뒤에 다시 시도해 주세요.");
   }
 
   async function remove() {
     setBusy("delete");
     setDeleteError("");
-    const res = await fetch(`/api/projects/${id}`, { method: "DELETE" }).catch(
+    const res = await fetch(`${c.api}/${id}`, { method: "DELETE" }).catch(
       () => null,
     );
     if (res?.ok) {
-      router.replace("/projects");
+      router.replace(c.backHref);
       router.refresh();
       return;
     }
@@ -121,11 +146,7 @@ export function ProjectView({
   return (
     <>
       <header className={s.top}>
-        <Link
-          href="/projects"
-          className="press icon-btn"
-          aria-label="내 프로젝트로"
-        >
+        <Link href={c.backHref} className="press icon-btn" aria-label={c.back}>
           <Icon name="chevronLeft" />
         </Link>
         <h1>{name}</h1>
@@ -148,7 +169,7 @@ export function ProjectView({
                   key={q.id}
                   title={
                     locked
-                      ? "오늘 프로젝트 연습 한도를 모두 썼어요. 내일 다시 할 수 있어요"
+                      ? "오늘 연습 한도를 모두 썼어요. 내일 다시 할 수 있어요"
                       : undefined
                   }
                 >
@@ -220,9 +241,9 @@ export function ProjectView({
               {canRetry ? (
                 <>
                   <p>
-                    쓴 README는 그대로 남아 있어요.
+                    {c.source}는 그대로 남아 있어요.
                     <br />
-                    다시 만들어 볼까요?
+                    다시 만들어도 오늘 한도는 그대로예요.
                   </p>
                   <button
                     type="button"
@@ -274,7 +295,7 @@ export function ProjectView({
             openModal(dialogRef.current);
           }}
         >
-          프로젝트 삭제하기
+          {c.noun} 삭제하기
         </button>
       </div>
 
@@ -284,7 +305,9 @@ export function ProjectView({
         className={s.dialog}
         aria-labelledby="delete-title"
       >
-        <h2 id="delete-title">{name} 프로젝트를 지울까요?</h2>
+        <h2 id="delete-title">
+          {name} {c.noun}를 지울까요?
+        </h2>
         <p>
           질문 {questions.length || 5}개와 답변 기록, 복습 일정까지
           <br />
@@ -297,7 +320,7 @@ export function ProjectView({
           }}
         >
           <label htmlFor="delete-name" className={s.dialogLabel}>
-            삭제하려면 프로젝트 이름 「{name}」을 입력하세요
+            삭제하려면 {c.nameLabel}을 똑같이 입력해 주세요
           </label>
           <input
             id="delete-name"

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { loadProjectSession, startDailySession } from "@/lib/daily";
+import { loadProjectSession, sourceHref, startDailySession } from "@/lib/daily";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { turnResult } from "@/lib/turn";
@@ -41,11 +41,12 @@ async function SessionInterview({ sessionId }: { sessionId?: string }) {
   const session = sessionId
     ? await loadProjectSession(userId, sessionId)
     : await startDailySession(userId);
-  // 월 예산에 닿아 오늘 세션을 새로 열 수 없으면 홈이 안내한다
+  // 월 예산에 닿아 오늘 세션을 새로 열 수 없으면 홈이 안내한다.
+  // 연습 세션을 못 찾으면(자료와 함께 지워졌거나 잘못된 주소) 어느 구획 것인지 알 수 없어 Q메이커 첫 구획으로
   if (!session || session === "budget") {
     redirect(sessionId ? "/projects" : "/home");
   }
-  const projectHref = sessionId && `/projects/${session.question.projectId}`;
+  const projectHref = sessionId && sourceHref(session.question);
 
   // 이어하기: 턴마다 저장하므로 가장 마지막 턴(본 질문 또는 꼬리질문)부터 이어간다(08 설계 "이어하기").
   // RLS가 자기 세션의 턴만 보여준다. 멈춘 채점은 effective_status가 failed다

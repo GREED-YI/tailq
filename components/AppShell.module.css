@@ -155,6 +155,10 @@
   line-height: 1.45;
   color: var(--text-muted);
 }
+/* 띄어 쓴 이름(Q노트, Q메이커)도 글자를 키웠을 때 두 줄로 꺾이지 않게 한 줄로 둔다 */
+.navItem span {
+  white-space: nowrap;
+}
 /* 키보드 초점 테두리는 안쪽에 그려 옆 칸·막대 밖으로 넘치지 않게 */
 .navItem:focus-visible {
   outline-offset: -2px;

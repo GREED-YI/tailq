@@ -5,14 +5,19 @@ import { questionTags } from "@/lib/questions";
 import { track } from "@/lib/track";
 import { budgetUsd } from "@/lib/usage";
 
-// 면접·결과 화면이 보여주는 질문. 복습으로 나온 프로젝트 질문이면 projectId가 있다
+// 면접·결과 화면이 보여주는 질문. 프로젝트 질문이면 projectId, 학습 자료 질문이면 noteId가 있다
 export type SessionQuestion = {
   id: number;
   prompt: string;
   label: string;
   topic: string;
   projectId: string | null;
+  noteId: string | null;
 };
+
+// 연습 세션(?session=)을 마치거나 나갈 때 돌아갈 질문 목록(프로젝트 또는 학습 자료)
+export const sourceHref = (q: SessionQuestion) =>
+  q.noteId ? `/projects/notes/${q.noteId}` : `/projects/${q.projectId}`;
 
 export type DailySession = {
   id: string;
@@ -23,7 +28,7 @@ export type DailySession = {
 };
 
 export const QUESTION_COLUMNS =
-  "id, prompt, topic_id, project_id, topics(field), projects(name)";
+  "id, prompt, topic_id, project_id, note_id, topics(field), projects(name), study_notes(title)";
 const SESSION_COLUMNS =
   `id, day, pick, status, questions(${QUESTION_COLUMNS})` as const;
 
@@ -124,7 +129,7 @@ export async function startDailySession(
   return toDailySession(created.data);
 }
 
-// 내 프로젝트 질문 세션(면접 화면의 ?session=). 내 세션이 아니거나 프로젝트 세션이 아니면 null
+// 내 프로젝트·학습 자료 질문 세션(면접 화면의 ?session=, 둘 다 kind = project). 내 세션이 아니거나 연습 세션이 아니면 null
 export async function loadProjectSession(userId: string, sessionId: string) {
   if (!z.uuid().safeParse(sessionId).success) return null;
   const { data } = await createAdminClient()
@@ -149,8 +154,10 @@ type QuestionRow = {
   prompt: string;
   topic_id: string | null;
   project_id: string | null;
+  note_id: string | null;
   topics: { field: string } | null;
   projects: { name: string } | null;
+  study_notes: { title: string } | null;
 };
 
 export function toSessionQuestion(q: QuestionRow): SessionQuestion {
@@ -159,6 +166,7 @@ export function toSessionQuestion(q: QuestionRow): SessionQuestion {
     prompt: q.prompt,
     ...questionTags(q),
     projectId: q.project_id,
+    noteId: q.note_id,
   };
 }
 

@@ -16,10 +16,15 @@ import {
   type GradeInput,
 } from "@/lib/grading";
 import {
+  MOCK_NOTE_QUESTIONS,
   MOCK_PROJECT_QUESTIONS,
+  NOTE_SYSTEM_PROMPT,
+  NoteQuestionsOutput,
   PROJECT_SYSTEM_PROMPT,
   ProjectQuestionsOutput,
+  noteUserMessage,
   projectUserMessage,
+  type NoteInput,
   type ProjectInput,
 } from "@/lib/project-questions";
 
@@ -47,6 +52,10 @@ const FOLLOW_UP_FORMAT = {
 const PROJECT_FORMAT = {
   type: "json_schema" as const,
   schema: betaZodOutputFormat(ProjectQuestionsOutput).schema,
+};
+const NOTE_FORMAT = {
+  type: "json_schema" as const,
+  schema: betaZodOutputFormat(NoteQuestionsOutput).schema,
 };
 
 // 100만 토큰당 달러 [입력, 출력](docs/09 5장). 캐시 읽기는 입력의 0.1배, 캐시 쓰기(5분)는 1.25배.
@@ -166,6 +175,30 @@ export async function generateProjectQuestions(
       timeoutMs: PROJECT_TIMEOUT_MS,
     },
     ProjectQuestionsOutput,
+    () => {},
+    onUsage,
+  );
+}
+
+// 학습 자료 질문 5개 생성(#141). 프로젝트 질문 생성과 모델·시간·흐름이 같고 프롬프트만 다르다
+export async function generateNoteQuestions(
+  input: NoteInput,
+  onUsage?: OnUsage,
+): Promise<NoteQuestionsOutput> {
+  if (process.env.AI_MOCK === "1") {
+    await onUsage?.(mockUsage(PROJECT_MODEL));
+    return MOCK_NOTE_QUESTIONS;
+  }
+  return streamStructured(
+    {
+      model: PROJECT_MODEL,
+      fallback: true,
+      system: NOTE_SYSTEM_PROMPT,
+      user: noteUserMessage(input),
+      format: NOTE_FORMAT,
+      timeoutMs: PROJECT_TIMEOUT_MS,
+    },
+    NoteQuestionsOutput,
     () => {},
     onUsage,
   );
