@@ -325,7 +325,7 @@ export function ProjectForm({
                 파일 불러오기
               </label>
               <span id="project-file-hint" className={s.fileHint}>
-                PDF·Word·PowerPoint·한글 등 · 50MB까지
+                PDF·Word·PowerPoint·한글 등, 50MB까지
               </span>
               {/* 비어 있어도 늘 두는 알림 칸(나중에 붙인 live 영역은 첫 알림을 놓칠 수 있다) */}
               <p

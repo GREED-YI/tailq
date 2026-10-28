@@ -225,11 +225,12 @@
   color: var(--text-muted);
   word-break: keep-all;
 }
-/* 파일명만 한 줄로 줄이고 뒤 글(· 읽고 있어요)은 남긴다. 둘 사이 띄어쓰기는 flex라 gap으로 둔다 */
+/* 파일명은 한 줄로 줄이고, 뒤 글(· 읽고 있어요)은 좁으면 다음 줄로 넘긴다. 둘 사이 띄어쓰기는 flex라 gap으로 둔다 */
 .fileMsg {
   flex-basis: 100%;
   margin-top: 8px;
   display: flex;
+  flex-wrap: wrap;
   column-gap: 0.3em;
   min-width: 0;
   font-size: 13px;
@@ -246,6 +247,7 @@
 }
 .fileName {
   min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -450,7 +452,7 @@
   display: grid;
   place-items: center;
   border-radius: var(--radius-control);
-  background: var(--accent-soft);
+  background: var(--surface);
   color: var(--accent);
   font-size: 15px;
   font-weight: 600;
