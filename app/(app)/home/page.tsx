@@ -17,10 +17,11 @@ import { ScoreBar } from "@/app/interview/ScoreRing";
 import { Dots, Score } from "../history/marks";
 import h from "../history/history.module.css";
 import s from "./home.module.css";
+import { HomeGuide } from "./HomeGuide";
 import { NotifyPrompt } from "./NotifyPrompt";
 
 // 홈(S10 오늘 안 풂 · S11 하던 중 · S12 오늘 완료). DESIGN.md와 시안 MainM·HomeTabletM·HomeMobileM:
-// 인사·날짜 → 오늘의 질문(상자 없이 큰 글, 주 버튼 하나) → 학습 현황(이번 주 · 약한 주제) → 복습할 질문.
+// 인사 → 첫 방문 안내(한 번만) → 오늘의 질문(상자 없이 큰 글, 주 버튼 하나) → 학습 현황(이번 주 · 약한 주제) → 복습할 질문.
 // PC는 12칸 격자에 오늘의 질문 8칸 · 학습 현황 4칸, 그 아래 복습할 질문을 폭 가득 둔다. 폭이 바뀌어도 순서는 같다.
 // 꼬리잇기는 머리 막대에, 복습 대기 수는 복습할 질문 제목에 있어 타일로 두지 않는다(R4·R5). 최근 기록은 Q노트에서 본다(R6)
 export default function HomePage() {
@@ -34,29 +35,17 @@ export default function HomePage() {
   );
 }
 
+// 오늘 안 풂(낼 질문이 없거나 예산에 닿은 날 포함)은 응원 한 줄, 하던 중·오늘 완료는 상태 문구(#146)
 const TITLES: Record<HomeState["kind"], string> = {
-  todo: "오늘도 한 문제 도전해 볼까요?",
+  todo: "오늘 면접 잘 봐요",
   doing: "하던 질문 마저 이어가 볼까요?",
   done: "오늘 면접을 마쳤어요",
 };
 
-// 날짜 · 닉네임 인사 한 줄. 닉네임은 사용자 요청(#115)
-function Greeting({
-  day,
-  name,
-  title,
-}: {
-  day?: string;
-  name?: string | null;
-  title: string;
-}) {
+// 닉네임 인사 한 줄. 닉네임은 사용자 요청(#115). 날짜는 뺐다(#146)
+function Greeting({ name, title }: { name?: string | null; title: string }) {
   return (
     <p className={s.greet}>
-      {day && (
-        <>
-          <span className="num">{dayLabel(day)}</span> ·{" "}
-        </>
-      )}
       {name && <span className={s.name}>{name}님, </span>}
       {title}
     </p>
@@ -64,7 +53,7 @@ function Greeting({
 }
 
 // 불러오는 동안: 같은 자리에 같은 모양의 빈 칸(레이아웃이 밀리지 않게).
-// 미리 그리는 화면이라 오늘 날짜(new Date)는 쓸 수 없어 인사 글만 둔다
+// 인사 자리에는 준비 중 글을 둔다. 첫 방문 안내는 불러온 뒤에만 보인다
 function Loading() {
   return (
     <>
@@ -160,10 +149,10 @@ async function Home() {
     <div className={s.home}>
       <section className={s.today} aria-label="오늘의 질문">
         <Greeting
-          day={today}
           name={profile.data?.nickname}
           title={state ? TITLES[state.kind] : TITLES.todo}
         />
+        <HomeGuide />
         {budget ? (
           <>
             <h1 className="sr-only">오늘의 질문</h1>

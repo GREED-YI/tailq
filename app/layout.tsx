@@ -3,6 +3,7 @@ import { GeistMono } from "geist/font/mono";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
 import { FirstVisit } from "@/components/FirstVisit";
+import { homeGuideScript } from "@/lib/home";
 import { themeCss, themeScript } from "@/lib/theme";
 
 export const metadata: Metadata = {
@@ -26,6 +27,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <style dangerouslySetInnerHTML={{ __html: themeCss }} />
         {/* 첫 그림 전에 data-theme을 정한다(저장한 선택 → 기기 설정) */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {/* 홈 첫 방문 안내를 닫은 브라우저면 첫 그림 전에 숨긴다 */}
+        <script dangerouslySetInnerHTML={{ __html: homeGuideScript }} />
       </head>
       <body>
         <FirstVisit />

@@ -30,10 +30,50 @@
   line-height: 1.5;
   color: var(--text-sub);
 }
-.greet > :global(.num) {
+.name {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* 첫 방문 안내(#146): 상자 없이 위 2px text 머리 선 · 아래 1px line 구분선(DESIGN.md 구획 규칙, LimitNotice와 같은 평평한 구획).
+   닫은 브라우저는 첫 그림 전에 html[data-home-guide]가 붙어 숨는다(lib/home.ts) */
+.guide {
+  border-top: 2px solid var(--text);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 0 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+:global(html[data-home-guide]) .guide {
+  display: none;
+}
+.guide > strong {
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+.guide ol {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.guide li {
+  display: flex;
+  gap: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-sub);
+}
+.guide li > :global(.mono) {
+  flex: none;
+  font-size: 13px;
+  line-height: 24px;
   color: var(--text-muted);
 }
-.name {
+.guide b {
   font-weight: 700;
   color: var(--text);
 }
