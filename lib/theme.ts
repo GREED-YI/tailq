@@ -15,6 +15,8 @@ export const TOKENS = {
     "on-primary": "#0E0F0E",
     accent: "#FF7A45",
     "accent-soft": "#2A1810",
+    // 워드마크 Q 꼬리(components/Logo.tsx). 운영 화면에서도 덮어쓰지 않는다
+    "brand-tail": "#FF7A45",
     danger: "#FF6B86",
     "danger-fill": "#B0123B",
     "on-danger": "#FFFFFF",
@@ -34,6 +36,7 @@ export const TOKENS = {
     "on-primary": "#111312",
     accent: "#B83505",
     "accent-soft": "#FFEDE4",
+    "brand-tail": "#B83505",
     danger: "#B0123B",
     "danger-fill": "#B0123B",
     "on-danger": "#FFFFFF",

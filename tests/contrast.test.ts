@@ -24,10 +24,12 @@ const TEXT_PAIRS: [Key, Key][] = [
   ["danger", "surface"],
   ["on-danger", "danger-fill"],
 ];
-// 빈 칸·빈 날·남은 단계 테두리는 그래픽 대비 3:1
+// 빈 칸·빈 날·남은 단계 테두리, 로고 Q 꼬리는 그래픽 대비 3:1
 const MARK_PAIRS: [Key, Key][] = [
   ["mark-empty", "canvas"],
   ["mark-empty", "surface"],
+  ["brand-tail", "canvas"],
+  ["brand-tail", "surface"],
 ];
 
 describe.each(themes)("%s 테마 대비", (_, t) => {
