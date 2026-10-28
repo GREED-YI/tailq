@@ -18,6 +18,8 @@ const COPY = {
     contentLabel: "README 또는 설명",
     contentPlaceholder: "README나 프로젝트 설명을 붙여넣어 주세요",
     help: "README를 넣으면 예상 질문 5개를 만들어 줘요",
+    back: "프로젝트 목록으로",
+    backHref: "/projects",
   },
   note: {
     api: "/api/notes",
@@ -28,6 +30,8 @@ const COPY = {
     contentPlaceholder:
       "정리한 노트나 수업 자료를 붙여넣거나 .md 파일을 불러와 주세요",
     help: "학습 자료를 넣으면 개념 질문 5개를 만들어 줘요",
+    back: "학습 자료 목록으로",
+    backHref: "/projects/notes",
   },
 };
 
@@ -124,11 +128,7 @@ export function ProjectForm({
   return (
     <>
       <header className={s.top}>
-        <Link
-          href="/projects"
-          className="press icon-btn"
-          aria-label="내 프로젝트로"
-        >
+        <Link href={c.backHref} className="press icon-btn" aria-label={c.back}>
           <Icon name="chevronLeft" />
         </Link>
         <h1>{c.title}</h1>

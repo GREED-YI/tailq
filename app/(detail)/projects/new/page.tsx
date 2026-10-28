@@ -32,7 +32,7 @@ function Loading() {
         <Link
           href="/projects"
           className="press icon-btn"
-          aria-label="내 프로젝트로"
+          aria-label="프로젝트 목록으로"
         >
           <Icon name="chevronLeft" />
         </Link>

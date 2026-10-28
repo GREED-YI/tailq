@@ -44,6 +44,7 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
   const session = sessionId
     ? await loadProjectSession(userId, sessionId)
     : await startDailySession(userId);
+  // 연습 세션을 못 찾으면(자료와 함께 지워졌거나 잘못된 주소) 어느 구획 것인지 알 수 없어 커스텀 Q 첫 구획으로
   if (!session || session === "budget") {
     redirect(sessionId ? "/projects" : "/home");
   }
@@ -69,6 +70,8 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
   ]);
   const streak = study?.streak.current;
   const q = session.question;
+  // 연습 세션의 종류 이름(라벨과 제목이 같이 쓴다)
+  const kindLabel = q.noteId ? "학습 자료 질문" : "프로젝트 질문";
   const followed = (turns ?? []).some(
     (t) => t.idx > 0 && t.status === "graded",
   );
@@ -97,11 +100,7 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
           <div className={s.heroMeta}>
             {/* today 라벨은 오늘의 질문에만. 프로젝트·학습 자료 질문은 neutral(DESIGN.md label) */}
             <span className={`tag ${sessionId ? "tag-neutral" : "tag-today"}`}>
-              {sessionId
-                ? q.noteId
-                  ? "학습 자료 질문"
-                  : "프로젝트 질문"
-                : "오늘의 결과"}
+              {sessionId ? kindLabel : "오늘의 결과"}
             </span>
             <span className={q.projectId || q.noteId ? "" : "mono"}>
               {q.label} · {q.topic}
@@ -118,12 +117,12 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
               </>
             ) : followed ? (
               <>
-                프로젝트 질문,
+                {kindLabel},
                 <br />
                 꼬리질문까지 마쳤어요
               </>
             ) : (
-              "프로젝트 질문을 마쳤어요"
+              `${kindLabel}을 마쳤어요`
             )}
           </h1>
         </div>

@@ -31,9 +31,9 @@ function Loading() {
     <>
       <header className={s.top}>
         <Link
-          href="/projects"
+          href="/projects/notes"
           className="press icon-btn"
-          aria-label="내 프로젝트로"
+          aria-label="학습 자료 목록으로"
         >
           <Icon name="chevronLeft" />
         </Link>

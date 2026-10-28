@@ -8,16 +8,23 @@ import s from "@/app/(app)/projects/projects.module.css";
 
 // 불러오는 동안: 뒤로 버튼은 그대로, 이름 · 제목 · 질문 5줄은 같은 크기의 빈 칸으로(레이아웃이 밀리지 않게).
 // 만드는 중 화면의 질문 자리(.skeleton)와 달리 움직이지 않는다
-export function DetailLoading() {
+// kind: 뒤로 버튼이 돌아갈 구획(프로젝트 /projects, 학습 자료 /projects/notes)
+export function DetailLoading({
+  kind = "project",
+}: {
+  kind?: "project" | "note";
+}) {
   return (
     <>
       <LoadingStatus />
       <div aria-busy="true">
         <header className={s.top}>
           <Link
-            href="/projects"
+            href={kind === "note" ? "/projects/notes" : "/projects"}
             className="press icon-btn"
-            aria-label="내 프로젝트로"
+            aria-label={
+              kind === "note" ? "학습 자료 목록으로" : "프로젝트 목록으로"
+            }
           >
             <Icon name="chevronLeft" />
           </Link>

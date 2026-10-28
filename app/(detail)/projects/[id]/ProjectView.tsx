@@ -32,12 +32,16 @@ const COPY = {
     noun: "프로젝트",
     nameLabel: "프로젝트 이름",
     source: "README",
+    back: "프로젝트 목록으로",
+    backHref: "/projects",
   },
   note: {
     api: "/api/notes",
     noun: "학습 자료",
     nameLabel: "학습 자료 제목",
     source: "학습 자료",
+    back: "학습 자료 목록으로",
+    backHref: "/projects/notes",
   },
 };
 
@@ -128,7 +132,7 @@ export function ProjectView({
       () => null,
     );
     if (res?.ok) {
-      router.replace("/projects");
+      router.replace(c.backHref);
       router.refresh();
       return;
     }
@@ -140,11 +144,7 @@ export function ProjectView({
   return (
     <>
       <header className={s.top}>
-        <Link
-          href="/projects"
-          className="press icon-btn"
-          aria-label="내 프로젝트로"
-        >
+        <Link href={c.backHref} className="press icon-btn" aria-label={c.back}>
           <Icon name="chevronLeft" />
         </Link>
         <h1>{name}</h1>

@@ -19,7 +19,7 @@ export default function NotePage({
 }: PageProps<"/projects/notes/[id]">) {
   return (
     <div className={`${s.page} ${s.detail}`}>
-      <Suspense fallback={<DetailLoading />}>
+      <Suspense fallback={<DetailLoading kind="note" />}>
         {params.then(({ id }) => (
           <Note id={id} />
         ))}
