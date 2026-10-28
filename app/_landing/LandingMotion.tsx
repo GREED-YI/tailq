@@ -21,13 +21,18 @@ export function LandingMotion() {
     };
     invert();
     const themeWatch = new MutationObserver(invert);
-    themeWatch.observe(html, { attributes: true, attributeFilter: ["data-theme"] });
+    themeWatch.observe(html, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
 
     const onClick = (e: MouseEvent) => {
       if (!(e.target as Element).closest('a[href="#try"]')) return;
       requestAnimationFrame(() =>
         root
-          .querySelector<HTMLElement>('#try [role="radio"][aria-checked="true"]')
+          .querySelector<HTMLElement>(
+            '#try [role="radio"][aria-checked="true"]',
+          )
           ?.focus({ preventScroll: true }),
       );
     };
@@ -45,7 +50,9 @@ export function LandingMotion() {
       },
       { threshold: 0.35 },
     );
-    root.querySelectorAll(`.${s.week}, .${s.pq}`).forEach((el) => io.observe(el));
+    root
+      .querySelectorAll(`.${s.week}, .${s.pq}`)
+      .forEach((el) => io.observe(el));
 
     return () => {
       themeWatch.disconnect();

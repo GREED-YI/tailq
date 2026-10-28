@@ -355,20 +355,48 @@
   .heroScore [aria-label^="점수 막대"] > [data-on] {
     animation: fill 300ms var(--ease) both;
   }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(2) { animation-delay: 40ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(3) { animation-delay: 80ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(4) { animation-delay: 120ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(5) { animation-delay: 160ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(6) { animation-delay: 200ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(7) { animation-delay: 240ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(8) { animation-delay: 280ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(9) { animation-delay: 320ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(10) { animation-delay: 360ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(11) { animation-delay: 400ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(12) { animation-delay: 440ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(13) { animation-delay: 480ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(14) { animation-delay: 520ms; }
-  .heroScore [aria-label^="점수 막대"] > :nth-child(15) { animation-delay: 560ms; }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(2) {
+    animation-delay: 40ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(3) {
+    animation-delay: 80ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(4) {
+    animation-delay: 120ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(5) {
+    animation-delay: 160ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(6) {
+    animation-delay: 200ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(7) {
+    animation-delay: 240ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(8) {
+    animation-delay: 280ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(9) {
+    animation-delay: 320ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(10) {
+    animation-delay: 360ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(11) {
+    animation-delay: 400ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(12) {
+    animation-delay: 440ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(13) {
+    animation-delay: 480ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(14) {
+    animation-delay: 520ms;
+  }
+  .heroScore [aria-label^="점수 막대"] > :nth-child(15) {
+    animation-delay: 560ms;
+  }
 }
 @keyframes fill {
   from {
@@ -716,9 +744,15 @@
     opacity: 0;
     animation: beat 6s linear infinite;
   }
-  .loop > span:nth-child(3) { animation-delay: 1.5s; }
-  .loop > span:nth-child(4) { animation-delay: 3s; }
-  .loop > span:nth-child(5) { animation-delay: 4.5s; }
+  .loop > span:nth-child(3) {
+    animation-delay: 1.5s;
+  }
+  .loop > span:nth-child(4) {
+    animation-delay: 3s;
+  }
+  .loop > span:nth-child(5) {
+    animation-delay: 4.5s;
+  }
   .mastery:hover .loop > span {
     animation-play-state: paused;
   }
@@ -818,10 +852,18 @@
   .root[data-io] .pq > li {
     animation: appear var(--dur-base) var(--ease) both paused;
   }
-  .root[data-io] .pq > li:nth-child(2) { animation-delay: 60ms; }
-  .root[data-io] .pq > li:nth-child(3) { animation-delay: 120ms; }
-  .root[data-io] .pq > li:nth-child(4) { animation-delay: 180ms; }
-  .root[data-io] .pq > li:nth-child(5) { animation-delay: 240ms; }
+  .root[data-io] .pq > li:nth-child(2) {
+    animation-delay: 60ms;
+  }
+  .root[data-io] .pq > li:nth-child(3) {
+    animation-delay: 120ms;
+  }
+  .root[data-io] .pq > li:nth-child(4) {
+    animation-delay: 180ms;
+  }
+  .root[data-io] .pq > li:nth-child(5) {
+    animation-delay: 240ms;
+  }
   .root[data-io] .pq[data-seen] > li {
     animation-play-state: running;
   }

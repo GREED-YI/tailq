@@ -11,7 +11,11 @@ import s from "./legal.module.css";
 export default function LegalLayout({ children }: LayoutProps<"/">) {
   return (
     <div className={`${f.main} ${s.main}`}>
-      <Link href="/" className={`${f.pcLogo} ${s.pcLogo}`} aria-label="TailQ 처음으로">
+      <Link
+        href="/"
+        className={`${f.pcLogo} ${s.pcLogo}`}
+        aria-label="TailQ 처음으로"
+      >
         <Logo />
       </Link>
       <header className={f.top}>

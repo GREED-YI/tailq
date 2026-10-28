@@ -25,7 +25,9 @@ test("첫 화면 버튼은 체험 칸으로 내려가 고른 분야에 초점을
   await expect(
     page.getByRole("img", { name: "100점 만점에 74점" }).first(),
   ).toBeVisible();
-  await page.getByRole("link", { name: "로그인 없이 한 문제 풀어보기" }).click();
+  await page
+    .getByRole("link", { name: "로그인 없이 한 문제 풀어보기" })
+    .click();
   await expect(page).toHaveURL(/#try$/);
   await expect(page.getByRole("radio", { name: "백엔드" })).toBeFocused();
 });

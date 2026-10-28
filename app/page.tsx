@@ -62,7 +62,10 @@ const BAND: [string, string][][] = [
       "스프링의 의존성 주입(DI)은 무엇이고, 생성자 주입을 권장하는 이유는 무엇인가요?",
     ],
     ["cs / database", "복합 인덱스의 컬럼 순서는 어떻게 정하나요?"],
-    ["cs / os", "스레드끼리 메모리를 공유하면 어떤 문제가 생기고 어떻게 막나요?"],
+    [
+      "cs / os",
+      "스레드끼리 메모리를 공유하면 어떤 문제가 생기고 어떻게 막나요?",
+    ],
     [
       "backend / jpa",
       "일대다 컬렉션을 fetch join하면서 페이징을 하면 어떤 문제가 생기나요?",
@@ -84,8 +87,14 @@ const BAND: [string, string][][] = [
       "frontend / browser",
       "리플로우와 리페인트는 어떻게 다르고, 리플로우를 줄이려면 어떻게 하나요?",
     ],
-    ["frontend / react", "의존성 배열에서 쓰는 값을 빼먹으면 어떤 문제가 생기나요?"],
-    ["backend / jpa", "컬렉션 두 개를 동시에 fetch join하면 무슨 일이 생기나요?"],
+    [
+      "frontend / react",
+      "의존성 배열에서 쓰는 값을 빼먹으면 어떤 문제가 생기나요?",
+    ],
+    [
+      "backend / jpa",
+      "컬렉션 두 개를 동시에 fetch join하면 무슨 일이 생기나요?",
+    ],
   ],
 ];
 
@@ -98,20 +107,46 @@ const SUMMARY =
   "전체를 가져와 메모리에서 페이징한다는 핵심은 짚었어요. 배치 크기로 푸는 대안까지 말하면 더 좋아요.";
 const CONCEPTS = ["@BatchSize", "default_batch_fetch_size", "메모리 페이징"];
 const THREAD = [
-  { name: "꼬리질문 1", q: "fetch join 대신 @BatchSize로 풀면 쿼리는 몇 번 나가나요?", v: "good" },
-  { name: "꼬리질문 2", q: "컬렉션 두 개를 동시에 fetch join하면 무슨 일이 생기나요?", v: "wrong" },
-  { name: "꼬리질문 3", q: "실무라면 어떤 방식을 고르겠어요? 이유까지 말해 주세요.", v: "partial" },
+  {
+    name: "꼬리질문 1",
+    q: "fetch join 대신 @BatchSize로 풀면 쿼리는 몇 번 나가나요?",
+    v: "good",
+  },
+  {
+    name: "꼬리질문 2",
+    q: "컬렉션 두 개를 동시에 fetch join하면 무슨 일이 생기나요?",
+    v: "wrong",
+  },
+  {
+    name: "꼬리질문 3",
+    q: "실무라면 어떤 방식을 고르겠어요? 이유까지 말해 주세요.",
+    v: "partial",
+  },
 ];
 // 복습(apply_review): 70점 미만은 1칸·1일 뒤, 처음 70점 이상은 2칸·3일 뒤
 const REVIEWS = [
-  { due: "오늘 다시", today: true, level: 1, q: "트랜잭션 격리 수준 REPEATABLE READ에서 팬텀 리드는 왜 생기나요?" },
-  { due: "오늘 다시", today: true, level: 1, q: "복합 인덱스의 컬럼 순서는 어떻게 정하나요?" },
+  {
+    due: "오늘 다시",
+    today: true,
+    level: 1,
+    q: "트랜잭션 격리 수준 REPEATABLE READ에서 팬텀 리드는 왜 생기나요?",
+  },
+  {
+    due: "오늘 다시",
+    today: true,
+    level: 1,
+    q: "복합 인덱스의 컬럼 순서는 어떻게 정하나요?",
+  },
   { due: "3일 뒤 다시", today: false, level: 2, q: MAIN_Q },
 ];
 const HISTORY = [
   { day: "10.27", q: MAIN_Q, score: 74 },
   { day: "10.26", q: "복합 인덱스의 컬럼 순서는 어떻게 정하나요?", score: 61 },
-  { day: "10.25", q: "트랜잭션 격리 수준 REPEATABLE READ에서 팬텀 리드는 왜 생기나요?", score: 38 },
+  {
+    day: "10.25",
+    q: "트랜잭션 격리 수준 REPEATABLE READ에서 팬텀 리드는 왜 생기나요?",
+    score: 38,
+  },
 ];
 // 내 프로젝트(§7): eval/eval-set.json의 README "모여라"에서 발췌. 질문은 그 README 문장에 근거한 예시(설계 2·기술 2·트러블 1)
 const README = [
@@ -121,10 +156,19 @@ const README = [
   "- 인원이 많은 모임에서 결과 화면이 3초 넘게 걸렸습니다.",
 ];
 const PROJECT_QS = [
-  ["설계 이유", "투표 결과를 집계 테이블에 두지 않고 조회할 때 GROUP BY로 집계한 이유는 무엇인가요?"],
-  ["설계 이유", "참여자 인증을 로그인 대신 모임별 무작위 토큰 쿠키로 한 이유는 무엇인가요?"],
+  [
+    "설계 이유",
+    "투표 결과를 집계 테이블에 두지 않고 조회할 때 GROUP BY로 집계한 이유는 무엇인가요?",
+  ],
+  [
+    "설계 이유",
+    "참여자 인증을 로그인 대신 모임별 무작위 토큰 쿠키로 한 이유는 무엇인가요?",
+  ],
   ["기술 선택", "프론트엔드에서 React Query를 고른 이유는 무엇인가요?"],
-  ["기술 선택", "동시 수정으로 생긴 중복 행을 유니크 제약과 upsert로 막은 이유는 무엇인가요?"],
+  [
+    "기술 선택",
+    "동시 수정으로 생긴 중복 행을 유니크 제약과 upsert로 막은 이유는 무엇인가요?",
+  ],
   ["트러블슈팅", "결과 화면이 3초 넘게 걸렸을 때 원인을 어떻게 찾고 줄였나요?"],
 ];
 
@@ -152,7 +196,10 @@ export default function Landing() {
           <Link href="/login" className={`btn btn-ghost press ${s.login}`}>
             로그인
           </Link>
-          <Link href="/login" className={`btn btn-md btn-secondary press ${s.start}`}>
+          <Link
+            href="/login"
+            className={`btn btn-md btn-secondary press ${s.start}`}
+          >
             시작하기
           </Link>
         </div>
@@ -166,8 +213,8 @@ export default function Landing() {
               하루 한 문제, AI가 채점하고 되묻는 개발자 기술 면접 연습
             </h1>
             <p className={s.heroSub}>
-              답변을 쓰면 AI가 100점 만점으로 채점하고, 내 답변에 맞춰 꼬리질문을
-              이어 가요. 70점이 안 된 질문은 다음 날 다시 물어요.
+              답변을 쓰면 AI가 100점 만점으로 채점하고, 내 답변에 맞춰
+              꼬리질문을 이어 가요. 70점이 안 된 질문은 다음 날 다시 물어요.
             </p>
             <a href="#try" className={`btn btn-primary press ${s.cta}`}>
               로그인 없이 한 문제 풀어보기
@@ -175,10 +222,19 @@ export default function Landing() {
             </a>
           </div>
 
-          <div className={s.stage} role="group" aria-label="채점 결과 화면 예시">
+          <div
+            className={s.stage}
+            role="group"
+            aria-label="채점 결과 화면 예시"
+          >
             <ol className={`${s.tl} ${s.heroThread}`}>
               <li>
-                <span className={i.threadDot} data-shape="fill" style={{ color: "var(--text)" }} aria-hidden="true" />
+                <span
+                  className={i.threadDot}
+                  data-shape="fill"
+                  style={{ color: "var(--text)" }}
+                  aria-hidden="true"
+                />
                 <span className={s.tlHead}>
                   <b>본 질문</b>
                   <span className="mono">{SCORE}</span>
@@ -193,7 +249,11 @@ export default function Landing() {
 
             <div className={`${i.panel} ${s.heroPanel}`}>
               <div className={s.heroSteps}>
-                <span className={i.stepBars} role="img" aria-label="4단계 중 1단계 끝, 꼬리질문 1 차례">
+                <span
+                  className={i.stepBars}
+                  role="img"
+                  aria-label="4단계 중 1단계 끝, 꼬리질문 1 차례"
+                >
                   <span data-state="done" />
                   <span data-state="current" />
                   <span />
@@ -205,7 +265,11 @@ export default function Landing() {
               <p className={s.heroQ}>{MAIN_Q}</p>
               <div className={`${i.score} ${s.heroScore}`}>
                 <div className={i.scoreRow}>
-                  <p className={i.scoreNum} role="img" aria-label={`100점 만점에 ${SCORE}점`}>
+                  <p
+                    className={i.scoreNum}
+                    role="img"
+                    aria-label={`100점 만점에 ${SCORE}점`}
+                  >
                     <span className="mono">{SCORE}</span>
                     <span className="mono">/100</span>
                   </p>
@@ -241,7 +305,11 @@ export default function Landing() {
               >
                 <div className={s.flow} data-reverse={r === 1 || undefined}>
                   {[0, 1].map((copy) => (
-                    <ul key={copy} className={s.flowGroup} aria-hidden={copy === 1 || undefined}>
+                    <ul
+                      key={copy}
+                      className={s.flowGroup}
+                      aria-hidden={copy === 1 || undefined}
+                    >
                       {row.map(([tag, q]) => (
                         <li key={q}>
                           <span className="mono">{tag}</span>
@@ -265,7 +333,10 @@ export default function Landing() {
         </section>
 
         {/* §3 채점 결과 */}
-        <section className={`${s.wrap} ${s.split} ${s.grade}`} aria-labelledby="grade-title">
+        <section
+          className={`${s.wrap} ${s.split} ${s.grade}`}
+          aria-labelledby="grade-title"
+        >
           <div className={s.copy5}>
             <h2 id="grade-title" className={s.h2}>
               100점 만점 채점, 잘한 점부터 짚는 피드백
@@ -287,22 +358,29 @@ export default function Landing() {
                 <div className={i.block}>
                   <span className={i.label}>잘한 점</span>
                   <ul className={i.list}>
-                    <li>페이징이 데이터베이스가 아니라 메모리에서 일어난다는 점을 짚었어요.</li>
+                    <li>
+                      페이징이 데이터베이스가 아니라 메모리에서 일어난다는 점을
+                      짚었어요.
+                    </li>
                   </ul>
                 </div>
                 <div className={i.block}>
                   <span className={i.label}>보완할 점</span>
                   <ul className={i.list}>
-                    <li>배치 크기(@BatchSize)로 IN 쿼리를 묶어 가져오는 대안을 함께 말해 보세요.</li>
+                    <li>
+                      배치 크기(@BatchSize)로 IN 쿼리를 묶어 가져오는 대안을
+                      함께 말해 보세요.
+                    </li>
                   </ul>
                 </div>
                 <div className={i.block}>
                   <span className={i.label}>모범 답안</span>
                   <p className={i.well}>
-                    컬렉션을 fetch join하면 행이 컬렉션 수만큼 늘어나서 데이터베이스에서 페이징할 수
-                    없어요. 그래서 전체를 메모리로 가져와 페이징하고, 데이터가 많으면 메모리가
-                    위험해요. 이때는 fetch join 대신 batch size(default_batch_fetch_size)로 IN 쿼리
-                    묶음 조회를 써요.
+                    컬렉션을 fetch join하면 행이 컬렉션 수만큼 늘어나서
+                    데이터베이스에서 페이징할 수 없어요. 그래서 전체를 메모리로
+                    가져와 페이징하고, 데이터가 많으면 메모리가 위험해요. 이때는
+                    fetch join 대신 batch size(default_batch_fetch_size)로 IN
+                    쿼리 묶음 조회를 써요.
                   </p>
                 </div>
               </div>
@@ -318,7 +396,12 @@ export default function Landing() {
         <div className={s.breath} aria-hidden="true" />
 
         {/* §4 꼬리질문(정점): 반대 테마, 스크롤에 따라 단계가 이어진다 */}
-        <section id="peak" className={s.peak} aria-labelledby="peak-title" suppressHydrationWarning>
+        <section
+          id="peak"
+          className={s.peak}
+          aria-labelledby="peak-title"
+          suppressHydrationWarning
+        >
           <div className={s.peakStage}>
             <div className={`${s.wrap} ${s.split}`}>
               <div className={s.copy5}>
@@ -332,8 +415,18 @@ export default function Landing() {
               </div>
               <ol className={`${s.tl} ${s.peakThread}`}>
                 <li>
-                  <span className={i.threadDot} data-shape="fill" style={{ color: "var(--text)" }} aria-hidden="true" />
-                  <span className={i.threadDot} data-current data-now aria-hidden="true" />
+                  <span
+                    className={i.threadDot}
+                    data-shape="fill"
+                    style={{ color: "var(--text)" }}
+                    aria-hidden="true"
+                  />
+                  <span
+                    className={i.threadDot}
+                    data-current
+                    data-now
+                    aria-hidden="true"
+                  />
                   <span className={s.tlHead}>
                     <b>본 질문</b>
                     <Score value={SCORE} />
@@ -346,9 +439,19 @@ export default function Landing() {
                   return (
                     <li key={t.name} aria-current={last ? "step" : undefined}>
                       {!last && (
-                        <span className={i.threadDot} data-shape={v.shape} style={{ color: v.color }} aria-hidden="true" />
+                        <span
+                          className={i.threadDot}
+                          data-shape={v.shape}
+                          style={{ color: v.color }}
+                          aria-hidden="true"
+                        />
                       )}
-                      <span className={i.threadDot} data-current data-now={!last || undefined} aria-hidden="true" />
+                      <span
+                        className={i.threadDot}
+                        data-current
+                        data-now={!last || undefined}
+                        aria-hidden="true"
+                      />
                       <span className={s.tlHead}>
                         <b>{t.name}</b>
                         <VerdictMark verdict={t.v} />
@@ -358,14 +461,19 @@ export default function Landing() {
                   );
                 })}
               </ol>
-              <p className={s.hold}>본 질문은 점수로, 꼬리질문은 판정으로 남아요.</p>
+              <p className={s.hold}>
+                본 질문은 점수로, 꼬리질문은 판정으로 남아요.
+              </p>
             </div>
           </div>
         </section>
         <script dangerouslySetInnerHTML={{ __html: invertPeak }} />
 
         {/* §5 복습 */}
-        <section className={`${s.wrap} ${s.split} ${s.sec}`} aria-labelledby="review-title">
+        <section
+          className={`${s.wrap} ${s.split} ${s.sec}`}
+          aria-labelledby="review-title"
+        >
           <div className={s.copy5}>
             <h2 id="review-title" className={s.h2}>
               점수에 맞춰 돌아오는 복습
@@ -385,10 +493,14 @@ export default function Landing() {
               {REVIEWS.map((r) => (
                 <li key={r.q}>
                   <div className={`${h.rowLink} ${home.reviewRow}`}>
-                    <span className={`num tag ${r.today ? "tag-today" : "tag-neutral"} ${h.due} ${home.due}`}>
+                    <span
+                      className={`num tag ${r.today ? "tag-today" : "tag-neutral"} ${h.due} ${home.due}`}
+                    >
                       {r.due}
                     </span>
-                    <span className={`${h.rowText} ${home.reviewText}`}>{r.q}</span>
+                    <span className={`${h.rowText} ${home.reviewText}`}>
+                      {r.q}
+                    </span>
                     <span className={home.level}>
                       <Dots level={r.level} />
                     </span>
@@ -400,7 +512,8 @@ export default function Landing() {
             <div className={s.mastery}>
               <span className={s.masteryName}>숙련도</span>
               <p className="sr-only">
-                맞히면 숙련도 칸이 하나씩 늘고 간격이 1일, 3일, 7일로 벌어져요. 틀리면 1칸으로 돌아가 내일 다시 나와요.
+                맞히면 숙련도 칸이 하나씩 늘고 간격이 1일, 3일, 7일로 벌어져요.
+                틀리면 1칸으로 돌아가 내일 다시 나와요.
               </p>
               <div className={s.loop} aria-hidden="true">
                 <span data-still>
@@ -430,7 +543,10 @@ export default function Landing() {
         </section>
 
         {/* §6 기록·리포트 */}
-        <section className={`${s.wrap} ${s.split} ${s.sec}`} aria-labelledby="record-title">
+        <section
+          className={`${s.wrap} ${s.split} ${s.sec}`}
+          aria-labelledby="record-title"
+        >
           <div className={s.copy5}>
             <h2 id="record-title" className={s.h2}>
               숫자로 남는 기록과 약한 주제
@@ -441,7 +557,11 @@ export default function Landing() {
             </p>
           </div>
           <div className={s.media7}>
-            <div className={`${home.stats} ${s.stats}`} role="group" aria-label="학습 현황 예시">
+            <div
+              className={`${home.stats} ${s.stats}`}
+              role="group"
+              aria-label="학습 현황 예시"
+            >
               <div className={home.tile}>
                 <span className={home.tileLabel}>꼬리잇기</span>
                 <p className={home.tileValue}>
@@ -459,9 +579,17 @@ export default function Landing() {
                   이번 주
                   <span className={`num ${home.weekNote}`}>2일 학습</span>
                 </span>
-                <div className={`${g.cells} ${home.days}`} role="img" aria-label="이번 주 월요일 61점, 화요일 74점">
+                <div
+                  className={`${g.cells} ${home.days}`}
+                  role="img"
+                  aria-label="이번 주 월요일 61점, 화요일 74점"
+                >
                   {[...WEEKDAYS].map((d, n) => (
-                    <span key={d} className={home.day} data-now={n === 1 || undefined}>
+                    <span
+                      key={d}
+                      className={home.day}
+                      data-now={n === 1 || undefined}
+                    >
                       <span
                         data-level={n === 0 ? 2 : n === 1 ? 3 : 0}
                         data-future={n > 1 || undefined}
@@ -510,7 +638,10 @@ export default function Landing() {
         </section>
 
         {/* §7 내 프로젝트 */}
-        <section className={`${s.wrap} ${s.split} ${s.sec}`} aria-labelledby="project-title">
+        <section
+          className={`${s.wrap} ${s.split} ${s.sec}`}
+          aria-labelledby="project-title"
+        >
           <div className={s.copy5}>
             <h2 id="project-title" className={s.h2}>
               내 프로젝트 README로 만드는 예상 질문
@@ -539,7 +670,11 @@ export default function Landing() {
         </section>
 
         {/* §8 체험 */}
-        <section id="try" className={`${s.wrap} ${s.sec} ${s.try}`} aria-labelledby="try-title">
+        <section
+          id="try"
+          className={`${s.wrap} ${s.sec} ${s.try}`}
+          aria-labelledby="try-title"
+        >
           <Suspense fallback={<TrialPicker questions={null} />}>
             <TrialSection />
           </Suspense>
@@ -560,7 +695,10 @@ function Concepts() {
       <span className={i.label}>보완할 개념</span>
       <div className={i.chips}>
         {CONCEPTS.map((k) => (
-          <span key={k} className={`tag tag-concept ${/[가-힣]/.test(k) ? "" : "mono"}`}>
+          <span
+            key={k}
+            className={`tag tag-concept ${/[가-힣]/.test(k) ? "" : "mono"}`}
+          >
             {k}
           </span>
         ))}
