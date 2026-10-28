@@ -33,7 +33,7 @@ function Dialog({
   return (
     <dialog
       ref={ref}
-      className={`glass-strong ${s.dialog}`}
+      className={s.dialog}
       aria-label={title}
       // 바깥(어두운 바탕)을 누르면 닫는다
       onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
@@ -74,7 +74,7 @@ export function LogoutButton() {
     <>
       <button
         type="button"
-        className={`btn btn-md btn-secondary glass press ${s.accountBtn}`}
+        className={`btn btn-md btn-secondary press ${s.accountBtn}`}
         onClick={() => openModal(dialog.current)}
       >
         로그아웃
@@ -88,7 +88,7 @@ export function LogoutButton() {
         <form action="/auth/logout" method="post" className={s.dialogButtons}>
           <button
             type="button"
-            className="btn btn-md btn-secondary glass press"
+            className="btn btn-md btn-secondary press"
             onClick={() => dialog.current?.close()}
           >
             취소
@@ -199,7 +199,7 @@ export function NotifyRow({
         <div className={s.dialogButtons}>
           <button
             type="button"
-            className="btn btn-md btn-secondary glass press"
+            className="btn btn-md btn-secondary press"
             onClick={() => dialog.current?.close()}
           >
             취소
@@ -208,6 +208,7 @@ export function NotifyRow({
             type="button"
             className="btn btn-md btn-primary press"
             disabled={busy}
+            aria-busy={busy || undefined}
             onClick={save}
           >
             저장
@@ -286,7 +287,7 @@ export function ThemeRow() {
               type="button"
               role="radio"
               aria-checked={theme === t.id}
-              className="chip glass press"
+              className="chip press"
               onClick={() => applyTheme(t.id)}
             >
               {t.label}
@@ -296,7 +297,7 @@ export function ThemeRow() {
         <div className={s.dialogButtons} style={{ gridTemplateColumns: "1fr" }}>
           <button
             type="button"
-            className="btn btn-md btn-secondary glass press"
+            className="btn btn-md btn-secondary press"
             onClick={() => dialog.current?.close()}
           >
             닫기

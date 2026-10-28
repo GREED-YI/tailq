@@ -4,10 +4,12 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { isAdmin } from "@/lib/admin";
+import { Icon } from "@/components/icons";
 import { categoryLabel, FEEDBACK_CATEGORIES } from "@/lib/feedback";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import s from "../admin.module.css";
+import { FeedbackTable } from "../Table";
 
 export const metadata: Metadata = {
   title: "피드백 · 운영 · TailQ",
@@ -61,7 +63,8 @@ async function FeedbackList({ category }: { category: string | null }) {
   return (
     <>
       <Link href="/admin" className={s.backLink}>
-        ‹ 운영 대시보드
+        <Icon name="chevronLeft" size={18} />
+        운영 대시보드
       </Link>
       <header className={s.top}>
         <h1>사용자 피드백</h1>
@@ -76,7 +79,7 @@ async function FeedbackList({ category }: { category: string | null }) {
             key={c.id ?? "all"}
             href={c.id ? `/admin/feedback?category=${c.id}` : "/admin/feedback"}
             replace
-            className="chip glass press"
+            className="chip press"
             aria-current={category === c.id ? "page" : undefined}
           >
             {c.label}
@@ -84,23 +87,11 @@ async function FeedbackList({ category }: { category: string | null }) {
         ))}
       </nav>
       {data.length === 0 ? (
-        <p className={`glass ${s.card} ${s.empty}`}>
+        <p className={s.empty}>
           {category ? "이 분류의 피드백이 없어요" : "아직 받은 피드백이 없어요"}
         </p>
       ) : (
-        <ul className={s.feedbackList}>
-          {data.map((v) => (
-            <li key={v.id} className={`glass ${s.card}`}>
-              <span className={s.kind} data-kind={v.category}>
-                {categoryLabel(v.category)}
-              </span>
-              <p>{v.body}</p>
-              <time className="num" dateTime={v.created_at}>
-                {when(v.created_at)}
-              </time>
-            </li>
-          ))}
-        </ul>
+        <FeedbackTable rows={data} date={when} />
       )}
     </>
   );

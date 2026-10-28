@@ -79,7 +79,7 @@ async function My() {
             {providerName(auth?.claims.app_metadata?.provider)}로 로그인
           </span>
         </div>
-        <Link href="/my/profile" className={`glass press ${s.edit}`}>
+        <Link href="/my/profile" className="btn btn-md btn-secondary press">
           편집
         </Link>
       </section>
@@ -159,7 +159,7 @@ function Stat({
   accent?: boolean;
 }) {
   return (
-    <div className={`glass ${s.stat}`}>
+    <div className={s.stat}>
       <span>{label}</span>
       <strong>
         <span className={`mono ${accent ? s.accent : ""}`}>{value ?? "–"}</span>{" "}
@@ -173,7 +173,7 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className={s.group} aria-label={title}>
       <h2>{title}</h2>
-      <ul className={`glass ${s.list}`}>{children}</ul>
+      <ul className={s.list}>{children}</ul>
     </section>
   );
 }

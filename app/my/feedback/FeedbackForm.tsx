@@ -54,7 +54,7 @@ export function FeedbackForm() {
         <div className={f.bottom}>
           <button
             type="button"
-            className="btn btn-secondary glass press"
+            className="btn btn-secondary press"
             onClick={() => {
               setBody("");
               setCategory("etc");
@@ -93,7 +93,7 @@ export function FeedbackForm() {
             type="button"
             role="radio"
             aria-checked={category === c.id}
-            className="chip glass press"
+            className="chip press"
             onClick={() => setCategory(c.id)}
           >
             {c.label}
@@ -106,7 +106,7 @@ export function FeedbackForm() {
       </label>
       <textarea
         id="feedback"
-        className={`glass ${s.input} ${s.textarea}`}
+        className={`${s.input} ${s.textarea}`}
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder="예) 복습 알림을 저녁에도 받고 싶어요"
@@ -132,6 +132,7 @@ export function FeedbackForm() {
           type="button"
           className="btn btn-primary press"
           disabled={!valid || busy}
+          aria-busy={busy || undefined}
           onClick={send}
           title={valid ? undefined : `${FEEDBACK_MIN}자 이상 적어 주세요`}
         >

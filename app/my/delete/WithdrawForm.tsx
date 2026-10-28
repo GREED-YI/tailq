@@ -61,7 +61,7 @@ export function WithdrawForm(props: { provider: string }) {
         <br />
         지워져요
       </h1>
-      <ol className={`glass ${s.gone}`}>
+      <ol className={s.gone}>
         {GONE.map((g, i) => (
           <li key={g}>
             <span className="mono">0{i + 1}</span>
@@ -76,7 +76,7 @@ export function WithdrawForm(props: { provider: string }) {
       </label>
       <input
         id="confirm"
-        className={`glass ${s.input}`}
+        className={s.input}
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder={WITHDRAW_PHRASE}
@@ -93,6 +93,7 @@ export function WithdrawForm(props: { provider: string }) {
           type="button"
           className="btn btn-danger press"
           disabled={!typed || busy}
+          aria-busy={busy || undefined}
           onClick={withdraw}
         >
           {reauth

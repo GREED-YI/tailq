@@ -71,8 +71,9 @@ export function ProfileForm(props: {
         <h1 className={f.topTitle}>프로필</h1>
         <button
           type="button"
-          className={`glass press ${s.pill} ${s.save}`}
+          className={`btn btn-md btn-primary press ${s.save}`}
           disabled={!valid || busy}
+          aria-busy={busy || undefined}
           onClick={save}
         >
           저장
@@ -82,7 +83,7 @@ export function ProfileForm(props: {
       <h2 className={s.label} id="avatar-label">
         프로필 이미지
       </h2>
-      <div className={`glass ${s.avatarCard}`}>
+      <div className={s.avatarCard}>
         <Avatar
           avatar={shown(avatar)}
           nickname={nickname || props.nickname}
@@ -120,7 +121,7 @@ export function ProfileForm(props: {
       </label>
       <input
         id="nickname"
-        className={`glass ${s.input}`}
+        className={s.input}
         value={nickname}
         onChange={(e) => setNickname(e.target.value)}
         autoComplete="nickname"
@@ -134,12 +135,12 @@ export function ProfileForm(props: {
         </span>
       </p>
 
-      <div className={`glass ${s.switchRow}`}>
+      <div className={s.switchRow}>
         <span className={s.switchTitle}>
           <span id="share-label">공유 카드에 닉네임 표시</span>
           <button
             type="button"
-            className={s.info}
+            className={`press ${s.info}`}
             aria-label="설명 보기"
             aria-expanded={tip}
             aria-controls="share-tip"
@@ -157,7 +158,7 @@ export function ProfileForm(props: {
           onClick={() => setShare(!share)}
         />
         {tip && (
-          <p id="share-tip" className={`glass-strong ${s.tip}`}>
+          <p id="share-tip" className={s.tip}>
             끄면 공유 카드에 &apos;TailQ 사용자&apos;로 표시돼요
           </p>
         )}

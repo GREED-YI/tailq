@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
 import { LimitNotice, type Notice } from "@/components/LimitNotice";
 import { scoreColor } from "@/app/interview/verdict";
@@ -124,7 +123,7 @@ export function ProjectView({
       <header className={s.top}>
         <Link
           href="/projects"
-          className="glass press icon-btn"
+          className="press icon-btn"
           aria-label="내 프로젝트로"
         >
           <Icon name="chevronLeft" />
@@ -139,7 +138,7 @@ export function ProjectView({
           </h2>
           <p className={s.desc}>질문을 누르면 바로 연습해요</p>
           {notice && <LimitNotice {...notice} />}
-          <ol className={`glass ${s.rows}`}>
+          <ol className={`${s.rows} ${s.qRows}`}>
             {questions.map((q, i) => {
               // 한도에 닿아 새로 시작할 수 없는 질문. 왜 막혔는지 칸에서도 보이게 자물쇠와 "오늘 한도"를 단다.
               // 비활성 버튼은 브라우저에 따라 마우스 설명을 안 띄워 li에 title을 둔다
@@ -201,8 +200,7 @@ export function ProjectView({
           </ol>
         </>
       ) : (
-        <section className={`glass ${s.state}`} aria-live="polite">
-          <FloatingQ size={88} thinking={status === "generating"} />
+        <section className={s.state} aria-live="polite">
           {status === "generating" ? (
             <>
               <strong>질문 5개를 만들고 있어요</strong>
@@ -223,8 +221,9 @@ export function ProjectView({
                   </p>
                   <button
                     type="button"
-                    className="btn btn-md btn-primary press"
+                    className="btn btn-primary press"
                     disabled={busy !== null}
+                    aria-busy={busy === "retry" || undefined}
                     onClick={retry}
                   >
                     다시 만들기
@@ -236,6 +235,20 @@ export function ProjectView({
             </>
           )}
         </section>
+      )}
+      {/* 만드는 동안 질문 5줄 자리. 다 만들어지면 같은 자리에 질문 목록이 들어온다 */}
+      {status === "generating" && (
+        <ol className={`${s.rows} ${s.qRows}`} aria-hidden="true">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <li key={i} className={s.skeleton}>
+              <i />
+              <span>
+                <i />
+                <i />
+              </span>
+            </li>
+          ))}
+        </ol>
       )}
       {error && (
         <p className={s.error} role="alert" style={{ marginTop: 12 }}>
@@ -262,7 +275,7 @@ export function ProjectView({
       {/* 삭제 확인(S25). 질문·기록·복습 일정이 함께 지워진다(04 기능 명세 9번) */}
       <dialog
         ref={dialogRef}
-        className={`glass-strong ${s.dialog}`}
+        className={s.dialog}
         aria-labelledby="delete-title"
       >
         <h2 id="delete-title">{name} 프로젝트를 지울까요?</h2>
@@ -282,7 +295,7 @@ export function ProjectView({
           </label>
           <input
             id="delete-name"
-            className={`glass ${s.input}`}
+            className={s.input}
             value={typedName}
             onChange={(e) => setTypedName(e.target.value)}
             autoComplete="off"
@@ -296,7 +309,7 @@ export function ProjectView({
           <div className={s.dialogActions}>
             <button
               type="button"
-              className="glass btn btn-md btn-secondary press"
+              className="btn btn-md btn-secondary press"
               onClick={() => dialogRef.current?.close()}
             >
               취소
@@ -305,6 +318,7 @@ export function ProjectView({
               type="submit"
               className="btn btn-md btn-danger press"
               disabled={!nameMatches || busy === "delete"}
+              aria-busy={busy === "delete" || undefined}
             >
               삭제
             </button>

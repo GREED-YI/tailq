@@ -45,7 +45,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
       <header className={s.top}>
         <Link
           href="/projects"
-          className="glass press icon-btn"
+          className="press icon-btn"
           aria-label="내 프로젝트로"
         >
           <Icon name="chevronLeft" />
@@ -62,7 +62,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
           </label>
           <input
             id="project-name"
-            className={`glass ${s.input}`}
+            className={s.input}
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={NAME_MAX}
@@ -76,7 +76,9 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
           </label>
           <textarea
             id="project-content"
-            className={`glass ${s.textarea}`}
+            className={s.textarea}
+            data-over={length > CONTENT_MAX || undefined}
+            aria-invalid={length > CONTENT_MAX || undefined}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="README나 프로젝트 설명을 붙여 넣으세요"
@@ -114,6 +116,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
               type="submit"
               className="btn btn-primary press"
               disabled={!valid || busy}
+              aria-busy={busy || undefined}
             >
               {busy ? "등록하고 있어요" : "질문 5개 생성"}
             </button>

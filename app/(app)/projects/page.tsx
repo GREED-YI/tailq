@@ -27,7 +27,7 @@ export default function ProjectsPage() {
           </Suspense>
         </div>
         <div>
-          <section className={`glass ${s.guide}`} aria-label="이렇게 연습해요">
+          <section className={s.guide} aria-label="이렇게 연습해요">
             <h3>이렇게 연습해요</h3>
             <ol>
               <li>
@@ -79,7 +79,16 @@ async function Projects() {
     quota.gensLeft <= 0;
   return (
     <>
-      <ul className={`glass ${s.rows}`}>
+      <div className={s.listHead}>
+        <h3>등록한 프로젝트</h3>
+        <span className={`num ${s.count}`}>
+          <span className="mono">
+            {data.length} / {MAX_PROJECTS}
+          </span>
+          개 등록
+        </span>
+      </div>
+      <ul className={s.rows}>
         {data.length === 0 && (
           <li className={s.empty}>아직 등록한 프로젝트가 없어요</li>
         )}
@@ -108,13 +117,10 @@ async function Projects() {
           );
         })}
       </ul>
-      <p className={`num ${s.count}`} data-left={notice ? "" : undefined}>
-        {data.length} / {MAX_PROJECTS}개 등록
-      </p>
       {notice && <LimitNotice {...notice} />}
       <div className={s.bottom}>
         {full ? (
-          <button type="button" className="btn" disabled>
+          <button type="button" className="btn btn-primary" disabled>
             프로젝트 등록
           </button>
         ) : (
