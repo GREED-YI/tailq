@@ -9,7 +9,7 @@ export default function PrivacyPage() {
   return (
     <>
       <h1>개인정보처리방침</h1>
-      <p className={s.date}>시행일: 2026-10-26</p>
+      <p className={s.date}>시행일: 2026-10-29</p>
       <div className={s.card}>
         <p>
           TailQ는 서비스에 꼭 필요한 정보만 받아요. 어떤 정보를 왜 받고, 언제
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
         <ul>
           <li>로그인과 계정 관리</li>
           <li>질문 출제, AI 채점과 꼬리질문, 복습 일정, 기록 보여주기</li>
-          <li>내 프로젝트를 바탕으로 한 질문 만들기</li>
+          <li>내 프로젝트와 학습 자료를 바탕으로 한 질문 만들기</li>
           <li>매일 질문 알림 보내기</li>
           <li>체험 횟수 제한(같은 IP 하루 20번)과 AI 사용 한도 관리</li>
           <li>서비스 개선을 위한 이용 통계, 보내 주신 피드백 읽기</li>
@@ -100,10 +100,12 @@ export default function PrivacyPage() {
         <ul>
           <li>
             <b>Anthropic, PBC (미국)</b>: AI 채점과 질문 생성. 답변을 제출하거나
-            프로젝트를 등록할 때마다 답변, 질문과 채점 기준, 프로젝트 내용을
-            보내요. 이름·이메일 같은 계정 정보는 보내지 않아요. Anthropic은 받은
-            내용을 30일 안에 지워요(이용 정책 위반 검토나 법적 의무로 더
-            보관하는 경우 제외). 연락처 privacy@anthropic.com
+            프로젝트·학습 자료를 등록할 때마다 답변, 질문과 채점 기준, 프로젝트
+            내용, 학습 자료 제목과 내용을 보내요. 학습 자료로 불러온 파일은
+            보내지 않고 브라우저에서 뽑은 글만 보내요. 이름·이메일 같은 계정
+            정보는 보내지 않아요. Anthropic은 받은 내용을 30일 안에 지워요(이용
+            정책 위반 검토나 법적 의무로 더 보관하는 경우 제외). 연락처
+            privacy@anthropic.com
           </li>
           <li>
             <b>Supabase, Inc. (미국)</b>: 데이터베이스와 로그인. 위 1번의 정보를
