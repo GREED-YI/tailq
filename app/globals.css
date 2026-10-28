@@ -107,6 +107,7 @@ button {
   box-shadow: none;
 }
 .btn-secondary {
+  height: 44px;
   background: transparent;
   color: var(--text);
   box-shadow: inset 0 0 0 1px var(--line-strong);
@@ -120,6 +121,7 @@ button {
 }
 /* 되돌릴 수 없는 행동(삭제·탈퇴): danger-fill 바탕에 흰 글자 */
 .btn-danger {
+  height: 44px;
   background: var(--danger-fill);
   color: var(--on-danger);
   box-shadow: none;
@@ -129,6 +131,31 @@ button {
 .chip:disabled {
   opacity: 0.4;
   cursor: default;
+}
+/* loading(DESIGN.md button): 글자 대신 진행 표시, 폭 유지, 다시 누를 수 없음. aria-busy="true"를 주면 된다.
+   화면이 진행 표시를 따로 그리는 버튼(data-loading, 면접 제출)은 그쪽 모양을 그대로 둔다 */
+.btn[aria-busy="true"] {
+  position: relative;
+  pointer-events: none;
+}
+.btn[aria-busy="true"]:not([data-loading]) {
+  opacity: 1;
+  -webkit-text-fill-color: transparent;
+}
+.btn[aria-busy="true"]:not([data-loading]) > * {
+  visibility: hidden;
+}
+.btn[aria-busy="true"]:not([data-loading])::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: spin 0.8s linear infinite;
 }
 .icon-btn {
   width: 44px;
@@ -218,14 +245,15 @@ button {
 }
 
 /* 상호작용 상태. hover는 마우스가 있는 기기에서만 붙여 터치 뒤에 남지 않게 한다.
-   primary·danger는 밝기 변화, 테두리·글자 버튼과 칩은 surface 바탕 */
+   primary는 어두운 글자색을 8% 섞어 진하게(밝게 하면 라이트에서 거의 안 보였다), danger는 밝기 변화,
+   테두리·글자 버튼과 칩은 surface 바탕 */
 @media (hover: hover) {
   /* 누를 수 있는 면(카드 링크·아이콘 버튼)은 테두리가 진해진다 */
   .glass.press:not(:disabled):hover {
     box-shadow: inset 0 0 0 1px var(--text-muted);
   }
   .btn-primary.press:not(:disabled):hover {
-    filter: brightness(1.08);
+    background-color: color-mix(in srgb, var(--primary) 92%, var(--on-primary));
   }
   .btn-danger.press:not(:disabled):hover {
     filter: brightness(0.92);
@@ -248,19 +276,13 @@ button {
   }
 }
 
-/* 목록 행: hover·키보드 초점에 행이 오른쪽으로 3px, 맨 끝 화살표(마지막 자식 svg)는 3px 더 나간다 */
-.hover-row:focus-visible {
-  translate: 3px 0;
-}
-.hover-row:focus-visible > svg:last-child {
-  translate: 3px 0;
+/* 목록 행(DESIGN.md list-row): hover·눌림은 surface 바탕, 초점은 전역 accent 링 */
+.hover-row:not(:disabled):active {
+  background-color: var(--surface);
 }
 @media (hover: hover) {
   .hover-row:not(:disabled):hover {
-    translate: 3px 0;
-  }
-  .hover-row:not(:disabled):hover > svg:last-child {
-    translate: 3px 0;
+    background-color: var(--surface);
   }
 }
 
@@ -303,14 +325,14 @@ button {
       opacity var(--dur-base) var(--ease),
       visibility var(--dur-base);
   }
-  .hover-row,
-  .hover-row > svg:last-child {
+  .hover-row {
     transition:
-      translate var(--dur-fast) var(--ease),
+      background-color var(--dur-fast) var(--ease),
       color var(--dur-fast) var(--ease);
   }
 }
-/* 동작 줄이기: 화면 쪽에서 따로 건 전환·애니메이션도 모두 끈다 */
+/* 동작 줄이기: 화면 쪽에서 따로 건 전환·애니메이션도 모두 끈다.
+   눌림은 크기 대신 투명도로 보여 준다 */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -319,6 +341,15 @@ button {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .press:not(:disabled):active {
+    opacity: 0.72;
+  }
+}
+
+@keyframes spin {
+  to {
+    rotate: 1turn;
   }
 }
 

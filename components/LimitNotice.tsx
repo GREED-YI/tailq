@@ -36,18 +36,15 @@ export function limitNotice(
 export function LimitNotice({ title, lines }: Notice) {
   return (
     <section className={s.notice} role="status">
-      <span className={s.fox} aria-hidden="true" />
-      <div>
-        <strong>{title}</strong>
-        <p>
-          {lines.map((line, i) => (
-            <span key={line}>
-              {i > 0 && <br />}
-              {line}
-            </span>
-          ))}
-        </p>
-      </div>
+      <strong>{title}</strong>
+      <p>
+        {lines.map((line, i) => (
+          <span key={line}>
+            {i > 0 && <br />}
+            {line}
+          </span>
+        ))}
+      </p>
     </section>
   );
 }

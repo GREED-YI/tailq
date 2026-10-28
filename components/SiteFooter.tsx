@@ -18,9 +18,9 @@ export function SiteFooter({
     <footer className={className}>
       <Logo height={logoHeight} />
       <nav aria-label="약관과 피드백">
-        <Link href="/terms">이용약관</Link>
-        <Link href="/privacy">개인정보처리방침</Link>
-        {feedback && <Link href={FEEDBACK_URL}>피드백 보내기</Link>}
+        <Link href="/terms" className="press">이용약관</Link>
+        <Link href="/privacy" className="press">개인정보처리방침</Link>
+        {feedback && <Link href={FEEDBACK_URL} className="press">피드백 보내기</Link>}
       </nav>
       <small>© 2026 TailQ</small>
     </footer>
