@@ -21,7 +21,7 @@ export default function ProjectsPage() {
       <h1 className={s.pageTitle}>내 프로젝트</h1>
       <p className={s.desc}>README를 넣으면 예상 질문 5개를 만들어 줘요</p>
       <div className={`${s.cols} ${s.list}`}>
-        <Suspense>
+        <Suspense fallback={<Loading />}>
           <Projects />
         </Suspense>
       </div>
@@ -52,6 +52,46 @@ function Guide() {
         </li>
       </ol>
     </section>
+  );
+}
+
+// 한도 안내 두 줄. 불러오는 동안에도 같은 자리에 둔다
+function GuideNote() {
+  return (
+    <p className={s.guideNote}>
+      프로젝트는 최대 {MAX_PROJECTS}개까지 등록할 수 있어요.
+      <br />
+      프로젝트 질문 만들기와 연습은 하루에 할 수 있는 횟수가 정해져 있어요.
+    </p>
+  );
+}
+
+// 불러오는 동안: 목록 머리 · 행 자리 2개 · 등록 버튼 자리(레이아웃이 밀리지 않게)
+function Loading() {
+  return (
+    <div className={s.list} aria-busy="true">
+      <div className={s.listHead}>
+        <h2>등록한 프로젝트</h2>
+      </div>
+      <ul className={s.rows}>
+        {[0, 1].map((i) => (
+          <li key={i} className={s.row}>
+            <span className={s.text}>
+              <span className={s.meta}>
+                <span className="skeleton" style={{ width: "40%" }} />
+              </span>
+              <span className={s.name}>
+                <span className="skeleton" style={{ width: "60%" }} />
+              </span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <div className={s.bottom}>
+        <span className="skeleton" style={{ height: 52 }} />
+      </div>
+      <GuideNote />
+    </div>
   );
 }
 
@@ -153,11 +193,7 @@ async function Projects() {
             </Link>
           )}
         </div>
-        <p className={s.guideNote}>
-          프로젝트는 최대 {MAX_PROJECTS}개까지 등록할 수 있어요.
-          <br />
-          프로젝트 질문 만들기와 연습은 하루에 할 수 있는 횟수가 정해져 있어요.
-        </p>
+        <GuideNote />
       </div>
       {data.length === 0 && <Guide />}
     </>

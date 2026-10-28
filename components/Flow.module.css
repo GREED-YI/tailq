@@ -54,6 +54,13 @@
   gap: 12px;
 }
 
+/* 불러오는 동안의 자리 묶음(aria-busy). 모바일은 남은 높이를 채워 아래 버튼 자리(.bottom)가 화면 아래에 붙는다 */
+.loading {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
 /* 1px 선으로 나눈 60px 줄 목록 */
 .rows {
   border-radius: var(--radius-control);
@@ -102,5 +109,8 @@
   }
   .bottom {
     margin-top: 0;
+  }
+  .loading {
+    flex: none;
   }
 }

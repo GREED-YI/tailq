@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { z } from "zod";
+import { Icon } from "@/components/icons";
 import { limitNotice } from "@/components/LimitNotice";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -16,11 +18,51 @@ export const metadata: Metadata = { title: "프로젝트 질문 · TailQ" };
 export default function ProjectPage({ params }: PageProps<"/projects/[id]">) {
   return (
     <div className={`${s.page} ${s.detail}`}>
-      <Suspense>
+      <Suspense fallback={<Loading />}>
         {params.then(({ id }) => (
           <Project id={id} />
         ))}
       </Suspense>
+    </div>
+  );
+}
+
+// 불러오는 동안: 뒤로 버튼은 그대로, 이름 · 제목 · 질문 5줄은 같은 크기의 빈 칸으로(레이아웃이 밀리지 않게).
+// 만드는 중 화면의 질문 자리(.skeleton)와 달리 움직이지 않는다
+function Loading() {
+  return (
+    <div aria-busy="true">
+      <header className={s.top}>
+        <Link
+          href="/projects"
+          className="press icon-btn"
+          aria-label="내 프로젝트로"
+        >
+          <Icon name="chevronLeft" />
+        </Link>
+        <span className="skeleton" />
+      </header>
+      <p className={s.title}>
+        <span className="skeleton" style={{ width: "70%" }} />
+      </p>
+      <p className={s.desc}>
+        <span className="skeleton" style={{ width: "50%" }} />
+      </p>
+      <ol className={`${s.rows} ${s.qRows}`}>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <li key={i} className={`${s.row} ${s.qRow}`}>
+            <span />
+            <span>
+              <span className={s.qPrompt}>
+                <span className="skeleton" />
+              </span>
+              <span className={s.qState}>
+                <span className="skeleton" style={{ width: "30%" }} />
+              </span>
+            </span>
+          </li>
+        ))}
+      </ol>
     </div>
   );
 }

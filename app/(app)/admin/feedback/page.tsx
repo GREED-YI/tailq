@@ -24,7 +24,7 @@ export default function FeedbackListPage({
   return (
     <div className={s.page} data-admin>
       <AppHeader />
-      <Suspense>
+      <Suspense fallback={<Loading />}>
         {searchParams.then(({ category }) => (
           <FeedbackList
             category={
@@ -33,6 +33,22 @@ export default function FeedbackListPage({
           />
         ))}
       </Suspense>
+    </div>
+  );
+}
+
+// 불러오는 동안: 뒤로 링크 · 제목 · 분류 칩 · 목록 자리. 운영 대시보드처럼 글 없이 칸만 둔다
+function Loading() {
+  return (
+    <div aria-busy="true">
+      <div className={s.backLink} />
+      <div className={s.top}>
+        <span className="skeleton" style={{ width: 160, height: 30 }} />
+      </div>
+      <div className={s.filters}>
+        <span className="skeleton" style={{ width: "100%", height: 44 }} />
+      </div>
+      <span className="skeleton" style={{ height: 240 }} />
     </div>
   );
 }

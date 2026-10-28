@@ -33,9 +33,48 @@ export default function AdminPage() {
   return (
     <div className={s.page} data-admin>
       <AppHeader />
-      <Suspense>
+      <Suspense fallback={<Loading />}>
         <Dashboard />
       </Suspense>
+    </div>
+  );
+}
+
+// 불러오는 동안: 머리 · 숫자 타일 두 묶음 자리(레이아웃이 밀리지 않게).
+// 운영자가 아니어도 받는 미리 그린 화면이라 운영 화면임을 알 수 있는 글은 넣지 않고 칸만 둔다
+const TILE_AREAS = [
+  ["hero", "d7", "thumbs", "active", "users"],
+  ["onboard", "fail", "review", "bookmark", "cost", "visit"],
+];
+
+function Loading() {
+  return (
+    <div aria-busy="true">
+      <div className={s.top}>
+        <span className="skeleton" style={{ width: 200, height: 30 }} />
+      </div>
+      {TILE_AREAS.map((areas, i) => (
+        <section key={i} className={s.block}>
+          <div className={s.blockHead} />
+          <div className={`${s.tiles} ${i === 0 ? s.core : s.state}`}>
+            {areas.map((area) =>
+              area === "hero" ? (
+                <div key={area} className={s.hero} style={{ gridArea: area }}>
+                  <span
+                    className="skeleton"
+                    style={{ width: "40%", height: 96 }}
+                  />
+                  <div className={s.weeks} />
+                </div>
+              ) : (
+                <div key={area} className={s.stat} style={{ gridArea: area }}>
+                  <span className="skeleton" style={{ width: "50%" }} />
+                </div>
+              ),
+            )}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }

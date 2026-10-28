@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
+import f from "@/components/Flow.module.css";
 import s from "../my.module.css";
+import { MyLoading } from "../MyLoading";
 import { WithdrawForm } from "./WithdrawForm";
 
 export const metadata: Metadata = { title: "탈퇴하기 · TailQ" };
@@ -12,10 +14,32 @@ export const metadata: Metadata = { title: "탈퇴하기 · TailQ" };
 export default function DeletePage() {
   return (
     <div className={s.main}>
-      <Suspense>
+      <Suspense fallback={<Loading />}>
         <Withdraw />
       </Suspense>
     </div>
+  );
+}
+
+// 불러오는 동안: 제목 두 줄 · 지워지는 것 4줄 · 확인 칸 · 탈퇴 버튼 자리
+function Loading() {
+  return (
+    <MyLoading title="탈퇴하기">
+      <p className={s.goneTitle}>
+        <span className="skeleton" style={{ width: "70%", height: "2lh" }} />
+      </p>
+      {/* 머리선 2px + 56px 4줄 */}
+      <span className="skeleton" style={{ marginTop: 24, height: 226 }} />
+      {/* 경고 한 줄 아래 칸 이름 · 확인 칸 */}
+      <span
+        className="skeleton"
+        style={{ marginTop: 56, width: "60%", height: 20 }}
+      />
+      <span className="skeleton" style={{ marginTop: 8, height: 52 }} />
+      <div className={`${f.bottom} ${s.withdrawBottom}`}>
+        <span className="skeleton" style={{ height: 44 }} />
+      </div>
+    </MyLoading>
   );
 }
 

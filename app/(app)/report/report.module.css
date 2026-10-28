@@ -119,6 +119,11 @@
   grid-auto-flow: column;
   gap: var(--gap);
 }
+/* 불러오는 동안 달력 자리(page.tsx Loading): 52열 × 7행 칸과 같은 크기 */
+.stripSkeleton {
+  width: calc(52 * var(--cell) + 51 * var(--gap));
+  height: calc(7 * var(--cell) + 6 * var(--gap));
+}
 /* 칸 색은 GrassTip.module.css(.cells). 시작한 날 앞(첫 주)은 비운다 */
 .grass [data-out] {
   visibility: hidden;

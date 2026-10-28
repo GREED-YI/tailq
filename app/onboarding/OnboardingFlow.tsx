@@ -230,6 +230,34 @@ function AgreeStep({ onNext }: { onNext: () => Promise<boolean | void> }) {
   );
 }
 
+// 불러오는 동안의 범위 자리: 분야·난이도 이름은 그대로, 칩은 같은 높이의 빈 칸(주제 칩 두 줄, 난이도 한 줄).
+// MY 연습 범위(/my/range)가 Suspense fallback으로 쓴다
+export function RangeSkeleton() {
+  return (
+    <>
+      {FIELDS.map((field) => (
+        <section key={field.id} className={s.field}>
+          <div className={s.fieldHead}>
+            <h2>{field.label}</h2>
+          </div>
+          <div className={s.chips}>
+            <span className="skeleton" style={{ width: "100%", height: 96 }} />
+          </div>
+        </section>
+      ))}
+      <section className={s.field}>
+        <h2>난이도</h2>
+        <div className={s.chips}>
+          <span className="skeleton" style={{ width: "60%", height: 44 }} />
+        </div>
+      </section>
+      <div className={f.bottom}>
+        <span className="skeleton" style={{ height: 52 }} />
+      </div>
+    </>
+  );
+}
+
 const toggle = <T,>(list: T[], id: T) =>
   list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
 

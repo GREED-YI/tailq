@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import f from "@/components/Flow.module.css";
+import { RangeSkeleton } from "@/app/onboarding/OnboardingFlow";
 import type { Level } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/server";
 import s from "../my.module.css";
+import { MyLoading } from "../MyLoading";
 import { RangeEditor } from "./RangeEditor";
 
 export const metadata: Metadata = { title: "연습 범위 · TailQ" };
@@ -12,7 +15,14 @@ export const metadata: Metadata = { title: "연습 범위 · TailQ" };
 export default function RangePage() {
   return (
     <div className={s.main}>
-      <Suspense>
+      <Suspense
+        fallback={
+          <MyLoading title="연습 범위">
+            <p className={f.sub}>여러 개 고를 수 있어요</p>
+            <RangeSkeleton />
+          </MyLoading>
+        }
+      >
         <Range />
       </Suspense>
     </div>

@@ -17,10 +17,29 @@ export default function OnboardingPage() {
       <span className={f.pcLogo}>
         <Logo />
       </span>
-      <Suspense>
+      <Suspense fallback={<Loading />}>
         <Onboarding />
       </Suspense>
     </main>
+  );
+}
+
+// 불러오는 동안: 머리 높이 · 제목 · 설명 · 동의 목록(처음 들어오면 1단계) · 버튼 자리. 몇 단계인지 몰라 단계 표시는 비운다
+function Loading() {
+  return (
+    <div className={f.loading} aria-busy="true">
+      <header className={f.top} />
+      <p className={f.title}>
+        <span className="skeleton" style={{ width: "70%" }} />
+      </p>
+      <p className={f.sub}>
+        <span className="skeleton" style={{ width: "85%" }} />
+      </p>
+      <span className="skeleton" style={{ marginTop: 32, height: 280 }} />
+      <div className={f.bottom}>
+        <span className="skeleton" style={{ height: 52 }} />
+      </div>
+    </div>
   );
 }
 

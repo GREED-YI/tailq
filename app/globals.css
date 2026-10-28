@@ -67,6 +67,15 @@ button {
   white-space: nowrap;
 }
 
+/* 불러오는 동안의 자리 표시(DESIGN.md "같은 모양의 자리 표시"). 움직이지 않는 line 색 칸이라 동작 줄이기와 상관없다.
+   높이는 한 줄(1lh)이라 글 요소 안에 두면 그 글 줄과 같은 높이가 된다. 다른 크기는 쓰는 곳에서 준다 */
+.skeleton {
+  display: block;
+  height: 1lh;
+  border-radius: var(--radius-control);
+  background: var(--line);
+}
+
 /* 버튼(DESIGN.md button). primary 52px, 나머지 44px. 모서리 8px, 그림자 없음 */
 .btn {
   display: inline-flex;

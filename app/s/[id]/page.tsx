@@ -25,27 +25,10 @@ export async function generateMetadata({
 
 // 공유 페이지(04 기능 명세 8번, Figma S04). 로그인 없이 누구나 연다.
 // 카드(닉네임·주제·점수·꼬리잇기)와 "나도 풀어보기"만 둔다. 질문 원문·답변은 없다.
+// 카드를 읽는 동안에도 머리·안내·버튼·푸터는 먼저 보이고, 카드 자리만 같은 크기의 빈 칸으로 둔다
 export default function SharePage({ params }: PageProps<"/s/[id]">) {
   return (
-    <Suspense>
-      {params.then((p) => (
-        <ShareView id={p.id} />
-      ))}
-    </Suspense>
-  );
-}
-
-async function ShareView({ id }: { id: string }) {
-  const card = await loadShare(id);
-  // 없는 카드(탈퇴로 지워진 카드 포함)는 랜딩으로(05 사용자 흐름 "예외")
-  if (!card) redirect("/");
-  const today = kstDay(new Date());
-  const [line1, line2] = shareSentence(card, today);
-  // 오늘 만든 카드만 오늘 라벨, 지난 카드는 중립 라벨(DESIGN.md label)
-  const isToday = kstDay(new Date(card.created_at)) === today;
-
-  return (
-    <div className={`${s.page} fade`}>
+    <div className={s.page}>
       {/* 로그인 없이 보는 화면이라 앱 메뉴 없이 로고만 */}
       <header className={s.header}>
         <div className={s.headerIn}>
@@ -56,33 +39,11 @@ async function ShareView({ id }: { id: string }) {
       </header>
 
       <main className={s.main}>
-        <section className={s.card} aria-label="결과 카드">
-          <div className={s.meta}>
-            <span className={`tag ${isToday ? "tag-today" : "tag-neutral"}`}>오늘의 기술면접</span>
-            <span className={`mono ${s.date}`}>{shareDate(card)}</span>
-          </div>
-          <h1 className={s.topic}>{card.topic_name}</h1>
-          <ScoreRing
-            shown={card.score}
-            value={card.score}
-            label={`100점 만점에 ${card.score}점`}
-          />
-          <p className={s.who}>
-            <b>{shareName(card)}</b>
-            {card.streak > 0 && (
-              <>
-                {" · 꼬리잇기"}
-                <b className={`mono ${s.streak}`}>{card.streak}</b> 일째
-              </>
-            )}
-          </p>
-        </section>
-
-        <p className={s.sentence}>
-          {line1}
-          <br />
-          {line2}
-        </p>
+        <Suspense fallback={<Loading />}>
+          {params.then((p) => (
+            <ShareView id={p.id} />
+          ))}
+        </Suspense>
         <p className={s.note}>
           <Icon name="lock" size={14} />
           질문 원문과 내 답변은 공유 카드에 보이지 않아요
@@ -101,5 +62,72 @@ async function ShareView({ id }: { id: string }) {
 
       <SiteFooter className={f.footer} logoHeight={22} />
     </div>
+  );
+}
+
+// 불러오는 동안: 카드 · 문장 두 줄 자리. 점수는 ScoreRing의 빈 표시(··/100, 빈 막대)라 크기가 같다
+function Loading() {
+  return (
+    <div aria-busy="true">
+      <section className={s.card}>
+        <div className={s.meta}>
+          <span className="skeleton" style={{ width: 160, height: 28 }} />
+        </div>
+        <p className={s.topic}>
+          <span className="skeleton" style={{ width: "50%" }} />
+        </p>
+        <ScoreRing shown={0} label="점수를 불러오고 있어요" />
+        <p className={s.who}>
+          <span className="skeleton" style={{ width: "40%" }} />
+        </p>
+      </section>
+      <p className={s.sentence}>
+        <span className="skeleton" style={{ width: "80%", height: "2lh" }} />
+      </p>
+    </div>
+  );
+}
+
+async function ShareView({ id }: { id: string }) {
+  const card = await loadShare(id);
+  // 없는 카드(탈퇴로 지워진 카드 포함)는 랜딩으로(05 사용자 흐름 "예외")
+  if (!card) redirect("/");
+  const today = kstDay(new Date());
+  const [line1, line2] = shareSentence(card, today);
+  // 오늘 만든 카드만 오늘 라벨, 지난 카드는 중립 라벨(DESIGN.md label)
+  const isToday = kstDay(new Date(card.created_at)) === today;
+
+  return (
+    <>
+      <section className={`${s.card} fade`} aria-label="결과 카드">
+        <div className={s.meta}>
+          <span className={`tag ${isToday ? "tag-today" : "tag-neutral"}`}>
+            오늘의 기술면접
+          </span>
+          <span className={`mono ${s.date}`}>{shareDate(card)}</span>
+        </div>
+        <h1 className={s.topic}>{card.topic_name}</h1>
+        <ScoreRing
+          shown={card.score}
+          value={card.score}
+          label={`100점 만점에 ${card.score}점`}
+        />
+        <p className={s.who}>
+          <b>{shareName(card)}</b>
+          {card.streak > 0 && (
+            <>
+              {" · 꼬리잇기"}
+              <b className={`mono ${s.streak}`}>{card.streak}</b> 일째
+            </>
+          )}
+        </p>
+      </section>
+
+      <p className={`${s.sentence} fade`}>
+        {line1}
+        <br />
+        {line2}
+      </p>
+    </>
   );
 }

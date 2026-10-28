@@ -336,6 +336,24 @@
   display: none;
 }
 
+/* 등록 화면을 불러오는 동안(new/page.tsx Loading): 칸 이름 한 줄 + 칸 높이(입력 52, README 240·PC 320)만큼의 자리 */
+.fieldSkeleton {
+  margin-top: 12px;
+  height: calc(20px + 8px + 52px);
+}
+.fieldSkeleton[data-kind="textarea"] {
+  margin-top: 24px;
+  height: calc(20px + 8px + 240px);
+}
+@media (min-width: 1024px) {
+  .fieldSkeleton:first-child {
+    margin-top: 32px;
+  }
+  .fieldSkeleton[data-kind="textarea"] {
+    height: calc(20px + 8px + 320px);
+  }
+}
+
 /* 질문을 만드는 중 · 실패(empty-state): 그림 없이 글과 버튼으로 */
 .state {
   margin-top: 8px;
