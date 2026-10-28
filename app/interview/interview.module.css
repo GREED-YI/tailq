@@ -170,19 +170,27 @@
   background: var(--accent);
   box-shadow: 0 0 0 4px var(--accent-soft);
 }
-/* 지금 점만 은은하게 깜빡인다(DESIGN.md thread). 동작 줄이기면 멈춘다 */
+/* 지금 점에서 옅은 고리가 퍼지며 사라진다(DESIGN.md thread 파동). 점은 그대로, 동작 줄이기면 멈춘다 */
 @media (prefers-reduced-motion: no-preference) {
-  .threadDot[data-current] {
-    animation: breathe 2s ease-in-out infinite;
+  .threadDot[data-current]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: ripple 2s ease-out infinite;
+    pointer-events: none;
   }
 }
-@keyframes breathe {
-  0%,
-  100% {
-    opacity: 1;
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.45;
   }
-  50% {
-    opacity: 0.4;
+  70%,
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
   }
 }
 .threadHead {
