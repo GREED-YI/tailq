@@ -140,6 +140,8 @@ function MainResult({
   result: TurnResult;
 }) {
   const unknown = result.verdict === "unknown";
+  // 모르겠어요는 0점으로 기록되지만 점수 대신 –와 빈 막대로 보여준다
+  const score = unknown ? undefined : (result.score ?? 0);
   const good = result.feedback?.good ?? [];
   const improve = result.feedback?.improve ?? [];
   return (
@@ -154,12 +156,13 @@ function MainResult({
       <section className={s.result} aria-label="채점 결과">
         {/* 숫자 줄 오른쪽에 점수 구간 판정(모양 점 + 글자), 모르겠어요면 모르겠어요 */}
         <ScoreRing
-          shown={result.score ?? 0}
-          value={result.score ?? 0}
-          label={`100점 만점에 ${result.score ?? 0}점`}
+          shown={score ?? 0}
+          value={score}
+          label={score === undefined ? "점수 없음" : `100점 만점에 ${score}점`}
+          empty="–"
           aside={
             <VerdictMark
-              verdict={unknown ? "unknown" : scoreVerdict(result.score ?? 0)}
+              verdict={score === undefined ? "unknown" : scoreVerdict(score)}
             />
           }
         />

@@ -517,17 +517,21 @@ function ResultView({
     );
   }
   const unknown = result.verdict === "unknown";
-  const score = result.score ?? 0;
+  // 모르겠어요는 0점으로 기록되지만 점수 대신 –와 빈 막대로 보여준다(홈·기록과 같다)
+  const score = unknown ? undefined : (result.score ?? 0);
   return (
     <div className={s.result}>
       <section className={s.panel} aria-label="채점 결과">
         {/* 0에서 점수까지 차오르는 것은 ScoreRing이 맡는다 */}
         <ScoreRing
-          shown={score}
-          label={`100점 만점에 ${score}점`}
+          shown={score ?? 0}
+          label={score === undefined ? "점수 없음" : `100점 만점에 ${score}점`}
           value={score}
+          empty="–"
           aside={
-            <VerdictMark verdict={unknown ? "unknown" : scoreVerdict(score)} />
+            <VerdictMark
+              verdict={score === undefined ? "unknown" : scoreVerdict(score)}
+            />
           }
         />
         {!unknown && result.feedback?.summary && (

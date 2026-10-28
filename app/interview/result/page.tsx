@@ -12,6 +12,7 @@ import s from "../interview.module.css";
 import { ScoreBar } from "../ScoreRing";
 import { ShareButton } from "../ShareButton";
 import { TurnRows } from "../TurnRows";
+import { VerdictMark } from "../VerdictMark";
 import { scoreColor } from "../verdict";
 
 export const metadata: Metadata = { title: "오늘의 결과 · TailQ" };
@@ -126,22 +127,31 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
           {main?.status === "graded" && (
             <div className={s.tile}>
               <span className={s.tileLabel}>본 질문 점수</span>
-              {score === undefined ? (
-                <span className={s.tileText}>모르겠어요</span>
-              ) : (
-                <>
-                  <p
-                    className={s.tileNum}
-                    role="img"
-                    aria-label={`100점 만점에 ${score}점`}
-                  >
-                    <span className="mono" style={{ color: scoreColor(score) }}>
-                      {score}
-                    </span>
-                    <span className="mono">/100</span>
-                  </p>
-                  <ScoreBar value={score} small />
-                </>
+              {/* 모르겠어요는 점수 대신 –와 빈 막대, 아래에 모르겠어요 판정(면접 화면 점수 패널과 같다) */}
+              <p
+                className={s.tileNum}
+                role="img"
+                aria-label={
+                  score === undefined ? "점수 없음" : `100점 만점에 ${score}점`
+                }
+              >
+                <span
+                  className="mono"
+                  style={
+                    score === undefined
+                      ? undefined
+                      : { color: scoreColor(score) }
+                  }
+                >
+                  {score ?? "–"}
+                </span>
+                <span className="mono">/100</span>
+              </p>
+              <ScoreBar value={score ?? 0} small />
+              {score === undefined && (
+                <span className={s.tileNote}>
+                  <VerdictMark verdict="unknown" />
+                </span>
               )}
             </div>
           )}

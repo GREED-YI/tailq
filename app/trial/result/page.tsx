@@ -40,8 +40,9 @@ async function TrialResult() {
   if (session.status === "open") redirect("/trial");
 
   const [main, followUp] = session.turns;
-  const score = main?.score ?? 0;
   const unknown = main?.verdict === "unknown";
+  // 모르겠어요는 0점으로 기록되지만 점수 대신 –와 빈 막대로 보여준다
+  const score = unknown ? undefined : (main?.score ?? 0);
   const fb = main?.feedback as Feedback;
   const good = fb?.good?.[0];
   const improve = fb?.improve?.[0];
@@ -65,11 +66,14 @@ async function TrialResult() {
           <strong className={s.prompt}>{q.prompt}</strong>
         </div>
         <ScoreRing
-          shown={score}
+          shown={score ?? 0}
           value={score}
-          label={`100점 만점에 ${score}점`}
+          label={score === undefined ? "점수 없음" : `100점 만점에 ${score}점`}
+          empty="–"
           aside={
-            <VerdictMark verdict={unknown ? "unknown" : scoreVerdict(score)} />
+            <VerdictMark
+              verdict={score === undefined ? "unknown" : scoreVerdict(score)}
+            />
           }
         />
         {followUp?.effective_status === "graded" && (
