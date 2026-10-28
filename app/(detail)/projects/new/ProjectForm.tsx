@@ -36,8 +36,8 @@ const COPY = {
     nameLabel: "학습 자료 제목",
     namePlaceholder: "예: 운영체제 - 프로세스와 스레드",
     contentLabel: "학습 자료 내용",
-    // 받는 형식은 글을 넣으면 사라지는 placeholder가 아니라 파일 버튼 옆 안내에 둔다
-    contentPlaceholder: "정리한 글을 붙여넣거나 아래에서 파일을 불러와 주세요",
+    // 파일 불러오기와 받는 형식은 입력칸 위 파일 자리(file-drop)가 말한다
+    contentPlaceholder: "정리한 글이나 마크다운을 붙여넣어 주세요",
     // 375에서 글자 수와 한 줄에 들어가게 짧게 둔다
     help: "개념 질문 5개를 만들어 줘요",
     back: "학습 자료 목록으로",
@@ -71,8 +71,8 @@ export function ProjectForm({
   const [fileName, setFileName] = useState("");
   // 파일을 글로 바꾸는 중(큰 PDF는 몇 초 걸린다). 그동안 입력칸은 읽기 전용, 등록은 잠근다
   const [reading, setReading] = useState(false);
-  // 입력칸에 파일을 끌어 올린 중(PC)
-  const [dragging, setDragging] = useState(false);
+  // 파일을 끌어 올린 곳(PC): 파일 자리(zone) 또는 입력칸(text). 끌어 올린 쪽만 켜진다
+  const [dragging, setDragging] = useState<"zone" | "text" | null>(null);
   // 쓴 글을 바꿀지 묻는 동안 고른 파일
   const pending = useRef<File | null>(null);
   const confirmRef = useRef<HTMLDialogElement>(null);
@@ -186,6 +186,21 @@ export function ProjectForm({
   // 끌어다 놓기는 학습 자료에서 파일일 때만 받는다(입력칸 안 글 끌어 옮기기는 그대로)
   const takesFile = (e: React.DragEvent) =>
     kind === "note" && e.dataTransfer.types.includes("Files");
+  // 파일 자리와 입력칸이 같이 쓰는 끌어다 놓기. 읽는 중·등록 중에는 켜지 않고 놓을 수 없다고 표시한다
+  function dragOver(e: React.DragEvent, where: "zone" | "text") {
+    if (!takesFile(e)) return;
+    e.preventDefault();
+    const ok = !reading && !busy;
+    e.dataTransfer.dropEffect = ok ? "copy" : "none";
+    setDragging(ok ? where : null);
+  }
+  function drop(e: React.DragEvent) {
+    if (!takesFile(e)) return;
+    e.preventDefault();
+    setDragging(null);
+    const file = e.dataTransfer.files[0];
+    if (file) pick(file);
+  }
 
   return (
     <>
@@ -214,6 +229,119 @@ export function ProjectForm({
             required
           />
 
+          {kind === "note" && (
+            <>
+              {/* 파일 자리(file-drop): 진짜 파일 칸은 화면에서만 숨기고(키보드·화면 읽기 프로그램은 그대로 쓴다) 바로 뒤 label 전체를 고르는 자리로 보인다.
+                  읽는 동안은 disabled 대신 aria-disabled + 고르기 창 막기로 잠근다(비활성화하면 초점이 사라진다).
+                  마우스 기기는 점선 자리에 끌어다 놓을 수도 있고, 터치 기기는 점선 없이 형식 줄·버튼·개인정보 줄만 보인다(note-file-drop) */}
+              <input
+                id="project-file"
+                type="file"
+                className={`sr-only ${s.fileInput}`}
+                accept={NOTE_FILE_ACCEPT}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  // 같은 파일을 다시 골라도 change가 일어나게 비운다
+                  e.target.value = "";
+                  if (file) pick(file);
+                }}
+                onClick={(e) => reading && e.preventDefault()}
+                disabled={busy}
+                aria-label="파일 불러오기"
+                aria-disabled={reading || undefined}
+                aria-invalid={fileError ? true : undefined}
+                aria-describedby="project-file-hint project-file-privacy project-file-msg"
+              />
+              <label
+                htmlFor="project-file"
+                className={s.fileDrop}
+                data-drag={dragging === "zone" || undefined}
+                data-reading={reading || undefined}
+                onDragOver={(e) => dragOver(e, "zone")}
+                onDrop={drop}
+                // 자리 안 글자 위로 옮길 때마다 dragleave가 나므로 자리 밖으로 나갔을 때만 끈다
+                onDragLeave={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget as Node))
+                    setDragging(null);
+                }}
+              >
+                {/* 형식 라벨 → MD 그림(정지). 같은 내용을 형식 줄 글이 말해 화면 읽기에서 뺀다 */}
+                <span className={s.fileFormats} aria-hidden="true">
+                  {["PDF", "DOCX", "PPTX", "HWP", "XLSX", "HTML"].map((f) => (
+                    <span key={f} className={s.format}>
+                      {f}
+                    </span>
+                  ))}
+                  <Icon name="arrowRight" size={16} />
+                  <span className={s.format} data-md>
+                    MD
+                  </span>
+                </span>
+                <span className={s.fileCopy}>
+                  <strong className={s.fileLead}>
+                    {dragging === "zone"
+                      ? "여기에 놓으면 불러와요"
+                      : "파일을 끌어다 놓거나 눌러서 골라 주세요"}
+                  </strong>
+                  <span className={s.fileDesc}>
+                    읽은 글을 마크다운으로 바꿔 아래 입력칸에 넣어 줘요
+                  </span>
+                  <span className={s.fileAct}>
+                    {/* 버튼 모양만(진짜 버튼이 아니다). 읽는 중 진행 표시는 .btn[aria-busy] 전역 규칙 */}
+                    <span
+                      className="btn btn-md btn-secondary"
+                      aria-busy={reading || undefined}
+                    >
+                      <span>파일 불러오기</span>
+                    </span>
+                    <span id="project-file-hint" className={s.fileNote}>
+                      PDF · Word · PowerPoint · Excel · 한글 · EPUB · HTML · TXT
+                      · MD · CSV · JSON · 50MB까지
+                    </span>
+                  </span>
+                  <span id="project-file-privacy" className={s.fileNote}>
+                    파일은 서버로 보내지 않고 저장하지도 않아요. 등록하면
+                    입력칸의 글만 보내요.
+                  </span>
+                </span>
+              </label>
+              {/* 비어 있어도 늘 두는 알림 칸(나중에 붙인 live 영역은 첫 알림을 놓칠 수 있다) */}
+              <p
+                id="project-file-msg"
+                className={s.fileMsg}
+                data-error={(!reading && !!fileError) || undefined}
+                aria-live="polite"
+              >
+                {reading ? (
+                  <>
+                    <span className={s.fileName}>{fileName}</span>
+                    <span>· 읽고 있어요</span>
+                  </>
+                ) : fileError ? (
+                  fileError
+                ) : (
+                  fileNote && (
+                    <>
+                      <span className={s.fileName}>{fileName}</span>
+                      <span>
+                        {"· "}
+                        {fileNote.truncated && "글이 너무 길어 앞부분 "}
+                        <span className="mono">
+                          {fileNote.n.toLocaleString()}
+                        </span>
+                        {fileNote.truncated
+                          ? "자만 넣었어요"
+                          : fileNote.replaced
+                            ? "자로 바꿨어요"
+                            : "자 넣었어요"}
+                      </span>
+                    </>
+                  )
+                )}
+              </p>
+            </>
+          )}
+
           <label htmlFor="project-content" className={`${s.label} ${s.gap}`}>
             {c.contentLabel}
           </label>
@@ -223,7 +351,7 @@ export function ProjectForm({
               id="project-content"
               className={s.textarea}
               data-over={length > c.max || undefined}
-              data-drag={dragging || undefined}
+              data-drag={dragging === "text" || undefined}
               aria-invalid={
                 (length > 0 && length < CONTENT_MIN) ||
                 length > c.max ||
@@ -236,27 +364,15 @@ export function ProjectForm({
                 setFileError("");
                 setFileNote(null);
               }}
-              onDragOver={(e) => {
-                if (!takesFile(e)) return;
-                e.preventDefault();
-                const ok = !reading && !busy;
-                e.dataTransfer.dropEffect = ok ? "copy" : "none";
-                setDragging(ok);
-              }}
-              onDragLeave={() => setDragging(false)}
-              onDrop={(e) => {
-                if (!takesFile(e)) return;
-                e.preventDefault();
-                setDragging(false);
-                const file = e.dataTransfer.files[0];
-                if (file) pick(file);
-              }}
+              onDragOver={(e) => dragOver(e, "text")}
+              onDrop={drop}
+              onDragLeave={() => setDragging(null)}
               placeholder={c.contentPlaceholder}
               spellCheck={false}
               aria-describedby="project-help"
               required
             />
-            {dragging && (
+            {dragging === "text" && (
               <span className={s.dropLabel} aria-hidden="true">
                 여기에 놓으면 불러와요
               </span>
@@ -296,74 +412,6 @@ export function ProjectForm({
               {length.toLocaleString()} / {c.max.toLocaleString()}
             </span>
           </p>
-          {kind === "note" && (
-            <div className={s.fileRow}>
-              {/* 진짜 파일 칸은 화면에서만 숨기고(키보드·화면 읽기 프로그램은 그대로 쓴다) 버튼 모양 label을 보인다.
-                  읽는 동안은 disabled 대신 aria-disabled + 고르기 창 막기로 잠근다(비활성화하면 초점이 사라진다) */}
-              <input
-                id="project-file"
-                type="file"
-                className={`sr-only ${s.fileInput}`}
-                accept={NOTE_FILE_ACCEPT}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  // 같은 파일을 다시 골라도 change가 일어나게 비운다
-                  e.target.value = "";
-                  if (file) pick(file);
-                }}
-                onClick={(e) => reading && e.preventDefault()}
-                disabled={busy}
-                aria-disabled={reading || undefined}
-                aria-invalid={fileError ? true : undefined}
-                aria-describedby="project-file-hint project-file-msg"
-              />
-              <label
-                htmlFor="project-file"
-                className="btn btn-md btn-secondary press"
-                aria-busy={reading || undefined}
-              >
-                파일 불러오기
-              </label>
-              <span id="project-file-hint" className={s.fileHint}>
-                PDF·Word·PowerPoint·한글 등, 50MB까지
-              </span>
-              {/* 비어 있어도 늘 두는 알림 칸(나중에 붙인 live 영역은 첫 알림을 놓칠 수 있다) */}
-              <p
-                id="project-file-msg"
-                className={s.fileMsg}
-                data-error={(!reading && !!fileError) || undefined}
-                aria-live="polite"
-              >
-                {reading ? (
-                  <>
-                    <span className={s.fileName}>{fileName}</span>
-                    <span>· 읽고 있어요</span>
-                  </>
-                ) : fileError ? (
-                  fileError
-                ) : (
-                  fileNote && (
-                    <>
-                      <span className={s.fileName}>{fileName}</span>
-                      <span>
-                        {"· "}
-                        {fileNote.truncated && "글이 너무 길어 앞부분 "}
-                        <span className="mono">
-                          {fileNote.n.toLocaleString()}
-                        </span>
-                        {fileNote.truncated
-                          ? "자만 넣었어요"
-                          : fileNote.replaced
-                            ? "자로 바꿨어요"
-                            : "자 넣었어요"}
-                      </span>
-                    </>
-                  )
-                )}
-              </p>
-            </div>
-          )}
-
           <div className={s.bottom}>
             {error && (
               <p className={s.error} role="alert">

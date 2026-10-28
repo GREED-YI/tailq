@@ -25,7 +25,7 @@ export default function NewNotePage() {
   );
 }
 
-// 불러오는 동안: 머리는 그대로, 제목 칸 · 자료 칸은 같은 크기의 빈 칸으로(레이아웃이 밀리지 않게)
+// 불러오는 동안: 머리는 그대로, 제목 칸 · 파일 자리 · 자료 칸은 같은 크기의 빈 칸으로(레이아웃이 밀리지 않게). 움직이지 않는다
 function Loading() {
   return (
     <>
@@ -42,6 +42,7 @@ function Loading() {
       <LoadingStatus />
       <div className={s.form} aria-busy="true" aria-hidden="true">
         <span className={`skeleton ${s.fieldSkeleton}`} />
+        <span className={`skeleton ${s.fileSkeleton}`} />
         <span className={`skeleton ${s.fieldSkeleton}`} data-kind="textarea" />
       </div>
     </>
