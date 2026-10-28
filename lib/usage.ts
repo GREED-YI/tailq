@@ -49,7 +49,7 @@ export async function recordUsage(
   db: Admin,
   ref: {
     userId: string | null;
-    purpose: "grade" | "follow_up" | "project_gen" | "trial";
+    purpose: "grade" | "follow_up" | "project_gen" | "note_gen" | "trial";
     refId: string;
   },
   usage: AiUsage,

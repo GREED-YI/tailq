@@ -21,25 +21,38 @@ export const QuestionFile = z.object({
 
 export type QuestionFile = z.infer<typeof QuestionFile>;
 
-// 화면의 질문 번호(08 설계 "questions"). 은행 질문은 "Q.042", 프로젝트 질문은 "내 프로젝트"
-export const qLabel = (q: { id: number; project_id: string | null }) =>
-  q.project_id ? "내 프로젝트" : `Q.${String(q.id).padStart(3, "0")}`;
+// 화면의 질문 번호(08 설계 "questions"). 은행 질문은 "Q.042", 프로젝트 질문은 "내 프로젝트", 학습 자료 질문은 "내 학습 자료"
+export const qLabel = (q: {
+  id: number;
+  project_id: string | null;
+  note_id?: string | null;
+}) =>
+  q.project_id
+    ? "내 프로젝트"
+    : q.note_id
+      ? "내 학습 자료"
+      : `Q.${String(q.id).padStart(3, "0")}`;
 
+// study_notes는 학습 자료 질문이 나올 수 있는 화면만 읽는다(체험 질문 같은 은행 질문만 읽는 곳은 빼도 된다)
 type TaggedQuestion = {
   id: number;
   topic_id: string | null;
   topics: { field: string } | null;
   projects: { name: string } | null;
+  study_notes?: { title: string } | null;
 };
 
-// 번호와 주제 줄. 은행 질문은 "Q.042"와 "backend / jpa", 프로젝트 질문은 "내 프로젝트"와 프로젝트 이름
+// 번호와 주제 줄. 은행 질문은 "Q.042"와 "backend / jpa", 프로젝트 질문은 "내 프로젝트"와 프로젝트 이름,
+// 학습 자료 질문은 "내 학습 자료"와 학습 자료 제목
 export function questionTags(q: TaggedQuestion) {
   return q.projects
     ? { label: "내 프로젝트", topic: q.projects.name }
-    : {
-        label: `Q.${String(q.id).padStart(3, "0")}`,
-        topic: `${q.topics?.field} / ${q.topic_id}`,
-      };
+    : q.study_notes
+      ? { label: "내 학습 자료", topic: q.study_notes.title }
+      : {
+          label: `Q.${String(q.id).padStart(3, "0")}`,
+          topic: `${q.topics?.field} / ${q.topic_id}`,
+        };
 }
 
 export const tagLine = (q: TaggedQuestion) => {
@@ -50,10 +63,12 @@ export const tagLine = (q: TaggedQuestion) => {
 // 내 질문 목록과 질문 상세가 같이 읽는 시도(세션) 줄: 본 질문 결과와 그 질문(북마크·복습 포함). RLS가 내 것만 준다.
 // 쓰는 쪽에서 .eq("turns.idx", 0).eq("turns.status", "graded")로 본 질문을 채점받은 세션만 남긴다
 export const ATTEMPT_COLUMNS =
-  "id, day, status, question_id, turns!inner(idx, status, score, verdict), questions(id, prompt, level, topic_id, project_id, is_hidden, topics(field), projects(name), bookmarks(question_id), reviews(box, due_day))";
+  "id, day, status, question_id, turns!inner(idx, status, score, verdict), questions(id, prompt, level, topic_id, project_id, is_hidden, topics(field), projects(name), study_notes(title), bookmarks(question_id), reviews(box, due_day))";
 
 // 프로젝트 등록 규칙(04 기능 명세 9번). 이름·README 최소 길이는 기획에 없어 #39에서 정했다(DB CHECK와 같다)
 export const MAX_PROJECTS = 3;
 export const NAME_MAX = 40;
 export const CONTENT_MIN = 30;
 export const CONTENT_MAX = 10_000;
+// 학습 자료(04 기능 명세 9번 "학습 자료", #141). 제목·내용 길이는 프로젝트와 같다(DB CHECK와 같다)
+export const MAX_NOTES = 3;
