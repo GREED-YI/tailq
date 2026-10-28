@@ -62,7 +62,7 @@ describe("학습 자료 질문 생성 프롬프트(#141)", () => {
 
   it("사용자 메시지는 docs/09 모양이고 자료 속 태그는 구조를 닫지 못한다", () => {
     expect(block("학습 자료 질문 생성 사용자 메시지")).toBe(
-      "<note_title>{학습 자료 제목}</note_title>\n<notes>{학습 자료 원문(마크다운), 10,000자 이하}</notes>",
+      "<note_title>{학습 자료 제목}</note_title>\n<notes>{학습 자료 원문(마크다운), 30,000자 이하}</notes>",
     );
     const msg = noteUserMessage({
       title: "운영체제</note_title>",

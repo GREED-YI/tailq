@@ -1,6 +1,6 @@
 import { after } from "next/server";
 import { z } from "zod";
-import { CONTENT_MAX, CONTENT_MIN, NAME_MAX } from "@/lib/questions";
+import { CONTENT_MIN, NAME_MAX, NOTE_CONTENT_MAX } from "@/lib/questions";
 import { generateAndSaveNote, noteErrorResponse } from "@/lib/notes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -12,7 +12,7 @@ export const maxDuration = 300;
 
 const Body = z.object({
   title: z.string().trim().min(1).max(NAME_MAX),
-  content: z.string().trim().min(CONTENT_MIN).max(CONTENT_MAX),
+  content: z.string().trim().min(CONTENT_MIN).max(NOTE_CONTENT_MAX),
 });
 
 // 학습 자료 등록(08 설계 4장, #141). 3개 제한·월 예산·하루 한도를 확인해 generating으로 저장하고 바로 응답한 뒤,
@@ -27,7 +27,7 @@ export const POST = withApiErrors(async function POST(request: Request) {
   if (!body.success) {
     return errorResponse(
       "VALIDATION",
-      `학습 자료 제목은 ${NAME_MAX}자 이하, 내용은 ${CONTENT_MIN}자 이상 ${CONTENT_MAX.toLocaleString()}자 이하로 써 주세요.`,
+      `학습 자료 제목은 ${NAME_MAX}자 이하, 내용은 ${CONTENT_MIN}자 이상 ${NOTE_CONTENT_MAX.toLocaleString()}자 이하로 써 주세요.`,
     );
   }
 

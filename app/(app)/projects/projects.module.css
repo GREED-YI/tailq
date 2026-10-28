@@ -205,31 +205,211 @@
   display: flex;
   flex-direction: column;
 }
-/* 학습 자료 등록의 .md 파일 불러오기(테두리 버튼 모양 label): 도움말 아래. 오류 글은 버튼 바로 아래 */
-.fileRow {
-  margin-top: 12px;
+/* 학습 자료 파일 자리(DESIGN.md file-drop note-import): 제목 칸 아래, 내용 입력칸 위. 숨긴 파일 칸 바로 뒤 label 전체가 고르는 자리다.
+   마우스 기기는 mark-empty 1px 점선 자리(모바일 폭 한 단, 768부터 자리 안 2단), 터치 기기는 아래 touch 규칙으로 점선 없이 작게.
+   바탕은 canvas 그대로, 오렌지는 끌어 올렸을 때만 쓴다 */
+.fileDrop {
+  margin-top: 24px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-}
-.fileRow label {
+  gap: 12px;
+  border: 1px dashed var(--mark-empty);
+  border-radius: var(--radius-control);
   cursor: pointer;
 }
-/* 숨긴 파일 칸의 초점·비활성을 보이는 label에 옮긴다 */
-.fileInput:focus-visible + label {
+@media (prefers-reduced-motion: no-preference) {
+  .fileDrop {
+    transition:
+      background-color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease);
+  }
+}
+@media (hover: hover) {
+  .fileDrop:hover {
+    background: var(--surface);
+  }
+}
+.fileDrop:active {
+  background: var(--surface);
+}
+/* 끌어 올림: 점선이 accent 실선이 되고 입력칸 끌어다 놓기와 같은 2px 링, 첫 줄은 accent */
+.fileDrop[data-drag] {
+  background: var(--surface);
+  border: 1px solid var(--accent);
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
-.fileInput:disabled + label {
+.fileDrop[data-drag] .fileLead {
+  color: var(--accent);
+}
+.fileDrop[data-reading] {
+  cursor: progress;
+}
+/* 형식 그림: 형식 라벨(label format) → MD. 바꾼 결과 MD만 text 테두리와 text 글자 */
+.fileFormats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+}
+.fileFormats svg {
+  margin-inline: 4px;
+}
+.format {
+  height: 28px;
+  padding: 0 8px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-sub);
+}
+.format[data-md] {
+  border-color: var(--text);
+  font-weight: 600;
+  color: var(--text);
+}
+.fileCopy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fileLead {
+  font-size: 15px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+.fileDesc {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-sub);
+  word-break: keep-all;
+}
+/* 버튼 모양 + 형식 줄. 좁으면 형식 줄이 버튼 아래로 */
+.fileAct {
+  margin: 8px 0 4px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+.fileAct :global(.btn) {
+  flex-shrink: 0;
+}
+.fileAct .fileNote {
+  flex: 1 1 240px;
+}
+.fileNote {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text-muted);
+  word-break: keep-all;
+}
+@media (min-width: 768px) {
+  .fileDrop {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 0;
+  }
+  /* 왼쪽 판: 형식 라벨 3열 → 아래 화살표 → MD, 1px line 세로선 */
+  .fileFormats {
+    padding-right: 24px;
+    margin-right: 24px;
+    border-right: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: center;
+    align-content: center;
+    justify-items: center;
+  }
+  .fileFormats svg {
+    grid-column: 1 / -1;
+    margin: 4px 0;
+    rotate: 90deg;
+  }
+  .format[data-md] {
+    grid-column: 1 / -1;
+  }
+}
+@media (min-width: 1024px) {
+  .fileDrop {
+    padding: 24px;
+  }
+}
+/* touch(터치 기기): 끌어다 놓을 수 없으니 점선 자리·끌어다 놓기 문구·설명 없이 형식 그림 한 줄, 버튼과 형식 줄, 개인정보 줄만.
+   형식 라벨은 375에서 한 줄에 들어가게 앞 4개만 */
+@media (hover: none), (pointer: coarse) {
+  .fileDrop {
+    padding: 0;
+    display: flex;
+    gap: 12px;
+    border: 0;
+    border-radius: 0;
+  }
+  .fileDrop:active {
+    background: none;
+  }
+  .fileFormats {
+    padding: 0;
+    margin: 0;
+    border: 0;
+    display: flex;
+    justify-content: flex-start;
+  }
+  .fileFormats svg {
+    margin: 0 4px;
+    rotate: none;
+  }
+  .format:nth-child(n + 5):not([data-md]) {
+    display: none;
+  }
+  .fileAct {
+    margin-top: 0;
+  }
+}
+/* 파일명은 한 줄로 줄이고, 뒤 글(· 읽고 있어요)은 좁으면 다음 줄로 넘긴다. 둘 사이 띄어쓰기는 flex라 gap으로 둔다 */
+.fileMsg {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.3em;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-sub);
+  word-break: keep-all;
+}
+.fileMsg:empty {
+  margin-top: 0;
+}
+.fileMsg[data-error] {
+  display: block;
+  color: var(--danger);
+}
+.fileName {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* 숨긴 파일 칸의 초점·비활성을 바로 뒤 파일 자리에 옮긴다 */
+.fileInput:focus-visible + .fileDrop {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.fileInput:disabled + .fileDrop {
   opacity: 0.4;
   cursor: default;
   pointer-events: none;
-}
-.fieldError {
-  margin-top: 8px;
-  font-size: 13px;
-  line-height: 1.45;
-  color: var(--danger);
 }
 /* 등록·질문 화면(S23·S24)은 탭바가 없어 화면 끝에서 16 위 */
 .detail .bottom {
@@ -395,11 +575,41 @@
   font-size: 13px;
   white-space: nowrap;
 }
-.help[data-over] :global(.mono) {
+/* 한도를 넘으면 카운터만이 아니라 줄일 양을 말하는 글까지 줄 전체를 danger로 */
+.help[data-over] {
   color: var(--danger);
 }
 .textarea[data-over] {
   border-color: var(--danger);
+}
+/* 학습 자료 입력칸에 파일을 끌어다 놓기(PC): 끌어 올리면 초점과 같은 accent 링 + 안내 글을 겹친다 */
+.dropZone {
+  position: relative;
+  margin-top: 8px;
+}
+.dropZone > .textarea {
+  margin-top: 0;
+}
+.textarea[data-drag] {
+  border-color: var(--accent);
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.dropLabel {
+  position: absolute;
+  inset: 1px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+  pointer-events: none;
+}
+/* 파일을 읽는 동안 입력칸은 읽기 전용. 글은 흐리게 하지 않는다(DESIGN에 읽기 전용 모양이 없고, 비활성 0.5는 대비가 떨어진다) */
+.textarea[readonly] {
+  cursor: progress;
 }
 .pcHelp {
   display: none;
@@ -413,6 +623,32 @@
 .fieldSkeleton[data-kind="textarea"] {
   margin-top: 24px;
   height: calc(20px + 8px + 240px);
+}
+/* 학습 자료 파일 자리(file-drop) 높이만큼의 자리. 마우스 기기 점선 자리(모바일 폭 한 단 약 300, 2단 약 172·180), 터치 기기 작은 모양(약 175, 넓으면 111) */
+.fileSkeleton {
+  margin-top: 24px;
+  height: 300px;
+}
+@media (min-width: 768px) {
+  .fileSkeleton {
+    height: 172px;
+  }
+}
+@media (min-width: 1024px) {
+  .fileSkeleton {
+    height: 180px;
+  }
+}
+@media (hover: none), (pointer: coarse) {
+  .fileSkeleton {
+    height: 175px;
+  }
+}
+@media (min-width: 768px) and (hover: none),
+  (min-width: 768px) and (pointer: coarse) {
+  .fileSkeleton {
+    height: 111px;
+  }
 }
 @media (min-width: 1024px) {
   .fieldSkeleton:first-child {

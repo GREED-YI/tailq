@@ -32,7 +32,7 @@ describe("limitNotice (시작 버튼 대신 보일 안내)", () => {
 
     const register = q({ gensLeft: 0 });
     expect(limitNotice(register, "register")?.title).toBe(
-      "오늘 질문 만들기 한도를 모두 썼어요",
+      "오늘 질문 생성 한도를 모두 썼어요",
     );
     expect(limitNotice(register, "practice")).toBeNull();
     // 둘 다 쓴 목록 화면은 Figma S26처럼 연습 안내를 먼저

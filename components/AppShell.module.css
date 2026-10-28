@@ -180,7 +180,7 @@
   }
 }
 
-/* 태블릿·PC: 로고 옆 한 줄 메뉴, 아이콘 없이 글자만. 선택 항목은 text 글자와 아래 2px text 선.
+/* 태블릿·PC: 로고 옆 한 줄 메뉴, 아이콘 없이 글자만. 선택 항목은 text 글자와 아래 2px accent 선(모바일 탭과 같은 색, nav-selected).
    항목은 좌우 8px 여백(최소 폭 44px)을 둬 안쪽 초점 링이 글자를 덮지 않게 하고, 그만큼 항목 사이를 줄였다 */
 @media (min-width: 768px) {
   .mobileOnly {
@@ -215,7 +215,7 @@
     display: none;
   }
   .navItem[aria-current="page"] {
-    box-shadow: inset 0 -2px 0 var(--text);
+    box-shadow: inset 0 -2px 0 var(--accent);
   }
   .streak {
     font-size: 14px;

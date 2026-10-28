@@ -1,6 +1,6 @@
 -- 학습 자료로 면접 질문 만들기(#141, 04 기능 명세 9번 "학습 자료")
 begin;
-select plan(24);
+select plan(26);
 
 insert into auth.users (id, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000141a', '{"name": "에이"}'),
@@ -171,6 +171,16 @@ select is(
   + (select count(*) from public.bookmarks where question_id in (select id from nq)),
   0::bigint,
   '지우면 그 질문과 기록, 복습 일정, 북마크가 함께 지워진다'
+);
+
+-- 내용 한도는 30,000자(#144, 프로젝트 README는 10,000자 그대로)
+select lives_ok(
+  $$insert into public.study_notes (user_id, title, content) values ('00000000-0000-0000-0000-00000000141b', '긴 자료', repeat('가', 30000))$$,
+  '내용은 30,000자까지 저장한다'
+);
+select throws_ok(
+  $$insert into public.study_notes (user_id, title, content) values ('00000000-0000-0000-0000-00000000141b', '너무 긴 자료', repeat('가', 30001))$$,
+  '23514', null, '30,000자를 넘으면 저장하지 않는다'
 );
 
 select * from finish();

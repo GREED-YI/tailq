@@ -70,5 +70,31 @@ export const MAX_PROJECTS = 3;
 export const NAME_MAX = 40;
 export const CONTENT_MIN = 30;
 export const CONTENT_MAX = 10_000;
-// 학습 자료(04 기능 명세 9번 "학습 자료", #141). 제목·내용 길이는 프로젝트와 같다(DB CHECK와 같다)
+// 학습 자료(04 기능 명세 9번 "학습 자료", #141). 제목·최소 길이는 프로젝트와 같다(DB CHECK와 같다).
+// 내용은 수업 자료 파일(PDF·PPT·한글)을 글로 바꿔 넣으면 길어서 30,000자까지 받는다(#144)
 export const MAX_NOTES = 3;
+export const NOTE_CONTENT_MAX = 30_000;
+// 하루 질문 생성·면접 연습 전체 횟수(04 기능 명세 12장). 화면의 "오늘 남은 횟수" 칸 수로만 쓴다.
+// 실제 한도는 DB 함수 ai_quota(supabase/migrations/20261028090000_usage_cap.sql)가 정하므로 값을 바꾸면 그 SQL도 같이 고친다
+export const DAILY_GENS = 1;
+export const DAILY_SESSIONS = 3;
+// 학습 자료 파일 고르기 창에 보일 형식(#144, 변환은 lib/note-file). 옛 형식(.doc·.ppt·.xls)도 넣어야 골랐을 때 새 형식으로 저장하라는 안내를 볼 수 있다
+export const NOTE_FILE_ACCEPT = [
+  ".pdf",
+  ".docx",
+  ".pptx",
+  ".xlsx",
+  ".hwp",
+  ".hwpx",
+  ".epub",
+  ".html",
+  ".htm",
+  ".txt",
+  ".md",
+  ".markdown",
+  ".csv",
+  ".json",
+  ".doc",
+  ".ppt",
+  ".xls",
+].join(",");

@@ -58,6 +58,7 @@ async function Note({ id }: { id: string }) {
       status={note.status as "generating" | "ready" | "failed"}
       questions={toQuestionRows(note.questions)}
       notice={limitNotice(quota, "practice")}
+      sessionsLeft={quota.budget === "exceeded" ? null : quota.sessionsLeft}
       canRetry={quota.budget !== "exceeded"}
     />
   );
