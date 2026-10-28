@@ -1,38 +1,34 @@
-/* MY(S27). 숫자는 Figma C안(모바일 390, PC 내용 폭 720) */
+/* MY(S27). 기준은 DESIGN.md: 숫자 요약은 stat-tiles, 설정 목록은 2px 머리선 + 1px 구분선 행, 확인 창은 dialog */
 
 .my {
   display: flex;
   flex-direction: column;
 }
 
-/* 모바일: 제목 MY + 테마 토글(높이 64). PC는 사이드 메뉴에 토글이 있다 */
+/* 제목(title 역할). 테마는 설정 › 화면 테마 한 곳에서 바꾼다 */
 .header {
-  height: 64px;
+  min-height: 44px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-/* 모바일 헤더 도구(운영자면 운영 대시보드 아이콘 + 테마 토글). 간격은 AppHeader와 같다 */
-.mobileOnly {
-  display: flex;
-  gap: 8px;
-}
 .title {
-  font-size: 24px;
-  line-height: 33px;
+  font-size: 22px;
+  line-height: 1.35;
   font-weight: 700;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
 
-/* 프로필 줄: 아바타 56 + 닉네임·로그인 방법 + 편집 알약 */
+/* 프로필 줄: 아바타 56 + 닉네임·로그인 방법 + 편집 */
 .profile {
-  --avatar-fg: var(--sub);
-  margin-top: 8px;
+  --avatar-fg: var(--text-sub);
+  --avatar-bg: var(--surface);
+  margin-top: 16px;
   min-height: 56px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 .who {
   flex: 1;
@@ -42,143 +38,162 @@
   gap: 4px;
 }
 .who strong {
-  font-size: 19px;
-  line-height: 26px;
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 700;
+  overflow-wrap: anywhere;
 }
 .who span {
   font-size: 13px;
-  color: var(--sub);
-}
-.edit {
-  height: 36px;
-  padding: 0 13px;
-  border-radius: 18px;
-  display: inline-flex;
-  align-items: center;
-  font-size: 14px;
-  font-weight: 700;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 
-/* 꼬리잇기·휴식권·북마크 칸(높이 76) */
+/* 휴식권·북마크(stat-tiles): 묶음 바탕을 line으로 칠하고 1px 간격이 타일 사이 선이 된다 */
 .stats {
-  margin-top: 20px;
+  margin-top: 24px;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  overflow: hidden;
 }
 .stat {
-  height: 76px;
-  padding: 16px 12px 0;
-  border-radius: 22px;
+  min-width: 0;
+  padding: 16px;
+  background: var(--surface);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 .stat > span {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  color: var(--sub);
-}
-/* 꼬리잇기 라벨 앞 꼬리 아이콘: 면접 결과·홈의 꼬리잇기 칸(components/Streak)과 같은 16px · 강조색 */
-.stat > span svg {
-  color: var(--accent);
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--text-sub);
 }
 .stat strong {
-  font-size: 13px;
-  font-weight: 500;
-}
-.stat strong :global(.mono) {
-  font-size: 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 14px;
   font-weight: 600;
 }
-.accent {
-  color: var(--accent);
+.stat strong :global(.mono) {
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
-/* 학습·설정·정보: 제목 15 Bold + 유리 카드 안 62px 줄 */
+/* 학습·설정·정보: 구획 제목 아래 2px text 선, 행마다 1px line 선 */
+.group {
+  margin-top: 32px;
+}
 .group > h2 {
-  margin: 22px 0 10px;
-  font-size: 16px;
-  line-height: 23px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid var(--text);
+  font-size: 18px;
+  line-height: 1.4;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 .list {
   list-style: none;
-  padding: 8px 16px;
-  border-radius: 28px;
+}
+.list > li {
+  border-bottom: 1px solid var(--line);
 }
 .row {
   width: 100%;
   min-height: 60px;
+  padding: 12px 8px;
   display: flex;
   align-items: center;
   gap: 12px;
   text-align: left;
-}
-.row:has(.rowText > span) {
-  min-height: 62px;
+  color: var(--text);
 }
 .row > svg {
   flex-shrink: 0;
-  color: var(--text);
+  color: var(--text-muted);
+}
+@media (hover: hover) {
+  .row:hover {
+    background: var(--surface);
+  }
+}
+.row:active {
+  background: var(--surface);
 }
 .rowText {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 .rowText strong {
   font-size: 16px;
-  line-height: 23px;
+  line-height: 1.5;
+  font-weight: 600;
 }
 .rowText span {
   font-size: 13px;
-  line-height: 20px;
-  color: var(--sub);
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 
-/* 로그아웃(유리 + 글자) · 탈퇴(유리 + 빨간 글자) 나란히 */
+/* 로그아웃(테두리 버튼, 전체 폭) 아래 탈퇴(danger-ghost 글자 링크, 오른쪽) */
 .account {
-  margin-top: 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   gap: 8px;
 }
 .accountBtn {
   width: 100%;
 }
 
-/* 가운데 확인 창(S30): 폭 326, 모서리 30 */
+/* 가운데 확인 창(dialog confirm) */
 .dialog {
-  /* 위층(top layer)에서는 뒤 유리 흐림이 먹지 않아 화면 바탕 위에 시트 색을 깐다 */
-  background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
   margin: auto;
-  width: min(326px, calc(100% - 40px));
-  padding: 23px 19px 17px;
+  width: min(400px, calc(100% - 40px));
+  padding: 24px;
   border: 0;
-  border-radius: 30px;
+  border-radius: var(--radius-panel);
+  background: var(--canvas);
+  /* 다크에서도 가림막과 나뉘게 1px 선을 두른다 */
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    var(--shadow-overlay);
   color: var(--text);
 }
 .dialog::backdrop {
   background: var(--scrim);
 }
 .dialog h2 {
-  font-size: 19px;
-  line-height: 26px;
+  font-size: 18px;
+  line-height: 1.4;
   font-weight: 700;
+  letter-spacing: -0.01em;
 }
 .dialog > p {
   margin-top: 8px;
   font-size: 15px;
-  line-height: 22px;
-  color: var(--sub);
+  line-height: 1.6;
+  color: var(--text-sub);
 }
 .dialogButtons {
-  margin-top: 20px;
+  margin-top: 24px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
@@ -191,24 +206,32 @@
   justify-content: space-between;
   gap: 12px;
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 600;
+}
+.dialogRow + .dialogRow {
+  border-top: 1px solid var(--line);
+  margin-top: 0;
+  padding-top: 12px;
 }
 .select {
-  height: 40px;
+  height: 44px;
   padding: 0 12px;
-  border: 0;
-  border-radius: 20px;
-  background: var(--ghost);
+  border: 1px solid var(--mark-empty);
+  border-radius: var(--radius-control);
+  background: var(--surface);
   color: var(--text);
   font: inherit;
   font-size: 15px;
 }
-/* .dialog > p보다 우선하게 같은 구체성으로 쓴다(오류는 경고색) */
+.select:disabled {
+  opacity: 0.5;
+}
+/* .dialog > p보다 우선하게 같은 구체성으로 쓴다(오류는 danger) */
 .dialogError,
 .dialog > p.dialogError {
   margin-top: 8px;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 1.45;
   color: var(--danger);
 }
 .choicesCol {
@@ -219,42 +242,28 @@
 }
 .choicesCol > button {
   height: 48px;
-  border-radius: 24px;
   justify-content: center;
 }
 
-@media (min-width: 1024px) {
-  .dialog {
-    width: 400px;
-  }
-  .stats {
-    gap: 12px;
-  }
+@media (min-width: 768px) {
   .stat {
-    padding-top: 18px;
+    padding: 20px;
   }
-  .group > h2 {
-    margin-top: 28px;
+  .stat strong :global(.mono) {
+    font-size: 40px;
+    letter-spacing: -0.04em;
   }
-  .account {
-    gap: 10px;
-  }
+}
+@media (min-width: 1024px) {
   .my {
     width: 100%;
     max-width: 720px;
     margin: 0 auto;
   }
-  .header {
-    height: auto;
-  }
   .title {
-    font-size: 30px;
-    line-height: 39px;
-  }
-  .mobileOnly {
-    display: none;
+    font-size: 26px;
   }
   .profile {
-    margin-top: 20px;
+    margin-top: 24px;
   }
 }

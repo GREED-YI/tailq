@@ -1,495 +1,302 @@
-/* 앱 화면 공통 뼈대. 숫자는 Figma C안 파일(모바일 390·태블릿 768·PC 1440) 기준 */
+/* 앱 화면 공통 뼈대(DESIGN.md app-nav, Layout rules).
+   폭: 모바일 ~767(여백 20, 위 56px 막대 + 아래 탭), 태블릿 768~1023(여백 32), 데스크톱 1024~(여백 40, 내용 최대 1200).
+   처음엔 모바일·태블릿 떠 있는 유리 탭바 + PC 왼쪽 유리 사이드 메뉴였다(C안) */
 
-.main {
+.page {
+  --gutter: 20px;
+  --bar-h: 56px;
+  --tab-h: 56px;
+  --logo-h: 30px;
   min-height: 100dvh;
-  /* 맨 아래까지 내려도 마지막 줄이 탭바 위 페이드(48px)에 덮이지 않게(탭바 아래 여백은 태블릿의 24px 기준) */
-  padding: 0 20px calc(24px + 64px + 48px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
 }
-
-/* 하위 화면은 탭바가 없어 아래 여백만 둔다. PC는 아래 .main 규칙이 덮는다 */
-.mainSub {
-  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+@media (min-width: 768px) {
+  .page {
+    --gutter: 32px;
+    --bar-h: 64px;
+    --logo-h: 34px;
+  }
 }
-
-.header {
-  height: 64px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.headerTools {
-  display: flex;
-  gap: 8px;
-}
-/* 탭 화면 제목(Figma S18·S19·S21·S22): 홈만 로고, 나머지는 왼쪽 위에 제목 */
-.headerTitle {
-  font-size: 24px;
-  line-height: 33px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-}
-
-.footer {
-  margin-top: auto;
-  padding-top: 32px;
-  text-align: center;
-  font-size: 14px;
-  color: var(--sub);
-}
-@media (hover: hover) {
-  .footer a:hover {
-    color: var(--text);
+@media (min-width: 1024px) {
+  .page {
+    --gutter: 40px;
   }
 }
 
-/* 앱 화면 내용 맨 아래 푸터(SiteFooter, 랜딩에서 피드백 보내기만 뺐다). 랜딩보다 작고 차분하게(#114, 사용자 요청).
-   내용이 짧으면 화면 아래로 밀린다. 아래 여백은 .main(탭바·페이드 몫)이 맡아 따로 두지 않는다 */
-.siteFooter {
-  margin-top: auto;
-  padding-top: 48px;
+/* 내용 폭: 데스크톱은 1200 + 좌우 여백, 가운데 */
+.barIn,
+.main {
+  width: 100%;
+  max-width: calc(1200px + 2 * var(--gutter));
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+}
+
+.main {
+  flex: 1 0 auto;
+  padding-top: 20px;
+  /* 모바일은 화면 아래 붙은 탭에 끝 내용이 가리지 않게 탭 높이만큼 더 띄운다 */
+  padding-bottom: calc(40px + var(--tab-h) + env(safe-area-inset-bottom));
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+}
+@media (min-width: 768px) {
+  .main {
+    padding-top: 32px;
+    padding-bottom: 56px;
+  }
+}
+@media (min-width: 1024px) {
+  .main {
+    padding-top: 40px;
+    padding-bottom: 80px;
+  }
+}
+/* 하위 화면(모바일)은 막대가 없고 화면이 뒤로 버튼 머리를 그린다 */
+@media (width < 768px) {
+  .mainSub {
+    padding-top: 0;
+    padding-bottom: calc(40px + env(safe-area-inset-bottom));
+  }
+}
+
+/* 머리 막대: 모바일은 바탕색, 태블릿·PC는 흰 면(surface). 아래 1px 선. 스크롤해도 위에 붙어 있다 */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+  background: var(--canvas);
+  border-bottom: 1px solid var(--line);
+  transition: background-color var(--dur-base) var(--ease);
+}
+@media (min-width: 768px) {
+  .bar {
+    background: var(--surface);
+  }
+}
+.barIn {
+  height: var(--bar-h);
+  display: flex;
   align-items: center;
-  justify-content: space-between;
-  column-gap: 16px;
-  font-size: 13px;
+  gap: 12px;
 }
-/* 링크 글자는 양 끝 내용선에 맞추고 터치 영역(44px)은 그 밖으로 */
-.siteFooter nav {
-  display: flex;
-  flex-wrap: wrap;
-  margin-inline: -10px;
-}
-.siteFooter nav a {
-  height: 44px;
-  padding: 0 10px;
+.barLogo {
   display: inline-flex;
   align-items: center;
-  border-radius: 12px;
-  color: var(--sub);
-  transition: color 0.2s ease;
+  min-height: 44px;
+  color: var(--text);
 }
-.siteFooter small {
+.tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.streak {
   font-size: 13px;
-  color: var(--muted);
+  font-weight: 500;
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+.streak b {
+  font-weight: 600;
+  color: var(--text);
+}
+/* 프로필 원(MY). 터치 영역 44px, 안의 원 32px */
+.me {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.me > * {
+  box-shadow: 0 0 0 1px var(--line);
+}
+.me[aria-current="page"] > * {
+  box-shadow: 0 0 0 2px var(--text);
 }
 @media (hover: hover) {
-  .siteFooter nav a:hover {
-    color: var(--text);
-  }
-}
-/* PC는 오른쪽 아래 여우(right 28 + 폭 56 = 화면 끝에서 84px)가 맨 끝 ©를 덮지 않게 비켜 둔다.
-   내용 오른쪽 여백은 40px 이상이라 56px면 늘 12px 넘게 떨어진다(넓은 화면에선 조금 남는다) */
-@media (min-width: 1024px) {
-  .siteFooter {
-    padding-right: 56px;
+  .me:hover > * {
+    box-shadow: 0 0 0 1px var(--text-muted);
   }
 }
 
-/* 탭바: 화면 아래에 떠 있는 유리 막대, 선택 탭은 안쪽 유리 캡슐 */
+/* 메뉴. 모바일은 화면 아래에 붙는 탭 5개(선택 탭 위 2px 선. 얇은 표시라 진한 accent) */
 .nav {
   position: fixed;
   z-index: 10;
-  left: 20px;
-  right: 20px;
-  bottom: calc(20px + env(safe-area-inset-bottom));
-  height: 64px;
-  border-radius: 32px;
-  padding: 6px;
-}
-/* 모바일·태블릿 탭바는 불투명에 가깝게(시트 색 아래에 화면 바탕을 깐다, 토스트와 같다).
-   처음엔 유리(--glass)였는데, 뒤 글자가 다 비쳐 탭바가 눈에 안 띈다는 의견에 바꿨다(#114).
-   PC 사이드 메뉴는 유리 그대로 */
-@media (max-width: 1023px) {
-  .nav.nav {
-    background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
-  }
-}
-/* 탭바 위 48px는 화면 바탕으로 흐려져, 스크롤하는 글이 탭바에 닿기 전부터 사라지며 아래 내용이 더 있음을 알린다.
-   화면 전체를 덮는 고정 층에 배경(바탕색 + 은은한 그라디언트, globals.css .backdrop과 같은 값)을 그리고 아래쪽만 보이게 가린다.
-   빛 번짐 배경은 움직이는 덩어리라 바탕색만. 탭바가 없는 하위 화면(.mainSub)과 PC에는 없다 */
-.main:not(.mainSub)::after {
-  --fade-from: calc(20px + 64px + env(safe-area-inset-bottom));
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 9;
-  pointer-events: none;
-  background:
-    linear-gradient(160deg, var(--wash1) 0%, transparent 55%),
-    linear-gradient(340deg, var(--wash2) 0%, transparent 60%), var(--bg);
-  -webkit-mask: linear-gradient(
-    to top,
-    #000 var(--fade-from),
-    transparent calc(var(--fade-from) + 48px)
-  );
-  mask: linear-gradient(
-    to top,
-    #000 var(--fade-from),
-    transparent calc(var(--fade-from) + 48px)
-  );
-  transition: background-color 0.5s ease;
-}
-:global([data-bg="glow"]) .main:not(.mainSub)::after {
-  background: var(--bg);
-}
-/* 하위 화면은 모바일·태블릿 탭바를 숨긴다. PC는 아래 .nav 규칙이 다시 보인다.
-   리포트(.navPc)는 PC 사이드 메뉴에만, 긴 이름(.navLong, "MY페이지")도 PC에서만 */
-.navSub,
-.navLogo,
-.pcTools,
-.navPc,
-.navLong {
-  display: none;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding-bottom: env(safe-area-inset-bottom);
+  background: var(--canvas);
+  border-top: 1px solid var(--line);
+  transition: background-color var(--dur-base) var(--ease);
 }
 .navList {
   list-style: none;
-  height: 100%;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  /* 선택 캡슐과 hover 캡슐이 나란히 있어도 붙지 않게 */
-  gap: 4px;
+  padding: 0 8px;
 }
 .navItem {
-  height: 100%;
-  border-radius: 26px;
+  height: var(--tab-h);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  font-size: 13px;
-  color: var(--sub);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
-/* 키보드 초점 테두리는 안쪽에 그려 옆 칸·탭바 밖으로 넘치지 않게 */
+/* 키보드 초점 테두리는 안쪽에 그려 옆 칸·막대 밖으로 넘치지 않게 */
 .navItem:focus-visible {
   outline-offset: -2px;
 }
 .navItem[aria-current="page"] {
-  background: var(--tab-active);
-  box-shadow:
-    inset 0 1px 0 var(--glass-hi),
-    0 4px 12px -6px var(--glass-shadow);
-  color: var(--accent);
-  font-weight: 700;
-}
-/* 선택 안 된 항목의 hover·키보드 초점: 선택 캡슐보다 옅은 면 + 보조색 → 본문색(docs/07 상호작용 상태).
-   전환 0.2초는 .press가 맡고, hover는 마우스가 있는 기기에서만 붙인다 */
-.navItem:not([aria-current="page"]):focus-visible {
-  background: var(--hover);
-  box-shadow: inset 0 0 0 1px var(--glass-edge);
   color: var(--text);
+  font-weight: 700;
+  box-shadow: inset 0 2px 0 var(--accent);
 }
 @media (hover: hover) {
-  .navItem:not([aria-current="page"]):hover {
-    background: var(--hover);
-    box-shadow: inset 0 0 0 1px var(--glass-edge);
+  .navItem:hover {
     color: var(--text);
   }
-  /* 선택 캡슐은 hover로 더 밝아지지 않게(globals.css .press:hover의 brightness를 끈다) */
-  .nav .navItem[aria-current="page"]:hover {
-    filter: none;
-  }
 }
-
-/* 태블릿: 내용 폭 640 가운데, 탭바 폭 480 */
-@media (min-width: 768px) {
-  .main {
-    width: 640px;
-    margin: 0 auto;
-    padding-left: 0;
-    padding-right: 0;
-  }
-  .nav {
-    left: 50%;
-    right: auto;
-    width: 480px;
-    transform: translateX(-50%);
-    bottom: calc(24px + env(safe-area-inset-bottom));
-  }
-  .main:not(.mainSub)::after {
-    --fade-from: calc(24px + 64px + env(safe-area-inset-bottom));
-  }
-}
-
-/* PC: 왼쪽 사이드 메뉴(폭 --nav-w). 내용(최대 --content-max)은 x --shell-left부터 남은 폭의 가운데.
-   폭 값은 app/globals.css의 :root(넓은 화면일수록 넓다) */
-@media (min-width: 1024px) {
-  .main {
-    width: auto;
-    margin: 0 0 0 var(--shell-left);
-    padding: 24px
-      max(40px, calc((100% - var(--shell-left) - var(--content-max)) / 2)) 32px;
-  }
-  /* 테마 토글은 내용 영역 오른쪽 위(모바일·태블릿은 헤더 오른쪽 위).
-     처음엔 사이드 메뉴 맨 아래에 있었는데 찾기 어려워 옮겼다(#114).
-     리포트·알림도 여기 있었는데, 리포트는 사이드 메뉴로 옮기고 알림(MY로 가기만 했다)은 뺐다(#114) */
-  .pcTools {
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-  .header,
-  .navShort,
-  .main:not(.mainSub)::after {
+/* 폭에 따라 하나만: wideOnly는 태블릿·PC에만, mobileOnly는 모바일에만 */
+@media (width < 768px) {
+  .wideOnly {
     display: none;
   }
-  .navPc {
-    display: block;
+}
+
+/* 태블릿·PC: 로고 옆 한 줄 메뉴, 아이콘 없이 글자만. 선택 항목은 text 글자와 아래 2px text 선.
+   항목은 좌우 8px 여백(최소 폭 44px)을 둬 안쪽 초점 링이 글자를 덮지 않게 하고, 그만큼 항목 사이를 줄였다 */
+@media (min-width: 768px) {
+  .mobileOnly {
+    display: none;
   }
-  .navLong {
-    display: inline;
+  .barIn {
+    gap: 24px;
   }
   .nav {
-    top: 16px;
-    bottom: 16px;
-    left: 16px;
-    width: var(--nav-w);
-    height: auto;
-    transform: none;
-    border-radius: 28px;
-    padding: 24px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-  }
-  .navLogo {
-    display: block;
-    padding: 4px 0 0 12px;
+    position: static;
+    align-self: stretch;
+    padding: 0;
+    background: none;
+    border: 0;
   }
   .navList {
-    height: auto;
+    height: 100%;
     display: flex;
-    flex-direction: column;
     gap: 4px;
+    padding: 0;
   }
   .navItem {
-    height: 48px;
-    border-radius: 24px;
+    height: 100%;
+    min-width: 44px;
+    padding-inline: 8px;
     flex-direction: row;
-    justify-content: flex-start;
-    gap: 12px;
-    padding: 0 16px;
-    font-size: 16px;
-    font-weight: 500;
+    justify-content: center;
+    font-size: 15px;
+    color: var(--text-sub);
+  }
+  .navItem svg {
+    display: none;
+  }
+  .navItem[aria-current="page"] {
+    box-shadow: inset 0 -2px 0 var(--text);
+  }
+  .streak {
+    font-size: 14px;
+    margin-right: 4px;
   }
 }
-@media (min-width: 1440px) {
-  .nav {
-    padding: 28px 14px;
-    gap: 36px;
+@media (min-width: 1024px) {
+  .barIn {
+    gap: 40px;
   }
-  .navItem {
-    height: 52px;
-    border-radius: 26px;
-    padding: 0 18px;
-    font-size: 17px;
+  .navList {
+    gap: 12px;
+  }
+}
+/* 모바일 하위 화면은 막대·탭을 숨긴다 */
+@media (width < 768px) {
+  .barSub {
+    display: none;
   }
 }
 
-/* 토스트(components/Toast.tsx): 모든 기기에서 하단 가운데. 모바일·태블릿은 탭바 12px 위, PC는 사이드 메뉴를 뺀 내용 영역의 가운데.
-   처음엔 PC만 오른쪽 아래(S34)였는데, 시선이 흩어져 하단 가운데로 맞췄다(#110) */
+/* 탭 화면 제목 줄(AppHeader.tsx). PC는 화면 안의 큰 h1이 맡아 숨긴다 */
+.header {
+  flex-shrink: 0;
+  min-height: 44px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+.headerTitle {
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+@media (min-width: 1024px) {
+  .header {
+    display: none;
+  }
+  /* 머리 줄 밖에서 h1로 쓸 때(ComingSoon) PC 제목 크기(DESIGN.md title) */
+  .headerTitle {
+    font-size: 26px;
+  }
+}
+
+/* 토스트(components/Toast.tsx): 하단 가운데. 모바일은 아래 탭 12px 위 */
 .toastArea {
   position: fixed;
   z-index: 20;
   left: 20px;
   right: 20px;
-  bottom: calc(20px + 64px + 12px + env(safe-area-inset-bottom));
+  bottom: calc(var(--tab-h, 56px) + 12px + env(safe-area-inset-bottom));
   display: flex;
   justify-content: center;
   pointer-events: none;
 }
+/* 반전 면(글자색 바탕에 바탕색 글자), 모서리 12, 뜨는 요소라 그림자 */
 .toast {
-  /* 아래 내용 글자가 비치지 않게 시트 색 아래에 화면 바탕을 깐다(확인 창과 같다) */
-  background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
-  height: 48px;
-  padding: 0 18px 0 17px;
-  border-radius: 24px;
+  background: var(--text);
+  color: var(--canvas);
+  box-shadow: var(--shadow-overlay);
+  min-height: 48px;
+  padding: 12px 16px;
+  border-radius: var(--radius-panel);
   display: flex;
   align-items: center;
   gap: 8px;
   font-size: 15px;
   font-weight: 500;
+  line-height: 1.45;
 }
 .toast svg {
-  color: var(--accent);
   flex-shrink: 0;
 }
 @media (min-width: 768px) {
   .toastArea {
-    bottom: calc(24px + 64px + 12px + env(safe-area-inset-bottom));
-  }
-}
-@media (min-width: 1024px) {
-  .toastArea {
-    left: 20px;
-    right: 20px;
     bottom: 32px;
   }
-  /* 사이드 메뉴가 있는 화면만 메뉴를 뺀 내용 영역의 가운데(면접처럼 메뉴가 없으면 화면 가운데) */
-  :global(body):has(.nav) .toastArea {
-    left: var(--shell-left);
-    right: 0;
-  }
 }
-/* 하위 화면(모바일·태블릿)은 탭바가 없어 화면 아래에 붙인다 */
-@media (max-width: 1023px) {
-  :global(body):has(.navSub) .toastArea:not(.toastTop) {
+/* 하위 화면(모바일)은 아래 탭이 없어 화면 아래에 붙인다.
+   숨겨진 채 남은 하위 화면(cacheComponents)의 막대는 빼고 본다(아래 운영 화면 규칙과 같은 방식) */
+@media (width < 768px) {
+  :global(body):has(.barSub:not([style*="display: none"] *)) .toastArea {
     bottom: calc(20px + env(safe-area-inset-bottom));
   }
 }
 /* 아래가 답변 칸·버튼으로 막힌 화면(useToast({ top: true }))은 그 위쪽 하단 가운데.
    bottom은 Toast.tsx가 막힌 높이를 재서 inline으로 준다 */
-
-/* 운영자 메뉴(#104): 사이드 메뉴가 있는 PC에서만. 모바일·태블릿은 헤더 아이콘을 쓴다 */
-.navAdmin {
-  display: none;
-}
-@media (min-width: 1024px) {
-  .navAdmin {
-    display: block;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--glass-edge);
-  }
-}
-
-/* 여우 피드백 버튼(FeedbackFox.tsx): PC 오른쪽 아래에 떠 있고, 처음 한 번·hover·초점에 말풍선.
-   말풍선은 여우 왼쪽 위에 떠서 꼬리가 여우 머리를 가리킨다(여우가 말하는 것처럼).
-   처음엔 여우 왼쪽 옆에 나란히 있었고 모바일·태블릿에도 있었는데, 작은 화면에선 내용을 가려 PC에만 둔다(#114).
-   모바일·태블릿의 피드백은 MY > 피드백 보내기로 간다 */
-.fox {
-  display: none;
-}
-@media (min-width: 1024px) {
-  .fox {
-    display: block;
-    position: fixed;
-    z-index: 15;
-    right: 28px;
-    bottom: 28px;
-  }
-}
-/* 숨겨진 채 남은 운영 화면(cacheComponents)은 빼고 센다. 안 빼면 운영 화면을 다녀온 뒤 다른 화면에서도 여우가 안 보였다 */
-:global(body):has(
-    [data-admin]:not([style*="display: none"], [style*="display: none"] *)
-  )
-  .fox {
-  display: none;
-}
-.foxBtn {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.foxImg {
-  width: 30px;
-  height: 39px;
-  background: var(--text);
-  -webkit-mask: url(/brand/fox.svg) center / contain no-repeat;
-  mask: url(/brand/fox.svg) center / contain no-repeat;
-  transition: background-color 0.5s ease;
-}
-.foxTip {
-  /* 아래 내용 글자가 비치지 않게 시트 색 아래에 화면 바탕을 깐다(토스트와 같다) */
-  background: linear-gradient(var(--sheet), var(--sheet)), var(--bg);
-  position: absolute;
-  /* 처음엔 right 26px·위 14px(오른쪽 끝이 여우 가운데 조금 오른쪽)였고, 다음엔 right 38px·위 20px로
-     옮겼는데 오른쪽 끝이 여우 머리 위를 덮었다. 사용자 그림대로 몸통을 여우 왼쪽 위로 완전히 뗐다:
-     오른쪽 끝은 여우 왼쪽 가장자리에서 2px 왼쪽, 아래쪽은 여우 위 6px(14px 내림)(#114, 사용자 요청) */
-  right: calc(100% + 2px);
-  bottom: calc(100% + 6px);
-  width: max-content;
-  max-width: 240px;
-  padding: 10px 8px 10px 16px;
-  border-radius: 20px 20px 6px 20px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  line-height: 20px;
-  font-weight: 500;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(6px);
-}
-/* 꼬리: 말풍선 오른쪽 아래 모서리에서 오른쪽 아래(여우 머리 왼쪽 위 가장자리)로 뾰족하게 뻗는다.
-   밑변이 몸통 아래 변(모서리에서 8px 왼쪽)과 오른쪽 변(8px 위)에 걸쳐 이음새 없이 이어지고, 끝은 모서리에서 12px씩.
-   처음엔 모서리 아래로 비스듬히 내려가는 꼬리(right -4px·18px 상자, 위 변에 붙음)였는데 사용자 그림대로 바꿨다(#114, 사용자 요청) */
-.foxTip::after {
-  content: "";
-  position: absolute;
-  right: -12px;
-  bottom: -12px;
-  width: 20px;
-  height: 20px;
-  background: inherit;
-  clip-path: polygon(0 8px, 8px 0, 100% 100%);
-}
-/* 토스트가 떠 있는 동안은 말풍선을 접는다(겹치지 않게) */
-:global(body):has(.toastArea) .fox .foxTip {
-  opacity: 0;
-  visibility: hidden;
-}
-/* hover·초점으로 뜬 말풍선엔 X가 없으니 오른쪽 여백도 왼쪽과 같게 */
-.foxTip:not(:has(button)) {
-  padding-right: 16px;
-}
-.foxTip button {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--sub);
-}
-/* 키보드 초점만 띄운다(:focus-visible). 마우스로 X를 누른 뒤 여우 버튼에 남은 초점으로는 안 뜬다 */
-.foxTipOn .foxTip,
-.fox:has(:focus-visible) .foxTip {
-  opacity: 1;
-  visibility: visible;
-  transform: none;
-}
-@media (hover: hover) {
-  .fox:hover .foxTip {
-    opacity: 1;
-    visibility: visible;
-    transform: none;
-  }
-  .foxTip button:hover {
-    color: var(--text);
-  }
-}
-/* X를 누른 그 hover·초점이 끝날 때까지는 숨긴다(FeedbackFox.tsx의 hush). 위 규칙보다 뒤에 둔다 */
-.fox.foxHush .foxTip {
-  opacity: 0;
-  visibility: hidden;
-}
-/* 등장은 globals.css의 .rise(아래에서 떠오름), 동작 줄이기면 꺼진다 */
-@media (prefers-reduced-motion: no-preference) {
-  .foxTip {
-    transition:
-      opacity 0.18s ease,
-      transform 0.18s ease,
-      visibility 0.18s;
-  }
-  .foxImg {
-    transition:
-      background-color 0.5s ease,
-      transform 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
-  }
-  @media (hover: hover) {
-    .foxBtn:hover .foxImg {
-      transform: rotate(-8deg) translateY(-2px);
-    }
-  }
-}

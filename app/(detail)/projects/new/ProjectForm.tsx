@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icons";
 import { LimitNotice, type Notice } from "@/components/LimitNotice";
 import { CONTENT_MAX, CONTENT_MIN, NAME_MAX } from "@/lib/questions";
@@ -16,6 +16,24 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
   const [content, setContent] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // 요청 중인지와 등록했는지. 등록하면 이동하는 동안 잠금을 유지하고, 화면이 보관되어 숨겨지거나 다시 보일 때
+  // 요청 중이 아니면 잠금을 푼다(cacheComponents라 상태를 그대로 들고 다시 보인다. TrialPicker와 같다).
+  // 등록한 뒤라면 칸도 비워 새 등록 화면이 빈 칸으로 열리게 한다
+  const inFlight = useRef(false);
+  const created = useRef(false);
+  useEffect(() => {
+    const release = () => {
+      if (inFlight.current) return;
+      setBusy(false);
+      if (created.current) {
+        created.current = false;
+        setName("");
+        setContent("");
+      }
+    };
+    release();
+    return release;
+  }, []);
 
   const length = content.trim().length;
   const valid =
@@ -25,6 +43,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
     e.preventDefault();
     if (!valid || busy) return;
     setBusy(true);
+    inFlight.current = true;
     setError("");
     const res = await fetch("/api/projects", {
       method: "POST",
@@ -32,7 +51,9 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
       body: JSON.stringify({ name, content }),
     }).catch(() => null);
     const json = await res?.json().catch(() => null);
+    inFlight.current = false;
     if (res?.ok) {
+      created.current = true;
       router.replace(`/projects/${json.project.id}`);
       return;
     }
@@ -45,7 +66,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
       <header className={s.top}>
         <Link
           href="/projects"
-          className="glass press icon-btn"
+          className="press icon-btn"
           aria-label="내 프로젝트로"
         >
           <Icon name="chevronLeft" />
@@ -62,7 +83,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
           </label>
           <input
             id="project-name"
-            className={`glass ${s.input}`}
+            className={s.input}
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={NAME_MAX}
@@ -76,10 +97,16 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
           </label>
           <textarea
             id="project-content"
-            className={`glass ${s.textarea}`}
+            className={s.textarea}
+            data-over={length > CONTENT_MAX || undefined}
+            aria-invalid={
+              (length > 0 && length < CONTENT_MIN) ||
+              length > CONTENT_MAX ||
+              undefined
+            }
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="README나 프로젝트 설명을 붙여 넣으세요"
+            placeholder="README나 프로젝트 설명을 붙여넣어 주세요"
             spellCheck={false}
             aria-describedby="project-help"
             required
@@ -92,14 +119,14 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
             <span className={s.mobileHelp}>
               {length > 0 && length < CONTENT_MIN
                 ? `${CONTENT_MIN}자 이상 써 주세요`
-                : "README를 넣으면 예상 질문 5개를 만들어요"}
+                : "README를 넣으면 예상 질문 5개를 만들어 줘요"}
             </span>
             <span className={`num ${s.pcHelp}`}>
               {length > 0 && length < CONTENT_MIN
                 ? `${CONTENT_MIN}자 이상 써 주세요`
-                : "최대 10,000자까지 붙여 넣을 수 있어요"}
+                : "최대 10,000자까지 붙여넣을 수 있어요"}
             </span>
-            <span className="mono">
+            <span className="mono" aria-live="polite">
               {length.toLocaleString()} / {CONTENT_MAX.toLocaleString()}
             </span>
           </p>
@@ -114,6 +141,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
               type="submit"
               className="btn btn-primary press"
               disabled={!valid || busy}
+              aria-busy={busy || undefined}
             >
               {busy ? "등록하고 있어요" : "질문 5개 생성"}
             </button>

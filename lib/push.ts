@@ -12,7 +12,7 @@ export const PUSH_BATCH = 20;
 export function pushPayload(review: boolean) {
   return JSON.stringify({
     title: review ? "복습할 질문이 있어요" : "오늘의 질문이 도착했어요",
-    body: "오늘도 한 문제 풀어볼까요?",
+    body: "오늘도 면접 질문 하나 풀어 볼까요?",
     url: "/home",
   });
 }

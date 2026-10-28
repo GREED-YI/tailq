@@ -1,22 +1,11 @@
-import { AppHeader } from "./AppHeader";
+import s from "./AppShell.module.css";
 
 // 아직 만들지 않은 탭 화면. 탭이 404로 가지 않게 둔다.
 export function ComingSoon({ title, issue }: { title: string; issue: number }) {
   return (
     <>
-      <AppHeader />
-      <h1
-        style={{
-          marginTop: 8,
-          fontSize: 28,
-          lineHeight: "34px",
-          fontWeight: 700,
-          letterSpacing: -0.6,
-        }}
-      >
-        {title}
-      </h1>
-      <p style={{ marginTop: 8, fontSize: 15, color: "var(--sub)" }}>
+      <h1 className={s.headerTitle}>{title}</h1>
+      <p style={{ marginTop: 8, fontSize: 15, color: "var(--text-sub)" }}>
         준비하고 있어요 (#{issue})
       </p>
     </>

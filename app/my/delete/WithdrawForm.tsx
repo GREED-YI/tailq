@@ -61,7 +61,7 @@ export function WithdrawForm(props: { provider: string }) {
         <br />
         지워져요
       </h1>
-      <ol className={`glass ${s.gone}`}>
+      <ol className={s.gone}>
         {GONE.map((g, i) => (
           <li key={g}>
             <span className="mono">0{i + 1}</span>
@@ -69,14 +69,14 @@ export function WithdrawForm(props: { provider: string }) {
           </li>
         ))}
       </ol>
-      <p className={s.warn}>되돌릴 수 없어요.</p>
+      <p className={s.warn}>지운 기록은 되돌릴 수 없어요.</p>
 
       <label htmlFor="confirm" className={`${s.label} ${s.gap}`}>
-        확인을 위해 &apos;{WITHDRAW_PHRASE}&apos;를 입력해주세요
+        확인을 위해 &apos;{WITHDRAW_PHRASE}&apos;를 입력해 주세요
       </label>
       <input
         id="confirm"
-        className={`glass ${s.input}`}
+        className={s.input}
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder={WITHDRAW_PHRASE}
@@ -93,6 +93,7 @@ export function WithdrawForm(props: { provider: string }) {
           type="button"
           className="btn btn-danger press"
           disabled={!typed || busy}
+          aria-busy={busy || undefined}
           onClick={withdraw}
         >
           {reauth

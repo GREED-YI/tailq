@@ -21,3 +21,11 @@ test("옛 리포트 주소도 로그인하지 않으면 로그인으로 간다",
   await page.goto("/history/report");
   await expect(page).toHaveURL("/login?next=%2Fhistory%2Freport");
 });
+
+// 복습·기록을 합친 내 질문(#128). 옛 복습 주소도 #132까지 열려 있어 로그인부터 묻는다
+for (const path of ["/questions", "/questions/1", "/review"]) {
+  test(`로그인하지 않으면 ${path} 대신 로그인으로 간다`, async ({ page }) => {
+    await page.goto(path);
+    await expect(page).toHaveURL(`/login?next=${encodeURIComponent(path)}`);
+  });
+}

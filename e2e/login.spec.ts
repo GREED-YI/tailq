@@ -16,7 +16,15 @@ test("로그인 화면에 소셜 로그인 버튼 3개와 계정 안내가 있�
     "href",
     "/",
   );
-  await expect(page.getByRole("link", { name: "피드백 보내기" })).toBeVisible();
+  // 로그인 전 화면 공통 푸터(SiteFooter)
+  const footer = page.getByRole("contentinfo");
+  await expect(footer.getByRole("link", { name: "이용약관" })).toHaveAttribute(
+    "href",
+    "/terms",
+  );
+  await expect(
+    footer.getByRole("link", { name: "개인정보처리방침" }),
+  ).toHaveAttribute("href", "/privacy");
 });
 
 test("로그인하지 않고 앱 화면에 오면 로그인으로 보낸다", async ({ page }) => {

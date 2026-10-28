@@ -1,125 +1,146 @@
-/* 공유 페이지(Figma S04). 모바일은 버튼이 아래에 붙고, PC는 카드 480 아래로 이어진다 */
+/* 공유 페이지(로그인 없이 보는 화면). 머리는 로고만, 본문은 가운데 한 단(PC 560).
+   결과 카드는 채점 결과 묶음과 같은 surface 면에 큰 점수와 20칸 막대(DESIGN.md score hero) */
 .page {
+  --gutter: 20px;
+  --logo-h: 30px;
   min-height: 100dvh;
-  max-width: 520px;
-  margin: 0 auto;
-  padding: 0 20px calc(16px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
 }
 .header {
-  height: 64px;
   flex-shrink: 0;
+  padding-top: env(safe-area-inset-top);
+  background: var(--canvas);
+  border-bottom: 1px solid var(--line);
+}
+.headerIn {
+  max-width: calc(1200px + 2 * var(--gutter));
+  height: 56px;
+  margin: 0 auto;
+  padding: 0 var(--gutter);
   display: flex;
   align-items: center;
 }
 .logo {
   display: inline-flex;
-  border-radius: 8px;
+  align-items: center;
+  min-height: 44px;
+  border-radius: var(--radius-control);
 }
-.body {
-  margin-top: 8px;
+
+.main {
+  flex: 1 0 auto;
+  width: 100%;
+  max-width: calc(560px + 2 * var(--gutter));
+  margin: 0 auto;
+  padding: 24px var(--gutter);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+}
+/* 맨 아래 SiteFooter(footer.module.css): 선은 화면 끝까지, 글은 머리의 로고 선에 맞춘다 */
+.page > footer {
+  padding-left: max(var(--gutter), calc((100% - 1200px) / 2));
+  padding-right: max(var(--gutter), calc((100% - 1200px) / 2));
 }
 .card {
-  width: 100%;
-  border-radius: 28px;
-  padding: 24px 20px 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 16px;
 }
-.kicker {
-  font-size: 14px;
-  color: var(--sub);
+.meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
 }
 .date {
-  margin-top: 10px;
   font-size: 13px;
-  color: var(--accent);
+  color: var(--text-muted);
 }
 .topic {
-  margin-top: 6px;
-  font-size: 30px;
-  line-height: 39px;
+  font-size: 28px;
+  line-height: 1.4;
   font-weight: 700;
-  letter-spacing: -0.6px;
-}
-/* 결과 화면의 점수 링(96)을 카드 크기(170, 링 바깥 지름 156)로 키운다 */
-.ring {
-  margin-top: 24px;
-}
-.ring > div {
-  width: 170px;
-  height: 170px;
-}
-.ring svg {
-  width: 100%;
-  height: 100%;
-}
-.ring span:first-child {
-  font-size: 48px;
-  line-height: 52px;
-}
-.ring span:last-child {
-  font-size: 13px;
+  letter-spacing: -0.025em;
 }
 .who {
-  margin-top: 40px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
   font-size: 14px;
-  color: var(--sub);
+  line-height: 1.5;
+  color: var(--text-sub);
 }
 .who b {
   color: var(--text);
   font-weight: 700;
 }
+/* 글자는 "꼬리잇기12 일째"(e2e가 본다) 그대로 두고 숫자 앞 간격만 띄운다 */
 .who .streak {
+  margin-left: 4px;
   color: var(--accent);
 }
 .sentence {
   margin-top: 24px;
   font-size: 18px;
-  line-height: 26px;
+  line-height: 1.5;
   font-weight: 700;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.01em;
 }
 .note {
-  margin-top: 12px;
+  margin-top: 8px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
-  color: var(--sub);
+  color: var(--text-muted);
 }
 .actions {
   margin-top: auto;
   padding-top: 32px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+}
+.actions > :global(.btn) {
+  height: 52px;
 }
 
-/* PC·태블릿: 카드 묶음을 가운데에, 버튼은 바로 아래로 */
 @media (min-width: 768px) {
   .page {
-    max-width: none;
-    padding: 0 40px 40px;
+    --gutter: 32px;
+    --logo-h: 34px;
   }
   .header {
-    height: 96px;
+    background: var(--surface);
   }
-  .body,
-  .actions {
-    width: 480px;
-    margin-inline: auto;
+  .headerIn {
+    height: 64px;
   }
-  .body {
-    margin-top: 72px;
+  .main {
+    padding-top: 56px;
+    padding-bottom: 56px;
+  }
+  .card {
+    padding: 24px;
+    gap: 20px;
+  }
+  .topic {
+    font-size: 34px;
+    line-height: 1.35;
   }
   .actions {
     margin-top: 0;
+  }
+}
+@media (min-width: 1024px) {
+  .page {
+    --gutter: 40px;
+  }
+  .main {
+    padding-top: 80px;
   }
 }

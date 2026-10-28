@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
-import { AdminHeaderLink } from "@/components/AdminMenu";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/icons";
-import { TailIcon } from "@/components/Streak";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { FEEDBACK_URL } from "@/lib/links";
 import { FIELDS, LEVELS, providerName } from "@/lib/profile";
 import { ticketsLeft } from "@/lib/streak";
@@ -16,18 +13,12 @@ import s from "./my.module.css";
 
 export const metadata: Metadata = { title: "MY페이지 · TailQ" };
 
-// MY페이지(S27): 프로필, 꼬리잇기·휴식권·북마크 요약, 학습(리포트·북마크·연습 범위)·설정·정보 목록, 로그아웃·탈퇴(04 기능 명세 11장)
+// MY페이지(S27): 프로필, 휴식권·북마크 요약, 학습(리포트·북마크·연습 범위)·설정·정보 목록, 로그아웃·탈퇴(04 기능 명세 11장)
 export default function MyPage() {
   return (
     <div className={s.my}>
       <header className={s.header}>
         <h1 className={s.title}>MY페이지</h1>
-        <span className={s.mobileOnly}>
-          <Suspense>
-            <AdminHeaderLink />
-          </Suspense>
-          <ThemeToggle />
-        </span>
       </header>
       <Suspense fallback={<div className={s.profile} />}>
         <My />
@@ -83,23 +74,12 @@ async function My() {
             {providerName(auth?.claims.app_metadata?.provider)}로 로그인
           </span>
         </div>
-        <Link href="/my/profile" className={`glass press ${s.edit}`}>
+        <Link href="/my/profile" className="btn btn-md btn-secondary press">
           편집
         </Link>
       </section>
 
       <section className={s.stats} aria-label="요약">
-        <Stat
-          label={
-            <>
-              <TailIcon />
-              꼬리잇기
-            </>
-          }
-          value={study?.streak.current}
-          unit="일째"
-          accent
-        />
         <Stat
           label="휴식권"
           value={study && ticketsLeft(study.streak.restDays, study.today)}
@@ -111,7 +91,7 @@ async function My() {
       <Group title="학습">
         <Row href="/report" title="리포트" meta="꼬리잇기 달력과 약점 리포트" />
         <Row
-          href="/history?filter=bookmark"
+          href="/questions?filter=bookmark"
           title="북마크"
           meta="면접 직전에 몰아 보기"
         />
@@ -140,10 +120,7 @@ async function My() {
 
       <div className={s.account}>
         <LogoutButton />
-        <Link
-          href="/my/delete"
-          className={`btn btn-md btn-danger press ${s.accountBtn}`}
-        >
+        <Link href="/my/delete" className="btn-danger-ghost press">
           탈퇴하기
         </Link>
       </div>
@@ -155,19 +132,16 @@ function Stat({
   label,
   value,
   unit,
-  accent = false,
 }: {
-  label: ReactNode;
+  label: string;
   value: number | null | undefined;
   unit: string;
-  accent?: boolean;
 }) {
   return (
-    <div className={`glass ${s.stat}`}>
+    <div className={s.stat}>
       <span>{label}</span>
       <strong>
-        <span className={`mono ${accent ? s.accent : ""}`}>{value ?? "–"}</span>{" "}
-        {unit}
+        <span className="mono">{value ?? "–"}</span> {unit}
       </strong>
     </div>
   );
@@ -177,7 +151,7 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className={s.group} aria-label={title}>
       <h2>{title}</h2>
-      <ul className={`glass ${s.list}`}>{children}</ul>
+      <ul className={s.list}>{children}</ul>
     </section>
   );
 }

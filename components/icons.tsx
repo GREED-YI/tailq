@@ -1,4 +1,4 @@
-// 탭·메뉴·면접 화면 아이콘 (Lucide 계열 1.75px 선). 선택된 탭은 2px.
+// 탭·메뉴·면접 화면 아이콘 (Lucide 계열 1.8px 선, 24 격자, currentColor). 선택된 탭은 2px.
 const paths = {
   home: (
     <path d="M3 10 12 3l9 7v10a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
@@ -124,7 +124,7 @@ export function Icon({
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={bold ? 2 : 1.75}
+      strokeWidth={bold ? 2 : 1.8}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"

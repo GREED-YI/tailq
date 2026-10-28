@@ -25,7 +25,7 @@ export default function HistoryPage({ searchParams }: PageProps<"/history">) {
   );
 }
 
-// 제목과 필터는 위에 붙어 있고, 목록은 그 아래로 지나간다(유리 띠가 가린다)
+// 제목과 필터는 위에 붙어 있고, 목록은 그 아래로 지나간다(바탕색 띠가 가린다)
 function Top({
   bookmarkOnly = false,
   counts,
@@ -82,9 +82,9 @@ async function Sessions({ bookmarkOnly }: { bookmarkOnly: boolean }) {
         counts={{ all: all.length, bookmark: marked.length }}
       />
       {months.length === 0 ? (
-        <p className={`glass ${s.empty}`}>
+        <p className={s.empty}>
           {bookmarkOnly
-            ? "면접 화면이나 기록 상세에서 별표를 누르면 여기에 모여요"
+            ? "면접 화면이나 기록 상세에서 별표를 누르면 여기에 질문이 모여요"
             : "오늘의 질문을 마치면 여기에 기록이 남아요"}
         </p>
       ) : (

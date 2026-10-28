@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type CSSProperties, type ReactNode } from "react";
-import { FeedbackLink } from "@/components/FeedbackLink";
-import f from "@/components/Flow.module.css";
-import { FloatingQ } from "@/components/FloatingQ";
 import { Icon } from "@/components/icons";
-import { Logo } from "@/components/Logo";
+import { AppMark } from "@/components/Logo";
+import { SiteFooter } from "@/components/SiteFooter";
+import f from "@/app/_landing/footer.module.css";
 import s from "./login.module.css";
 
 export const metadata: Metadata = { title: "로그인 · TailQ" };
@@ -32,7 +31,7 @@ const PROVIDERS: {
     style: {
       background: "#24292F",
       color: "#FFFFFF",
-      boxShadow: "inset 0 0 0 1px var(--glass-edge)",
+      boxShadow: "inset 0 0 0 1px var(--mark-empty)",
     },
     logo: (
       <svg viewBox="0 0 16 16" fill="currentColor">
@@ -83,72 +82,57 @@ const PROVIDERS: {
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
-    <main className={f.main}>
-      <Link href="/" className={f.pcLogo} aria-label="TailQ 첫 화면으로">
-        <Logo />
-      </Link>
-      <header className={f.top}>
-        <Link
-          href="/"
-          className={`glass press icon-btn ${f.back}`}
-          aria-label="뒤로"
-        >
+    <div className={s.main}>
+      <header className={s.top}>
+        <Link href="/" className={`press icon-btn ${s.back}`} aria-label="뒤로">
           <Icon name="chevronLeft" />
         </Link>
       </header>
 
-      <h1 className={f.title}>TailQ 시작하기</h1>
-      <p className={f.sub}>매일 5분, AI 면접관에게 채점과 피드백 받기</p>
+      <main className={s.body}>
+        <AppMark size="var(--mark)" />
+        <h1 className={s.title}>TailQ 시작하기</h1>
+        <p className={s.sub}>매일 5분, AI 면접관이 채점하고 피드백해 줘요</p>
 
-      <div className={s.q}>
-        <FloatingQ size={136} />
-      </div>
+        <ul className={s.points}>
+          {POINTS.map((point) => (
+            <li key={point}>{point}</li>
+          ))}
+        </ul>
 
-      <ol className={`glass ${f.rows}`}>
-        {POINTS.map((point, i) => (
-          <li key={point} className={f.row}>
-            <span className={`mono ${s.no}`}>0{i + 1}</span>
-            <strong>{point}</strong>
-          </li>
-        ))}
-      </ol>
-
-      <Suspense>
-        <ErrorNotice searchParams={searchParams} />
-      </Suspense>
-
-      <form
-        action="/auth/login"
-        method="post"
-        className={`${f.bottom} ${s.form}`}
-      >
         <Suspense>
-          <NextField searchParams={searchParams} />
+          <ErrorNotice searchParams={searchParams} />
         </Suspense>
-        {PROVIDERS.map((p) => (
-          <button
-            key={p.id}
-            type="submit"
-            name="provider"
-            value={p.id}
-            className={`btn press ${s.social}`}
-            style={p.style}
-          >
-            <span aria-hidden className={s.brand}>
-              {p.logo}
-            </span>
-            {p.label}
-          </button>
-        ))}
-        <p className={s.note}>
-          이메일이 같은 로그인 방법은 한 계정으로 이어져요.
-          <br />
-          이메일이 다르면 새 계정이 만들어져요.
-        </p>
-      </form>
 
-      <FeedbackLink />
-    </main>
+        <form action="/auth/login" method="post" className={s.form}>
+          <Suspense>
+            <NextField searchParams={searchParams} />
+          </Suspense>
+          {PROVIDERS.map((p) => (
+            <button
+              key={p.id}
+              type="submit"
+              name="provider"
+              value={p.id}
+              className={`btn press ${s.social}`}
+              style={p.style}
+            >
+              <span aria-hidden className={s.brand}>
+                {p.logo}
+              </span>
+              {p.label}
+            </button>
+          ))}
+          <p className={s.note}>
+            이메일이 같으면 한 계정으로 이어지고,
+            <br />
+            다르면 새 계정이 만들어져요.
+          </p>
+        </form>
+      </main>
+
+      <SiteFooter className={f.footer} logoHeight={22} />
+    </div>
   );
 }
 

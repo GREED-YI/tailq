@@ -30,7 +30,7 @@ function Heading({ count }: { count?: number }) {
         복습 예정 항목{count === undefined ? "" : ` ${count}개`}
       </p>
       <p className={s.desc}>
-        잘 답하면 간격이 늘어나고, 부족하면 처음부터 다시 나와요
+        잘 답하면 복습 간격이 늘어나고, 부족하면 처음부터 다시 나와요
       </p>
     </>
   );

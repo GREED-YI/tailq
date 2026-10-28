@@ -1,63 +1,74 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import s from "./interview.module.css";
 import { scoreColor } from "./verdict";
 
-const RING = 2 * Math.PI * 40;
-
-// 점수 링. 링과 숫자는 0에서 shown까지 18ms마다 2씩 차오른다(docs/07 "모션", 동작 줄이기면 바로 최종 값).
-// 처음엔 면접 화면만 카운트업한 값을 넘겨 움직였고, 기록 상세·공유·체험 결과는 최종 점수를 넘겨
-// 링이 처음부터 꽉 찬 채로 보였다. 링이 스스로 차오르게 바꿔 모든 화면에서 움직인다(#114).
-// value가 없으면(채점 중) 숫자 자리에 ··. 링 색은 점수 구간 색이고, 차오르는 중에 색이 바뀌지 않게 최종 점수(score)로 정한다
+// 본 질문 점수(DESIGN.md score hero): 큰 숫자 + /100 + 20칸 점수 막대.
+// 처음엔 원형 링이라 이름이 ScoreRing이다. 기록 상세·공유·체험 결과가 같은 이름으로 불러 이름은 그대로 둔다.
+// 숫자와 막대는 0에서 shown까지 18ms마다 2씩 차오른다(docs/07 "모션", 동작 줄이기면 바로 최종 값, #114).
+// value가 없으면 숫자 자리에 empty(채점 중 ··, 모르겠어요 –), 막대는 빈 칸. 숫자 색은 점수 구간 색이고, 차오르는 중에 바뀌지 않게
+// 최종 점수(score)로 정한다. aside는 숫자 줄 오른쪽(판정 표시 등)
 export function ScoreRing({
   shown,
   label,
   value,
   score = value,
+  empty = "··",
+  aside,
 }: {
   shown: number;
   label: string;
   value?: number;
   score?: number;
+  empty?: string;
+  aside?: ReactNode;
 }) {
   const n = useCountUp(shown);
   return (
-    <div className={s.ring}>
-      <svg
-        width="96"
-        height="96"
-        viewBox="0 0 96 96"
-        role="img"
-        aria-label={label}
-      >
-        <circle
-          cx="48"
-          cy="48"
-          r="40"
-          fill="none"
-          stroke="var(--track)"
-          strokeWidth="8"
-        />
-        {/* 0점이면 둥근 끝만 점으로 남으므로 그리지 않는다 */}
-        {n > 0 && (
-          <circle
-            cx="48"
-            cy="48"
-            r="40"
-            fill="none"
-            stroke={scoreColor(score ?? 0)}
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeDasharray={`${((RING * n) / 100).toFixed(1)} ${RING.toFixed(1)}`}
-            transform="rotate(-90 48 48)"
-          />
-        )}
-      </svg>
-      <div className={s.ringText} aria-hidden="true">
-        <span className="mono">{value === undefined ? "··" : n}</span>
-        <span className="mono">/100</span>
+    <div className={s.score}>
+      <div className={s.scoreRow}>
+        <p className={s.scoreNum} role="img" aria-label={label}>
+          <span
+            className="mono"
+            style={{
+              color: value === undefined ? undefined : scoreColor(score ?? 0),
+            }}
+          >
+            {value === undefined ? empty : n}
+          </span>
+          <span className="mono">/100</span>
+        </p>
+        {aside}
       </div>
+      <ScoreBar value={n} decorative />
+    </div>
+  );
+}
+
+// 점수 막대(DESIGN.md score-bar). 5점마다 한 칸, 채운 칸은 글자색, 빈 칸은 mark-empty 테두리.
+// decorative면 옆 숫자가 이미 점수를 읽어 주므로 화면 읽기에서 뺀다(차오르는 동안 이름이 매번 바뀌지 않게)
+export function ScoreBar({
+  value,
+  small = false,
+  decorative = false,
+}: {
+  value: number;
+  small?: boolean;
+  decorative?: boolean;
+}) {
+  const on = Math.round(value / 5);
+  return (
+    <div
+      className={s.bar}
+      data-small={small || undefined}
+      {...(decorative
+        ? { "aria-hidden": true }
+        : { role: "img", "aria-label": `점수 막대 ${value}%` })}
+    >
+      {Array.from({ length: 20 }, (_, i) => (
+        <span key={i} data-on={i < on || undefined} />
+      ))}
     </div>
   );
 }

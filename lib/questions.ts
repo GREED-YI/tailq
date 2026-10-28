@@ -47,6 +47,11 @@ export const tagLine = (q: TaggedQuestion) => {
   return `${t.label} · ${t.topic}`;
 };
 
+// 내 질문 목록과 질문 상세가 같이 읽는 시도(세션) 줄: 본 질문 결과와 그 질문(북마크·복습 포함). RLS가 내 것만 준다.
+// 쓰는 쪽에서 .eq("turns.idx", 0).eq("turns.status", "graded")로 본 질문을 채점받은 세션만 남긴다
+export const ATTEMPT_COLUMNS =
+  "id, day, status, question_id, turns!inner(idx, status, score, verdict), questions(id, prompt, level, topic_id, project_id, is_hidden, topics(field), projects(name), bookmarks(question_id), reviews(box, due_day))";
+
 // 프로젝트 등록 규칙(04 기능 명세 9번). 이름·README 최소 길이는 기획에 없어 #39에서 정했다(DB CHECK와 같다)
 export const MAX_PROJECTS = 3;
 export const NAME_MAX = 40;

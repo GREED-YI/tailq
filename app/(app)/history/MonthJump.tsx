@@ -62,10 +62,10 @@ export function MonthJump({
       <button
         ref={button}
         type="button"
-        className={`press ${s.jumpButton}`}
+        className={`icon-btn press ${s.jumpButton}`}
         aria-expanded={open}
         aria-controls={id}
-        aria-label="다른 달로 가기"
+        aria-label="다른 달로 이동"
         onClick={() => setOpen(!open)}
       >
         <Icon name="chevronDown" size={18} bold />
@@ -83,7 +83,7 @@ export function MonthJump({
                   <li key={m}>
                     <a
                       href={`#m-${m}`}
-                      className="num press"
+                      className="num"
                       aria-current={m === month ? "true" : undefined}
                       onClick={(e) => {
                         e.preventDefault();

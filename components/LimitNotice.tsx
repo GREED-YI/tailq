@@ -35,19 +35,16 @@ export function limitNotice(
 // 하루 사용 한도·월 예산에 닿았을 때 시작 버튼 대신 보여주는 안내(04 기능 명세 12장, Figma C안 S26)
 export function LimitNotice({ title, lines }: Notice) {
   return (
-    <section className={`glass ${s.notice}`} role="status">
-      <span className={s.fox} aria-hidden="true" />
-      <div>
-        <strong>{title}</strong>
-        <p>
-          {lines.map((line, i) => (
-            <span key={line}>
-              {i > 0 && <br />}
-              {line}
-            </span>
-          ))}
-        </p>
-      </div>
+    <section className={s.notice} role="status">
+      <strong>{title}</strong>
+      <p>
+        {lines.map((line, i) => (
+          <span key={line}>
+            {i > 0 && <br />}
+            {line}
+          </span>
+        ))}
+      </p>
     </section>
   );
 }

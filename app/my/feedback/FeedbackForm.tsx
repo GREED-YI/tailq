@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BackButton } from "@/components/BackButton";
 import f from "@/components/Flow.module.css";
 import {
@@ -12,15 +12,33 @@ import {
 } from "@/lib/feedback";
 import s from "../my.module.css";
 
-export function FeedbackForm() {
-  const [category, setCategory] = useState<string>("etc");
-  const [body, setBody] = useState("");
+// 신고 링크(#134)에서 오면 분류와 본문 첫 줄("Q.225 질문 신고: ")이 미리 채워진다. "하나 더 보내기"는 빈 칸으로
+export function FeedbackForm({
+  initialCategory = "etc",
+  initialBody = "",
+}: {
+  initialCategory?: string;
+  initialBody?: string;
+}) {
+  const [category, setCategory] = useState<string>(initialCategory);
+  const [body, setBody] = useState(initialBody);
+  const textarea = useRef<HTMLTextAreaElement>(null);
+  // 미리 채운 본문이 있으면 그 뒤에 커서를 둬 바로 이어 쓰게 한다
+  useEffect(() => {
+    const el = textarea.current;
+    if (!el || !initialBody) return;
+    el.focus();
+    el.setSelectionRange(el.value.length, el.value.length);
+  }, [initialBody]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
 
   const length = feedbackLength(body);
-  const valid = FeedbackBody.safeParse(body).success;
+  // 미리 채운 첫 줄만 있으면 아직 아무것도 안 쓴 것이라 보내지 않는다
+  const valid =
+    FeedbackBody.safeParse(body).success &&
+    (!initialBody || body.trim() !== initialBody.trim());
 
   async function send() {
     setBusy(true);
@@ -36,7 +54,8 @@ export function FeedbackForm() {
     }
     const data = await res?.json().catch(() => null);
     setError(
-      data?.error?.message ?? "보내지 못했어요. 잠시 뒤 다시 해 주세요.",
+      data?.error?.message ??
+        "의견을 보내지 못했어요. 잠시 뒤 다시 시도해 주세요.",
     );
     setBusy(false);
   }
@@ -54,7 +73,7 @@ export function FeedbackForm() {
         <div className={f.bottom}>
           <button
             type="button"
-            className="btn btn-secondary glass press"
+            className="btn btn-secondary press"
             onClick={() => {
               setBody("");
               setCategory("etc");
@@ -76,7 +95,8 @@ export function FeedbackForm() {
       </header>
 
       <p className={f.sub}>
-        불편했던 점, 바라는 기능, 채점이 이상했던 질문까지 무엇이든 좋아요.
+        불편했던 점, 바라는 기능, 채점이 이상했던 질문까지 무엇이든 편하게 남겨
+        주세요.
       </p>
 
       <p id="feedback-category" className={`${s.label} ${s.gap}`}>
@@ -93,7 +113,7 @@ export function FeedbackForm() {
             type="button"
             role="radio"
             aria-checked={category === c.id}
-            className="chip glass press"
+            className="chip press"
             onClick={() => setCategory(c.id)}
           >
             {c.label}
@@ -105,8 +125,9 @@ export function FeedbackForm() {
         의견
       </label>
       <textarea
+        ref={textarea}
         id="feedback"
-        className={`glass ${s.input} ${s.textarea}`}
+        className={`${s.input} ${s.textarea}`}
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder="예) 복습 알림을 저녁에도 받고 싶어요"
@@ -116,8 +137,10 @@ export function FeedbackForm() {
         className={s.helpRow}
         data-invalid={length > FEEDBACK_MAX || undefined}
       >
-        <span id="feedback-help">운영자만 읽어요. 답장은 드리지 못해요.</span>
-        <span className="mono" aria-hidden="true">
+        <span id="feedback-help">
+          운영자만 읽어요. 따로 답장은 드리지 못해요.
+        </span>
+        <span className="mono" aria-live="polite">
           {length} / {FEEDBACK_MAX}
         </span>
       </p>
@@ -132,6 +155,7 @@ export function FeedbackForm() {
           type="button"
           className="btn btn-primary press"
           disabled={!valid || busy}
+          aria-busy={busy || undefined}
           onClick={send}
           title={valid ? undefined : `${FEEDBACK_MIN}자 이상 적어 주세요`}
         >

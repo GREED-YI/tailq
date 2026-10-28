@@ -1,15 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { BACKDROP_STORAGE_KEY, themeScript } from "@/lib/theme";
+import { themeScript } from "@/lib/theme";
 
 // 인라인 테마 스크립트를 가짜 브라우저 환경에서 돌려 data-theme을 확인한다
 function run({
   saved,
-  savedBg,
   storageThrows = false,
   systemLight,
 }: {
   saved?: string | null;
-  savedBg?: string;
   storageThrows?: boolean;
   systemLight: boolean;
 }) {
@@ -20,9 +18,9 @@ function run({
     addEventListener: (_: string, fn: () => void) => listeners.push(fn),
   };
   const localStorage = {
-    getItem: (key: string) => {
+    getItem: () => {
       if (storageThrows) throw new Error("SecurityError");
-      return (key === BACKDROP_STORAGE_KEY ? savedBg : saved) ?? null;
+      return saved ?? null;
     },
   };
   const window = { matchMedia: () => mq };
@@ -49,16 +47,6 @@ describe("테마 스크립트", () => {
     expect(run({ storageThrows: true, systemLight: true }).dataset.theme).toBe(
       "light",
     );
-  });
-  it("배경은 기본(그라디언트)이고 glow를 저장했을 때만 data-bg를 붙인다", () => {
-    expect(run({ systemLight: false }).dataset.bg).toBeUndefined();
-    expect(run({ savedBg: "glow", systemLight: false }).dataset.bg).toBe(
-      "glow",
-    );
-    expect(
-      run({ savedBg: "glow", storageThrows: true, systemLight: false }).dataset
-        .bg,
-    ).toBeUndefined();
   });
   it("저장한 선택이 없으면 기기 설정이 바뀔 때 같이 바뀐다", () => {
     const r = run({ saved: null, systemLight: false });

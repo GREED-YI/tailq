@@ -5,6 +5,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { loadTrialSession } from "@/lib/trial-session";
 import { turnResult } from "@/lib/turn";
 import { Interview, type InterviewStatus } from "../interview/Interview";
+import { InterviewSkeleton } from "../interview/Skeleton";
+import { steps } from "../interview/steps";
 
 export const metadata: Metadata = { title: "체험 · TailQ" };
 
@@ -12,7 +14,7 @@ export const metadata: Metadata = { title: "체험 · TailQ" };
 // 체험을 시작하지 않았으면 랜딩의 체험 칸으로, 끝났으면 체험 결과로 보낸다.
 export default function TrialPage() {
   return (
-    <Suspense>
+    <Suspense fallback={<InterviewSkeleton />}>
       <TrialInterview />
     </Suspense>
   );
@@ -39,6 +41,7 @@ async function TrialInterview() {
         idx: turn.idx,
         prompt: turn.follow_up_prompt ?? session.question.prompt,
       }}
+      initialSteps={steps(session.turns, session.question.prompt)}
       question={session.question}
       exitHref="/"
       resultHref="/trial/result"

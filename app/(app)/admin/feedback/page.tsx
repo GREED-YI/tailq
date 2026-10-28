@@ -4,10 +4,13 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { isAdmin } from "@/lib/admin";
+import { Icon } from "@/components/icons";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import { categoryLabel, FEEDBACK_CATEGORIES } from "@/lib/feedback";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import s from "../admin.module.css";
+import { FeedbackTable } from "../Table";
 
 export const metadata: Metadata = {
   title: "피드백 · 운영 · TailQ",
@@ -22,7 +25,7 @@ export default function FeedbackListPage({
   return (
     <div className={s.page} data-admin>
       <AppHeader />
-      <Suspense>
+      <Suspense fallback={<Loading />}>
         {searchParams.then(({ category }) => (
           <FeedbackList
             category={
@@ -32,6 +35,25 @@ export default function FeedbackListPage({
         ))}
       </Suspense>
     </div>
+  );
+}
+
+// 불러오는 동안: 뒤로 링크 · 제목 · 분류 칩 · 목록 자리. 운영 대시보드처럼 글 없이 칸만 둔다
+function Loading() {
+  return (
+    <>
+      <LoadingStatus />
+      <div aria-busy="true" aria-hidden="true">
+        <div className={s.backLink} />
+        <div className={s.top}>
+          <span className="skeleton" style={{ width: 160, height: 30 }} />
+        </div>
+        <div className={s.filters}>
+          <span className="skeleton" style={{ width: "100%", height: 44 }} />
+        </div>
+        <span className="skeleton" style={{ height: 240 }} />
+      </div>
+    </>
   );
 }
 
@@ -61,7 +83,8 @@ async function FeedbackList({ category }: { category: string | null }) {
   return (
     <>
       <Link href="/admin" className={s.backLink}>
-        ‹ 운영 대시보드
+        <Icon name="chevronLeft" size={18} />
+        운영 대시보드
       </Link>
       <header className={s.top}>
         <h1>사용자 피드백</h1>
@@ -70,13 +93,13 @@ async function FeedbackList({ category }: { category: string | null }) {
           {(count ?? 0) > LIMIT && ` · 최근 ${LIMIT}개`}
         </span>
       </header>
-      <nav className={s.filters} aria-label="분류로 거르기">
+      <nav className={s.filters} aria-label="분류 필터">
         {[{ id: null, label: "전체" }, ...FEEDBACK_CATEGORIES].map((c) => (
           <Link
             key={c.id ?? "all"}
             href={c.id ? `/admin/feedback?category=${c.id}` : "/admin/feedback"}
             replace
-            className="chip glass press"
+            className="chip press"
             aria-current={category === c.id ? "page" : undefined}
           >
             {c.label}
@@ -84,23 +107,11 @@ async function FeedbackList({ category }: { category: string | null }) {
         ))}
       </nav>
       {data.length === 0 ? (
-        <p className={`glass ${s.card} ${s.empty}`}>
+        <p className={s.empty}>
           {category ? "이 분류의 피드백이 없어요" : "아직 받은 피드백이 없어요"}
         </p>
       ) : (
-        <ul className={s.feedbackList}>
-          {data.map((v) => (
-            <li key={v.id} className={`glass ${s.card}`}>
-              <span className={s.kind} data-kind={v.category}>
-                {categoryLabel(v.category)}
-              </span>
-              <p>{v.body}</p>
-              <time className="num" dateTime={v.created_at}>
-                {when(v.created_at)}
-              </time>
-            </li>
-          ))}
-        </ul>
+        <FeedbackTable rows={data} date={when} />
       )}
     </>
   );

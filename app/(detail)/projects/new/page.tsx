@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
+import { Icon } from "@/components/icons";
 import { limitNotice } from "@/components/LimitNotice";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { loadQuota } from "@/lib/usage";
@@ -14,10 +17,33 @@ export const metadata: Metadata = { title: "프로젝트 등록 · TailQ" };
 export default function NewProjectPage() {
   return (
     <div className={`${s.page} ${s.detail}`}>
-      <Suspense>
+      <Suspense fallback={<Loading />}>
         <Form />
       </Suspense>
     </div>
+  );
+}
+
+// 불러오는 동안: 머리는 그대로, 이름 칸 · README 칸은 같은 크기의 빈 칸으로(레이아웃이 밀리지 않게)
+function Loading() {
+  return (
+    <>
+      <header className={s.top}>
+        <Link
+          href="/projects"
+          className="press icon-btn"
+          aria-label="내 프로젝트로"
+        >
+          <Icon name="chevronLeft" />
+        </Link>
+        <h1>프로젝트 등록</h1>
+      </header>
+      <LoadingStatus />
+      <div className={s.form} aria-busy="true" aria-hidden="true">
+        <span className={`skeleton ${s.fieldSkeleton}`} />
+        <span className={`skeleton ${s.fieldSkeleton}`} data-kind="textarea" />
+      </div>
+    </>
   );
 }
 

@@ -10,7 +10,7 @@ export default function TermsPage() {
     <>
       <h1>이용약관</h1>
       <p className={s.date}>시행일: 2026-10-26</p>
-      <div className={`glass ${s.card}`}>
+      <div className={s.card}>
         <h2>
           <span className="mono">01</span> 서비스 내용
         </h2>

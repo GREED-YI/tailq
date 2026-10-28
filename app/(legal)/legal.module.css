@@ -1,92 +1,145 @@
-/* 약관과 정책(S09). 뼈대는 components/Flow.module.css */
+/* 약관과 정책(S09). 뼈대는 components/Flow.module.css. 읽기 좋은 문서 화면(본문 최대 720px, 16px·행간 1.7) */
 
-/* 긴 문서라 PC에서도 위에서부터 */
-main.main {
+/* 긴 문서라 PC에서도 위에서부터. 폭은 Flow의 520 대신 문서 폭 */
+div.main {
   justify-content: flex-start;
+  /* 아래 여백은 맨 아래 SiteFooter가 맡는다 */
+  padding-bottom: 0;
+}
+/* PC 왼쪽 위 로고(70×28): 보이는 자리는 그대로 두고 누르는 영역만 44px 넘게 넓힌다 */
+.pcLogo {
+  padding: 10px;
+  margin: -10px;
+  border-radius: var(--radius-control);
+}
+@media (min-width: 768px) {
+  div.main {
+    width: 100%;
+    max-width: 784px;
+    padding-left: 32px;
+    padding-right: 32px;
+  }
 }
 @media (min-width: 1024px) {
-  main.main {
+  div.main {
     padding-top: 80px;
   }
 }
 
-/* 문서 선택: 유리 막대 안 선택 캡슐 */
+/* 문서 선택: 밑줄 탭(선택은 text 글자 + 아래 2px 선) */
 .tabs {
   margin-top: 8px;
-  height: 48px;
-  border-radius: 24px;
-  padding: 4px;
+  border-bottom: 1px solid var(--line);
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 .tabs a {
-  border-radius: 20px;
+  min-height: 48px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 15px;
-  color: var(--sub);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tabs a {
+    transition:
+      color var(--dur-fast) var(--ease),
+      border-color var(--dur-fast) var(--ease);
+  }
+}
+@media (hover: hover) {
+  .tabs a:hover {
+    color: var(--text);
+  }
 }
 .tabs a[aria-current="page"] {
-  background: var(--tab-active);
-  box-shadow:
-    inset 0 1px 0 var(--glass-hi),
-    0 4px 12px -6px var(--glass-shadow);
-  color: var(--accent);
+  border-bottom-color: var(--text);
+  color: var(--text);
   font-weight: 700;
 }
 
 .doc {
-  margin-top: 22px;
+  margin-top: 32px;
+  padding-bottom: 40px;
 }
 .doc h1 {
-  font-size: 24px;
-  line-height: 33px;
+  font-size: 22px;
+  line-height: 1.35;
   font-weight: 700;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.02em;
 }
 /* 시행일 줄 */
 .date {
-  margin-top: 7px;
-  color: var(--sub);
+  margin-top: 8px;
   font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
+/* 본문: 상자 없이 2px 머리선 아래 1px 선으로 조항을 나눈다 */
 .card {
-  margin-top: 16px;
-  padding: 20px 16px 24px;
-  border-radius: 28px;
-  font-size: 15px;
-  line-height: 22px;
-  color: var(--sub);
+  margin-top: 24px;
+  border-top: 2px solid var(--text);
+  padding-top: 24px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text-sub);
 }
 .card h2 {
-  margin-top: 28px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  font-size: 16px;
-  line-height: 23px;
+  gap: 12px;
+  font-size: 18px;
+  line-height: 1.4;
   font-weight: 700;
+  letter-spacing: -0.01em;
   color: var(--text);
 }
 .card h2:first-child {
   margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
 }
 .card h2 span {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--accent);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
 }
 .card p,
 .card ul {
-  margin-top: 4px;
+  margin-top: 8px;
 }
 .card ul {
-  padding-left: 18px;
+  padding-left: 20px;
+}
+.card li + li {
+  margin-top: 4px;
+}
+.card b,
+.card strong {
+  color: var(--text);
 }
 .card a {
   color: var(--text);
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+@media (hover: hover) {
+  .card a:hover {
+    color: var(--accent);
+  }
+}
+
+@media (min-width: 1024px) {
+  .doc h1 {
+    font-size: 26px;
+  }
 }

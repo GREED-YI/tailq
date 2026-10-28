@@ -6,14 +6,7 @@ import type { z } from "zod";
 import { BackButton } from "@/components/BackButton";
 import f from "@/components/Flow.module.css";
 import { Icon } from "@/components/icons";
-import {
-  FIELDS,
-  hourLabel,
-  LEVELS,
-  type Level,
-  type MeUpdate,
-} from "@/lib/profile";
-import { SUBSCRIBE_ERRORS, subscribePush } from "@/lib/push-client";
+import { FIELDS, LEVELS, type Level, type MeUpdate } from "@/lib/profile";
 import s from "./onboarding.module.css";
 
 type Topic = { id: string; field: string; name: string };
@@ -22,28 +15,12 @@ type Save = (body: Body) => Promise<boolean>;
 
 const STEPS: { title: ReactNode; desc: ReactNode }[] = [
   {
-    title: "서비스 이용에 동의해주세요",
-    desc: "세 가지 모두 동의하면 시작할 수 있어요",
+    title: "서비스 이용에 동의해 주세요",
+    desc: "세 항목에 모두 동의하면 시작할 수 있어요",
   },
   {
-    title: "연습할 범위를 골라주세요",
-    desc: "여러 개 고를 수 있고, 나중에 MY에서 바꿀 수 있어요",
-  },
-  {
-    title: (
-      <>
-        매일 질문을 알림으로
-        <br />
-        받을까요?
-      </>
-    ),
-    desc: (
-      <>
-        정한 시각에 오늘의 질문을 알려드려요.
-        <br />
-        이미 푼 날은 보내지 않아요.
-      </>
-    ),
+    title: "연습할 범위를 골라 주세요",
+    desc: "여러 개 골라도 돼요. 나중에 MY에서 바꿀 수 있어요",
   },
 ];
 
@@ -52,13 +29,10 @@ export function OnboardingFlow(props: {
   topics: Topic[];
   initialTopics: string[];
   initialLevels: Level[];
-  initialHour: number;
-  vapidKey: string;
 }) {
   const router = useRouter();
   const [step, setStep] = useState(props.initialStep);
   const [failed, setFailed] = useState(false);
-  const [hour, setHour] = useState(props.initialHour);
   const heading = useRef<HTMLHeadingElement>(null);
   const firstStep = useRef(step);
 
@@ -85,23 +59,25 @@ export function OnboardingFlow(props: {
         {step > 0 && (
           <BackButton className={f.back} onClick={() => setStep(step - 1)} />
         )}
-        <div className={s.steps}>
-          <p className="mono" aria-label={`3단계 중 ${step + 1}단계`}>
-            {step + 1} / 3
-          </p>
-          <div className={s.dots} aria-hidden>
+        {/* progress-steps: 지난 단계 text, 지금 accent, 남은 단계 mark-empty 테두리 */}
+        <div
+          role="img"
+          aria-label={`${STEPS.length}단계 중 ${step + 1}단계`}
+          className={s.steps}
+        >
+          <span className="mono">
+            {step + 1} / {STEPS.length}
+          </span>
+          <span className={s.bars}>
             {STEPS.map((_, i) => (
               <span
                 key={i}
-                data-on={i <= step || undefined}
-                data-now={i === step || undefined}
+                data-state={i < step ? "done" : i === step ? "now" : "next"}
               />
             ))}
-          </div>
+          </span>
         </div>
       </header>
-
-      {step === 2 && <NotifyPreview hour={hour} />}
 
       <h1 ref={heading} tabIndex={-1} className={f.title}>
         {STEPS[step].title}
@@ -118,15 +94,9 @@ export function OnboardingFlow(props: {
           topics={props.topics}
           initialTopics={props.initialTopics}
           initialLevels={props.initialLevels}
-          onNext={async (body) => (await save(body)) && setStep(2)}
-        />
-      )}
-      {step === 2 && (
-        <NotifyStep
-          vapidKey={props.vapidKey}
-          hour={hour}
-          setHour={setHour}
-          onDone={async (body) => {
+          label="시작하기"
+          // 범위를 저장하면서 온보딩을 끝낸다. 알림은 첫 세션을 마친 뒤 홈에서 묻는다(NotifyPrompt)
+          onNext={async (body) => {
             if (await save({ ...body, onboarded: true })) {
               router.replace("/home");
               return true;
@@ -145,17 +115,29 @@ export function OnboardingFlow(props: {
   );
 }
 
-// 누르는 동안 버튼을 잠그고, 실패하면 다시 누를 수 있게 푼다
+// 누르는 동안 버튼을 잠그고, 실패하면 다시 누를 수 있게 푼다.
+// 성공하면 이동하는 동안 잠금을 유지하고, 화면이 보관되어 숨겨지거나 다시 보일 때 요청 중이 아니면 푼다
+// (cacheComponents라 상태를 그대로 들고 다시 보인다. TrialPicker와 같다)
 function useBusy() {
   const [busy, setBusy] = useState(false);
+  const inFlight = useRef(false);
+  useEffect(() => {
+    if (!inFlight.current) setBusy(false);
+    return () => {
+      if (!inFlight.current) setBusy(false);
+    };
+  }, []);
   const run = async (task: () => Promise<boolean | void>) => {
     setBusy(true);
-    if (!(await task())) setBusy(false);
+    inFlight.current = true;
+    const ok = await task();
+    inFlight.current = false;
+    if (!ok) setBusy(false);
   };
   return [busy, run] as const;
 }
 
-// 둥근 체크(Figma Checkbox). 실제 입력은 감춘 checkbox라 행 전체를 눌러도 된다
+// 체크 상자. 실제 입력은 감춘 checkbox라 행 전체를 눌러도 된다
 function Check(props: {
   checked: boolean;
   onChange: (on: boolean) => void;
@@ -183,7 +165,7 @@ const AGREEMENTS = [
   {
     id: "privacy",
     text: "개인정보처리방침",
-    note: "국외 이전 포함. 답변은 AI 채점을 위해 미국의 AI 서비스(Anthropic)로 전송돼요.",
+    note: "국외 이전 포함. AI 채점을 위해 답변이 미국의 AI 서비스(Anthropic)⁠로 전송돼요.",
     href: "/privacy",
   },
   { id: "age", text: "만 14세 이상이에요" },
@@ -196,16 +178,16 @@ function AgreeStep({ onNext }: { onNext: () => Promise<boolean | void> }) {
 
   return (
     <>
-      <div className={`glass ${s.allRow}`}>
+      <div className={s.allRow}>
         <Check
           checked={all}
           onChange={(on) => setChecked(on ? AGREEMENTS.map((a) => a.id) : [])}
           label={<strong>전체 동의</strong>}
         />
       </div>
-      <ul className={`glass ${f.rows} ${s.agreements}`}>
+      <ul className={s.rows}>
         {AGREEMENTS.map((a) => (
-          <li key={a.id} className={f.row}>
+          <li key={a.id} className={s.row}>
             <Check
               checked={checked.includes(a.id)}
               onChange={(on) =>
@@ -225,7 +207,7 @@ function AgreeStep({ onNext }: { onNext: () => Promise<boolean | void> }) {
                 href={a.href}
                 target="_blank"
                 rel="noopener"
-                className={`glass press ${s.pill}`}
+                className={`btn btn-secondary btn-md press ${s.view}`}
               >
                 보기
               </a>
@@ -238,10 +220,39 @@ function AgreeStep({ onNext }: { onNext: () => Promise<boolean | void> }) {
           type="button"
           className="btn btn-primary press"
           disabled={!all || busy}
+          aria-busy={busy}
           onClick={() => run(onNext)}
         >
           다음
         </button>
+      </div>
+    </>
+  );
+}
+
+// 불러오는 동안의 범위 자리: 분야·난이도 이름은 그대로, 칩은 같은 높이의 빈 칸(주제 칩 두 줄, 난이도 한 줄).
+// MY 연습 범위(/my/range)가 Suspense fallback으로 쓴다
+export function RangeSkeleton() {
+  return (
+    <>
+      {FIELDS.map((field) => (
+        <section key={field.id} className={s.field}>
+          <div className={s.fieldHead}>
+            <h2>{field.label}</h2>
+          </div>
+          <div className={s.chips}>
+            <span className="skeleton" style={{ width: "100%", height: 96 }} />
+          </div>
+        </section>
+      ))}
+      <section className={s.field}>
+        <h2>난이도</h2>
+        <div className={s.chips}>
+          <span className="skeleton" style={{ width: "60%", height: 44 }} />
+        </div>
+      </section>
+      <div className={f.bottom}>
+        <span className="skeleton" style={{ height: 52 }} />
       </div>
     </>
   );
@@ -279,10 +290,10 @@ export function RangeStep(props: {
           >
             <div className={s.fieldHead}>
               <h2 id={`field-${field.id}`}>{field.label}</h2>
-              {/* 칩과 헷갈리지 않게 선택 상태 대신 문구가 바뀌는 테두리 버튼 */}
+              {/* 칩과 헷갈리지 않게 선택 상태 대신 문구가 바뀌는 글자 버튼 */}
               <button
                 type="button"
-                className={`press ${s.all}`}
+                className={`btn btn-ghost press ${s.all}`}
                 aria-label={`${field.label} ${allOn ? "전체 해제" : "전체 선택"}`}
                 onClick={() =>
                   setTopics((list) =>
@@ -303,7 +314,7 @@ export function RangeStep(props: {
                   <button
                     key={t.id}
                     type="button"
-                    className="chip glass press"
+                    className="chip press"
                     aria-pressed={topics.includes(t.id)}
                     onClick={() => setTopics((list) => toggle(list, t.id))}
                   >
@@ -322,7 +333,7 @@ export function RangeStep(props: {
             <button
               key={l.id}
               type="button"
-              className="chip glass press"
+              className="chip press"
               aria-pressed={levels.includes(l.id)}
               onClick={() => setLevels((list) => toggle(list, l.id))}
             >
@@ -337,6 +348,7 @@ export function RangeStep(props: {
           type="button"
           className="btn btn-primary press"
           disabled={empty || busy}
+          aria-busy={busy}
           onClick={() => run(() => props.onNext({ topics, levels }))}
         >
           {props.label ?? "다음"} (주제 {topics.length}개 · 난이도{" "}
@@ -345,123 +357,6 @@ export function RangeStep(props: {
         {empty && (
           <p className={s.hint}>주제와 난이도를 하나 이상 골라 주세요.</p>
         )}
-      </div>
-    </>
-  );
-}
-
-// 받게 될 알림 모양(S08). 시각은 고른 값을 따라간다.
-// 실제 알림(lib/push.ts)과 같은 문구다. 잠금 화면에 보이므로 닉네임은 넣지 않는다
-function NotifyPreview({ hour }: { hour: number }) {
-  return (
-    <div className={s.previewWrap} aria-hidden>
-      <div className={`glass ${s.preview}`}>
-        <span className={s.symbol} />
-        <div className={s.previewText}>
-          <p className={s.previewHead}>
-            <strong>TailQ</strong>
-            <span className="num">{hourLabel(hour)}</span>
-          </p>
-          <strong>오늘의 질문이 도착했어요</strong>
-          <p>오늘도 한 문제 풀어볼까요?</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 아이폰은 홈 화면에 추가해야 알림을 받을 수 있다(03 요구사항 B-8, iOS 16.4 이상)
-const GUIDES = [
-  {
-    title: "아이폰 알림 설정 방법 보기",
-    body: "Safari에서 공유 버튼 → '홈 화면에 추가'를 누르고, 홈 화면의 TailQ로 들어와 알림을 켜 주세요. iOS 16.4 이상에서 돼요.",
-  },
-  {
-    title: "안드로이드 알림 설정 방법 보기",
-    body: "'알림 켜기'를 누른 뒤 브라우저 창에서 '허용'을 눌러 주세요. 막아 두었다면 주소창 왼쪽 아이콘 → 권한 → 알림에서 허용으로 바꿔요.",
-  },
-];
-
-function NotifyStep(props: {
-  vapidKey: string;
-  hour: number;
-  setHour: (hour: number) => void;
-  onDone: (body: Body) => Promise<boolean>;
-}) {
-  const [busy, run] = useBusy();
-  const [notice, setNotice] = useState("");
-
-  // 권한을 받고 이 기기를 구독한 뒤 설정을 저장한다. 거부했거나 이 브라우저가 못 받으면
-  // 알림을 끈 채로 온보딩을 끝내고 MY에서 다시 켜게 한다(05 사용자 흐름 "예외 상황").
-  // 홈 화면에 추가하지 않은 아이폰과 저장 실패는 이 단계에 남아 안내한다.
-  const allow = async () => {
-    setNotice("");
-    const result = await subscribePush(props.vapidKey);
-    if (result === "install" || result === "failed") {
-      setNotice(SUBSCRIBE_ERRORS[result]);
-      return false;
-    }
-    return props.onDone({
-      notifyOn: result === "ok",
-      notifyHour: props.hour,
-    });
-  };
-
-  return (
-    <>
-      {/* 화면엔 글자로 보이고, 누르면 기기의 선택 창이 열린다 */}
-      <label className={`glass ${s.hourRow}`}>
-        <span className={s.hourLabel}>알림 시각</span>
-        <span className="num">{hourLabel(props.hour)}</span>
-        <Icon name="chevronRight" size={18} />
-        <select
-          aria-label="알림 시각"
-          value={props.hour}
-          onChange={(e) => props.setHour(Number(e.target.value))}
-        >
-          {Array.from({ length: 24 }, (_, h) => (
-            <option key={h} value={h}>
-              {hourLabel(h)}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <div className={`glass ${f.rows} ${s.guides}`}>
-        {GUIDES.map((g) => (
-          <details key={g.title}>
-            <summary className={`hover-row ${f.row}`}>
-              <strong>{g.title}</strong>
-              <Icon name="chevronRight" size={18} />
-            </summary>
-            <p>{g.body}</p>
-          </details>
-        ))}
-      </div>
-
-      {notice && (
-        <p role="alert" className={s.alert}>
-          {notice}
-        </p>
-      )}
-
-      <div className={f.bottom}>
-        <button
-          type="button"
-          className="btn btn-primary press"
-          disabled={busy}
-          onClick={() => run(allow)}
-        >
-          알림 켜기
-        </button>
-        <button
-          type="button"
-          className="btn btn-secondary glass press"
-          disabled={busy}
-          onClick={() => run(() => props.onDone({}))}
-        >
-          나중에 할게요
-        </button>
       </div>
     </>
   );

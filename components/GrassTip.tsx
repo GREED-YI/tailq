@@ -6,7 +6,8 @@ import s from "./GrassTip.module.css";
 
 type Tip = { text: string; x: number; y: number; below: boolean };
 
-// 꼬리잇기 달력(리포트)·이번 주(홈): 칸에 마우스를 올리면(터치는 누르면) 그 날짜를 칸 위 말풍선으로 보여준다.
+// 꼬리잇기 달력(리포트)·이번 주(홈): 칸 색(data-level·data-rest·data-future·data-today)은 GrassTip.module.css가 정한다.
+// 칸에 마우스를 올리면(터치는 누르면) 그 날짜를 칸 위 말풍선으로 보여준다.
 // 칸이 365개라 칸마다 상태를 두지 않고 말풍선 하나를 옮긴다. 잔디는 가로 스크롤 안에 있어
 // 위 칸 말풍선이 잘리지 않게 body에 붙인다.
 // focusable: 칸이 몇 개 안 되면(홈 이번 주 7칸) 칸마다 초점을 받아 키보드로도 말풍선을 본다.
@@ -57,7 +58,7 @@ export function GrassTip({
   return (
     <div
       ref={ref}
-      className={className}
+      className={`${s.cells} ${className}`}
       role={focusable ? "group" : "img"}
       aria-label={label}
       onPointerOver={(e) => show(e.target as HTMLElement)}

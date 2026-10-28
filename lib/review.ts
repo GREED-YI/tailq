@@ -24,3 +24,44 @@ export function matchesFilter(
 
 export const dueLabel = (days: number) =>
   days <= 0 ? "오늘 다시" : days === 1 ? "내일 다시" : `${days}일 뒤 다시`;
+
+// 내 질문 화면(/questions) 필터. 옛 복습 화면(/review)은 위 matchesFilter를 그대로 쓴다
+export type QuestionFilter = "today" | "week" | "bookmark" | "mastered" | "all";
+export const QUESTION_FILTERS: QuestionFilter[] = [
+  "today",
+  "week",
+  "bookmark",
+  "mastered",
+  "all",
+];
+
+// dueDay가 null이면 복습 정보가 없거나 숨긴 질문이다(복습 필터에 들지 않는다)
+export type QuestionItem = {
+  box: number | null;
+  dueDay: string | null;
+  bookmarked: boolean;
+};
+
+export function inQuestionFilter(
+  r: QuestionItem,
+  f: QuestionFilter,
+  today: string,
+): boolean {
+  if (f === "all") return true;
+  if (f === "bookmark") return r.bookmarked;
+  if (r.dueDay === null) return false;
+  if (f === "mastered") return r.box === null;
+  return matchesFilter({ box: r.box, dueDay: r.dueDay }, f, today);
+}
+
+// 알맞은 값이면 그대로, 아니면 오늘 복습이 하나라도 있을 때 "today", 없으면 "all"
+export const questionFilter = (
+  v: unknown,
+  items: QuestionItem[],
+  today: string,
+): QuestionFilter =>
+  QUESTION_FILTERS.includes(v as QuestionFilter)
+    ? (v as QuestionFilter)
+    : items.some((r) => inQuestionFilter(r, "today", today))
+      ? "today"
+      : "all";

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, type CSSProperties, type ReactNode } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import { scoreColor, VERDICTS } from "@/app/interview/verdict";
 import {
   answersSince,
@@ -13,13 +14,14 @@ import {
   type Signup,
 } from "@/lib/admin";
 import { kstDay } from "@/lib/daily-pick";
-import { categoryLabel, FEEDBACK_CATEGORIES } from "@/lib/feedback";
+import { FEEDBACK_CATEGORIES } from "@/lib/feedback";
 import { FIELDS } from "@/lib/profile";
 import { addDays, studyDay } from "@/lib/streak";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { budgetUsd, loadQuota } from "@/lib/usage";
 import s from "./admin.module.css";
+import { FeedbackTable, Table } from "./Table";
 
 export const metadata: Metadata = {
   title: "운영 · TailQ",
@@ -32,10 +34,52 @@ export default function AdminPage() {
   return (
     <div className={s.page} data-admin>
       <AppHeader />
-      <Suspense>
+      <Suspense fallback={<Loading />}>
         <Dashboard />
       </Suspense>
     </div>
+  );
+}
+
+// 불러오는 동안: 머리 · 숫자 타일 두 묶음 자리(레이아웃이 밀리지 않게).
+// 운영자가 아니어도 받는 미리 그린 화면이라 운영 화면임을 알 수 있는 글은 넣지 않고 칸만 둔다
+const TILE_AREAS = [
+  ["hero", "d7", "thumbs", "active", "users"],
+  ["onboard", "fail", "review", "bookmark", "cost", "visit"],
+];
+
+function Loading() {
+  return (
+    <>
+      <LoadingStatus />
+      <div aria-busy="true" aria-hidden="true">
+        <div className={s.top}>
+          <span className="skeleton" style={{ width: 200, height: 30 }} />
+        </div>
+        {TILE_AREAS.map((areas, i) => (
+          <section key={i} className={s.block}>
+            <div className={s.blockHead} />
+            <div className={`${s.tiles} ${i === 0 ? s.core : s.state}`}>
+              {areas.map((area) =>
+                area === "hero" ? (
+                  <div key={area} className={s.hero} style={{ gridArea: area }}>
+                    <span
+                      className="skeleton"
+                      style={{ width: "40%", height: 96 }}
+                    />
+                    <div className={s.weeks} />
+                  </div>
+                ) : (
+                  <div key={area} className={s.stat} style={{ gridArea: area }}>
+                    <span className="skeleton" style={{ width: "50%" }} />
+                  </div>
+                ),
+              )}
+            </div>
+          </section>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -157,8 +201,8 @@ async function Dashboard() {
   const verdictTotal = Object.values(st.verdicts).reduce((a, b) => a + b, 0);
   const diff = st.thisWeek - st.lastWeek;
 
-  // 벤토 그리드: 성공 지표(북극성 답변 수, D7, 👍)를 왼쪽 위 큰 칸과 그 옆에, 상태 지표는 아래로.
-  // 칸 배치는 CSS grid-template-areas가 화면 폭마다 정한다
+  // 숫자는 stat-tiles 두 묶음(성공 지표: 북극성 답변 수·D7·채점 만족 / 상태 지표), 그 아래 분포·은행·피드백은 표와 막대.
+  // 타일 배치는 CSS grid-template-areas가 화면 폭마다 정한다
   return (
     <>
       <header className={s.top}>
@@ -168,113 +212,176 @@ async function Dashboard() {
         </span>
       </header>
 
-      <div className={s.bento}>
-        <section
-          className={`glass ${s.hero}`}
-          style={{ gridArea: "hero" }}
-          aria-labelledby="north-head"
-        >
-          <div className={s.heroText}>
-            <h2 id="north-head">
-              이번 주 답변 제출 <span className={s.badge}>북극성</span>
-            </h2>
-            <strong>
-              <span className={`mono ${s.big}`}>{st.thisWeek}</span> 개
-            </strong>
-            <span className="num" data-trend={trend(diff)}>
-              지난주 {st.lastWeek}개
-              {diff !== 0 && ` · ${diff > 0 ? "▲" : "▼"} ${Math.abs(diff)}`}
-            </span>
+      <section className={s.block} aria-labelledby="core-head">
+        <h2 id="core-head" className={s.blockHead}>
+          성공 지표
+        </h2>
+        <div className={`${s.tiles} ${s.core}`}>
+          <div className={s.hero} style={{ gridArea: "hero" }}>
+            <div className={s.heroText}>
+              <h3>
+                이번 주 답변 제출 <span className="tag tag-today">북극성</span>
+              </h3>
+              <strong>
+                <span className={`mono ${s.big}`}>{st.thisWeek}</span> 개
+              </strong>
+              <span className="num" data-trend={trend(diff)}>
+                지난주 {st.lastWeek}개
+                {diff !== 0 && ` · ${diff > 0 ? "▲" : "▼"} ${Math.abs(diff)}`}
+              </span>
+            </div>
+            <ol className={s.weeks} aria-label="최근 8주 답변 제출 수">
+              {st.weekly.map((w, i) => {
+                const prev = st.weekly[i - 1]?.count;
+                const tip = `${dot(w.week)}~${dot(addDays(w.week, 6))} · ${w.count}개${
+                  prev == null || prev === w.count
+                    ? ""
+                    : ` (${w.count > prev ? "▲" : "▼"} ${Math.abs(w.count - prev)})`
+                }`;
+                return (
+                  <Tip key={w.week} as="li" tip={tip}>
+                    <span className="mono">{w.count}</span>
+                    <i
+                      style={{ height: `${(w.count / peak) * 100}%` }}
+                      data-now={i === st.weekly.length - 1 || undefined}
+                    />
+                    <small className="num">{dot(w.week)}</small>
+                  </Tip>
+                );
+              })}
+            </ol>
           </div>
-          <ol className={s.weeks} aria-label="최근 8주 답변 제출 수">
-            {st.weekly.map((w, i) => {
-              const prev = st.weekly[i - 1]?.count;
-              const tip = `${dot(w.week)}~${dot(addDays(w.week, 6))} · ${w.count}개${
-                prev == null || prev === w.count
-                  ? ""
-                  : ` (${w.count > prev ? "▲" : "▼"} ${Math.abs(w.count - prev)})`
-              }`;
-              return (
-                <Tip key={w.week} as="li" tip={tip}>
-                  <span className="mono">{w.count}</span>
-                  <i
-                    style={{ height: `${(w.count / peak) * 100}%` }}
-                    data-now={i === st.weekly.length - 1 || undefined}
-                  />
-                  <small className="num">{dot(w.week)}</small>
-                </Tip>
-              );
-            })}
-          </ol>
-        </section>
 
-        <Stat
-          area="d7"
-          label="D7 재방문"
-          value={st.d7.rate}
-          unit="%"
-          goal={20}
-          note={`가입 7~35일 ${st.d7.cohort}명 중`}
-        />
-        <Stat
-          area="thumbs"
-          label="채점 만족 👍"
-          value={st.thumbsUp.rate}
-          unit="%"
-          goal={70}
-          note={`평가 ${st.thumbsUp.count}개 중`}
-        />
-        <Stat
-          area="active"
-          label="이번 주 답한 사람"
-          value={st.activeThisWeek}
-          unit="명"
-        />
-        <Stat
-          area="users"
-          label="가입자"
-          value={st.users.total}
-          unit="명"
-          note={`이번 주 +${st.users.newThisWeek}`}
-        />
+          <Stat
+            area="d7"
+            label="D7 재방문"
+            value={st.d7.rate}
+            unit="%"
+            goal={20}
+            note={`가입 7~35일 ${st.d7.cohort}명 중`}
+          />
+          <Stat
+            area="thumbs"
+            label="채점 만족"
+            value={st.thumbsUp.rate}
+            unit="%"
+            goal={70}
+            note={`좋아요 평가 ${st.thumbsUp.count}개 중`}
+          />
+          <Stat
+            area="active"
+            label="이번 주 답한 사람"
+            value={st.activeThisWeek}
+            unit="명"
+          />
+          <Stat
+            area="users"
+            label="가입자"
+            value={st.users.total}
+            unit="명"
+            note={`이번 주 +${st.users.newThisWeek}`}
+          />
+        </div>
+      </section>
 
+      <section className={s.block} aria-labelledby="state-head">
+        <h2 id="state-head" className={s.blockHead}>
+          상태 지표
+        </h2>
+        <div className={`${s.tiles} ${s.state}`}>
+          <Stat
+            area="onboard"
+            label="온보딩 완료"
+            value={st.users.onboardRate}
+            unit="%"
+            note="가입자 중"
+          />
+          <Stat
+            area="fail"
+            label="채점 실패"
+            value={st.failRate}
+            unit="%"
+            note="최근 8주 답변 중"
+            warn={(st.failRate ?? 0) > 5}
+          />
+          <Stat
+            area="review"
+            label="복습 대기"
+            value={reviewsDue.count}
+            unit="개"
+          />
+          <Stat
+            area="bookmark"
+            label="북마크"
+            value={bookmarks.count}
+            unit="개"
+          />
+          <Stat
+            area="cost"
+            label="AI 비용 · 이번 달 예산"
+            value={Math.round((quota.spentUsd / budgetUsd()) * 100)}
+            unit="%"
+            note={costNote(quota.spentUsd, budgetUsd())}
+            // 80%를 넘으면 새 세션의 본 질문 채점이 Haiku로 낮아진다(09 채점 5장)
+            warn={quota.budget !== "ok"}
+          />
+          <Soon
+            area="visit"
+            title="첫 방문 → 첫 답변"
+            body="첫 방문자 중 첫 답변을 제출한 비율(목표 50%)을 보여 줄 자리예요."
+            issue={44}
+          />
+        </div>
+      </section>
+
+      <div className={s.charts}>
         <Card
-          area="score"
           title="본 질문 점수 분포"
           meta={
             st.average == null ? "최근 8주" : `최근 8주 · 평균 ${st.average}점`
           }
         >
-          <ul className={s.bands}>
-            {SCORE_BANDS.map((band, i) => {
-              const n = st.scoreBands[i];
-              return (
-                <Tip
-                  key={band}
-                  as="li"
-                  tip={`${band}점 · ${n}개 (${share(n, gradedTotal)}%)`}
-                >
-                  <span className="num">{band}</span>
-                  <span className={s.track}>
-                    <i
-                      style={{
-                        width: `${(n / bandPeak) * 100}%`,
-                        background: scoreColor(i * 20),
-                      }}
-                    />
-                  </span>
-                  <span className="mono">{n}</span>
-                </Tip>
-              );
-            })}
-          </ul>
+          <Table label="본 질문 점수 분포">
+            <thead>
+              <tr>
+                <th scope="col">점수 구간</th>
+                <th scope="col">분포</th>
+                <th scope="col" className={s.numCol}>
+                  개수
+                </th>
+                <th scope="col" className={s.numCol}>
+                  비율
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {SCORE_BANDS.map((band, i) => {
+                const n = st.scoreBands[i];
+                return (
+                  <tr key={band}>
+                    <td className="num">{band}점</td>
+                    <td className={s.barCell}>
+                      <span className={s.bar}>
+                        <i
+                          style={{
+                            width: `${(n / bandPeak) * 100}%`,
+                            background: scoreColor(i * 20),
+                          }}
+                        />
+                      </span>
+                    </td>
+                    <td className={`mono ${s.numCol}`}>{n}</td>
+                    <td className={`mono ${s.numCol}`}>
+                      {share(n, gradedTotal)}%
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
         </Card>
 
-        <Card
-          area="verdict"
-          title="꼬리질문 판정"
-          meta={`최근 8주 · ${verdictTotal}개`}
-        >
+        <Card title="꼬리질문 판정" meta={`최근 8주 · ${verdictTotal}개`}>
           <div className={s.stack}>
             {Object.entries(VERDICTS)
               .filter(([key]) => st.verdicts[key])
@@ -283,14 +390,15 @@ async function Dashboard() {
                   key={key}
                   as="i"
                   tip={`${v.label} · ${share(st.verdicts[key], verdictTotal)}%`}
-                  style={{ flexGrow: st.verdicts[key], background: v.color }}
+                  verdict={key}
+                  style={{ flexGrow: st.verdicts[key] }}
                 />
               ))}
           </div>
           <ul className={s.legend}>
             {Object.entries(VERDICTS).map(([key, v]) => (
               <li key={key}>
-                <i style={{ background: v.color }} />
+                <i data-verdict={key} aria-hidden="true" />
                 {v.label}
                 <span className="mono">{st.verdicts[key] ?? 0}</span>
               </li>
@@ -299,55 +407,58 @@ async function Dashboard() {
         </Card>
 
         <Card
-          area="bank"
           title="질문 은행"
           meta={`공개 ${questions.filter((q) => !q.is_hidden).length}개 · 숨김 ${questions.filter((q) => q.is_hidden).length}개`}
         >
-          <ul className={s.bands}>
-            {FIELDS.map((f) => {
-              const n = questions.filter(
-                (q) => !q.is_hidden && q.topics.field === f.id,
-              ).length;
-              return (
-                <Tip
-                  key={f.id}
-                  as="li"
-                  tip={
-                    n >= BANK_GOAL
-                      ? `${f.label} · 목표 달성`
-                      : `${f.label} · 목표까지 ${BANK_GOAL - n}개`
-                  }
-                >
-                  <span>{f.label}</span>
-                  <span className={s.track}>
-                    <i
-                      style={{
-                        width: `${Math.min(n / BANK_GOAL, 1) * 100}%`,
-                        background:
-                          n >= BANK_GOAL ? "var(--good)" : "var(--low)",
-                      }}
-                    />
-                  </span>
-                  <span className="mono">
-                    {n}/{BANK_GOAL}
-                  </span>
-                </Tip>
-              );
-            })}
-          </ul>
+          <Table label="분야별 공개 질문 수">
+            <thead>
+              <tr>
+                <th scope="col">분야</th>
+                <th scope="col">목표 {BANK_GOAL}개 대비</th>
+                <th scope="col" className={s.numCol}>
+                  공개
+                </th>
+                <th scope="col" className={s.numCol}>
+                  목표까지
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {FIELDS.map((f) => {
+                const n = questions.filter(
+                  (q) => !q.is_hidden && q.topics.field === f.id,
+                ).length;
+                return (
+                  <tr key={f.id}>
+                    <td>{f.label}</td>
+                    <td className={s.barCell}>
+                      <span className={s.bar}>
+                        <i
+                          style={{
+                            width: `${Math.min(n / BANK_GOAL, 1) * 100}%`,
+                          }}
+                          data-met={n >= BANK_GOAL}
+                        />
+                      </span>
+                    </td>
+                    <td className={`mono ${s.numCol}`}>
+                      {n}/{BANK_GOAL}
+                    </td>
+                    <td className={`num ${s.numCol}`}>
+                      {n >= BANK_GOAL ? "달성" : `${BANK_GOAL - n}개`}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </Table>
         </Card>
 
-        <Link
-          href="/admin/feedback"
-          className={`glass press ${s.card} ${s.feedback}`}
-          style={{ gridArea: "feedback" }}
+        <Card
+          title="사용자 피드백"
+          meta={`전체 ${feedback.count ?? 0}개`}
+          link={{ href: "/admin/feedback", label: "모두 보기 →" }}
         >
-          <span className={s.head}>
-            <strong>사용자 피드백</strong>
-            <span className="num">
-              전체 {feedback.count ?? 0}개 · 모두 보기 ›
-            </span>
-          </span>
           <ul className={s.kinds} aria-label="분류별 개수">
             {FEEDBACK_CATEGORIES.map((c, i) => (
               <li key={c.id} className="num">
@@ -356,69 +467,15 @@ async function Dashboard() {
             ))}
           </ul>
           {feedback.data.length === 0 ? (
-            <span className={s.empty}>아직 받은 피드백이 없어요</span>
+            <p className={s.empty}>아직 받은 피드백이 없어요</p>
           ) : (
-            <ul className={s.voices}>
-              {feedback.data.map((v) => (
-                <li key={v.id}>
-                  <p>
-                    <span className={s.kind} data-kind={v.category}>
-                      {categoryLabel(v.category)}
-                    </span>
-                    {v.body}
-                  </p>
-                  <time className="num" dateTime={v.created_at}>
-                    {dot(studyDay(v.created_at))}
-                  </time>
-                </li>
-              ))}
-            </ul>
+            <FeedbackTable
+              rows={feedback.data}
+              date={(iso) => dot(studyDay(iso))}
+              clamp
+            />
           )}
-        </Link>
-
-        <Stat
-          area="onboard"
-          label="온보딩 완료"
-          value={st.users.onboardRate}
-          unit="%"
-          note="가입자 중"
-        />
-        <Stat
-          area="fail"
-          label="채점 실패"
-          value={st.failRate}
-          unit="%"
-          note="최근 8주 답변 중"
-          warn={(st.failRate ?? 0) > 5}
-        />
-        <Stat
-          area="review"
-          label="복습 대기"
-          value={reviewsDue.count}
-          unit="개"
-        />
-        <Stat
-          area="bookmark"
-          label="북마크"
-          value={bookmarks.count}
-          unit="개"
-        />
-
-        <Soon
-          area="visit"
-          title="첫 방문 → 첫 답변"
-          body="첫 방문자 중 첫 답변까지 간 비율(목표 50%)을 보여줄 자리예요."
-          issue={44}
-        />
-        <Stat
-          area="cost"
-          label="AI 비용 · 이번 달 예산"
-          value={Math.round((quota.spentUsd / budgetUsd()) * 100)}
-          unit="%"
-          note={costNote(quota.spentUsd, budgetUsd())}
-          // 80%를 넘으면 새 세션의 본 질문 채점이 Haiku로 낮아진다(09 채점 5장)
-          warn={quota.budget !== "ok"}
-        />
+        </Card>
       </div>
     </>
   );
@@ -445,11 +502,13 @@ const dot = (day: string) => day.slice(5).replace("-", ".");
 function Tip({
   as: Tag,
   tip,
+  verdict,
   style,
   children,
 }: {
   as: "li" | "i";
   tip: string;
+  verdict?: string;
   style?: CSSProperties;
   children?: ReactNode;
 }) {
@@ -457,6 +516,7 @@ function Tip({
     <Tag
       className={s.tip}
       data-tip={tip}
+      data-verdict={verdict}
       aria-label={tip}
       tabIndex={0}
       style={style}
@@ -466,6 +526,7 @@ function Tip({
   );
 }
 
+// 숫자 타일(stat-tiles 한 칸). 목표가 있으면 목표 대비 막대를 단다
 function Stat({
   area,
   label,
@@ -485,7 +546,7 @@ function Stat({
 }) {
   const met = goal != null && value != null ? value >= goal : undefined;
   return (
-    <div className={`glass ${s.stat}`} style={{ gridArea: area }}>
+    <div className={s.stat} style={{ gridArea: area }}>
       <span>{label}</span>
       <strong>
         <span
@@ -518,33 +579,35 @@ function Stat({
   );
 }
 
+// 표·막대 구획: 2px 머리선 위에 제목·기준, 오른쪽에 이동 링크(선택)
 function Card({
-  area,
   title,
   meta,
+  link,
   children,
 }: {
-  area: string;
   title: string;
   meta: string;
+  link?: { href: string; label: string };
   children: ReactNode;
 }) {
   return (
-    <section
-      className={`glass ${s.card}`}
-      style={{ gridArea: area }}
-      aria-label={title}
-    >
+    <section className={s.card} aria-label={title}>
       <div className={s.head}>
         <h2>{title}</h2>
         <span className="num">{meta}</span>
+        {link && (
+          <Link href={link.href} className={s.more}>
+            {link.label}
+          </Link>
+        )}
       </div>
       {children}
     </section>
   );
 }
 
-// 아직 데이터가 없는 지표 자리. 누르면 기록을 시작할 이슈로 간다
+// 아직 데이터가 없는 지표 자리(링크 타일). 누르면 기록을 시작할 이슈로 간다
 function Soon({
   area,
   title,
@@ -561,12 +624,11 @@ function Soon({
       href={`https://github.com/GREED-YI/tailq/issues/${issue}`}
       target="_blank"
       rel="noopener noreferrer"
-      className={`press ${s.soonCard}`}
+      className={`${s.stat} ${s.soon}`}
       style={{ gridArea: area }}
     >
-      <span className={s.head}>
-        <strong>{title}</strong>
-        <span className={s.badge}>준비 중</span>
+      <span>
+        {title} <span className="tag tag-neutral">준비 중</span>
       </span>
       <span className={s.soonBody}>
         {body} <span className="num">#{issue}</span>에서 기록을 시작하면

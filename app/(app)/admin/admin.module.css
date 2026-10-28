@@ -1,11 +1,12 @@
-/* 운영자 대시보드. Figma에 화면은 없고 리포트(S21)·MY(S27)의 카드·숫자·막대 부품 값을 따른다 */
+/* 운영자 대시보드·피드백 목록. DESIGN.md: 같은 토큰 구조(강조색만 lib/theme.ts ADMIN_TOKENS의 남색),
+   숫자는 stat-tiles, 분포·목록은 열 이름이 있는 표(좁으면 상자 안 가로 스크롤), 구획은 2px 머리선 */
 
 .page {
   padding-bottom: 8px;
 }
 
 .top {
-  margin: 8px 0 16px;
+  margin: 8px 0 24px;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -13,95 +14,122 @@
   gap: 4px 12px;
 }
 .top h1 {
-  font-size: 28px;
-  line-height: 37px;
+  font-size: 22px;
+  line-height: 1.35;
   font-weight: 700;
-  letter-spacing: -0.6px;
+  letter-spacing: -0.02em;
 }
 .top span {
   font-size: 13px;
-  color: var(--sub);
+  color: var(--text-muted);
 }
 
-/* 벤토 그리드. 모바일·태블릿은 2열, PC는 4열. 중요한 지표가 위·큰 칸에 온다 */
-.bento {
+/* 구획 묶음(성공 지표·상태 지표) */
+.block + .block {
+  margin-top: 32px;
+}
+.blockHead {
+  min-height: 44px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  border-bottom: 2px solid var(--text);
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* stat-tiles: 묶음 바탕을 line으로 칠하고 1px 간격이 타일 사이 선이 된다.
+   모바일은 2열, 태블릿·PC는 4열. 중요한 지표가 위·큰 칸에 온다 */
+.tiles {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  overflow: hidden;
+}
+.core {
   grid-template-areas:
     "hero hero"
     "d7 thumbs"
-    "active users"
-    "score score"
-    "verdict verdict"
-    "feedback feedback"
-    "onboard fail"
-    "bank bank"
-    "review bookmark"
-    "visit visit"
-    "cost cost";
-  gap: 10px;
+    "active users";
 }
-@media (min-width: 1024px) {
-  .bento {
+.state {
+  grid-template-areas:
+    "onboard fail"
+    "review bookmark"
+    "cost cost"
+    "visit visit";
+}
+@media (min-width: 768px) {
+  .tiles {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .core {
     grid-template-areas:
       "hero hero d7 thumbs"
-      "hero hero active users"
-      "score score verdict verdict"
-      "feedback feedback bank bank"
+      "hero hero active users";
+  }
+  .state {
+    grid-template-areas:
       "onboard fail review bookmark"
-      "visit visit cost cost";
-    gap: 12px;
+      "cost cost visit visit";
   }
 }
 
-/* 북극성: 이번 주 숫자 + 최근 8주 막대 */
+/* 북극성 타일: 이번 주 숫자 + 최근 8주 막대 */
 .hero {
-  border-radius: 28px;
+  min-width: 0;
   padding: 20px;
+  background: var(--surface);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 18px;
+  gap: 20px;
 }
 .heroText {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
-.heroText h2 {
+.heroText h3 {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--sub);
+  font-size: 13px;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--text-sub);
 }
 .heroText strong {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
 }
 .big {
-  font-size: 44px;
-  line-height: 52px;
+  font-size: 48px;
+  line-height: 1.1;
   font-weight: 600;
-  letter-spacing: -1px;
+  letter-spacing: -0.04em;
   color: var(--accent);
 }
 .heroText > span {
   font-size: 13px;
-  color: var(--sub);
+  color: var(--text-muted);
 }
 .heroText [data-trend="up"] {
-  color: var(--good);
+  color: var(--text);
 }
 .heroText [data-trend="down"] {
-  color: var(--low);
+  color: var(--danger);
 }
 
+/* 최근 8주 막대: 지난 주는 mark-empty, 이번 주는 accent(그래픽 대비 3:1) */
 .weeks {
   list-style: none;
-  height: 132px;
+  height: 140px;
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 8px;
@@ -113,286 +141,373 @@
   justify-content: flex-end;
   gap: 4px;
   min-width: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-control);
 }
 .weeks li > span {
   font-size: 12px;
-  color: var(--sub);
+  color: var(--text-sub);
 }
 .weeks i {
   width: 100%;
   max-width: 32px;
   min-height: 4px;
-  border-radius: 8px;
-  background: var(--track);
-  transition: background-color 0.2s ease;
+  border-radius: 1px;
+  background: var(--mark-empty);
+  transition: background-color var(--dur-fast) var(--ease);
 }
 .weeks i[data-now] {
-  background: var(--accent-fill);
-  box-shadow: 0 0 16px -2px var(--accent-fill);
+  background: var(--accent);
 }
 .weeks small {
   font-size: 12px;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 @media (min-width: 1024px) {
   .hero {
-    padding: 24px 28px;
+    padding: 24px;
   }
   .big {
-    font-size: 56px;
-    line-height: 64px;
+    font-size: 64px;
   }
   .weeks {
-    height: 156px;
+    height: 160px;
   }
 }
 
-/* 지표 칸 */
+/* 숫자 타일 */
 .stat {
-  min-height: 96px;
-  border-radius: 22px;
+  min-width: 0;
+  min-height: 112px;
   padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.stat > span {
-  font-size: 13px;
-  line-height: 20px;
-  color: var(--sub);
-}
-.stat strong {
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 37px;
-}
-.value {
-  font-size: 28px;
-  font-weight: 600;
-}
-.value[data-met="true"] {
-  color: var(--good);
-}
-.value[data-met="false"],
-.value[data-warn] {
-  color: var(--low);
-}
-.stat small {
-  margin-top: auto;
-  font-size: 13px;
-  line-height: 17px;
-  color: var(--sub);
-}
-
-/* 목표 대비 막대. 세로 눈금(b)이 목표 위치 */
-.goal {
-  position: relative;
-  margin: 6px 0 8px;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--track);
-}
-.goal i {
-  display: block;
-  height: 100%;
-  border-radius: 3px;
-  background: var(--good);
-}
-.goal i[data-met="false"] {
-  background: var(--low);
-}
-.goal b {
-  position: absolute;
-  top: -3px;
-  width: 2px;
-  height: 12px;
-  margin-left: -1px;
-  border-radius: 1px;
-  background: var(--text);
-  opacity: 0.6;
-}
-
-.card {
-  border-radius: 22px;
-  padding: 16px;
-}
-.head {
-  margin-bottom: 14px;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-.head h2,
-.head strong {
-  font-size: 16px;
-  font-weight: 700;
-}
-.head > span {
-  font-size: 13px;
-  color: var(--sub);
-  text-align: right;
-}
-
-/* 가로 막대 목록: 이름 · 막대 · 숫자 */
-.bands {
-  list-style: none;
+  background: var(--surface);
+  color: var(--text);
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
-.bands li {
-  display: grid;
-  grid-template-columns: 64px minmax(0, 1fr) 48px;
-  align-items: center;
-  gap: 10px;
-  padding: 3px 0;
-  border-radius: 8px;
+.stat > span {
   font-size: 13px;
-  color: var(--sub);
-  transition: opacity 0.2s ease;
+  line-height: 1.45;
+  font-weight: 600;
+  color: var(--text-sub);
 }
-.bands li > :last-child {
-  text-align: right;
-  color: var(--text);
+.stat strong {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.6;
 }
-.track {
-  height: 10px;
-  border-radius: 5px;
-  background: var(--track);
-  overflow: hidden;
+.value {
+  font-size: 28px;
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
-.track i {
-  display: block;
-  height: 100%;
-  border-radius: 5px;
+.value[data-met="false"],
+.value[data-warn] {
+  color: var(--danger);
+}
+.stat small {
+  margin-top: auto;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+@media (min-width: 1024px) {
+  .stat {
+    padding: 20px;
+  }
+  .value {
+    font-size: 40px;
+    letter-spacing: -0.04em;
+  }
 }
 
-/* 꼬리질문 판정 한 줄 막대 + 범례. 말풍선이 잘리지 않게 overflow를 숨기지 않는다 */
-.stack {
+/* 목표 대비 막대. 세로 눈금(b)이 목표 위치. 넘으면 text, 못 넘으면 danger */
+.goal {
+  position: relative;
+  margin: 8px 0;
+  height: 6px;
+  border-radius: 1px;
+  box-shadow: inset 0 0 0 1px var(--mark-empty);
+}
+.goal i {
+  display: block;
+  height: 100%;
+  border-radius: 1px;
+  background: var(--text);
+}
+.goal i[data-met="false"] {
+  background: var(--danger);
+}
+.goal b {
+  position: absolute;
+  top: -4px;
+  width: 2px;
   height: 14px;
-  border-radius: 7px;
-  background: var(--track);
+  margin-left: -1px;
+  background: var(--text);
+}
+
+/* 준비 중 타일(링크): 이름표 끝에 준비 중 라벨, hover는 바탕색 */
+.soon {
+  gap: 8px;
+}
+.soon > span:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.soonBody {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+@media (hover: hover) {
+  .soon:hover {
+    background: var(--canvas);
+  }
+}
+.soon:active {
+  background: var(--canvas);
+}
+.soon:focus-visible {
+  outline-offset: -2px;
+}
+
+/* 표·막대 구획. PC는 두 칸씩 */
+.charts {
+  margin-top: 40px;
+  display: grid;
+  gap: 40px;
+}
+@media (min-width: 1024px) {
+  .charts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 40px;
+  }
+}
+.card {
+  min-width: 0;
+  /* 숨은 말풍선이 화면 가로 스크롤을 만들지 않게 가로만 자른다(세로는 그대로 보인다) */
+  overflow-x: clip;
+}
+.head {
+  min-height: 44px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 12px;
+  border-bottom: 2px solid var(--text);
+}
+.head h2 {
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.head > span {
+  flex: 1;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.more {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+}
+@media (hover: hover) {
+  .more:hover {
+    color: var(--text);
+  }
+}
+
+/* 열 이름이 있는 표. 좁으면 이 상자 안에서만 가로로 스크롤한다 */
+.tableBox {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.tableBox:focus-visible {
+  outline-offset: -2px;
+}
+.table {
+  width: 100%;
+  min-width: 440px;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.table th {
+  height: 40px;
+  padding: 0 8px;
+  border-bottom: 1px solid var(--line-strong);
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-sub);
+  white-space: nowrap;
+}
+.table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.table th:first-child,
+.table td:first-child {
+  padding-left: 0;
+}
+.table th:last-child,
+.table td:last-child {
+  padding-right: 0;
+}
+.numCol {
+  text-align: right !important;
+  white-space: nowrap;
+}
+.barCell {
+  width: 45%;
+}
+.bar {
+  display: block;
+  height: 8px;
+}
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: 1px;
+  background: var(--text);
+}
+.bar i[data-met="false"] {
+  background: var(--danger);
+}
+
+/* 꼬리질문 판정 한 줄 막대 + 범례(verdict-mark: 채운 원·반쪽 원·네모·빈 원). 말풍선이 잘리지 않게 overflow를 숨기지 않는다 */
+.stack {
+  margin-top: 16px;
+  height: 16px;
   display: flex;
   gap: 2px;
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 .stack i {
   flex-basis: 0;
-  border-radius: 3px;
-  transition: opacity 0.2s ease;
+  border-radius: 1px;
+  transition: opacity var(--dur-fast) var(--ease);
 }
-.stack i:first-child {
-  border-radius: 7px 3px 3px 7px;
+.stack i[data-verdict="good"],
+.legend i[data-verdict="good"] {
+  --mark: var(--text);
 }
-.stack i:last-child {
-  border-radius: 3px 7px 7px 3px;
+.stack i[data-verdict="partial"],
+.legend i[data-verdict="partial"] {
+  --mark: var(--text-sub);
 }
-.stack i:only-child {
-  border-radius: 7px;
+.stack i[data-verdict="wrong"],
+.legend i[data-verdict="wrong"] {
+  --mark: var(--danger);
+}
+.stack i[data-verdict="unknown"],
+.legend i[data-verdict="unknown"] {
+  --mark: var(--text-muted);
+}
+.stack i {
+  background: var(--mark);
+}
+.stack i[data-verdict="unknown"] {
+  background: none;
+  box-shadow: inset 0 0 0 1px var(--mark-empty);
 }
 .legend {
   list-style: none;
-  margin-top: 14px;
+  margin-top: 16px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 12px;
+  gap: 8px 24px;
 }
 .legend li {
+  min-height: 32px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--sub);
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+  color: var(--text-sub);
 }
 .legend li > i {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  width: 10px;
+  height: 10px;
   flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--mark);
+}
+.legend li > i[data-verdict="partial"] {
+  background: linear-gradient(90deg, var(--mark) 50%, transparent 50%);
+  box-shadow: inset 0 0 0 1px var(--mark);
+}
+.legend li > i[data-verdict="wrong"] {
+  border-radius: 1px;
+}
+.legend li > i[data-verdict="unknown"] {
+  background: none;
+  box-shadow: inset 0 0 0 1px var(--mark);
 }
 .legend li > span {
   margin-left: auto;
   color: var(--text);
 }
 
-/* 사용자 피드백: 최근 3개. 칸 전체가 목록 화면으로 가는 링크 */
-.feedback {
-  display: flex;
-  flex-direction: column;
-}
-.feedback .head > span {
-  color: var(--accent);
-}
-.voices {
+/* 사용자 피드백: 분류별 개수 + 표 */
+.kinds {
+  margin: 8px 0 8px;
   list-style: none;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  font-size: 13px;
+  color: var(--text-sub);
 }
-.voices li {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+.kinds :global(.mono) {
+  margin-left: 2px;
+  font-weight: 600;
+  color: var(--text);
 }
-.voices p {
-  font-size: 14px;
-  line-height: 20px;
+/* 분류 라벨: 바라는 기능은 today, 버그·신고는 danger 글자, 기타는 neutral */
+.kind[data-kind="feature"] {
+  background: var(--accent-soft);
+  box-shadow: none;
+  color: var(--accent);
+}
+.kind[data-kind="bug"],
+.kind[data-kind="report"] {
+  color: var(--danger);
+}
+.body {
+  min-width: 240px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+/* 대시보드는 두 줄까지만 */
+.clamp {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  overflow-wrap: anywhere;
+  white-space: normal;
 }
-.voices time {
-  flex-shrink: 0;
+.when {
+  color: var(--text-muted);
   font-size: 13px;
-  color: var(--muted);
 }
 .empty {
-  font-size: 13px;
-  color: var(--sub);
-}
-
-/* 피드백 분류: 칸 위 분류별 개수, 각 피드백 앞 배지(바라는 기능 강조색 · 버그 경고 · 신고 주황 · 기타 회색) */
-.kinds {
-  margin-bottom: 12px;
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  font-size: 13px;
-  color: var(--sub);
-}
-.kinds :global(.mono) {
-  margin-left: 2px;
-  font-weight: 700;
-  color: var(--text);
-}
-.kind {
-  --kind: var(--sub);
-  height: 22px;
-  margin-right: 8px;
-  padding: 0 8px;
-  border-radius: 11px;
-  display: inline-flex;
-  align-items: center;
-  align-self: flex-start;
-  vertical-align: 1px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--kind);
-  background: color-mix(in srgb, var(--kind) 16%, transparent);
-}
-.kind[data-kind="feature"] {
-  --kind: var(--accent);
-}
-.kind[data-kind="bug"] {
-  --kind: var(--danger);
-}
-.kind[data-kind="report"] {
-  --kind: var(--low);
+  padding: 24px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-sub);
 }
 .filters {
   margin-bottom: 16px;
@@ -400,44 +515,8 @@
   flex-wrap: wrap;
   gap: 8px;
 }
-/* 모바일 390에서도 다섯 개가 한 줄에 들어가게 칩을 조금 줄인다 */
-.filters :global(.chip) {
-  height: 36px;
-  padding: 0 13px;
-  font-size: 14px;
-}
 
-/* 아직 데이터가 없는 지표: 점선 테두리의 빈 칸. 누르면 해당 이슈로 */
-.soonCard {
-  border-radius: 22px;
-  padding: 16px;
-  border: 1.5px dashed var(--ring);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.soonCard .head {
-  margin-bottom: 0;
-}
-.soonBody {
-  font-size: 13px;
-  line-height: 20px;
-  color: var(--sub);
-}
-.badge {
-  height: 22px;
-  padding: 0 8px;
-  border-radius: 11px;
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  font-size: 12px;
-  font-weight: 700;
-  background: var(--tab-active);
-  color: var(--accent) !important;
-}
-
-/* 말풍선: 마우스를 올리거나(마우스가 있는 기기) 키보드로 골랐을 때 */
+/* 말풍선: 마우스를 올리거나(마우스가 있는 기기) 키보드로 골랐을 때. 화면 위에 뜨는 면이라 그림자 */
 .tip {
   position: relative;
   cursor: default;
@@ -448,42 +527,37 @@
   z-index: 2;
   bottom: calc(100% + 8px);
   left: 50%;
-  padding: 6px 10px;
-  border-radius: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
   white-space: nowrap;
   font-size: 13px;
   font-weight: 600;
-  line-height: 17px;
+  line-height: 1.45;
   color: var(--text);
-  background: var(--sheet);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
+  background: var(--surface);
   box-shadow:
-    inset 0 0 0 1px var(--glass-edge),
-    0 8px 24px -8px var(--glass-shadow);
+    inset 0 0 0 1px var(--line),
+    var(--shadow-overlay);
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 4px);
   transition:
-    opacity 0.15s ease,
-    transform 0.15s ease;
+    opacity var(--dur-fast) var(--ease),
+    transform var(--dur-fast) var(--ease);
 }
-/* 판정 막대는 바로 위가 카드 제목이라 말풍선을 아래로 */
+/* 판정 막대는 바로 위가 구획 제목이라 말풍선을 아래로 */
 .stack .tip::after {
   bottom: auto;
   top: calc(100% + 8px);
 }
-/* 줄 단위 막대는 말풍선을 왼쪽에 붙인다 */
-.bands .tip::after {
-  left: 64px;
-  transform: translate(0, 4px);
-}
 /* 맨 끝 막대의 말풍선은 화면 밖으로 나가지 않게 안쪽으로 */
-.weeks .tip:first-child::after {
+.weeks .tip:first-child::after,
+.stack .tip:first-child::after {
   left: 0;
   transform: translate(0, 4px);
 }
-.weeks .tip:last-child::after {
+.weeks .tip:last-child::after,
+.stack .tip:last-child::after {
   left: auto;
   right: 0;
   transform: translate(0, 4px);
@@ -492,9 +566,10 @@
   opacity: 1;
   transform: translate(-50%, 0);
 }
-.bands .tip:focus-visible::after,
 .weeks .tip:first-child:focus-visible::after,
-.weeks .tip:last-child:focus-visible::after {
+.weeks .tip:last-child:focus-visible::after,
+.stack .tip:first-child:focus-visible::after,
+.stack .tip:last-child:focus-visible::after {
   transform: translate(0, 0);
 }
 
@@ -503,65 +578,44 @@
     opacity: 1;
     transform: translate(-50%, 0);
   }
-  .bands .tip:hover::after,
   .weeks .tip:first-child:hover::after,
-  .weeks .tip:last-child:hover::after {
+  .weeks .tip:last-child:hover::after,
+  .stack .tip:first-child:hover::after,
+  .stack .tip:last-child:hover::after {
     transform: translate(0, 0);
   }
   /* 올린 칸만 또렷하게, 나머지는 흐리게 */
   .weeks:hover li:not(:hover),
-  .bands:hover li:not(:hover),
   .stack:hover i:not(:hover) {
     opacity: 0.45;
   }
   .weeks li {
-    transition: opacity 0.2s ease;
+    transition: opacity var(--dur-fast) var(--ease);
   }
   .weeks li:hover i:not([data-now]) {
-    background: var(--muted);
-  }
-  .feedback:hover {
-    box-shadow:
-      inset 0 1px 0 var(--glass-hi),
-      inset 0 0 0 1.5px var(--ring),
-      0 20px 40px -20px var(--glass-shadow);
-  }
-  .soonCard:hover {
-    border-style: solid;
-    background: var(--glass);
+    background: var(--text-muted);
   }
 }
 
-/* 피드백 목록 화면 */
+/* 피드백 목록 화면: 뒤로 링크 */
 .backLink {
-  display: inline-block;
-  margin-top: 8px;
+  min-height: 44px;
+  margin-left: -4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 14px;
-  color: var(--sub);
+  font-weight: 600;
+  color: var(--text-sub);
 }
-.feedbackList {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+@media (hover: hover) {
+  .backLink:hover {
+    color: var(--text);
+  }
 }
-.feedbackList li {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.feedbackList p {
-  font-size: 15px;
-  line-height: 24px;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.feedbackList time {
-  font-size: 13px;
-  color: var(--muted);
-}
+
 @media (min-width: 1024px) {
-  .backLink {
-    margin-top: 0;
+  .top h1 {
+    font-size: 26px;
   }
 }

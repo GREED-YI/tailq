@@ -9,17 +9,16 @@ const DOCS = [
   { href: "/privacy", label: "개인정보처리방침" },
 ];
 
-// 문서 선택(Figma Segmented). 각 문서는 자기 주소가 있어 링크로 옮긴다
+// 문서 선택(밑줄 탭). 각 문서는 자기 주소가 있어 링크로 옮긴다
 export function LegalTabs() {
   const pathname = usePathname();
   return (
-    <nav className={`glass ${s.tabs}`} aria-label="문서 선택">
+    <nav className={s.tabs} aria-label="문서 선택">
       {DOCS.map((d) => (
         <Link
           key={d.href}
           href={d.href}
           replace
-          className="press"
           aria-current={pathname === d.href ? "page" : undefined}
         >
           {d.label}

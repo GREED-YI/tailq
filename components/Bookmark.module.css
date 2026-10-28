@@ -1,4 +1,4 @@
-/* 북마크 별표: 저장하면 강조색으로 채운다. 토스트는 components/Toast.tsx */
+/* 북마크 별표: 저장하면 accent로 채운다. 토스트는 components/Toast.tsx */
 .button {
   flex-shrink: 0;
 }

@@ -6,6 +6,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { turnResult } from "@/lib/turn";
 import { Interview, type InterviewStatus } from "./Interview";
+import { InterviewSkeleton } from "./Skeleton";
+import { steps } from "./steps";
 
 export const metadata: Metadata = { title: "면접 · TailQ" };
 
@@ -16,7 +18,7 @@ export default function InterviewPage({
   searchParams,
 }: PageProps<"/interview">) {
   return (
-    <Suspense>
+    <Suspense fallback={<InterviewSkeleton />}>
       {searchParams.then((p) => (
         <SessionInterview
           sessionId={typeof p.session === "string" ? p.session : undefined}
@@ -47,17 +49,16 @@ async function SessionInterview({ sessionId }: { sessionId?: string }) {
 
   // 이어하기: 턴마다 저장하므로 가장 마지막 턴(본 질문 또는 꼬리질문)부터 이어간다(08 설계 "이어하기").
   // RLS가 자기 세션의 턴만 보여준다. 멈춘 채점은 effective_status가 failed다
-  const [{ data: turn }, { data: profile }, { data: bookmark }] =
+  // 앞 단계들은 왼쪽 "지금까지" 흐름에 쓴다
+  const [{ data: turns }, { data: profile }, { data: bookmark }] =
     await Promise.all([
       supabase
         .from("turn_states")
         .select(
-          "id, idx, follow_up_prompt, effective_status, answer, grading_attempts",
+          "id, idx, follow_up_prompt, effective_status, answer, grading_attempts, score, verdict",
         )
         .eq("session_id", session.id)
-        .order("idx", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
+        .order("idx"),
       supabase.from("profiles").select("nickname").maybeSingle(),
       supabase
         .from("bookmarks")
@@ -65,6 +66,7 @@ async function SessionInterview({ sessionId }: { sessionId?: string }) {
         .eq("question_id", session.question.id)
         .maybeSingle(),
     ]);
+  const turn = turns?.at(-1);
   if (!turn?.id || turn.idx === null) redirect(projectHref || "/home");
 
   const status = turn.effective_status as InterviewStatus;
@@ -80,6 +82,7 @@ async function SessionInterview({ sessionId }: { sessionId?: string }) {
         idx: turn.idx,
         prompt: turn.follow_up_prompt ?? session.question.prompt,
       }}
+      initialSteps={steps(turns ?? [], session.question.prompt)}
       question={session.question}
       exitHref={projectHref || "/home"}
       resultHref={

@@ -5,6 +5,9 @@ import { Suspense } from "react";
 import { ScoreRing } from "@/app/interview/ScoreRing";
 import { Icon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import { SiteFooter } from "@/components/SiteFooter";
+import { LoadingStatus } from "@/components/LoadingStatus";
+import f from "@/app/_landing/footer.module.css";
 import { kstDay } from "@/lib/daily-pick";
 import { shareDate, shareName, shareSentence } from "@/lib/share";
 import { loadShare } from "./load";
@@ -23,13 +26,69 @@ export async function generateMetadata({
 
 // 공유 페이지(04 기능 명세 8번, Figma S04). 로그인 없이 누구나 연다.
 // 카드(닉네임·주제·점수·꼬리잇기)와 "나도 풀어보기"만 둔다. 질문 원문·답변은 없다.
+// 카드를 읽는 동안에도 머리·안내·버튼·푸터는 먼저 보이고, 카드 자리만 같은 크기의 빈 칸으로 둔다
 export default function SharePage({ params }: PageProps<"/s/[id]">) {
   return (
-    <Suspense>
-      {params.then((p) => (
-        <ShareView id={p.id} />
-      ))}
-    </Suspense>
+    <div className={s.page}>
+      {/* 로그인 없이 보는 화면이라 앱 메뉴 없이 로고만 */}
+      <header className={s.header}>
+        <div className={s.headerIn}>
+          <Link href="/" className={s.logo} aria-label="TailQ 처음으로">
+            <Logo height="var(--logo-h)" />
+          </Link>
+        </div>
+      </header>
+
+      <main className={s.main}>
+        <Suspense fallback={<Loading />}>
+          {params.then((p) => (
+            <ShareView id={p.id} />
+          ))}
+        </Suspense>
+        <p className={s.note}>
+          <Icon name="lock" size={14} />
+          질문 원문과 내 답변은 공유 카드에 보이지 않아요
+        </p>
+
+        <div className={s.actions}>
+          {/* 랜딩의 체험 구역(#try)으로 */}
+          <Link href="/#try" className="btn btn-primary press">
+            나도 한 문제 풀어보기
+          </Link>
+          <Link href="/" className="btn btn-secondary press">
+            TailQ 알아보기
+          </Link>
+        </div>
+      </main>
+
+      <SiteFooter className={f.footer} logoHeight={22} />
+    </div>
+  );
+}
+
+// 불러오는 동안: 카드 · 문장 두 줄 자리. 점수는 ScoreRing의 빈 표시(··/100, 빈 막대)라 크기가 같다
+function Loading() {
+  return (
+    <>
+      <LoadingStatus />
+      <div aria-busy="true" aria-hidden="true">
+        <section className={s.card}>
+          <div className={s.meta}>
+            <span className="skeleton" style={{ width: 160, height: 28 }} />
+          </div>
+          <p className={s.topic}>
+            <span className="skeleton" style={{ width: "50%" }} />
+          </p>
+          <ScoreRing shown={0} label="점수를 불러오고 있어요" />
+          <p className={s.who}>
+            <span className="skeleton" style={{ width: "40%" }} />
+          </p>
+        </section>
+        <p className={s.sentence}>
+          <span className="skeleton" style={{ width: "80%", height: "2lh" }} />
+        </p>
+      </div>
+    </>
   );
 }
 
@@ -37,59 +96,42 @@ async function ShareView({ id }: { id: string }) {
   const card = await loadShare(id);
   // 없는 카드(탈퇴로 지워진 카드 포함)는 랜딩으로(05 사용자 흐름 "예외")
   if (!card) redirect("/");
-  const [line1, line2] = shareSentence(card, kstDay(new Date()));
+  const today = kstDay(new Date());
+  const [line1, line2] = shareSentence(card, today);
+  // 오늘 만든 카드만 오늘 라벨, 지난 카드는 중립 라벨(DESIGN.md label)
+  const isToday = kstDay(new Date(card.created_at)) === today;
 
   return (
-    <main className={`${s.page} fade`}>
-      <header className={s.header}>
-        <Link href="/" className={s.logo} aria-label="TailQ 처음으로">
-          <Logo />
-        </Link>
-      </header>
-
-      <div className={s.body}>
-        <section className={`glass ${s.card}`} aria-label="결과 카드">
-          <p className={s.kicker}>오늘의 기술면접</p>
-          <p className={`mono ${s.date}`}>{shareDate(card)}</p>
-          <h1 className={s.topic}>{card.topic_name}</h1>
-          <div className={s.ring}>
-            <ScoreRing
-              shown={card.score}
-              value={card.score}
-              label={`100점 만점에 ${card.score}점`}
-            />
-          </div>
-          <p className={s.who}>
-            <b>{shareName(card)}</b>
-            {card.streak > 0 && (
-              <>
-                {" · 꼬리잇기"}
-                <b className={`num ${s.streak}`}>{card.streak}</b> 일째
-              </>
-            )}
-          </p>
-        </section>
-
-        <p className={s.sentence}>
-          {line1}
-          <br />
-          {line2}
+    <>
+      <section className={`${s.card} fade`} aria-label="결과 카드">
+        <div className={s.meta}>
+          <span className={`tag ${isToday ? "tag-today" : "tag-neutral"}`}>
+            오늘의 기술면접
+          </span>
+          <span className={`mono ${s.date}`}>{shareDate(card)}</span>
+        </div>
+        <h1 className={s.topic}>{card.topic_name}</h1>
+        <ScoreRing
+          shown={card.score}
+          value={card.score}
+          label={`100점 만점에 ${card.score}점`}
+        />
+        <p className={s.who}>
+          <b>{shareName(card)}</b>
+          {card.streak > 0 && (
+            <>
+              {" · 꼬리잇기"}
+              <b className={`mono ${s.streak}`}>{card.streak}</b> 일째
+            </>
+          )}
         </p>
-        <p className={s.note}>
-          <Icon name="lock" size={14} />
-          질문 원문과 답변은 공유되지 않아요
-        </p>
-      </div>
+      </section>
 
-      <div className={s.actions}>
-        {/* 랜딩의 체험 구역(#try)으로 */}
-        <Link href="/#try" className="btn btn-primary press">
-          나도 한 문제 풀어보기
-        </Link>
-        <Link href="/" className="glass btn btn-secondary press">
-          TailQ 알아보기
-        </Link>
-      </div>
-    </main>
+      <p className={`${s.sentence} fade`}>
+        {line1}
+        <br />
+        {line2}
+      </p>
+    </>
   );
 }

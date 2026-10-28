@@ -21,19 +21,19 @@ export function HistoryFilters({
 }) {
   const current = bookmarkOnly ? "bookmark" : "all";
   return (
-    <nav className={s.filters} aria-label="기록 거르기">
+    <nav className={s.filters} aria-label="기록 필터">
       {FILTERS.map((f) => (
         <Link
           key={f.key}
           href={f.href}
-          className="chip glass press"
+          className="chip press"
           aria-current={current === f.key ? "page" : undefined}
         >
           {f.key === "bookmark" && (
             <Icon name="star" size={16} bold={current === f.key} />
           )}
           {f.label}
-          {counts && <span className="num">{counts[f.key]}</span>}
+          {counts && <span className="mono">{counts[f.key]}</span>}
         </Link>
       ))}
     </nav>
