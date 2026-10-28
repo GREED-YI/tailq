@@ -46,12 +46,13 @@ export function ProjectForm({
   const [content, setContent] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  // .md 파일을 읽지 못했거나 너무 길 때의 안내. 파일 칸에 묶어 보여 주고, 이미 쓴 글은 그대로 둔다
+  const [fileError, setFileError] = useState("");
   // 요청 중인지와 등록했는지. 등록하면 이동하는 동안 잠금을 유지하고, 화면이 보관되어 숨겨지거나 다시 보일 때
   // 요청 중이 아니면 잠금을 푼다(cacheComponents라 상태를 그대로 들고 다시 보인다. TrialPicker와 같다).
   // 등록한 뒤라면 칸도 비워 새 등록 화면이 빈 칸으로 열리게 한다
   const inFlight = useRef(false);
   const created = useRef(false);
-  const fileRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const release = () => {
       if (inFlight.current) return;
@@ -106,17 +107,17 @@ export function ProjectForm({
     if (!file) return;
     const text = await file.text().catch(() => null);
     if (text === null) {
-      setError("파일을 읽지 못했어요. 내용을 복사해 붙여넣어 주세요.");
+      setFileError("파일을 읽지 못했어요. 내용을 복사해 붙여넣어 주세요.");
       return;
     }
     const n = text.trim().length;
     if (n > CONTENT_MAX) {
-      setError(
+      setFileError(
         `파일이 ${CONTENT_MAX.toLocaleString()}자를 넘어요(${n.toLocaleString()}자). 줄이거나 나눠서 등록해 주세요.`,
       );
       return;
     }
-    setError("");
+    setFileError("");
     setContent(text);
   }
 
@@ -164,7 +165,10 @@ export function ProjectForm({
               undefined
             }
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => {
+              setContent(e.target.value);
+              setFileError("");
+            }}
             placeholder={c.contentPlaceholder}
             spellCheck={false}
             aria-describedby="project-help"
@@ -191,21 +195,32 @@ export function ProjectForm({
           </p>
           {kind === "note" && (
             <div className={s.fileRow}>
+              {/* 진짜 파일 칸은 화면에서만 숨기고(키보드·화면 읽기 프로그램은 그대로 쓴다) 버튼 모양 label을 보인다 */}
               <input
-                ref={fileRef}
+                id="project-file"
                 type="file"
+                className={`sr-only ${s.fileInput}`}
                 accept=".md,.markdown,.txt"
                 onChange={load}
-                hidden
-              />
-              <button
-                type="button"
-                className="btn btn-md btn-secondary press"
                 disabled={busy}
-                onClick={() => fileRef.current?.click()}
+                aria-invalid={fileError ? true : undefined}
+                aria-describedby={fileError ? "project-file-error" : undefined}
+              />
+              <label
+                htmlFor="project-file"
+                className="btn btn-md btn-secondary press"
               >
                 .md 파일 불러오기
-              </button>
+              </label>
+              {fileError && (
+                <p
+                  id="project-file-error"
+                  className={s.fieldError}
+                  role="alert"
+                >
+                  {fileError}
+                </p>
+              )}
             </div>
           )}
 
