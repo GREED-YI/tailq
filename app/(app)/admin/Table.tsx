@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
-import { categoryLabel } from "@/lib/feedback";
+import { numericDate } from "@/lib/admin";
+import { categoryLabel, FEEDBACK_CATEGORIES } from "@/lib/feedback";
+import type { createAdminClient } from "@/lib/supabase/admin";
 import s from "./admin.module.css";
 
-// 열 이름이 있는 표. 좁은 화면에서는 상자 안에서만 가로로 스크롤한다(키보드로도 움직이게 tabIndex)
+// 열 이름이 있는 표. 넘치면 상자 안에서만 가로로 스크롤한다(키보드로도 움직이게 tabIndex)
 export function Table({
   label,
   children,
@@ -17,47 +19,45 @@ export function Table({
   );
 }
 
-// 피드백 표(분류 · 내용 · 받은 날). 대시보드는 최근 3개를 두 줄까지만(clamp), 목록 화면은 전체 글
-export function FeedbackTable({
+// 피드백 목록(list-row feedback): 위 줄 분류 라벨 · 받은 날, 아래 줄 글 전체. 대시보드는 두 줄까지만(clamp).
+// 어느 폭에서도 가로로 밀리지 않는다
+export function FeedbackList({
   rows,
-  date,
   clamp = false,
 }: {
   rows: { id: number; body: string; category: string; created_at: string }[];
-  date: (iso: string) => string;
   clamp?: boolean;
 }) {
   return (
-    <Table label="피드백 목록">
-      <thead>
-        <tr>
-          <th scope="col">분류</th>
-          <th scope="col">내용</th>
-          <th scope="col" className={s.numCol}>
-            받은 날
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((v) => (
-          <tr key={v.id}>
-            <td>
-              <span
-                className={`tag tag-neutral ${s.kind}`}
-                data-kind={v.category}
-              >
-                {categoryLabel(v.category)}
-              </span>
-            </td>
-            <td className={s.body}>
-              {clamp ? <span className={s.clamp}>{v.body}</span> : v.body}
-            </td>
-            <td className={`num ${s.numCol} ${s.when}`}>
-              <time dateTime={v.created_at}>{date(v.created_at)}</time>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </Table>
+    <ul className={s.feedback} aria-label="피드백 목록">
+      {rows.map((v) => (
+        <li key={v.id}>
+          <div className={s.feedbackTop}>
+            <span className="tag tag-neutral">{categoryLabel(v.category)}</span>
+            <time className="mono" dateTime={v.created_at}>
+              {numericDate(v.created_at)}
+            </time>
+          </div>
+          <p className={clamp ? `${s.body} ${s.clamp}` : s.body}>{v.body}</p>
+        </li>
+      ))}
+    </ul>
   );
+}
+
+// 분류별 피드백 개수. 행을 내려받지 않고 DB에서 센다(분류마다 head 개수 조회). 대시보드와 목록 칩이 같이 쓴다
+export async function countFeedback(db: ReturnType<typeof createAdminClient>) {
+  const counts = await Promise.all(
+    FEEDBACK_CATEGORIES.map((c) =>
+      db
+        .from("feedback")
+        .select("*", { count: "exact", head: true })
+        .eq("category", c.id)
+        .throwOnError()
+        .then((r) => r.count ?? 0),
+    ),
+  );
+  return Object.fromEntries(
+    FEEDBACK_CATEGORIES.map((c, i) => [c.id, counts[i]]),
+  ) as Record<string, number>;
 }

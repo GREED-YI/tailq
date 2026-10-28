@@ -7,4 +7,15 @@ test("운영자가 아니면 운영 대시보드는 로그인으로도 보내지
   expect(res?.status()).toBe(404);
   await expect(page).toHaveURL("/admin");
   await expect(page.getByText("운영 대시보드")).toHaveCount(0);
+  // 브라우저 제목으로도 운영 화면임을 알리지 않는다
+  await expect(page).not.toHaveTitle(/운영/);
+});
+
+test("운영자가 아니면 피드백 목록도 404이고 제목에 운영이 없다", async ({
+  page,
+}) => {
+  const res = await page.goto("/admin/feedback");
+  expect(res?.status()).toBe(404);
+  await expect(page.getByText("사용자 피드백")).toHaveCount(0);
+  await expect(page).not.toHaveTitle(/운영/);
 });

@@ -1,5 +1,6 @@
 /* 운영자 대시보드·피드백 목록. DESIGN.md: 같은 토큰 구조(강조색만 lib/theme.ts ADMIN_TOKENS의 남색),
-   숫자는 stat-tiles, 분포·목록은 열 이름이 있는 표(좁으면 상자 안 가로 스크롤), 구획은 2px 머리선 */
+   숫자는 stat-tiles admin, 비율은 score-bar(20칸), 목록은 list-row alert·feedback, 구획은 2px 머리선.
+   순서는 확인할 것 → 성공 지표 → 가입 흐름 → 채점 품질 → 운영 상태 → 사용자 피드백. 넓어져도 순서는 그대로 옆으로만 편다 */
 
 .page {
   padding-bottom: 8px;
@@ -24,63 +25,155 @@
   color: var(--text-muted);
 }
 
-/* 구획 묶음(성공 지표·상태 지표) */
-.block + .block {
-  margin-top: 32px;
+/* 구획: 2px text 머리선 위에 제목 · 기준. 구획 사이 40px */
+.block {
+  min-width: 0;
+}
+.block + .block,
+.block + .grid {
+  margin-top: 40px;
 }
 .blockHead {
   min-height: 44px;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
+  column-gap: 12px;
   border-bottom: 2px solid var(--text);
+}
+.blockHead h2 {
   font-size: 18px;
   line-height: 1.4;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
+.blockHead > span {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+/* 숫자 타일 묶음은 머리선과 조금 더 띄운다 */
+.blockHead + .tiles {
+  margin-top: 16px;
+}
 
-/* stat-tiles: 묶음 바탕을 line으로 칠하고 1px 간격이 타일 사이 선이 된다.
-   모바일은 2열, 태블릿·PC는 4열. 중요한 지표가 위·큰 칸에 온다 */
+/* 구획 안 소제목 줄(본 질문 점수 · 꼬리질문 판정 · 질문 은행) */
+.sub {
+  min-height: 44px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 12px;
+  border-bottom: 1px solid var(--line-strong);
+}
+.sub:not(:first-child) {
+  margin-top: 24px;
+}
+.sub h3 {
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+.sub > span {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* PC: 아래 네 구획은 6칸 | 6칸 두 줄(가입 흐름 | 채점 품질, 운영 상태 | 사용자 피드백) */
+.grid {
+  display: grid;
+  gap: 40px;
+}
+.grid > .block + .block {
+  margin-top: 0;
+}
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+/* ---------- 목록 행(list-row alert) ---------- */
+.rows {
+  list-style: none;
+}
+.rows > li {
+  border-bottom: 1px solid var(--line);
+}
+/* 확인할 것: 행 전체가 링크. hover·눌림은 surface 바탕(좌우 8px 더 깔아 글자가 바탕 끝에 붙지 않게) */
+.alert {
+  min-height: 52px;
+  margin: 0 -8px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.alert > :global(.tag) {
+  flex: none;
+}
+.alert:focus-visible {
+  outline-offset: -2px;
+}
+.alertText {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+/* 문제가 없을 때 한 줄. 행 하나와 같은 높이로 자리를 지킨다 */
+.calm {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-sub);
+}
+
+/* ---------- stat-tiles admin: 묶음 바탕을 line으로 칠하고 1px 간격이 타일 사이 선이 된다 ---------- */
 .tiles {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
   border-radius: var(--radius-control);
   overflow: hidden;
 }
-.core {
-  grid-template-areas:
-    "hero hero"
-    "d7 thumbs"
-    "active users";
-}
-.state {
-  grid-template-areas:
-    "onboard fail"
-    "review bookmark"
-    "cost cost"
-    "visit visit";
-}
+/* 성공 지표: 모바일 1열, 태블릿은 북극성 전체 폭 아래 목표 3칸 띠, PC는 8칸 북극성 | 4칸 목표 세로 */
 @media (min-width: 768px) {
-  .tiles {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .goals {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .core {
-    grid-template-areas:
-      "hero hero d7 thumbs"
-      "hero hero active users";
+  .goals > .hero {
+    grid-column: 1 / -1;
   }
-  .state {
-    grid-template-areas:
-      "onboard fail review bookmark"
-      "cost cost visit visit";
+}
+@media (min-width: 1024px) {
+  .goals {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+  .goals > .hero {
+    grid-column: 1 / span 8;
+    grid-row: span 3;
+  }
+  .goals > .stat {
+    grid-column: 9 / span 4;
+  }
+}
+/* 운영 상태: 모바일 1열, 태블릿부터 3칸 고정(1024~1179px 반 폭 구획에서 2+1로 접히지 않게) */
+@media (min-width: 768px) {
+  .opsTiles {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
-/* 북극성 타일: 이번 주 숫자 + 최근 8주 막대 */
+/* 북극성 칸: 이번 주 숫자 + 지난주 같은 때 + 답한 사람 + 최근 8주 막대 */
 .hero {
   min-width: 0;
   padding: 20px;
@@ -96,9 +189,6 @@
   gap: 4px;
 }
 .heroText h3 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
   font-size: 13px;
   line-height: 1.45;
   font-weight: 600;
@@ -113,20 +203,32 @@
   line-height: 1.1;
   font-weight: 600;
   letter-spacing: -0.04em;
-  color: var(--accent);
 }
-.heroText > span {
+.heroNotes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px 16px;
   font-size: 13px;
+  line-height: 1.5;
   color: var(--text-muted);
 }
-.heroText [data-trend="up"] {
+.heroNotes [data-trend="up"] {
   color: var(--text);
 }
-.heroText [data-trend="down"] {
-  color: var(--danger);
+.heroNotes [data-trend="down"] {
+  color: var(--text-sub);
+}
+@media (min-width: 768px) {
+  .heroNotes {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .big {
+    font-size: 56px;
+  }
 }
 
-/* 최근 8주 막대: 지난 주는 mark-empty, 이번 주는 accent(그래픽 대비 3:1) */
+/* 최근 8주 막대: 지난 주는 text-sub, 이번 주만 accent, 0이면 4px 빈 막대(mark-empty 테두리). 값은 막대 위 숫자 */
 .weeks {
   list-style: none;
   height: 140px;
@@ -141,7 +243,6 @@
   justify-content: flex-end;
   gap: 4px;
   min-width: 0;
-  border-radius: var(--radius-control);
 }
 .weeks li > span {
   font-size: 12px;
@@ -152,13 +253,19 @@
   max-width: 32px;
   min-height: 4px;
   border-radius: 1px;
-  background: var(--mark-empty);
-  transition: background-color var(--dur-fast) var(--ease);
+  background: var(--text-sub);
 }
 .weeks i[data-now] {
   background: var(--accent);
 }
-.weeks small {
+.weeks i[data-zero] {
+  background: none;
+  box-shadow: inset 0 0 0 1px var(--mark-empty);
+}
+.ticks {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
   font-size: 12px;
   color: var(--text-muted);
 }
@@ -169,12 +276,20 @@
   .big {
     font-size: 64px;
   }
+  /* 칸 높이는 목표 열이 정한다. 차트가 남은 높이를 채워 숫자와 막대 사이에 빈 띠가 생기지 않게 */
+  .hero > div:last-child {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
   .weeks {
-    height: 160px;
+    height: auto;
+    flex: 1;
+    min-height: 160px;
   }
 }
 
-/* 숫자 타일 */
+/* 숫자 칸(목표·비용·실패·지연): 이름표 · 숫자 · 20칸 막대 · 상태 글 · 표본 */
 .stat {
   min-width: 0;
   min-height: 112px;
@@ -185,31 +300,42 @@
   flex-direction: column;
   gap: 4px;
 }
-.stat > span {
+.stat > span:first-child {
   font-size: 13px;
   line-height: 1.45;
   font-weight: 600;
   color: var(--text-sub);
 }
 .stat strong {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
-  line-height: 1.6;
+  line-height: 1.4;
+}
+/* score-bar(ScoreBar)는 숫자 아래에 */
+.stat > div {
+  margin: 4px 0;
 }
 .value {
-  font-size: 28px;
+  font-size: 32px;
   line-height: 1.1;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
-.value[data-met="false"],
-.value[data-warn] {
+.value[data-empty] {
+  color: var(--text-muted);
+}
+/* 상태 글이 뜻을 말하고 색은 보탠다(예산 경고·실패 기준 넘음만 danger) */
+.state {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.state[data-warn] {
   color: var(--danger);
 }
 .stat small {
-  margin-top: auto;
   font-size: 12px;
-  line-height: 1.45;
+  line-height: 1.5;
   color: var(--text-muted);
 }
 @media (min-width: 1024px) {
@@ -222,111 +348,62 @@
   }
 }
 
-/* 목표 대비 막대. 세로 눈금(b)이 목표 위치. 넘으면 text, 못 넘으면 danger */
-.goal {
-  position: relative;
-  margin: 8px 0;
-  height: 6px;
-  border-radius: 1px;
-  box-shadow: inset 0 0 0 1px var(--mark-empty);
+/* ---------- 가입 흐름: 모바일 2줄(이름·인원·% / 막대), 태블릿부터 한 줄 ---------- */
+.funnel {
+  list-style: none;
 }
-.goal i {
-  display: block;
-  height: 100%;
-  border-radius: 1px;
-  background: var(--text);
-}
-.goal i[data-met="false"] {
-  background: var(--danger);
-}
-.goal b {
-  position: absolute;
-  top: -4px;
-  width: 2px;
-  height: 14px;
-  margin-left: -1px;
-  background: var(--text);
-}
-
-/* 준비 중 타일(링크): 이름표 끝에 준비 중 라벨, hover는 바탕색 */
-.soon {
-  gap: 8px;
-}
-.soon > span:first-child {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-.soonBody {
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--text-muted);
-}
-@media (hover: hover) {
-  .soon:hover {
-    background: var(--canvas);
-  }
-}
-.soon:active {
-  background: var(--canvas);
-}
-.soon:focus-visible {
-  outline-offset: -2px;
-}
-
-/* 표·막대 구획. PC는 두 칸씩 */
-.charts {
-  margin-top: 40px;
+.funnel li {
+  min-height: 44px;
+  padding: 8px 0;
   display: grid;
-  gap: 40px;
+  grid-template-columns: minmax(0, 1fr) auto 3.5em;
+  grid-template-areas:
+    "name n pct"
+    "bar bar bar";
+  align-items: center;
+  gap: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
 }
-@media (min-width: 1024px) {
-  .charts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    column-gap: 40px;
+.funnel li > .stepName {
+  grid-area: name;
+}
+.funnel li > div {
+  grid-area: bar;
+}
+.funnel li > :nth-child(3) {
+  grid-area: n;
+  text-align: right;
+}
+.funnel li > :nth-child(4) {
+  grid-area: pct;
+  text-align: right;
+  color: var(--text-sub);
+}
+@media (min-width: 768px) {
+  .funnel li {
+    grid-template-columns: 6.5em minmax(0, 1fr) 4.5em 3.5em;
+    grid-template-areas: "name bar n pct";
   }
 }
-.card {
-  min-width: 0;
-  /* 숨은 말풍선이 화면 가로 스크롤을 만들지 않게 가로만 자른다(세로는 그대로 보인다) */
-  overflow-x: clip;
+.stepName {
+  color: var(--text-sub);
+  white-space: nowrap;
 }
-.head {
-  min-height: 44px;
-  margin-bottom: 8px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  column-gap: 12px;
-  border-bottom: 2px solid var(--text);
+
+/* 채점 품질: 태블릿은 점수 | 판정 두 칸, 모바일과 PC(반 폭 구획)는 한 단 */
+.pair {
+  display: grid;
+  gap: 24px;
 }
-.head h2 {
-  font-size: 18px;
-  line-height: 1.4;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.head > span {
-  flex: 1;
-  font-size: 13px;
-  color: var(--text-muted);
-}
-.more {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--accent);
-}
-@media (hover: hover) {
-  .more:hover {
-    color: var(--text);
+@media (min-width: 768px) and (max-width: 1023px) {
+  .pair {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
   }
 }
 
-/* 열 이름이 있는 표. 좁으면 이 상자 안에서만 가로로 스크롤한다 */
+/* ---------- 열 이름이 있는 표. 칸이 들어가는 폭이라 보통은 스크롤하지 않고, 넘칠 때만 상자 안에서 ---------- */
 .tableBox {
   overflow-x: auto;
   scrollbar-width: thin;
@@ -337,7 +414,6 @@
 }
 .table {
   width: 100%;
-  min-width: 440px;
   border-collapse: collapse;
   font-size: 14px;
   line-height: 1.5;
@@ -365,83 +441,57 @@
 .table td:last-child {
   padding-right: 0;
 }
+.nameCol {
+  white-space: nowrap;
+}
 .numCol {
   text-align: right !important;
   white-space: nowrap;
 }
 .barCell {
-  width: 45%;
+  width: 100%;
+  min-width: 64px;
 }
-.bar {
-  display: block;
-  height: 8px;
-}
-.bar i {
-  display: block;
-  height: 100%;
-  border-radius: 1px;
-  background: var(--text);
-}
-.bar i[data-met="false"] {
-  background: var(--danger);
+/* 남은 폭을 다 쓰고 넘치면 한 줄 말줄임(싫어요가 많은 질문의 질문 글) */
+.clip {
+  width: 100%;
+  max-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* 꼬리질문 판정 한 줄 막대 + 범례(verdict-mark: 채운 원·반쪽 원·네모·빈 원). 말풍선이 잘리지 않게 overflow를 숨기지 않는다 */
-.stack {
-  margin-top: 16px;
-  height: 16px;
-  display: flex;
-  gap: 2px;
-  box-shadow: inset 0 0 0 1px var(--line);
-}
-.stack i {
-  flex-basis: 0;
-  border-radius: 1px;
-  transition: opacity var(--dur-fast) var(--ease);
-}
-.stack i[data-verdict="good"],
-.legend i[data-verdict="good"] {
-  --mark: var(--text);
-}
-.stack i[data-verdict="partial"],
-.legend i[data-verdict="partial"] {
-  --mark: var(--text-sub);
-}
-.stack i[data-verdict="wrong"],
-.legend i[data-verdict="wrong"] {
-  --mark: var(--danger);
-}
-.stack i[data-verdict="unknown"],
-.legend i[data-verdict="unknown"] {
-  --mark: var(--text-muted);
-}
-.stack i {
-  background: var(--mark);
-}
-.stack i[data-verdict="unknown"] {
-  background: none;
-  box-shadow: inset 0 0 0 1px var(--mark-empty);
-}
+/* 꼬리질문 판정 행: 모양 점(verdict-mark: 채운 원·반쪽 원·네모·빈 원) · 판정 · 20칸 막대 · 개수 · 비율 */
 .legend {
   list-style: none;
-  margin-top: 16px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px 24px;
 }
 .legend li {
-  min-height: 32px;
-  display: flex;
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: 10px 6.5em minmax(40px, 1fr) 2.5em 3em;
   align-items: center;
   gap: 8px;
   border-bottom: 1px solid var(--line);
   font-size: 14px;
-  color: var(--text-sub);
+}
+.legend li > .mono {
+  text-align: right;
+}
+.legend li > i[data-verdict="good"] {
+  --mark: var(--text);
+}
+.legend li > i[data-verdict="partial"] {
+  --mark: var(--text-sub);
+}
+.legend li > i[data-verdict="wrong"] {
+  --mark: var(--danger);
+}
+.legend li > i[data-verdict="unknown"] {
+  --mark: var(--text-muted);
 }
 .legend li > i {
   width: 10px;
   height: 10px;
-  flex-shrink: 0;
   border-radius: 50%;
   background: var(--mark);
 }
@@ -456,14 +506,23 @@
   background: none;
   box-shadow: inset 0 0 0 1px var(--mark);
 }
-.legend li > span {
-  margin-left: auto;
-  color: var(--text);
+
+/* 질문 은행 표는 운영 상태 타일 아래 */
+.opsTiles + .sub {
+  margin-top: 24px;
 }
 
-/* 사용자 피드백: 분류별 개수 + 표 */
+/* ---------- 사용자 피드백 ---------- */
+.kindsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  column-gap: 16px;
+  border-bottom: 1px solid var(--line);
+}
 .kinds {
-  margin: 8px 0 8px;
+  padding: 12px 0;
   list-style: none;
   display: flex;
   flex-wrap: wrap;
@@ -472,24 +531,53 @@
   color: var(--text-sub);
 }
 .kinds :global(.mono) {
-  margin-left: 2px;
+  margin-left: 4px;
   font-weight: 600;
   color: var(--text);
 }
-/* 분류 라벨: 바라는 기능은 today, 버그·신고는 danger 글자, 기타는 neutral */
-.kind[data-kind="feature"] {
-  background: var(--accent-soft);
-  box-shadow: none;
+.more {
+  min-height: 44px;
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--accent);
+  transition: color var(--dur-fast) var(--ease);
 }
-.kind[data-kind="bug"],
-.kind[data-kind="report"] {
-  color: var(--danger);
+@media (hover: hover) {
+  .more:hover {
+    color: var(--text);
+  }
+}
+
+/* 피드백 행(list-row feedback): 위 줄 분류 라벨 · 받은 날(숫자형, 줄바꿈 없음), 아래 줄 글. 읽기 전용이라 hover·focus 없음 */
+.feedback {
+  list-style: none;
+}
+.feedback > li,
+.feedbackSkeleton {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.feedbackTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.feedbackTop time {
+  flex: none;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text-muted);
 }
 .body {
-  min-width: 240px;
-  overflow-wrap: anywhere;
+  margin-top: 8px;
+  font-size: 16px;
+  line-height: 1.6;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 /* 대시보드는 두 줄까지만 */
 .clamp {
@@ -499,107 +587,28 @@
   overflow: hidden;
   white-space: normal;
 }
-.when {
-  color: var(--text-muted);
-  font-size: 13px;
+.feedbackSkeleton {
+  display: grid;
+  gap: 8px;
 }
+
+/* 빈 상태(empty-state list) */
 .empty {
-  padding: 24px 0;
+  padding: 20px 0;
   font-size: 15px;
   line-height: 1.6;
   color: var(--text-sub);
 }
-.filters {
-  margin-bottom: 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-/* 말풍선: 마우스를 올리거나(마우스가 있는 기기) 키보드로 골랐을 때. 화면 위에 뜨는 면이라 그림자 */
-.tip {
-  position: relative;
-  cursor: default;
-}
-.tip::after {
-  content: attr(data-tip);
-  position: absolute;
-  z-index: 2;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  padding: 8px 12px;
-  border-radius: var(--radius-control);
-  white-space: nowrap;
+.empty small {
+  display: block;
   font-size: 13px;
-  font-weight: 600;
-  line-height: 1.45;
-  color: var(--text);
-  background: var(--surface);
-  box-shadow:
-    inset 0 0 0 1px var(--line),
-    var(--shadow-overlay);
-  opacity: 0;
-  pointer-events: none;
-  transform: translate(-50%, 4px);
-  transition:
-    opacity var(--dur-fast) var(--ease),
-    transform var(--dur-fast) var(--ease);
-}
-/* 판정 막대는 바로 위가 구획 제목이라 말풍선을 아래로 */
-.stack .tip::after {
-  bottom: auto;
-  top: calc(100% + 8px);
-}
-/* 맨 끝 막대의 말풍선은 화면 밖으로 나가지 않게 안쪽으로 */
-.weeks .tip:first-child::after,
-.stack .tip:first-child::after {
-  left: 0;
-  transform: translate(0, 4px);
-}
-.weeks .tip:last-child::after,
-.stack .tip:last-child::after {
-  left: auto;
-  right: 0;
-  transform: translate(0, 4px);
-}
-.tip:focus-visible::after {
-  opacity: 1;
-  transform: translate(-50%, 0);
-}
-.weeks .tip:first-child:focus-visible::after,
-.weeks .tip:last-child:focus-visible::after,
-.stack .tip:first-child:focus-visible::after,
-.stack .tip:last-child:focus-visible::after {
-  transform: translate(0, 0);
+  color: var(--text-muted);
 }
 
-@media (hover: hover) {
-  .tip:hover::after {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
-  .weeks .tip:first-child:hover::after,
-  .weeks .tip:last-child:hover::after,
-  .stack .tip:first-child:hover::after,
-  .stack .tip:last-child:hover::after {
-    transform: translate(0, 0);
-  }
-  /* 올린 칸만 또렷하게, 나머지는 흐리게 */
-  .weeks:hover li:not(:hover),
-  .stack:hover i:not(:hover) {
-    opacity: 0.45;
-  }
-  .weeks li {
-    transition: opacity var(--dur-fast) var(--ease);
-  }
-  .weeks li:hover i:not([data-now]) {
-    background: var(--text-muted);
-  }
-}
-
-/* 피드백 목록 화면: 뒤로 링크 */
+/* 피드백 목록 화면: 뒤로 링크 · 분류 칩(개수 포함). PC는 8칸 폭으로 묶어 한 줄이 너무 길지 않게 */
 .backLink {
   min-height: 44px;
+  vertical-align: top;
   margin-left: -4px;
   display: inline-flex;
   align-items: center;
@@ -613,9 +622,25 @@
     color: var(--text);
   }
 }
+.filters {
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.filters + .feedback,
+.filters + .empty {
+  border-top: 1px solid var(--line);
+}
+.chipCount {
+  margin-left: 8px;
+}
 
 @media (min-width: 1024px) {
   .top h1 {
     font-size: 26px;
+  }
+  .narrow {
+    max-width: calc((100% - 11 * 40px) / 12 * 8 + 7 * 40px);
   }
 }

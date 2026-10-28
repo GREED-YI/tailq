@@ -10,7 +10,7 @@ import { categoryLabel, FEEDBACK_CATEGORIES } from "@/lib/feedback";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import s from "../admin.module.css";
-import { FeedbackTable } from "../Table";
+import { countFeedback, FeedbackList } from "../Table";
 
 export const metadata: Metadata = {
   title: "피드백 · 운영 · TailQ",
@@ -27,7 +27,7 @@ export default function FeedbackListPage({
       <AppHeader />
       <Suspense fallback={<Loading />}>
         {searchParams.then(({ category }) => (
-          <FeedbackList
+          <Feedback
             category={
               FEEDBACK_CATEGORIES.find((c) => c.id === category)?.id ?? null
             }
@@ -43,46 +43,60 @@ function Loading() {
   return (
     <>
       <LoadingStatus />
-      <div aria-busy="true" aria-hidden="true">
+      <div className={s.narrow} aria-busy="true" aria-hidden="true">
         <div className={s.backLink} />
         <div className={s.top}>
-          <span className="skeleton" style={{ width: 160, height: 30 }} />
+          <h1 className="skeleton" style={{ width: 160 }} />
         </div>
         <div className={s.filters}>
-          <span className="skeleton" style={{ width: "100%", height: 44 }} />
+          {CHIP_WIDTHS.map((w, i) => (
+            <span
+              key={i}
+              className="skeleton"
+              style={{ width: w, height: 44, borderRadius: 999 }}
+            />
+          ))}
         </div>
-        <span className="skeleton" style={{ height: 240 }} />
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className={s.feedbackSkeleton}>
+            <span className="skeleton" style={{ width: 64, height: 28 }} />
+            <span className="skeleton" />
+            <span className="skeleton" style={{ width: "60%" }} />
+          </div>
+        ))}
       </div>
     </>
   );
 }
 
+// 분류 칩(전체 + 분류 4개) 자리. 실제 칩 폭에 가깝게 두어 375에서 같은 곳에서 줄바꿈된다
+const CHIP_WIDTHS = [73, 112, 73, 73, 73];
+
 // ponytail: 최근 200개만 보여준다. 넘치기 시작하면 페이지를 나눈다
 const LIMIT = 200;
 
-const when = (iso: string) =>
-  new Intl.DateTimeFormat("ko-KR", {
-    timeZone: "Asia/Seoul",
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(iso));
-
-async function FeedbackList({ category }: { category: string | null }) {
+async function Feedback({ category }: { category: string | null }) {
   const { data: auth } = await (await createClient()).auth.getClaims();
   if (!isAdmin(auth?.claims.sub, process.env.ADMIN_USER_IDS)) notFound();
 
   // 운영자 확인을 마친 뒤에만 RLS를 건너뛰어 읽는다. 누가 보냈는지는 읽지 않는다
-  let query = createAdminClient()
+  const db = createAdminClient();
+  let query = db
     .from("feedback")
     .select("id, body, category, created_at", { count: "exact" })
     .order("created_at", { ascending: false })
     .limit(LIMIT);
   if (category) query = query.eq("category", category);
-  const { data, count } = await query.throwOnError();
+  const [{ data, count }, kinds] = await Promise.all([
+    query.throwOnError(),
+    countFeedback(db),
+  ]);
+  // 분류 칩의 개수. 전체는 분류별 합(분류는 비지 않는다)
+  const total = Object.values(kinds).reduce((a, b) => a + b, 0);
 
   return (
-    <>
-      <Link href="/admin" className={s.backLink}>
+    <div className={s.narrow}>
+      <Link href="/admin" className={`press ${s.backLink}`}>
         <Icon name="chevronLeft" size={18} />
         운영 대시보드
       </Link>
@@ -103,16 +117,24 @@ async function FeedbackList({ category }: { category: string | null }) {
             aria-current={category === c.id ? "page" : undefined}
           >
             {c.label}
+            <span className={`mono ${s.chipCount}`}>
+              {c.id ? kinds[c.id] : total}
+            </span>
           </Link>
         ))}
       </nav>
       {data.length === 0 ? (
-        <p className={s.empty}>
-          {category ? "이 분류의 피드백이 없어요" : "아직 받은 피드백이 없어요"}
-        </p>
+        <div className={s.empty}>
+          <p>
+            {category
+              ? "이 분류의 피드백이 없어요"
+              : "아직 받은 피드백이 없어요"}
+          </p>
+          {category && <small>다른 분류를 고르거나 전체를 봐 주세요.</small>}
+        </div>
       ) : (
-        <FeedbackTable rows={data} date={when} />
+        <FeedbackList rows={data} />
       )}
-    </>
+    </div>
   );
 }
