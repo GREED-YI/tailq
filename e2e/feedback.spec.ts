@@ -34,6 +34,8 @@ test("로그인하지 않고 피드백을 보낼 수 없다", async ({ request }
 });
 
 test("운영자가 아니면 피드백 목록은 404다", async ({ page }) => {
-  const res = await page.goto("/admin/feedback");
-  expect(res?.status()).toBe(404);
+  // 운영자 확인이 Suspense 안이라 스트리밍되면 상태는 200일 수 있어 화면으로 본다(admin.spec.ts와 같다)
+  await page.goto("/admin/feedback");
+  await expect(page.getByText("페이지를 찾을 수 없어요")).toBeVisible();
+  await expect(page.getByText("사용자 피드백")).toHaveCount(0);
 });
