@@ -5,13 +5,19 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icons";
 import { LimitNotice, type Notice } from "@/components/LimitNotice";
-import { CONTENT_MAX, CONTENT_MIN, NAME_MAX } from "@/lib/questions";
+import {
+  CONTENT_MAX,
+  CONTENT_MIN,
+  NAME_MAX,
+  NOTE_CONTENT_MAX,
+} from "@/lib/questions";
 import s from "@/app/(app)/projects/projects.module.css";
 
-// 프로젝트와 학습 자료(#141)는 같은 등록 화면을 쓰고 API·글만 다르다. 학습 자료는 .md 파일을 불러올 수 있다
+// 프로젝트와 학습 자료(#141)는 같은 등록 화면을 쓰고 API·글·내용 한도만 다르다. 학습 자료는 .md 파일을 불러올 수 있다
 const COPY = {
   project: {
     api: "/api/projects",
+    max: CONTENT_MAX,
     title: "프로젝트 등록",
     nameLabel: "프로젝트 이름",
     namePlaceholder: "예: 혜자 - 청년 지원금 매칭",
@@ -23,6 +29,7 @@ const COPY = {
   },
   note: {
     api: "/api/notes",
+    max: NOTE_CONTENT_MAX,
     title: "학습 자료 등록",
     nameLabel: "학습 자료 제목",
     namePlaceholder: "예: 운영체제 - 프로세스와 스레드",
@@ -74,7 +81,7 @@ export function ProjectForm({
 
   const length = content.trim().length;
   const valid =
-    name.trim().length > 0 && length >= CONTENT_MIN && length <= CONTENT_MAX;
+    name.trim().length > 0 && length >= CONTENT_MIN && length <= c.max;
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -116,9 +123,9 @@ export function ProjectForm({
       return;
     }
     const n = text.trim().length;
-    if (n > CONTENT_MAX) {
+    if (n > c.max) {
       setFileError(
-        `파일이 ${n.toLocaleString()}자예요. ${CONTENT_MAX.toLocaleString()}자 이하로 줄여서 다시 불러와 주세요.`,
+        `파일이 ${n.toLocaleString()}자예요. ${c.max.toLocaleString()}자 이하로 줄여서 다시 불러와 주세요.`,
       );
       return;
     }
@@ -159,10 +166,10 @@ export function ProjectForm({
           <textarea
             id="project-content"
             className={s.textarea}
-            data-over={length > CONTENT_MAX || undefined}
+            data-over={length > c.max || undefined}
             aria-invalid={
               (length > 0 && length < CONTENT_MIN) ||
-              length > CONTENT_MAX ||
+              length > c.max ||
               undefined
             }
             value={content}
@@ -178,7 +185,7 @@ export function ProjectForm({
           <p
             id="project-help"
             className={s.help}
-            data-over={length > CONTENT_MAX || undefined}
+            data-over={length > c.max || undefined}
           >
             <span className={s.mobileHelp}>
               {length > 0 && length < CONTENT_MIN
@@ -188,10 +195,10 @@ export function ProjectForm({
             <span className={`num ${s.pcHelp}`}>
               {length > 0 && length < CONTENT_MIN
                 ? `${CONTENT_MIN}자 이상 써 주세요`
-                : "최대 10,000자까지 붙여넣을 수 있어요"}
+                : `최대 ${c.max.toLocaleString()}자까지 붙여넣을 수 있어요`}
             </span>
             <span className="mono" aria-live="polite">
-              {length.toLocaleString()} / {CONTENT_MAX.toLocaleString()}
+              {length.toLocaleString()} / {c.max.toLocaleString()}
             </span>
           </p>
           {kind === "note" && (

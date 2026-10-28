@@ -70,5 +70,7 @@ export const MAX_PROJECTS = 3;
 export const NAME_MAX = 40;
 export const CONTENT_MIN = 30;
 export const CONTENT_MAX = 10_000;
-// 학습 자료(04 기능 명세 9번 "학습 자료", #141). 제목·내용 길이는 프로젝트와 같다(DB CHECK와 같다)
+// 학습 자료(04 기능 명세 9번 "학습 자료", #141). 제목·최소 길이는 프로젝트와 같다(DB CHECK와 같다).
+// 내용은 수업 자료 파일(PDF·PPT·한글)을 글로 바꿔 넣으면 길어서 30,000자까지 받는다(#144)
 export const MAX_NOTES = 3;
+export const NOTE_CONTENT_MAX = 30_000;
