@@ -3,103 +3,81 @@
 import { useEffect } from "react";
 import s from "./landing.module.css";
 
-// 랜딩 스크롤 모션(docs/07 "모션"). 화면에 아무것도 그리지 않는다.
-// - 차례 등장: data-reveal 요소가 화면에 들어올 때마다 data-shown을 붙이고(IntersectionObserver),
-//   화면 밖으로 완전히 나가면 떼어 다시 숨긴다. 나간 쪽을 data-from(top|bottom)에 적어 두면
-//   다시 들어올 때 그쪽에서 들어온다(위로 스크롤하면 위에서, 아래로 스크롤하면 아래에서)
-// - 패럴랙스: 배경 빛은 스크롤의 0.12~0.32배(--sy), 여우는 화면 안 위치에 따라 ±60px(--fy)
-// 동작 줄이기에서는 둘 다 끄고, 768px 이하에서는 패럴랙스만 끈다(CSS가 data-motion이 있을 때만 숨긴다)
+// 랜딩 동작. 화면에 아무것도 그리지 않는다.
+// - 꼬리질문 섹션(#peak)을 페이지의 반대 테마로 둔다. 헤더 토글로 테마가 바뀌면 따라 바꾼다
+//   (첫 그림 전에는 page.tsx의 인라인 스크립트가 같은 일을 한다. 앱 안에서 이동해 오면 그 스크립트는 돌지 않는다)
+// - 등장: data-reveal 요소가 화면 아래 12% 선을 넘으면 data-shown을 붙이고 다시 떼지 않는다.
+//   rootMargin의 %는 위아래도 화면 "너비" 기준이라 창 높이로 px를 계산하고, 높이가 바뀌면 다시 만든다.
+//   이미 화면 안에 있는 요소는 숨기지 않고 바로 보인 것으로 둔다. 동작 줄이기에서는 숨기지 않는다
+// - 첫 화면 버튼(#try)을 누르면 체험 칸으로 내려가며 고른 분야(radio)에 초점을 준다
 export function LandingMotion() {
   useEffect(() => {
     const root = document.querySelector<HTMLElement>(`.${s.root}`);
     if (!root) return;
-    const calm = matchMedia(
-      "(max-width: 768px), (prefers-reduced-motion: reduce)",
-    );
+    const html = document.documentElement;
+
+    const peak = document.getElementById("peak");
+    const invert = () => {
+      if (peak)
+        peak.dataset.theme = html.dataset.theme === "light" ? "dark" : "light";
+    };
+    invert();
+    const themeWatch = new MutationObserver(invert);
+    themeWatch.observe(html, { attributes: true, attributeFilter: ["data-theme"] });
+
     const reduce = matchMedia("(prefers-reduced-motion: reduce)");
     const items = root.querySelectorAll<HTMLElement>("[data-reveal]");
-    const fox = root.querySelector<HTMLElement>(`.${s.fox}`);
-
-    // 나타나기는 화면 위아래 10% 안쪽에 들어왔을 때, 숨기기는 화면 밖으로 완전히 나갔을 때.
-    // 숨긴 요소는 화면 바깥쪽으로 밀려나므로 경계에서 나타났다 숨었다를 되풀이하지 않는다.
-    // rootMargin의 %는 위아래도 화면 "너비" 기준이라(넓고 낮은 창에서 영역이 사라진다) 높이로 px를 계산하고,
-    // 창 높이가 바뀌면 다시 만든다
-    const reveal = (entries: IntersectionObserverEntry[]) => {
-      for (const e of entries)
-        if (e.isIntersecting) e.target.setAttribute("data-shown", "");
-    };
-    const makeShow = () =>
-      new IntersectionObserver(reveal, {
-        rootMargin: `-${Math.round(window.innerHeight * 0.1)}px 0px`,
-      });
-    let show = makeShow();
-    let shownFor = window.innerHeight;
-    const hide = new IntersectionObserver((entries) => {
-      for (const e of entries) {
-        if (e.isIntersecting) continue;
-        e.target.removeAttribute("data-shown");
-        const above = e.boundingClientRect.top < 0;
-        e.target.setAttribute("data-from", above ? "top" : "bottom");
-      }
-    });
-
-    let frame = 0;
-    const paint = () => {
-      frame = 0;
-      const y = calm.matches ? 0 : window.scrollY;
-      root.style.setProperty("--sy", String(Math.round(y)));
-      if (fox) {
-        const r = fox.getBoundingClientRect();
-        const p = (r.top + r.height / 2) / window.innerHeight - 0.5;
-        const fy = calm.matches ? 0 : Math.max(-60, Math.min(60, p * 120));
-        root.style.setProperty("--fy", `${Math.round(fy)}px`);
-      }
-    };
-    const onScroll = () => {
-      frame ||= requestAnimationFrame(paint);
-    };
-    const onResize = () => {
-      onScroll();
-      if (window.innerHeight === shownFor || reduce.matches) return;
-      show.disconnect();
-      show = makeShow();
-      shownFor = window.innerHeight;
-      items.forEach((el) => show.observe(el));
-    };
-
-    const apply = () => {
+    let io: IntersectionObserver | null = null;
+    let height = window.innerHeight;
+    const start = () => {
+      io?.disconnect();
+      height = window.innerHeight;
       if (reduce.matches) {
         root.removeAttribute("data-motion");
-        show.disconnect();
-        hide.disconnect();
-      } else {
-        root.setAttribute("data-motion", "");
-        // 동작 줄이기가 켜진 동안 창 높이가 바뀌었으면 관찰 영역을 지금 높이로 다시 만든다
-        if (window.innerHeight !== shownFor) {
-          show.disconnect();
-          show = makeShow();
-          shownFor = window.innerHeight;
-        }
-        items.forEach((el) => {
-          show.observe(el);
-          hide.observe(el);
-        });
+        return;
       }
-      onScroll();
+      const line = Math.round(height * 0.12);
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (!e.isIntersecting) continue;
+            e.target.setAttribute("data-shown", "");
+            io?.unobserve(e.target);
+          }
+        },
+        { rootMargin: `0px 0px -${line}px 0px` },
+      );
+      for (const el of items) {
+        if (el.hasAttribute("data-shown")) continue;
+        if (el.getBoundingClientRect().top < height - line)
+          el.setAttribute("data-shown", "");
+        else io.observe(el);
+      }
+      root.setAttribute("data-motion", "");
     };
-    apply();
-    calm.addEventListener("change", apply);
-    reduce.addEventListener("change", apply);
-    window.addEventListener("scroll", onScroll, { passive: true });
+    const onResize = () => {
+      if (window.innerHeight !== height) start();
+    };
+    start();
+    reduce.addEventListener("change", start);
     window.addEventListener("resize", onResize);
+
+    const onClick = (e: MouseEvent) => {
+      if (!(e.target as Element).closest('a[href="#try"]')) return;
+      requestAnimationFrame(() =>
+        root
+          .querySelector<HTMLElement>('#try [role="radio"][aria-checked="true"]')
+          ?.focus({ preventScroll: true }),
+      );
+    };
+    root.addEventListener("click", onClick);
+
     return () => {
-      show.disconnect();
-      hide.disconnect();
-      cancelAnimationFrame(frame);
-      calm.removeEventListener("change", apply);
-      reduce.removeEventListener("change", apply);
-      window.removeEventListener("scroll", onScroll);
+      themeWatch.disconnect();
+      io?.disconnect();
+      reduce.removeEventListener("change", start);
       window.removeEventListener("resize", onResize);
+      root.removeEventListener("click", onClick);
     };
   }, []);
   return null;

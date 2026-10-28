@@ -36,6 +36,8 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
   }, []);
   const [error, setError] = useState("");
   const limitRef = useRef<HTMLDialogElement>(null);
+  // 처리 중에는 버튼이 비활성이라 초점을 잃는다. 대화상자를 닫으면 시작 버튼으로 초점을 돌린다(DESIGN.md dialog)
+  const startRef = useRef<HTMLButtonElement>(null);
   useCloseOnLeave(limitRef);
   const label = FIELDS.find((f) => f.id === field)!.label;
   const q = questions?.[field];
@@ -90,11 +92,13 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
   return (
     <div className={s.tryGrid}>
       <div className={s.tryCopy}>
-        <h2 id="try-title" className={s.tryTitle}>
-          지금 바로
-          <br />한 문제 풀어보기
+        <h2 id="try-title" className={s.h2}>
+          분야 하나 골라서 지금 한 문제 풀어 봐요
         </h2>
-        <p className={s.lead}>분야를 고르면 샘플 질문 하나로 체험해요.</p>
+        <p className={s.lead}>
+          답하고, 채점받고, 꼬리질문 하나까지 해 봐요. 그날 같은 브라우저로
+          가입하면 첫 기록으로 이어져요.
+        </p>
         <div
           className={s.fields}
           role="radiogroup"
@@ -109,7 +113,7 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
               data-field={f.id}
               aria-checked={f.id === field}
               tabIndex={f.id === field ? 0 : -1}
-              className={`press ${s.field}`}
+              className="chip press"
               onClick={() => setField(f.id)}
             >
               {f.label}
@@ -119,50 +123,48 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
       </div>
       <div className={s.tryStart}>
         {q && (
-          <div key={field} className={`glass fade ${s.tryQ}`}>
-            <span className={`mono ${s.tag}`}>{q.tag}</span>
-            <strong>{q.prompt}</strong>
+          <div key={field} className={`fade ${s.tryQ}`}>
+            <span className={s.tryTag}>
+              <span className="tag tag-neutral">체험 질문</span>
+              <span className="mono">{q.tag}</span>
+            </span>
+            <p>{q.prompt}</p>
           </div>
         )}
         <button
           type="button"
-          className={`btn btn-primary press ${s.cta} ${s.tryBtn}`}
+          ref={startRef}
+          className={`btn btn-primary press ${s.tryBtn}`}
           onClick={start}
           disabled={pending}
           aria-busy={pending}
         >
           {label}로 시작하기
-          <span className={s.arrow}>
-            <Icon name="arrowRight" size={18} bold />
-          </span>
+          <Icon name="arrowRight" size={18} bold />
         </button>
         {error && (
           <p className={s.tryError} role="alert">
             {error}
           </p>
         )}
-        <p className={s.tryNote}>
+        <p className={s.caption}>
           로그인 없이 하루 1번 체험할 수 있어요 · 답변은 AI 채점을 위해 전송돼요
         </p>
       </div>
 
-      {/* 체험 횟수 초과(Figma S33) */}
+      {/* 체험 횟수 초과(Figma S33, dialog confirm) */}
       <dialog
         ref={limitRef}
-        className={`glass-strong ${s.dialog}`}
+        className={s.dialog}
         aria-labelledby="limit-title"
+        onClose={() => startRef.current?.focus()}
       >
-        <span className={s.dialogFox} aria-hidden="true" />
         <h2 id="limit-title">오늘 체험은 끝났어요</h2>
-        <p>
-          가입하면 매일 새 질문과
-          <br />
-          AI 채점을 받을 수 있어요.
-        </p>
-        <div className={s.dialogActions}>
+        <p>가입하면 매일 새 질문과 AI 채점을 받을 수 있어요.</p>
+        <div className={s.dialogButtons}>
           <button
             type="button"
-            className="glass btn btn-md btn-secondary press"
+            className="btn btn-md btn-secondary press"
             onClick={() => limitRef.current?.close()}
           >
             내일 다시
