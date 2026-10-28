@@ -269,13 +269,13 @@ a.tile:active {
 }
 
 /* ---------- 목록 ---------- */
-/* 복습할 질문 행: 모바일(review-stacked)은 위 줄 복습 시기 · 숙련도, 아래 줄 질문 한 줄 */
+/* 복습할 질문 행: 모바일(question-stacked)은 위 줄 복습 시기 · 최근 점수 · 숙련도, 아래 줄 질문 한 줄 */
 .reviewRow {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   grid-template-areas:
-    "due level"
-    "text text";
+    "due score level"
+    "text text text";
   gap: 8px 12px;
   padding-block: 12px;
 }
@@ -287,6 +287,12 @@ a.tile:active {
   grid-area: text;
   font-size: 15px;
 }
+/* 최근 점수(내 질문 목록 .score와 같다). 한 번도 채점받지 않은 질문은 칸을 비운다 */
+.score {
+  grid-area: score;
+  display: flex;
+  justify-content: flex-end;
+}
 .level {
   grid-area: level;
   display: flex;
@@ -294,10 +300,10 @@ a.tile:active {
 }
 @media (min-width: 768px) {
   .reviewRow {
-    grid-template-columns: 104px minmax(0, 1fr) auto;
-    grid-template-areas: "due text level";
+    grid-template-columns: 104px minmax(0, 1fr) 56px auto;
+    grid-template-areas: "due text score level";
     align-items: center;
-    column-gap: 12px;
+    column-gap: 16px;
     padding-block: 16px;
   }
   .reviewText {

@@ -106,24 +106,49 @@ async function Home() {
   // 서비스 월 예산에 닿으면 오늘의 질문도 새로 시작하지 않고 안내만 보여준다(04 기능 명세 12장)
   const budget = started === "budget";
   const session = budget ? null : started;
-  const turns = session
-    ? (
-        await supabase
+  const allReviews = reviews.data ?? [];
+  // 오늘의 질문은 위에 이미 크게 있으니 복습할 질문에서 뺀다(R5)
+  const reviewing = allReviews.filter(
+    (r) => r.box !== null && r.questions.id !== session?.question.id,
+  );
+  const shownIds = reviewing.slice(0, 3).map((r) => r.questions.id);
+
+  const [turns, attempts] = await Promise.all([
+    session
+      ? supabase
           .from("turns")
           .select("idx, status, score, verdict")
           .eq("session_id", session.id)
           .order("idx")
           // 실패를 빈 목록으로 바꾸면 하던 중인 세션이 "오늘 안 풂"으로 보인다
           .throwOnError()
-      ).data
-    : [];
+          .then((r) => r.data)
+      : [],
+    // 보이는 복습 행의 최근 본 질문 점수: 채점받은 세션을 최근 순으로 읽어 질문마다 처음 것을 쓴다(내 질문 목록과 같은 기준)
+    shownIds.length > 0
+      ? supabase
+          .from("sessions")
+          .select("question_id, turns!inner(score, verdict)")
+          .in("question_id", shownIds)
+          .eq("turns.idx", 0)
+          .eq("turns.status", "graded")
+          .order("day", { ascending: false })
+          .order("created_at", { ascending: false })
+          .then((r) => r.data ?? [])
+      : [],
+  ]);
+  // 모르겠어요는 점수 대신 –(null). 한 번도 채점받지 않은 질문은 Map에 없다
+  const lastScore = new Map<number, number | null>();
+  for (const a of attempts) {
+    if (lastScore.has(a.question_id)) continue;
+    const main = a.turns[0];
+    lastScore.set(
+      a.question_id,
+      main.verdict === "unknown" ? null : main.score,
+    );
+  }
 
   const state = session ? homeState(session.status, turns) : null;
-  const allReviews = reviews.data ?? [];
-  // 오늘의 질문은 위에 이미 크게 있으니 복습할 질문에서 뺀다(R5)
-  const reviewing = allReviews.filter(
-    (r) => r.box !== null && r.questions.id !== session?.question.id,
-  );
   const weak = study ? weaknessReport(study.attempts, today).topics : [];
   const done = state?.kind === "done";
 
@@ -191,7 +216,7 @@ async function Home() {
         </Link>
       </aside>
 
-      {/* 복습할 질문(list-row question): 태블릿·PC는 한 줄, 모바일은 위 줄 복습 시기·숙련도 + 아래 줄 질문.
+      {/* 복습할 질문(list-row question): 태블릿·PC는 한 줄, 모바일은 위 줄 복습 시기·최근 점수·숙련도 + 아래 줄 질문.
           이번 주 필터에 밀린 것·오늘 다시가 함께 있다 */}
       <section className={s.reviews} aria-labelledby="home-reviews">
         <ListHead
@@ -209,6 +234,7 @@ async function Home() {
           )}
           {reviewing.slice(0, 3).map((r) => {
             const days = daysUntil(r.due_day, today);
+            const score = lastScore.get(r.questions.id);
             return (
               <li key={r.questions.id}>
                 <Link
@@ -224,6 +250,17 @@ async function Home() {
                   <span className={`${h.rowText} ${s.reviewText}`}>
                     {r.questions.prompt}
                   </span>
+                  {score !== undefined && (
+                    <span
+                      className={s.score}
+                      {...(score === null && {
+                        role: "img",
+                        "aria-label": "점수 없음",
+                      })}
+                    >
+                      <Score value={score} />
+                    </span>
+                  )}
                   <span className={s.level}>
                     <Dots level={r.box!} />
                   </span>
