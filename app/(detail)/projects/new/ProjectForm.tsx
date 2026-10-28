@@ -22,7 +22,7 @@ const COPY = {
     max: CONTENT_MAX,
     title: "프로젝트 등록",
     nameLabel: "프로젝트 이름",
-    namePlaceholder: "예: 혜자 - 청년 지원금 매칭",
+    namePlaceholder: "예: 스터디 모임 일정 관리 앱",
     contentLabel: "README 또는 설명",
     contentPlaceholder: "README나 프로젝트 설명을 붙여넣어 주세요",
     help: "README를 넣으면 예상 질문 5개를 만들어 줘요",
