@@ -50,7 +50,7 @@
   position: fixed;
   z-index: 30;
   transform: translate(-50%, calc(-100% - 6px));
-  padding: 6px 10px;
+  padding: 8px 12px;
   border-radius: var(--radius-control);
   background: var(--surface);
   box-shadow:

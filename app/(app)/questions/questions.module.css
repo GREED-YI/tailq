@@ -48,7 +48,7 @@
 }
 .chips > a {
   flex-shrink: 0;
-  gap: 6px;
+  gap: 8px;
 }
 
 /* 목록 머리 2px 선 */

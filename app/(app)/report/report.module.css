@@ -47,13 +47,8 @@
 @media (min-width: 768px) {
   .stat {
     padding: 20px;
-    gap: 10px;
+    gap: 12px;
   }
-  .stat b {
-    font-size: 34px;
-  }
-}
-@media (min-width: 1024px) {
   .stat b {
     font-size: 40px;
   }
@@ -71,7 +66,7 @@
 .grassTitle {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .grassTitle svg {
   color: var(--text-sub);
@@ -100,7 +95,7 @@
   width: max-content;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   padding-bottom: 4px;
 }
 /* 칸 위 달 이름. 칸 폭 열에 글자가 넘쳐 옆 열로 이어진다 */
@@ -162,7 +157,7 @@
   max-width: 280px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 .left strong {
   font-size: 16px;
@@ -173,7 +168,7 @@
 .avg {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 13px;
   color: var(--text-muted);
 }

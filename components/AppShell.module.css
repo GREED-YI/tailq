@@ -141,7 +141,7 @@
   list-style: none;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  padding: 0 6px;
+  padding: 0 8px;
 }
 .navItem {
   height: var(--tab-h);
@@ -183,7 +183,7 @@
     display: none;
   }
   .barIn {
-    gap: 28px;
+    gap: 24px;
   }
   .nav {
     position: static;

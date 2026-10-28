@@ -307,7 +307,7 @@
 .tl li {
   position: relative;
   margin-left: 5px;
-  padding: 0 0 24px 26px;
+  padding: 0 0 24px 24px;
   border-left: 1px solid var(--line-strong);
 }
 .tl li:last-child {

@@ -72,7 +72,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .stepLabel {
   font-size: 13px;
@@ -82,7 +82,7 @@
 }
 .stepBars {
   display: flex;
-  gap: 3px;
+  gap: 4px;
 }
 .stepBars span {
   width: 24px;
@@ -150,7 +150,7 @@
 .thread li {
   position: relative;
   margin-left: 5px;
-  padding: 0 0 24px 26px;
+  padding: 0 0 24px 24px;
   border-left: 1px solid var(--line-strong);
 }
 .thread li[aria-current] {
@@ -183,7 +183,7 @@
   flex-shrink: 0;
 }
 .thread p {
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: 15px;
   line-height: 1.6;
   color: var(--text-sub);
@@ -248,13 +248,13 @@
   color: var(--accent);
 }
 .prompt {
-  font-size: 24px;
+  font-size: 28px;
   line-height: 1.4;
   font-weight: 700;
   letter-spacing: -0.025em;
 }
 .question[data-compact] {
-  gap: 6px;
+  gap: 4px;
 }
 .question[data-compact] .tag {
   font-size: 12px;
@@ -323,7 +323,7 @@
   /* iOS가 입력할 때 화면을 확대하지 않게 16 이상 */
   font-size: 17px;
   line-height: 1.7;
-  padding: 16px 18px;
+  padding: 16px;
   scrollbar-width: thin;
   scrollbar-color: var(--line-strong) transparent;
   transition: border-color var(--dur-fast) var(--ease);
@@ -369,7 +369,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 10px;
+  gap: 8px;
 }
 .count {
   flex-basis: 100%;
@@ -442,12 +442,12 @@
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 .score {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 .scoreRow {
   display: flex;
@@ -519,7 +519,7 @@
 .block {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 .chips {
   display: flex;
@@ -527,7 +527,7 @@
   gap: 8px;
 }
 .list {
-  padding-left: 18px;
+  padding-left: 20px;
   font-size: 15px;
   line-height: 1.6;
 }
@@ -538,7 +538,7 @@
   margin-top: 4px;
 }
 .well {
-  padding-left: 14px;
+  padding-left: 12px;
   border-left: 2px solid var(--line-strong);
   font-size: 15px;
   line-height: 1.7;
@@ -667,7 +667,7 @@
     font-size: 14px;
   }
   .prompt {
-    font-size: 30px;
+    font-size: 34px;
   }
   .answer,
   .result {
@@ -676,7 +676,7 @@
   .input {
     flex: none;
     min-height: 220px;
-    padding: 18px 20px;
+    padding: 20px;
     resize: vertical;
   }
   .panel {
@@ -701,7 +701,7 @@
     grid-template-columns: repeat(12, minmax(0, 1fr));
     column-gap: 40px;
     align-items: start;
-    padding-top: 48px;
+    padding-top: 40px;
     padding-bottom: 80px;
   }
   .thread {
@@ -710,13 +710,13 @@
   }
   .stage {
     grid-column: span 8;
-    gap: 28px;
+    gap: 32px;
   }
   .question {
     gap: 12px;
   }
   .prompt {
-    font-size: 34px;
+    font-size: 40px;
     line-height: 1.42;
   }
   .question[data-compact] .prompt {
@@ -805,10 +805,11 @@
 .tile {
   min-width: 0;
   background: var(--surface);
-  padding: 12px;
+  /* 모바일은 한 줄 3칸이라 좌우만 12(100/100이 360 폭 칸에 들어가게) */
+  padding: 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 .tileLabel {
   font-size: 12px;
@@ -822,7 +823,7 @@
   gap: 2px;
 }
 .tileNum > span:first-child {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -878,7 +879,7 @@
   align-items: center;
   column-gap: 24px;
   row-gap: 4px;
-  padding: 12px 0 12px 28px;
+  padding: 12px 0 12px 24px;
 }
 /* 세로 선: 이 점에서 다음 점까지. 마지막 단계 아래로는 잇지 않는다 */
 .stepRow:not(:last-child)::before {
@@ -932,7 +933,7 @@
   margin-top: auto;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
 }
 /* 공유(테두리)와 홈으로(주 버튼)를 한 줄에 같은 높이로 */
 .actions > :global(.btn) {
@@ -946,15 +947,15 @@
     gap: 32px;
   }
   .hero {
-    gap: 14px;
+    gap: 16px;
   }
   .title {
     font-size: 34px;
     line-height: 1.35;
   }
   .tile {
-    padding: 22px;
-    gap: 10px;
+    padding: 20px;
+    gap: 12px;
   }
   .tileLabel {
     font-size: 13px;
@@ -982,11 +983,11 @@
     display: grid;
   }
   .stepRow {
-    --dot-y: 28px;
+    --dot-y: 30px;
     grid-template-areas:
       "label result"
       "prompt result";
-    padding: 18px 0 18px 28px;
+    padding: 20px 0 20px 24px;
   }
   .stepRowLabel {
     font-size: 13px;
@@ -1012,7 +1013,7 @@
 @media (min-width: 1024px) {
   .summaryMain {
     padding-top: 56px;
-    padding-bottom: 88px;
+    padding-bottom: 80px;
   }
   .title {
     font-size: 40px;

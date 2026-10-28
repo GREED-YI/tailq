@@ -64,7 +64,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 .tag {
   font-size: 12px;
@@ -91,7 +91,7 @@
   border-top: 1px solid var(--line);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 .point {
   display: flex;
@@ -132,7 +132,7 @@
   font-weight: 600;
 }
 .tileNum > span:first-child {
-  font-size: 32px;
+  font-size: 28px;
   letter-spacing: -0.04em;
   line-height: 1;
   color: var(--text);
@@ -148,7 +148,7 @@
   padding-top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 .actions > :global(.btn) {
   height: 52px;
@@ -178,7 +178,7 @@
     padding: 24px;
   }
   .tile {
-    padding: 22px;
+    padding: 20px;
   }
   .tileNum > span:first-child {
     font-size: 40px;

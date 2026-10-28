@@ -371,7 +371,7 @@
   display: block;
   height: 14px;
   margin-top: 4px;
-  border-radius: 2px;
+  border-radius: var(--radius-control);
   background: var(--line);
 }
 .skeleton span {

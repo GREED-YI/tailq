@@ -114,7 +114,7 @@
 .row {
   width: 100%;
   min-height: 60px;
-  padding: 10px 8px;
+  padding: 12px 8px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -245,6 +245,15 @@
   justify-content: center;
 }
 
+@media (min-width: 768px) {
+  .stat {
+    padding: 20px;
+  }
+  .stat strong :global(.mono) {
+    font-size: 40px;
+    letter-spacing: -0.04em;
+  }
+}
 @media (min-width: 1024px) {
   .my {
     width: 100%;
@@ -256,12 +265,5 @@
   }
   .profile {
     margin-top: 24px;
-  }
-  .stat {
-    padding: 20px;
-  }
-  .stat strong :global(.mono) {
-    font-size: 32px;
-    letter-spacing: -0.04em;
   }
 }

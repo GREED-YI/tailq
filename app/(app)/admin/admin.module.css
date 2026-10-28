@@ -141,7 +141,7 @@
   justify-content: flex-end;
   gap: 4px;
   min-width: 0;
-  border-radius: 2px;
+  border-radius: var(--radius-control);
 }
 .weeks li > span {
   font-size: 12px;
@@ -197,7 +197,7 @@
   line-height: 1.6;
 }
 .value {
-  font-size: 32px;
+  font-size: 28px;
   line-height: 1.1;
   font-weight: 600;
   letter-spacing: -0.02em;

@@ -5,7 +5,7 @@
   background: var(--surface);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 .label {
   display: flex;
