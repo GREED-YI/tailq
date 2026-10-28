@@ -26,8 +26,7 @@ export function LandingMotion() {
       attributeFilter: ["data-theme"],
     });
 
-    const onClick = (e: MouseEvent) => {
-      if (!(e.target as Element).closest('a[href="#try"]')) return;
+    const focusTry = () =>
       requestAnimationFrame(() =>
         root
           .querySelector<HTMLElement>(
@@ -35,8 +34,12 @@ export function LandingMotion() {
           )
           ?.focus({ preventScroll: true }),
       );
+    const onClick = (e: MouseEvent) => {
+      if ((e.target as Element).closest('a[href="#try"]')) focusTry();
     };
     root.addEventListener("click", onClick);
+    // 이 스크립트가 붙기 전에 버튼을 눌렀거나 #try로 들어왔으면 붙는 즉시 초점을 준다
+    if (location.hash === "#try") focusTry();
 
     // 들어올 때 한 번만 data-seen을 건다. data-io가 없으면(JS 전·실패) CSS는 완성 상태 그대로다
     root.dataset.io = "";
