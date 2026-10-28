@@ -325,7 +325,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 or exists (select 1 from study_notes n where n.id = questions.note_id and n.user_id = auth.uid())
 ```
 
-처음엔 "은행 질문은 로그인한 사람 누구나"였으나, 그러면 공개 키와 로그인 토큰으로 질문 150개를 한 번에 내려받을 수 있었다. 질문 고르기는 `service_role` 함수가 하므로 정책을 좁혀도 영향이 없다 (2026-10-25). 홈·나의 Q·리포트·커스텀 Q 화면이 읽는 질문은 모두 위 넷 중 하나에 들어 있다.
+처음엔 "은행 질문은 로그인한 사람 누구나"였으나, 그러면 공개 키와 로그인 토큰으로 질문 150개를 한 번에 내려받을 수 있었다. 질문 고르기는 `service_role` 함수가 하므로 정책을 좁혀도 영향이 없다 (2026-10-25). 홈·Q노트·리포트·Q메이커 화면이 읽는 질문은 모두 위 넷 중 하나에 들어 있다.
 
 ### 사용자
 

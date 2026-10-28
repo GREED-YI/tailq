@@ -20,17 +20,17 @@ import h from "../history/history.module.css";
 import { QuestionFilters } from "./QuestionFilters";
 import s from "./questions.module.css";
 
-export const metadata: Metadata = { title: "나의 Q · TailQ" };
+export const metadata: Metadata = { title: "Q노트 · TailQ" };
 
-// 나의 Q(W2, 처음엔 "내 질문"). 복습 목록과 기록 목록을 질문 하나에 한 줄로 합쳤다. 날짜별 시도는 질문 상세(/questions/[id])의 기록에서 본다.
+// Q노트(W2, 처음엔 "내 질문"). 복습 목록과 기록 목록을 질문 하나에 한 줄로 합쳤다. 날짜별 시도는 질문 상세(/questions/[id])의 기록에서 본다.
 // 옛 /review·/history 주소는 여기로 넘어온다(#136)
 export default function QuestionsPage({
   searchParams,
 }: PageProps<"/questions">) {
   return (
     <div className={s.page}>
-      <AppHeader title="나의 Q" />
-      <h1 className={s.pageTitle}>나의 Q</h1>
+      <AppHeader title="Q노트" />
+      <h1 className={s.pageTitle}>Q노트</h1>
       <Suspense fallback={<Loading />}>
         {searchParams.then((p) => (
           <Questions filter={p.filter} />

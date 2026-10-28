@@ -1,4 +1,4 @@
-/* 커스텀 Q(S22 목록 · 학습 자료 목록 · S23 등록 · S24 질문 목록 · S25 삭제 확인). 기준은 DESIGN.md
+/* Q메이커(S22 목록 · 학습 자료 목록 · S23 등록 · S24 질문 목록 · S25 삭제 확인). 기준은 DESIGN.md
    (list-row, text-area field, button, dialog type-to-confirm). 구획은 2px 머리선 + 1px 구분선, 상자 없이 */
 
 /* 모바일·태블릿은 제목이 헤더(AppHeader title)의 h1이라 이 h1은 숨긴다. PC는 헤더가 숨고 이 h1이 보인다 */
@@ -44,7 +44,7 @@
   color: var(--text-sub);
 }
 
-/* 커스텀 Q 구획 선택(app-nav section-tabs): 약관 문서 선택(legal.module.css .tabs)과 같은 밑줄 탭.
+/* Q메이커 구획 선택(app-nav section-tabs): 약관 문서 선택(legal.module.css .tabs)과 같은 밑줄 탭.
    2칸 같은 폭, 48px, 선택은 text 글자와 아래 2px 선 */
 .tabs {
   margin-top: 16px;

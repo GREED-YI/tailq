@@ -9,7 +9,7 @@ const SECTIONS = [
   { href: "/projects/notes", label: "학습 자료" },
 ];
 
-// 커스텀 Q 안의 구획 선택(DESIGN.md app-nav section-tabs, 약관의 LegalTabs와 같은 밑줄 탭).
+// Q메이커 안의 구획 선택(DESIGN.md app-nav section-tabs, 약관의 LegalTabs와 같은 밑줄 탭).
 // 각 구획은 자기 주소가 있어 링크로 옮긴다. 데이터 없이 바로 그려 불러오는 동안에도 자리가 그대로다
 export function ProjectTabs() {
   const pathname = usePathname();

@@ -44,7 +44,7 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
   const session = sessionId
     ? await loadProjectSession(userId, sessionId)
     : await startDailySession(userId);
-  // 연습 세션을 못 찾으면(자료와 함께 지워졌거나 잘못된 주소) 어느 구획 것인지 알 수 없어 커스텀 Q 첫 구획으로
+  // 연습 세션을 못 찾으면(자료와 함께 지워졌거나 잘못된 주소) 어느 구획 것인지 알 수 없어 Q메이커 첫 구획으로
   if (!session || session === "budget") {
     redirect(sessionId ? "/projects" : "/home");
   }

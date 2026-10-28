@@ -10,7 +10,7 @@ import { loadQuota } from "@/lib/usage";
 import s from "./projects.module.css";
 import { RefreshWhileGenerating } from "./RefreshWhileGenerating";
 
-// 커스텀 Q의 두 구획(프로젝트 /projects, 학습 자료 /projects/notes, #141)이 같이 쓰는 목록.
+// Q메이커의 두 구획(프로젝트 /projects, 학습 자료 /projects/notes, #141)이 같이 쓰는 목록.
 // 모양은 같고 글·주소·한도 개수만 다르다. 주 버튼은 구획마다 그 구획의 등록 하나다
 export type Kind = "project" | "note";
 
@@ -32,9 +32,9 @@ const COPY = {
     max: MAX_NOTES,
     href: (id: string) => `/projects/notes/${id}`,
     newHref: "/projects/notes/new",
-    empty: "정리한 노트나 수업 자료로 개념 질문을 만들어 보세요",
+    empty: "정리한 글이나 수업 자료로 개념 질문을 만들어 보세요",
     guide: [
-      ["노트 붙여넣기 또는 .md 불러오기", "최대 10,000자"],
+      ["학습 자료 붙여넣기 또는 .md 불러오기", "최대 10,000자"],
       ["개념 질문 5개 생성", "개념 설명 · 비교 · 적용"],
       ["질문을 골라 바로 연습", "부족했던 질문은 복습 목록에 모아 둬요"],
     ],
