@@ -1,7 +1,8 @@
 /* 랜딩(docs/04 10번). 기준은 DESIGN.md와 랜딩 스토리보드. 평평한 면과 1px 선, 그림자·그라디언트 없음.
    앱 화면 조각은 실제 앱의 모듈(interview·home·history)을 그대로 불러 쓰고, 여기서는 배치만 정한다.
    간격: 섹션 안 32 · 섹션 위아래 80(모바일 56) · 정점 직전 빈 바탕 30svh 한 곳.
-   모션: 120ms(hover) · 200ms(전환) · 300ms(점수 등장, 랜딩 로컬 확장) · 곡선 하나(--ease) */
+   모션: 120ms(hover) · 200ms(전환) · 300ms(점수 등장, 랜딩 로컬 확장) · 곡선 하나(--ease)
+   들어올 때 한 번(LandingMotion의 data-seen): 기록 이번 주 칸이 월 → 화로 찬다(fill) · 만들어진 질문 5행이 60ms 간격으로 나타난다(appear) */
 
 .root {
   --g: 20px;
@@ -750,6 +751,19 @@
 .media7 .weak li + li {
   display: flex;
 }
+/* 이번 주 칸이 월 → 화(오늘) 순서로 찬다(hero 막대와 같은 fill). 들어올 때 한 번.
+   paused로 첫 프레임(빈 칸)에 멈춰 있다가 data-seen이 붙으면 재생된다. reduce·JS 없음은 완성 상태 */
+@media (prefers-reduced-motion: no-preference) {
+  .root[data-io] .week :is([data-level="2"], [data-level="3"]) {
+    animation: fill 300ms var(--ease) both paused;
+  }
+  .root[data-io] .week [data-level="3"] {
+    animation-delay: var(--dur-fast);
+  }
+  .root[data-io] .week[data-seen] :is([data-level="2"], [data-level="3"]) {
+    animation-play-state: running;
+  }
+}
 
 /* ---------- §7 내 프로젝트 ---------- */
 .readme {
@@ -797,6 +811,19 @@
   .pq li {
     padding: 20px 0;
     font-size: 17px;
+  }
+}
+/* 만들어진 질문 5행이 위에서부터 60ms 간격으로 나타난다. 들어올 때 한 번, README 상자는 그대로 */
+@media (prefers-reduced-motion: no-preference) {
+  .root[data-io] .pq > li {
+    animation: appear var(--dur-base) var(--ease) both paused;
+  }
+  .root[data-io] .pq > li:nth-child(2) { animation-delay: 60ms; }
+  .root[data-io] .pq > li:nth-child(3) { animation-delay: 120ms; }
+  .root[data-io] .pq > li:nth-child(4) { animation-delay: 180ms; }
+  .root[data-io] .pq > li:nth-child(5) { animation-delay: 240ms; }
+  .root[data-io] .pq[data-seen] > li {
+    animation-play-state: running;
   }
 }
 
