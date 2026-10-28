@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 
 // 웹 앱 매니페스트(#37). 아이폰은 홈 화면에 추가한 앱(standalone)에서만 웹 푸시를 받는다(iOS 16.4 이상).
-// 아이콘은 #0E0F0E(다크 canvas) 바탕에 #EDEEEC(다크 text) Q 심볼(DESIGN.md logo-tailq)
+// 아이콘은 #FF4F12(시그널 오렌지) 바탕에 #111312 어두운 Q 심볼(DESIGN.md logo-tailq, 2026-10-28 확정).
+// 실행 화면 바탕·상단 색은 앱 기본 다크 canvas(#0E0F0E)로 둬 열리자마자 보이는 첫 화면과 이어지게 한다
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "TailQ",
