@@ -170,6 +170,21 @@
   background: var(--accent);
   box-shadow: 0 0 0 4px var(--accent-soft);
 }
+/* 지금 점만 은은하게 깜빡인다(DESIGN.md thread). 동작 줄이기면 멈춘다 */
+@media (prefers-reduced-motion: no-preference) {
+  .threadDot[data-current] {
+    animation: breathe 2s ease-in-out infinite;
+  }
+}
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
 .threadHead {
   display: flex;
   justify-content: space-between;
