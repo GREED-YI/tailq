@@ -34,7 +34,7 @@ export default function HistoryDetailPage({
 }
 
 // 모바일은 뒤로 · 가운데 제목 · 북마크, PC는 뒤로 + 큰 제목(Figma S20).
-// 뒤로는 이 기록의 질문 상세(W3). 질문을 읽기 전(불러오는 중)에는 내 질문으로
+// 뒤로는 이 기록의 질문 상세(W3). 질문을 읽기 전(불러오는 중)에는 나의 Q로
 function Header({
   backHref = "/questions",
   children,

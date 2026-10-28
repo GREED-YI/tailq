@@ -7,8 +7,8 @@ import s from "./questions.module.css";
 export default function QuestionsError({ reset }: { reset: () => void }) {
   return (
     <div className={s.page}>
-      <AppHeader title="내 질문" />
-      <h1 className={s.pageTitle}>내 질문</h1>
+      <AppHeader title="나의 Q" />
+      <h1 className={s.pageTitle}>나의 Q</h1>
       <div className={s.error} role="alert">
         <p>질문 목록을 불러오지 못했어요</p>
         <button

@@ -20,17 +20,17 @@ import h from "../history/history.module.css";
 import { QuestionFilters } from "./QuestionFilters";
 import s from "./questions.module.css";
 
-export const metadata: Metadata = { title: "내 질문 · TailQ" };
+export const metadata: Metadata = { title: "나의 Q · TailQ" };
 
-// 내 질문(W2). 복습 목록과 기록 목록을 질문 하나에 한 줄로 합쳤다. 날짜별 시도는 질문 상세(/questions/[id])의 기록에서 본다.
+// 나의 Q(W2, 처음엔 "내 질문"). 복습 목록과 기록 목록을 질문 하나에 한 줄로 합쳤다. 날짜별 시도는 질문 상세(/questions/[id])의 기록에서 본다.
 // 옛 /review·/history 주소는 여기로 넘어온다(#136)
 export default function QuestionsPage({
   searchParams,
 }: PageProps<"/questions">) {
   return (
     <div className={s.page}>
-      <AppHeader title="내 질문" />
-      <h1 className={s.pageTitle}>내 질문</h1>
+      <AppHeader title="나의 Q" />
+      <h1 className={s.pageTitle}>나의 Q</h1>
       <Suspense fallback={<Loading />}>
         {searchParams.then((p) => (
           <Questions filter={p.filter} />
@@ -40,7 +40,8 @@ export default function QuestionsPage({
   );
 }
 
-const DESC = "잘 답하면 복습 간격이 늘어나고, 부족하면 처음부터 다시 나와요";
+const DESC =
+  "푼 질문이 모두 여기에 모여요. 잘 답하면 복습 간격이 늘어나고, 부족하면 처음부터 다시 나와요";
 
 // 불러오는 동안: 같은 높이의 행 자리 4개
 function Loading() {

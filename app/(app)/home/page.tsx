@@ -22,7 +22,7 @@ import { NotifyPrompt } from "./NotifyPrompt";
 // 홈(S10 오늘 안 풂 · S11 하던 중 · S12 오늘 완료). DESIGN.md와 시안 MainM·HomeTabletM·HomeMobileM:
 // 인사·날짜 → 오늘의 질문(상자 없이 큰 글, 주 버튼 하나) → 학습 현황(이번 주 · 약한 주제) → 복습할 질문.
 // PC는 12칸 격자에 오늘의 질문 8칸 · 학습 현황 4칸, 그 아래 복습할 질문을 폭 가득 둔다. 폭이 바뀌어도 순서는 같다.
-// 꼬리잇기는 머리 막대에, 복습 대기 수는 복습할 질문 제목에 있어 타일로 두지 않는다(R4·R5). 최근 기록은 내 질문에서 본다(R6)
+// 꼬리잇기는 머리 막대에, 복습 대기 수는 복습할 질문 제목에 있어 타일로 두지 않는다(R4·R5). 최근 기록은 나의 Q에서 본다(R6)
 export default function HomePage() {
   return (
     <>
@@ -128,7 +128,7 @@ async function Home() {
           .throwOnError()
           .then((r) => r.data)
       : [],
-    // 보이는 복습 행의 최근 본 질문 점수: 채점받은 세션을 최근 순으로 읽어 질문마다 처음 것을 쓴다(내 질문 목록과 같은 기준)
+    // 보이는 복습 행의 최근 본 질문 점수: 채점받은 세션을 최근 순으로 읽어 질문마다 처음 것을 쓴다(나의 Q 목록과 같은 기준)
     shownIds.length > 0
       ? supabase
           .from("sessions")
@@ -296,7 +296,7 @@ function ListHead({
         {children}
       </h2>
       <Link href={href} className={h.more}>
-        내 질문에서 보기 →
+        나의 Q에서 보기 →
       </Link>
     </div>
   );

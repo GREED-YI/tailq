@@ -35,11 +35,7 @@ export default function QuestionDetailPage({
 function Header({ children }: { children?: ReactNode }) {
   return (
     <header className={h.detailHeader}>
-      <Link
-        href="/questions"
-        className="press icon-btn"
-        aria-label="내 질문 목록으로"
-      >
+      <Link href="/questions" className="press icon-btn" aria-label="나의 Q로">
         <Icon name="chevronLeft" />
       </Link>
       <h1>질문</h1>
@@ -89,7 +85,7 @@ async function Detail({ id }: { id: string }) {
 
   const q = data[0].questions;
   const level = LEVELS.find((l) => l.id === q.level)?.label;
-  // 숨긴 질문은 복습에서 빠지므로 상태 줄을 그리지 않는다(내 질문 목록과 같은 기준)
+  // 숨긴 질문은 복습에서 빠지므로 상태 줄을 그리지 않는다(나의 Q 목록과 같은 기준)
   const review = q.is_hidden ? undefined : q.reviews[0];
   const days = review ? daysUntil(review.due_day, kstDay(new Date())) : 0;
   // 기록 상세가 열리는 기준과 같이 끝난 세션만
