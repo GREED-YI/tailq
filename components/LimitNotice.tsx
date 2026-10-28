@@ -3,7 +3,8 @@ import s from "./LimitNotice.module.css";
 
 export type Notice = { title: string; lines: string[] };
 
-// 시작 버튼 대신 보여줄 안내. 월 예산 → 프로젝트 연습 → 프로젝트 등록 순으로 하나만 고른다.
+// 시작 버튼 대신 보여줄 안내. 월 예산 → 연습 → 질문 만들기 순으로 하나만 고른다.
+// 연습과 질문 만들기 한도는 프로젝트와 학습 자료(#141)가 함께 세서 어느 쪽이라고 쓰지 않는다.
 // what: 그 화면에서 시작하려는 것(연습만 하는 질문 목록은 "practice", 등록 화면은 "register")
 export function limitNotice(
   q: Quota,
@@ -19,14 +20,14 @@ export function limitNotice(
   const daily = "오늘의 질문은 한도 없이 풀 수 있어요.";
   if (what !== "register" && q.sessionsLeft <= 0) {
     return {
-      title: "오늘 프로젝트 연습 한도를 모두 썼어요",
-      lines: ["프로젝트 연습은 내일 다시 할 수 있어요.", daily],
+      title: "오늘 연습 한도를 모두 썼어요",
+      lines: ["내일 다시 할 수 있어요.", daily],
     };
   }
   if (what !== "practice" && q.gensLeft <= 0) {
     return {
-      title: "오늘 프로젝트 등록 한도를 모두 썼어요",
-      lines: ["프로젝트 등록은 내일 다시 할 수 있어요.", daily],
+      title: "오늘 질문 만들기 한도를 모두 썼어요",
+      lines: ["내일 다시 할 수 있어요.", daily],
     };
   }
   return null;

@@ -167,7 +167,7 @@ export function ProjectView({
                   key={q.id}
                   title={
                     locked
-                      ? "오늘 프로젝트 연습 한도를 모두 썼어요. 내일 다시 할 수 있어요"
+                      ? "오늘 연습 한도를 모두 썼어요. 내일 다시 할 수 있어요"
                       : undefined
                   }
                 >
