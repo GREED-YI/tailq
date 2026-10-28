@@ -49,43 +49,88 @@ export function Shot({
   });
 }
 
-// 기기 틀(랜딩 로컬 확장 device-frame, .omd/decisions.md landing-showcase). 크기는 className의 width로만 정하고
-// 베젤·모서리는 틀 폭에 비례한다. 그림자는 앞에 놓인 틀(front) 하나에만
+// 기기 틀(랜딩 로컬 확장 device-frame, .omd/decisions.md landing-showcase). 실제 기기처럼 보이게 CSS로만 그린다
+// (제조사 이미지·로고·제품명 없음). 크기는 className의 width로만 정하고 나머지는 틀 폭(cqi)에 비례한다.
+// 휴대폰: 금속 테두리 · 검정 베젤 · 상태 표시줄과 가운데 알약 · 옆 버튼. 캡처는 상태 표시줄 아래에 잘림 없이 들어간다
 export function Phone({
   children,
   className = "",
-  front,
 }: {
   children: ReactNode;
   className?: string;
-  front?: boolean;
 }) {
   return (
     <div className={`${s.phone} ${className}`}>
-      <div className={`${s.phoneBody} ${front ? s.front : ""}`}>
-        <div className={s.screen}>{children}</div>
+      <div className={s.phoneBody}>
+        {KEYS.map((k) => (
+          <span key={k} className={s.key} data-k={k} aria-hidden="true" />
+        ))}
+        <div className={s.bezel}>
+          <div className={s.screen}>
+            <div className={s.status} aria-hidden="true">
+              <span>9:41</span>
+              <span className={s.island} />
+              <StatusIcons />
+            </div>
+            <div className={s.shots}>{children}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+const KEYS = ["action", "up", "down", "power", "camera"];
+
+// 노트북: 얇은 검정 베젤 · 위 가운데 카메라 노치 · 알루미늄 하판(손톱 홈). 화면 위에는 창 버튼 3점과 주소창만
+export function Desktop({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`${s.desktop} ${className}`}>
+      <div className={s.lid}>
+        <span className={s.notch} aria-hidden="true" />
+        <div className={s.screen}>
+          <div className={s.chrome} aria-hidden="true">
+            <i />
+            <i />
+            <i />
+            <span className={s.addr}>TailQ</span>
+          </div>
+          <div className={s.shots}>{children}</div>
+        </div>
+      </div>
+      <div className={s.base} aria-hidden="true">
+        <span className={s.lip} />
       </div>
     </div>
   );
 }
 
-export function Desktop({
-  children,
-  route,
-  className = "",
-}: {
-  children: ReactNode;
-  route: string;
-  className?: string;
-}) {
+// 상태 표시줄 오른쪽: 신호 · 와이파이 · 배터리
+function StatusIcons() {
   return (
-    <div className={`${s.desktop} ${className}`}>
-      <div className={s.deskBody}>
-        <div className={s.bar} aria-hidden="true">
-          {route}
-        </div>
-        <div className={s.screen}>{children}</div>
-      </div>
-    </div>
+    <svg viewBox="0 0 68 12" fill="currentColor">
+      <rect x="0" y="8" width="3" height="4" rx="0.8" />
+      <rect x="4.5" y="6" width="3" height="6" rx="0.8" />
+      <rect x="9" y="3.5" width="3" height="8.5" rx="0.8" />
+      <rect x="13.5" y="1" width="3" height="11" rx="0.8" />
+      <path d="M30 2.2a10 10 0 0 1 7.3 3.1l1.3-1.3A11.8 11.8 0 0 0 30 .4a11.8 11.8 0 0 0-8.6 3.6l1.3 1.3A10 10 0 0 1 30 2.2Zm0 3.7a6.2 6.2 0 0 1 4.6 2l1.3-1.3a8 8 0 0 0-11.8 0l1.3 1.3a6.2 6.2 0 0 1 4.6-2Zm0 3.7a2.5 2.5 0 0 1 1.9.8L30 12.3l-1.9-1.9a2.5 2.5 0 0 1 1.9-.8Z" />
+      <rect
+        x="42.5"
+        y="0.5"
+        width="22"
+        height="11"
+        rx="3.2"
+        fill="none"
+        stroke="currentColor"
+        strokeOpacity="0.4"
+      />
+      <rect x="44.5" y="2.5" width="18" height="7" rx="1.8" />
+      <path d="M66 4v4a2 2 0 0 0 0-4Z" fillOpacity="0.4" />
+    </svg>
   );
 }

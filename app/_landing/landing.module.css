@@ -151,16 +151,27 @@
 
 /* ---------- 테마 쌍 이미지 ---------- */
 /* 캡처는 다크·라이트 두 장(Shot.tsx). 보이는 쪽은 html의 data-theme(헤더 토글)을 따르고,
-   변수는 가장 가까운 data-theme에서 상속되므로 반대 테마인 정점(#peak) 안에서는 섹션 테마를 따른다 */
+   변수는 가장 가까운 data-theme에서 상속되므로 반대 테마인 정점(#peak) 안에서는 섹션 테마를 따른다.
+   기기 틀의 금속 색도 같은 방식으로 테마를 따른다(랜딩 로컬 확장: 금속 그라데이션과 바닥 그림자) */
 .root,
 .root [data-theme="dark"] {
   --shot-dark: block;
   --shot-light: none;
+  --metal-hi: #8c8f93;
+  --metal-mid: #4b4e52;
+  --metal-lo: #232527;
+  --device-shadow: rgba(0, 0, 0, 0.6);
+  --device-shadow-soft: rgba(0, 0, 0, 0.35);
 }
 :global(html[data-theme="light"]) .root,
 .root [data-theme="light"] {
   --shot-dark: none;
   --shot-light: block;
+  --metal-hi: #f6f7f8;
+  --metal-mid: #c3c6ca;
+  --metal-lo: #8b8e92;
+  --device-shadow: rgba(17, 19, 18, 0.28);
+  --device-shadow-soft: rgba(17, 19, 18, 0.14);
 }
 .root [data-shot="dark"] {
   display: var(--shot-dark);
@@ -168,61 +179,216 @@
 .root [data-shot="light"] {
   display: var(--shot-light);
 }
-.screen img,
-.screen video {
-  display: block;
-  width: 100%;
-  height: auto;
-}
 
 /* ---------- 기기 틀(랜딩 로컬 확장 device-frame) ---------- */
-/* 크기는 바깥 요소의 width로만 정한다. 베젤·모서리·주소 막대는 틀 폭(cqi)에 비례한다.
-   휴대폰: 화면 390 + 베젤 10 = 바깥 412(1.0배), 바깥 모서리 40 · 화면 모서리 30.
-   데스크톱: 화면 1440 + 위 주소 막대 36, 모서리 radius.panel. 그림자는 앞에 놓인 틀(.front)에만 */
+/* 크기는 바깥 요소의 width로만 정하고, 나머지는 모두 틀 폭에 비례한다(cqi). 캡처는 화면 폭에 꽉 차고
+   높이는 캡처 비율 그대로라 레터박스·잘림이 없다(상태 표시줄·주소창은 캡처 위에 따로 붙는다) */
 .phone,
 .desktop {
   flex: none;
   container-type: inline-size;
 }
-.phoneBody {
-  padding: 2.43cqi;
-  border: 1px solid var(--line-strong);
-  border-radius: 9.7cqi;
-  background: var(--surface);
-}
-.deskBody {
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-panel);
-  overflow: hidden;
-  background: var(--surface);
-}
-.bar {
-  height: max(22px, 2.5cqi);
-  padding: 0 max(10px, 1.1cqi);
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid var(--line);
-  font-family: var(--font-geist-mono), monospace;
-  font-size: clamp(9px, 0.83cqi, 12px);
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-}
 .screen {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   background: var(--canvas);
 }
-.screen > * {
+.shots {
+  display: grid;
+}
+.shots > * {
   grid-area: 1 / 1;
 }
+.shots img,
+.shots video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* 휴대폰: 바깥 모서리 폭의 14%, 금속 테두리 1.2% · 검정 베젤 2.5%, 모서리는 동심원.
+   화면 위 상태 표시줄(시간·신호·와이파이·배터리)과 가운데 검정 알약(화면 폭 30%) */
+.phoneBody {
+  position: relative;
+  padding: 1.2cqi;
+  border-radius: 14cqi;
+  background: linear-gradient(
+    135deg,
+    var(--metal-hi),
+    var(--metal-mid) 18%,
+    var(--metal-lo) 50%,
+    var(--metal-mid) 82%,
+    var(--metal-hi)
+  );
+  box-shadow:
+    0 1.6cqi 2.4cqi -0.8cqi var(--device-shadow),
+    0 9cqi 16cqi -5cqi var(--device-shadow-soft);
+}
+.bezel {
+  padding: 2.5cqi;
+  border-radius: 12.8cqi;
+  background: #000;
+}
 .phone .screen {
-  aspect-ratio: 390 / 844;
-  border: 1px solid var(--line);
-  border-radius: 7.3cqi;
+  border-radius: 10.3cqi;
+}
+.status {
+  position: relative;
+  flex: none;
+  height: 11cqi;
+  padding: 1.2cqi 6.4cqi 0 9.5cqi;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: system-ui, sans-serif;
+  font-size: 4.1cqi;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+.status svg {
+  width: 17cqi;
+  height: 3cqi;
+}
+.island {
+  position: absolute;
+  top: 2.6cqi;
+  left: 50%;
+  width: 27.8cqi;
+  height: 5.6cqi;
+  border-radius: 999px;
+  background: #000;
+  transform: translateX(-50%);
+}
+/* 옆 버튼: 왼쪽 동작·음량 2개, 오른쪽 전원·카메라. 테두리 밖으로 살짝 나온다 */
+.key {
+  position: absolute;
+  width: 1cqi;
+  border-radius: 0.6cqi;
+  background: linear-gradient(
+    90deg,
+    var(--metal-lo),
+    var(--metal-hi) 55%,
+    var(--metal-mid)
+  );
+}
+.key[data-k="action"],
+.key[data-k="up"],
+.key[data-k="down"] {
+  left: -0.7cqi;
+}
+.key[data-k="power"],
+.key[data-k="camera"] {
+  right: -0.7cqi;
+}
+.key[data-k="action"] {
+  top: 17%;
+  height: 3.6%;
+}
+.key[data-k="up"] {
+  top: 24%;
+  height: 6.4%;
+}
+.key[data-k="down"] {
+  top: 32.4%;
+  height: 6.4%;
+}
+.key[data-k="power"] {
+  top: 26%;
+  height: 10%;
+}
+.key[data-k="camera"] {
+  top: 57%;
+  height: 5.6%;
+  right: -0.4cqi;
+}
+
+/* 노트북: 화면부(검정 베젤, 위 모서리만 둥글게, 위 가운데 카메라 노치, 바깥 1px 금속 선) +
+   그보다 넓은 금속 하판(가운데 손톱 홈). 틀 폭은 하판 폭이고 화면부는 그 92% */
+.lid {
+  position: relative;
+  width: 92%;
+  margin: 0 auto;
+  padding: 1.3cqi 1.1cqi 1.1cqi;
+  border-radius: 2.6cqi 2.6cqi 0 0;
+  background: #050505;
+  box-shadow: 0 0 0 1px var(--metal-mid);
+}
+.notch {
+  position: absolute;
+  z-index: 1;
+  top: 1.3cqi;
+  left: 50%;
+  width: 6.4cqi;
+  height: 1.5cqi;
+  border-radius: 0 0 0.8cqi 0.8cqi;
+  background: #050505;
+  transform: translateX(-50%);
 }
 .desktop .screen {
-  aspect-ratio: 1440 / 900;
+  border-radius: 1cqi 1cqi 0 0;
+}
+.chrome {
+  flex: none;
+  height: 2.6cqi;
+  padding: 0 1.2cqi;
+  display: flex;
+  align-items: center;
+  gap: 0.55cqi;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.chrome i {
+  width: 0.85cqi;
+  height: 0.85cqi;
+  border-radius: 50%;
+  background: #ff5f57;
+}
+.chrome i:nth-child(2) {
+  background: #febc2e;
+}
+.chrome i:nth-child(3) {
+  background: #28c840;
+}
+.addr {
+  margin-left: 1.4cqi;
+  width: 22cqi;
+  height: 1.6cqi;
+  padding: 0 0.8cqi;
+  display: flex;
+  align-items: center;
+  border-radius: 0.5cqi;
+  background: var(--canvas);
+  font-size: 0.95cqi;
+  font-weight: 600;
+  color: var(--text-muted);
+  overflow: hidden;
+  white-space: nowrap;
+}
+.base {
+  position: relative;
+  height: 1.9cqi;
+  border-radius: 0.3cqi 0.3cqi 2.6cqi 2.6cqi / 0.3cqi 0.3cqi 1.3cqi 1.3cqi;
+  background: linear-gradient(
+    to bottom,
+    var(--metal-hi),
+    var(--metal-mid) 40%,
+    var(--metal-lo)
+  );
+  box-shadow:
+    0 0.8cqi 1cqi -0.3cqi var(--device-shadow),
+    0 4cqi 7cqi -2cqi var(--device-shadow-soft);
+}
+.lip {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 12cqi;
+  height: 0.75cqi;
+  border-radius: 0 0 1.6cqi 1.6cqi / 0 0 0.75cqi 0.75cqi;
+  background: linear-gradient(to bottom, var(--metal-lo), var(--metal-mid));
+  transform: translateX(-50%);
 }
 /* 점수 묶음 요소 캡처(§3) */
 .panel {
@@ -241,7 +407,7 @@
 }
 
 /* ---------- §1 첫 화면 ---------- */
-/* 375: 글 → 채점 결과 휴대폰 1.0배(좌우·아래로 잘림). 768: 데스크톱 홈 뒤 + 휴대폰 앞.
+/* 375: 글 → 채점 결과 휴대폰(폭 안에 다 보이고 아래로 잘림). 768: 데스크톱 홈 뒤 + 휴대폰 앞.
    PC: 왼쪽 글, 오른쪽 무대는 화면 오른쪽·아래 끝까지 */
 .hero {
   display: flex;
@@ -289,8 +455,8 @@
 .heroFront {
   position: absolute;
   top: 0;
-  left: calc(50% - 206px);
-  width: 412px;
+  left: calc(50% - min(170px, 45vw));
+  width: min(340px, 90vw);
 }
 @media (min-width: 768px) {
   .hero {
@@ -603,7 +769,7 @@
 /* 스크롤에 묶인 정점: 섹션이 3화면 높이의 트랙이 되고 무대가 헤더 아래에 붙는다.
    트랙 14~20 · 32~38 · 50~56%에서 다음 면접 화면이 같은 자리에 겹쳐 나타나고(opacity),
    58~66%에 데스크톱 틀이 0.82배에서 화면 폭으로 커지며 위 글이 홀드 문장으로 바뀐다(채널 2).
-   66%에 정착하고 남은 34%(약 1화면)는 멈춘 채 읽힌다. 1024 미만은 휴대폰 1.0배, 커지지 않는다 */
+   66%에 정착하고 남은 34%(약 1화면)는 멈춘 채 읽힌다. 1024 미만은 휴대폰 한 대(최대 1.0배), 커지지 않는다 */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) and (min-height: 700px) {
     .peak {
@@ -652,7 +818,7 @@
       align-items: flex-start;
     }
     .peakPhone {
-      width: 412px;
+      width: min(412px, 90vw);
     }
     .step:not(:last-child) {
       display: block;

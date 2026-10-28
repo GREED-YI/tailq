@@ -97,15 +97,15 @@ const PEAK_PHONE = [
   ["p05-followup2", "d04-followup2"],
   ["p06-followup3", "d05-followup3"],
 ];
-// 하루 한 바퀴(§2): 번호 · 이름 · 캡처 · 데스크톱이면 주소 막대 글
-const REEL: [string, string, string?][] = [
+// 하루 한 바퀴(§2): 이름 · 캡처 · 데스크톱 화면이면 true
+const REEL: [string, string, boolean?][] = [
   ["홈", "p01-home"],
   ["답변", "p02-answer"],
-  ["채점", "d02-result", "/interview"],
+  ["채점", "d02-result", true],
   ["꼬리질문", "p05-followup2"],
   ["오늘의 결과", "p07-today-result"],
   ["Q노트", "p08-qnote"],
-  ["리포트", "d07-report", "/report"],
+  ["리포트", "d07-report", true],
   ["Q메이커 프로젝트", "p11-qmaker-projects"],
   ["학습 자료", "p12-qmaker-notes"],
   ["학습 자료 질문", "p14-note-questions"],
@@ -161,7 +161,7 @@ export default function Landing() {
             </a>
           </div>
           <div className={s.heroStage}>
-            <Desktop route="/home" className={s.heroBack}>
+            <Desktop className={s.heroBack}>
               <Shot
                 id="d01-home"
                 {...DESK}
@@ -170,7 +170,7 @@ export default function Landing() {
                 from={768}
               />
             </Desktop>
-            <Phone front className={s.heroFront}>
+            <Phone className={s.heroFront}>
               <Shot id="p03-result" {...PHONE} alt={ALT["p03-result"]} eager />
             </Phone>
           </div>
@@ -214,7 +214,7 @@ export default function Landing() {
             tabIndex={0}
           >
             <ol className={s.reelList}>
-              {REEL.map(([label, id, route], n) => (
+              {REEL.map(([label, id, desk], n) => (
                 <li key={id}>
                   <p className={s.reelLabel}>
                     <span className="mono">
@@ -222,8 +222,8 @@ export default function Landing() {
                     </span>
                     {label}
                   </p>
-                  {route ? (
-                    <Desktop route={route} className={s.reelDesk}>
+                  {desk ? (
+                    <Desktop className={s.reelDesk}>
                       <Shot id={id} {...DESK} alt={ALT[id]} />
                     </Desktop>
                   ) : (
@@ -256,7 +256,7 @@ export default function Landing() {
             </p>
           </div>
           <div className={`${s.media7} ${s.duo} ${s.duoGrade}`}>
-            <Desktop route="/interview" className={`${s.back} ${s.wide}`}>
+            <Desktop className={`${s.back} ${s.wide}`}>
               <Shot id="d02-result" {...DESK} alt={ALT["d02-result"]} />
             </Desktop>
             <div
@@ -264,7 +264,7 @@ export default function Landing() {
             >
               <Shot id="e01-score" w={834} h={494} alt={ALT["e01-score"]} />
             </div>
-            <Phone front className={`${s.solo} ${s.narrow} ${s.reveal}`}>
+            <Phone className={`${s.solo} ${s.narrow} ${s.reveal}`}>
               <Shot id="p03b-feedback" {...PHONE} alt={ALT["p03b-feedback"]} />
             </Phone>
           </div>
@@ -296,7 +296,7 @@ export default function Landing() {
               </p>
             </div>
             <div className={s.peakFrame}>
-              <Desktop route="/interview" className={`${s.peakDesk} ${s.wide}`}>
+              <Desktop className={`${s.peakDesk} ${s.wide}`}>
                 {PEAK_DESK.map((id) => (
                   <div key={id} className={s.step}>
                     <Shot id={id} {...DESK} alt={ALT[id]} />
@@ -331,10 +331,10 @@ export default function Landing() {
             </p>
           </div>
           <div className={`${s.media7} ${s.duo}`}>
-            <Desktop route="/questions/225" className={`${s.back} ${s.wide}`}>
+            <Desktop className={`${s.back} ${s.wide}`}>
               <Shot id="d06-question" {...DESK} alt={ALT["d06-question"]} />
             </Desktop>
-            <Phone front className={`${s.solo} ${s.fore} ${s.reveal}`}>
+            <Phone className={`${s.solo} ${s.fore} ${s.reveal}`}>
               <Shot id="p08-qnote" {...PHONE} alt={ALT["p08-qnote"]} />
             </Phone>
           </div>
@@ -355,20 +355,17 @@ export default function Landing() {
             </p>
           </div>
           <div className={`${s.media7} ${s.duo}`}>
-            <Desktop route="/report" className={`${s.back} ${s.wide}`}>
+            <Desktop className={`${s.back} ${s.wide}`}>
               <Shot id="d07-report" {...DESK} alt={ALT["d07-report"]} />
             </Desktop>
-            <Phone
-              front
-              className={`${s.solo} ${s.fore} ${s.wide} ${s.reveal}`}
-            >
+            <Phone className={`${s.solo} ${s.fore} ${s.wide} ${s.reveal}`}>
               <Shot
                 id="p01b-home-stats"
                 {...PHONE}
                 alt={ALT["p01b-home-stats"]}
               />
             </Phone>
-            <Phone front className={`${s.solo} ${s.narrow} ${s.reveal}`}>
+            <Phone className={`${s.solo} ${s.narrow} ${s.reveal}`}>
               <Shot id="p10-report" {...PHONE} alt={ALT["p10-report"]} />
             </Phone>
           </div>
@@ -399,10 +396,7 @@ export default function Landing() {
             </label>
           </div>
           <div className={`${s.media7} ${s.duo} ${s.duoMaker}`}>
-            <Desktop
-              route="/projects/notes/new"
-              className={`${s.back} ${s.motionOnly}`}
-            >
+            <Desktop className={`${s.back} ${s.motionOnly}`}>
               {/* 포스터 자리: 녹화 마지막 장면(D08). 재생 전·JS 없음에는 이 그림이 보이고, 재생하면 녹화가 덮는다.
                   poster 속성은 숨은 테마·숨은 폭에서도 받아 와서 쓰지 않는다 */}
               <Shot id="d08-note-new" {...DESK} alt="" />
@@ -430,10 +424,7 @@ export default function Landing() {
             <Phone className={`${s.solo} ${s.stillOnly}`}>
               <Shot id="p13-note-new" {...PHONE} alt={ALT["p13-note-new"]} />
             </Phone>
-            <Phone
-              front
-              className={`${s.solo} ${s.fore} ${s.pair} ${s.reveal}`}
-            >
+            <Phone className={`${s.solo} ${s.fore} ${s.pair} ${s.reveal}`}>
               <Shot
                 id="p14-note-questions"
                 {...PHONE}
