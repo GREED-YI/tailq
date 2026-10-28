@@ -60,7 +60,7 @@ async function Detail({ id }: { id: string }) {
   const { data: session } = await supabase
     .from("sessions")
     .select(
-      "day, status, questions(id, prompt, topic_id, level, topics(field), projects(name), bookmarks(question_id)), turns(id, idx, status, answer, follow_up_prompt)",
+      "day, status, questions(id, prompt, topic_id, level, topics(field), projects(name), study_notes(title), bookmarks(question_id)), turns(id, idx, status, answer, follow_up_prompt)",
     )
     .eq("id", id)
     .order("idx", { referencedTable: "turns" })

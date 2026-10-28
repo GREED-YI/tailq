@@ -302,7 +302,7 @@ function ListHead({
   );
 }
 
-// 오늘의 질문 라벨과 질문 번호·주제 줄. 은행 질문 번호·주제는 Geist Mono, 프로젝트 이름(한글)은 본문 글꼴
+// 오늘의 질문 라벨과 질문 번호·주제 줄. 은행 질문 번호·주제는 Geist Mono, 프로젝트 이름·학습 자료 제목(한글)은 본문 글꼴
 function QuestionTag({
   label = "오늘의 질문",
   q,
@@ -314,7 +314,9 @@ function QuestionTag({
     <div className={s.tagRow}>
       <span className="tag tag-today">{label}</span>
       {q && (
-        <span className={`${q.projectId ? "num" : "mono"} ${s.qMeta}`}>
+        <span
+          className={`${q.projectId || q.noteId ? "num" : "mono"} ${s.qMeta}`}
+        >
           {q.label} · {q.topic}
         </span>
       )}

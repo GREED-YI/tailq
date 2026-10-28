@@ -104,7 +104,11 @@ async function Questions({ filter: raw }: { filter: unknown }) {
     byQuestion.set(r.question_id, {
       id: q.id,
       prompt: q.prompt,
-      meta: q.projects ? q.projects.name : tagLine(q),
+      meta: q.projects
+        ? q.projects.name
+        : q.study_notes
+          ? q.study_notes.title
+          : tagLine(q),
       count: 1,
       score: main.verdict === "unknown" ? null : main.score,
       box: review?.box ?? null,

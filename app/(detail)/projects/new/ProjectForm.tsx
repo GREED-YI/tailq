@@ -8,9 +8,39 @@ import { LimitNotice, type Notice } from "@/components/LimitNotice";
 import { CONTENT_MAX, CONTENT_MIN, NAME_MAX } from "@/lib/questions";
 import s from "@/app/(app)/projects/projects.module.css";
 
-// 이름과 README를 받아 등록하고, 질문을 만드는 동안 보여줄 질문 목록 화면으로 간다.
+// 프로젝트와 학습 자료(#141)는 같은 등록 화면을 쓰고 API·글만 다르다. 학습 자료는 .md 파일을 불러올 수 있다
+const COPY = {
+  project: {
+    api: "/api/projects",
+    title: "프로젝트 등록",
+    nameLabel: "프로젝트 이름",
+    namePlaceholder: "예: 혜자 - 청년 지원금 매칭",
+    contentLabel: "README 또는 설명",
+    contentPlaceholder: "README나 프로젝트 설명을 붙여넣어 주세요",
+    help: "README를 넣으면 예상 질문 5개를 만들어 줘요",
+  },
+  note: {
+    api: "/api/notes",
+    title: "학습 자료 등록",
+    nameLabel: "학습 자료 제목",
+    namePlaceholder: "예: 운영체제 - 프로세스와 스레드",
+    contentLabel: "학습 자료(마크다운)",
+    contentPlaceholder:
+      "정리한 노트나 수업 자료를 붙여넣거나 .md 파일을 불러와 주세요",
+    help: "학습 자료를 넣으면 개념 질문 5개를 만들어 줘요",
+  },
+};
+
+// 이름과 README(학습 자료)를 받아 등록하고, 질문을 만드는 동안 보여줄 질문 목록 화면으로 간다.
 // notice가 있으면(오늘 등록 한도·월 예산 소진) 입력칸 대신 안내만 보여준다
-export function ProjectForm({ notice }: { notice: Notice | null }) {
+export function ProjectForm({
+  kind = "project",
+  notice,
+}: {
+  kind?: keyof typeof COPY;
+  notice: Notice | null;
+}) {
+  const c = COPY[kind];
   const router = useRouter();
   const [name, setName] = useState("");
   const [content, setContent] = useState("");
@@ -21,6 +51,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
   // 등록한 뒤라면 칸도 비워 새 등록 화면이 빈 칸으로 열리게 한다
   const inFlight = useRef(false);
   const created = useRef(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const release = () => {
       if (inFlight.current) return;
@@ -45,20 +76,48 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
     setBusy(true);
     inFlight.current = true;
     setError("");
-    const res = await fetch("/api/projects", {
+    const res = await fetch(c.api, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name, content }),
+      body: JSON.stringify(
+        kind === "note" ? { title: name, content } : { name, content },
+      ),
     }).catch(() => null);
     const json = await res?.json().catch(() => null);
     inFlight.current = false;
     if (res?.ok) {
       created.current = true;
-      router.replace(`/projects/${json.project.id}`);
+      router.replace(
+        kind === "note"
+          ? `/projects/notes/${json.note.id}`
+          : `/projects/${json.project.id}`,
+      );
       return;
     }
     setBusy(false);
     setError(json?.error?.message ?? "잠시 뒤에 다시 시도해 주세요.");
+  }
+
+  // .md 파일은 브라우저에서 글로 읽어 입력칸에 넣는다. 파일 자체는 서버로 보내지도 저장하지도 않는다(#141)
+  async function load(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    // 같은 파일을 다시 골라도 change가 일어나게 비운다
+    e.target.value = "";
+    if (!file) return;
+    const text = await file.text().catch(() => null);
+    if (text === null) {
+      setError("파일을 읽지 못했어요. 내용을 복사해 붙여넣어 주세요.");
+      return;
+    }
+    const n = text.trim().length;
+    if (n > CONTENT_MAX) {
+      setError(
+        `파일이 ${CONTENT_MAX.toLocaleString()}자를 넘어요(${n.toLocaleString()}자). 줄이거나 나눠서 등록해 주세요.`,
+      );
+      return;
+    }
+    setError("");
+    setContent(text);
   }
 
   return (
@@ -71,7 +130,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
         >
           <Icon name="chevronLeft" />
         </Link>
-        <h1>프로젝트 등록</h1>
+        <h1>{c.title}</h1>
       </header>
 
       {notice ? (
@@ -79,7 +138,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
       ) : (
         <form className={s.form} onSubmit={submit}>
           <label htmlFor="project-name" className={s.label}>
-            프로젝트 이름
+            {c.nameLabel}
           </label>
           <input
             id="project-name"
@@ -87,13 +146,13 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={NAME_MAX}
-            placeholder="예: 혜자 - 청년 지원금 매칭"
+            placeholder={c.namePlaceholder}
             autoComplete="off"
             required
           />
 
           <label htmlFor="project-content" className={`${s.label} ${s.gap}`}>
-            README 또는 설명
+            {c.contentLabel}
           </label>
           <textarea
             id="project-content"
@@ -106,7 +165,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
             }
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="README나 프로젝트 설명을 붙여넣어 주세요"
+            placeholder={c.contentPlaceholder}
             spellCheck={false}
             aria-describedby="project-help"
             required
@@ -119,7 +178,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
             <span className={s.mobileHelp}>
               {length > 0 && length < CONTENT_MIN
                 ? `${CONTENT_MIN}자 이상 써 주세요`
-                : "README를 넣으면 예상 질문 5개를 만들어 줘요"}
+                : c.help}
             </span>
             <span className={`num ${s.pcHelp}`}>
               {length > 0 && length < CONTENT_MIN
@@ -130,6 +189,25 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
               {length.toLocaleString()} / {CONTENT_MAX.toLocaleString()}
             </span>
           </p>
+          {kind === "note" && (
+            <div className={s.fileRow}>
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".md,.markdown,.txt"
+                onChange={load}
+                hidden
+              />
+              <button
+                type="button"
+                className="btn btn-md btn-secondary press"
+                disabled={busy}
+                onClick={() => fileRef.current?.click()}
+              >
+                .md 파일 불러오기
+              </button>
+            </div>
+          )}
 
           <div className={s.bottom}>
             {error && (

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { loadProjectSession, startDailySession } from "@/lib/daily";
+import { loadProjectSession, sourceHref, startDailySession } from "@/lib/daily";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { turnResult } from "@/lib/turn";
@@ -45,7 +45,7 @@ async function SessionInterview({ sessionId }: { sessionId?: string }) {
   if (!session || session === "budget") {
     redirect(sessionId ? "/projects" : "/home");
   }
-  const projectHref = sessionId && `/projects/${session.question.projectId}`;
+  const projectHref = sessionId && sourceHref(session.question);
 
   // 이어하기: 턴마다 저장하므로 가장 마지막 턴(본 질문 또는 꼬리질문)부터 이어간다(08 설계 "이어하기").
   // RLS가 자기 세션의 턴만 보여준다. 멈춘 채점은 effective_status가 failed다

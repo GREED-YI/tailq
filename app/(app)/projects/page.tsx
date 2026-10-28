@@ -5,7 +5,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { Icon } from "@/components/icons";
 import { LimitNotice, limitNotice } from "@/components/LimitNotice";
 import { LoadingStatus } from "@/components/LoadingStatus";
-import { MAX_PROJECTS } from "@/lib/questions";
+import { MAX_NOTES, MAX_PROJECTS } from "@/lib/questions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { loadQuota } from "@/lib/usage";
@@ -15,12 +15,15 @@ import { RefreshWhileGenerating } from "./RefreshWhileGenerating";
 export const metadata: Metadata = { title: "내 프로젝트 · TailQ" };
 
 // 내 프로젝트 목록(04 기능 명세 9번, S22). 프로젝트는 3개까지, 누르면 질문 목록(S24)으로 간다.
+// 그 아래 학습 자료(#141)도 3개까지 같은 모양으로 보여준다. 주 버튼은 프로젝트 등록 하나라 학습 자료 등록은 테두리 버튼이다.
 export default function ProjectsPage() {
   return (
     <div className={s.page}>
       <AppHeader title="내 프로젝트" />
       <h1 className={s.pageTitle}>내 프로젝트</h1>
-      <p className={s.desc}>README를 넣으면 예상 질문 5개를 만들어 줘요</p>
+      <p className={s.desc}>
+        README나 학습 자료를 넣으면 예상 질문 5개를 만들어 줘요
+      </p>
       <div className={`${s.cols} ${s.list}`}>
         <Suspense fallback={<Loading />}>
           <Projects />
@@ -73,131 +76,202 @@ function Loading() {
     <>
       <LoadingStatus />
       <div className={s.list} aria-busy="true" aria-hidden="true">
-        <div className={s.listHead}>
-          <h2>등록한 프로젝트</h2>
-        </div>
-        <ul className={s.rows}>
-          {[0, 1].map((i) => (
-            <li key={i} className={s.row}>
-              <span className={s.text}>
-                <span className={s.meta}>
-                  <span className="skeleton" style={{ width: "40%" }} />
+        <div>
+          <div className={s.listHead}>
+            <h2>등록한 프로젝트</h2>
+          </div>
+          <ul className={s.rows}>
+            {[0, 1].map((i) => (
+              <li key={i} className={s.row}>
+                <span className={s.text}>
+                  <span className={s.meta}>
+                    <span className="skeleton" style={{ width: "40%" }} />
+                  </span>
+                  <span className={s.name}>
+                    <span className="skeleton" style={{ width: "60%" }} />
+                  </span>
                 </span>
-                <span className={s.name}>
-                  <span className="skeleton" style={{ width: "60%" }} />
-                </span>
-              </span>
-            </li>
-          ))}
-        </ul>
-        <div className={s.bottom}>
-          <span className="skeleton" style={{ height: 52 }} />
+              </li>
+            ))}
+          </ul>
+          <div className={s.bottom}>
+            <span className="skeleton" style={{ height: 52 }} />
+          </div>
+          <GuideNote />
         </div>
-        <GuideNote />
+        <div className={s.notes}>
+          <div className={s.listHead}>
+            <h2>학습 자료</h2>
+          </div>
+        </div>
       </div>
     </>
   );
 }
 
-// RLS가 내 프로젝트와 그 질문·세션만 보여준다. 본 질문을 채점받은(답했거나 모르겠어요) 질문을 "연습함"으로 세고,
-// 평균은 질문마다 가장 최근 본 질문 점수로 낸다(모르겠어요 빼고. 상세 화면 S24와 같은 기준).
-// 하루 한도·월 예산은 시작하기 전에 확인해 안내(S26)를 보여주고, 등록할 수 없으면 버튼을 막는다
+type Turn = {
+  idx: number;
+  status: string;
+  score: number | null;
+  verdict: string | null;
+};
+type Item = {
+  id: string;
+  name: string;
+  status: string;
+  questions: { sessions: { created_at: string; turns: Turn[] }[] }[];
+};
+
+// 목록 한 줄. 본 질문을 채점받은(답했거나 모르겠어요) 질문을 "연습함"으로 세고, 평균은 질문마다 가장 최근 본 질문
+// 점수로 낸다(모르겠어요 빼고. 상세 화면 S24와 같은 기준). 프로젝트와 학습 자료가 같이 쓴다
+function Row({ href, item }: { href: string; item: Item }) {
+  const mains = item.questions.flatMap((q) => {
+    const main = [...q.sessions]
+      .sort((a, b) => b.created_at.localeCompare(a.created_at))
+      .map((ss) => ss.turns.find((t) => t.idx === 0))
+      .find((t) => t?.status === "graded");
+    return main ? [main] : [];
+  });
+  const scores = mains
+    .filter((t) => t.verdict !== "unknown" && t.score !== null)
+    .map((t) => t.score as number);
+  const n = item.questions.length;
+  const meta =
+    item.status === "generating" ? (
+      <>
+        <span className="tag tag-neutral">만드는 중</span>
+        예상 질문을 만들고 있어요
+      </>
+    ) : item.status === "failed" ? (
+      "질문을 만들지 못했어요 · 다시 만들 수 있어요"
+    ) : mains.length === 0 ? (
+      `질문 ${n}개 · 아직 연습 안 함`
+    ) : (
+      `${n}문제 중 ${mains.length}개 연습${scores.length ? ` · 평균 ${Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)}` : ""}`
+    );
+  return (
+    <li>
+      <Link href={href} className={`hover-row ${s.row}`}>
+        <span className={s.text}>
+          <span
+            className={`num ${s.meta}`}
+            data-failed={item.status === "failed" || undefined}
+          >
+            {meta}
+          </span>
+          <span className={s.name}>{item.name}</span>
+        </span>
+        <Icon name="chevronRight" size={18} />
+      </Link>
+    </li>
+  );
+}
+
+const QUESTION_STATS =
+  "questions(id, sessions(created_at, turns(idx, status, score, verdict)))";
+
+// RLS가 내 프로젝트·학습 자료와 그 질문·세션만 보여준다.
+// 하루 한도·월 예산은 시작하기 전에 확인해 안내(S26)를 보여주고, 등록할 수 없으면 버튼을 막는다.
+// 하루 질문 만들기 한도는 프로젝트와 학습 자료가 함께 센다(08 설계 "하루 사용 한도와 월 예산")
 async function Projects() {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getClaims();
-  const [{ data }, quota] = await Promise.all([
+  const [{ data }, { data: notes }, quota] = await Promise.all([
     supabase
       .from("projects")
-      .select(
-        "id, name, status, questions(id, sessions(created_at, turns(idx, status, score, verdict)))",
-      )
+      .select(`id, name, status, ${QUESTION_STATS}`)
+      .order("created_at")
+      .throwOnError(),
+    supabase
+      .from("study_notes")
+      .select(`id, name:title, status, ${QUESTION_STATS}`)
       .order("created_at")
       .throwOnError(),
     loadQuota(createAdminClient(), auth?.claims.sub ?? null),
   ]);
 
   const notice = limitNotice(quota, "both");
-  const full =
-    data.length >= MAX_PROJECTS ||
-    quota.budget === "exceeded" ||
-    quota.gensLeft <= 0;
-  const generating = data.some((p) => p.status === "generating");
+  const noGen = quota.budget === "exceeded" || quota.gensLeft <= 0;
+  const full = data.length >= MAX_PROJECTS || noGen;
+  const notesFull = notes.length >= MAX_NOTES || noGen;
+  const generating = [...data, ...notes].some((p) => p.status === "generating");
   return (
     <>
       <div className={s.list}>
         {generating && <RefreshWhileGenerating />}
-        <div className={s.listHead}>
-          <h2>등록한 프로젝트</h2>
-          <span className={`num ${s.count}`}>
-            <span className="mono">
-              {data.length} / {MAX_PROJECTS}
+        <div>
+          <div className={s.listHead}>
+            <h2>등록한 프로젝트</h2>
+            <span className={`num ${s.count}`}>
+              <span className="mono">
+                {data.length} / {MAX_PROJECTS}
+              </span>
+              개 등록
             </span>
-            개 등록
-          </span>
+          </div>
+          <ul className={s.rows}>
+            {data.length === 0 && (
+              <li className={s.empty}>아직 등록한 프로젝트가 없어요</li>
+            )}
+            {data.map((p) => (
+              <Row key={p.id} href={`/projects/${p.id}`} item={p} />
+            ))}
+          </ul>
+          {notice && <LimitNotice {...notice} />}
+          <div className={s.bottom}>
+            {full ? (
+              <button type="button" className="btn btn-primary" disabled>
+                프로젝트 등록
+              </button>
+            ) : (
+              <Link href="/projects/new" className="btn btn-primary press">
+                프로젝트 등록
+              </Link>
+            )}
+          </div>
+          <GuideNote />
         </div>
-        <ul className={s.rows}>
-          {data.length === 0 && (
-            <li className={s.empty}>아직 등록한 프로젝트가 없어요</li>
-          )}
-          {data.map((p) => {
-            const mains = p.questions.flatMap((q) => {
-              const main = [...q.sessions]
-                .sort((a, b) => b.created_at.localeCompare(a.created_at))
-                .map((ss) => ss.turns.find((t) => t.idx === 0))
-                .find((t) => t?.status === "graded");
-              return main ? [main] : [];
-            });
-            const scores = mains
-              .filter((t) => t.verdict !== "unknown" && t.score !== null)
-              .map((t) => t.score as number);
-            const n = p.questions.length;
-            const meta =
-              p.status === "generating" ? (
-                <>
-                  <span className="tag tag-neutral">만드는 중</span>
-                  예상 질문을 만들고 있어요
-                </>
-              ) : p.status === "failed" ? (
-                "질문을 만들지 못했어요 · 다시 만들 수 있어요"
-              ) : mains.length === 0 ? (
-                `질문 ${n}개 · 아직 연습 안 함`
-              ) : (
-                `${n}문제 중 ${mains.length}개 연습${scores.length ? ` · 평균 ${Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)}` : ""}`
-              );
-            return (
-              <li key={p.id}>
-                <Link
-                  href={`/projects/${p.id}`}
-                  className={`hover-row ${s.row}`}
-                >
-                  <span className={s.text}>
-                    <span
-                      className={`num ${s.meta}`}
-                      data-failed={p.status === "failed" || undefined}
-                    >
-                      {meta}
-                    </span>
-                    <span className={s.name}>{p.name}</span>
-                  </span>
-                  <Icon name="chevronRight" size={18} />
-                </Link>
+
+        <section className={s.notes} aria-labelledby="notes-head">
+          <div className={s.listHead}>
+            <h2 id="notes-head">학습 자료</h2>
+            <span className={`num ${s.count}`}>
+              <span className="mono">
+                {notes.length} / {MAX_NOTES}
+              </span>
+              개 등록
+            </span>
+          </div>
+          <ul className={s.rows}>
+            {notes.length === 0 && (
+              <li className={s.empty}>
+                정리한 노트나 수업 자료로 개념 질문을 만들어 보세요
               </li>
-            );
-          })}
-        </ul>
-        {notice && <LimitNotice {...notice} />}
-        <div className={s.bottom}>
-          {full ? (
-            <button type="button" className="btn btn-primary" disabled>
-              프로젝트 등록
-            </button>
-          ) : (
-            <Link href="/projects/new" className="btn btn-primary press">
-              프로젝트 등록
-            </Link>
-          )}
-        </div>
-        <GuideNote />
+            )}
+            {notes.map((n) => (
+              <Row key={n.id} href={`/projects/notes/${n.id}`} item={n} />
+            ))}
+          </ul>
+          <div className={`${s.bottom} ${s.static}`}>
+            {notesFull ? (
+              <button type="button" className="btn btn-secondary" disabled>
+                학습 자료 등록
+              </button>
+            ) : (
+              <Link
+                href="/projects/notes/new"
+                className="btn btn-secondary press"
+              >
+                학습 자료 등록
+              </Link>
+            )}
+          </div>
+          <p className={s.guideNote}>
+            학습 자료는 최대 {MAX_NOTES}개까지 등록할 수 있어요.
+            <br />
+            질문 만들기와 연습 횟수는 프로젝트와 함께 세요.
+          </p>
+        </section>
       </div>
       {data.length === 0 && <Guide />}
     </>

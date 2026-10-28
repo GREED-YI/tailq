@@ -162,6 +162,19 @@
   display: flex;
   flex-direction: column;
 }
+/* 학습 자료 등록(#141): 주 버튼이 아니라 화면 아래에 붙이지 않고 목록 바로 아래에 둔다 */
+.static {
+  position: static;
+}
+/* 학습 자료 구획(#141): 프로젝트 구획 아래 */
+.notes {
+  margin-top: 16px;
+}
+/* 학습 자료 등록의 .md 파일 불러오기(테두리 버튼): 도움말 아래 */
+.fileRow {
+  margin-top: 12px;
+  display: flex;
+}
 /* 등록·질문 화면(S23·S24)은 탭바가 없어 화면 끝에서 16 위 */
 .detail .bottom {
   bottom: calc(16px + env(safe-area-inset-bottom));

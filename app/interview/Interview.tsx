@@ -338,7 +338,7 @@ export function Interview({
             data-compact={showResult || undefined}
           >
             <span
-              className={`${turn.idx === 0 && !question.projectId ? "mono" : ""} ${s.tag}`}
+              className={`${turn.idx === 0 && !question.projectId && !question.noteId ? "mono" : ""} ${s.tag}`}
             >
               {tag}
             </span>

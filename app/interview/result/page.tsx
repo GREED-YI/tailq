@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Icon } from "@/components/icons";
-import { loadProjectSession, startDailySession } from "@/lib/daily";
+import { loadProjectSession, sourceHref, startDailySession } from "@/lib/daily";
 import { kstDay } from "@/lib/daily-pick";
 import { daysUntil, dueLabel } from "@/lib/review";
 import { loadStudy } from "@/lib/study";
@@ -51,7 +51,7 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
   if (session.status === "open") {
     redirect(sessionId ? `/interview?session=${sessionId}` : "/interview");
   }
-  const back = sessionId ? `/projects/${session.question.projectId}` : "/home";
+  const back = sessionId ? sourceHref(session.question) : "/home";
 
   const [{ data: turns }, { data: review }, study] = await Promise.all([
     supabase
@@ -95,11 +95,15 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
       <main className={s.summaryMain}>
         <div className={s.hero}>
           <div className={s.heroMeta}>
-            {/* today 라벨은 오늘의 질문에만. 프로젝트 질문은 neutral(DESIGN.md label) */}
+            {/* today 라벨은 오늘의 질문에만. 프로젝트·학습 자료 질문은 neutral(DESIGN.md label) */}
             <span className={`tag ${sessionId ? "tag-neutral" : "tag-today"}`}>
-              {sessionId ? "프로젝트 질문" : "오늘의 결과"}
+              {sessionId
+                ? q.noteId
+                  ? "학습 자료 질문"
+                  : "프로젝트 질문"
+                : "오늘의 결과"}
             </span>
-            <span className={q.projectId ? "" : "mono"}>
+            <span className={q.projectId || q.noteId ? "" : "mono"}>
               {q.label} · {q.topic}
             </span>
           </div>
