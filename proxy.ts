@@ -6,7 +6,6 @@ import { isAdmin } from "@/lib/admin";
 const APP_PATHS = [
   "/home",
   "/questions",
-  "/review",
   "/history",
   "/report",
   "/projects",

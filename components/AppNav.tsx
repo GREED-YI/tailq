@@ -13,7 +13,7 @@ const TABS: {
   label: string;
   icon: IconName;
   where?: "wide" | "mobile";
-  // 이 주소들에서도 탭을 켠다. 옛 복습·기록 주소(#132까지 열림)와 기록 상세는 내 질문 탭
+  // 이 주소들에서도 탭을 켠다. 기록 상세(/history/[id])는 내 질문 탭
   also?: string[];
 }[] = [
   { href: "/home", label: "홈", icon: "home" },
@@ -21,7 +21,7 @@ const TABS: {
     href: "/questions",
     label: "내 질문",
     icon: "review",
-    also: ["/review", "/history"],
+    also: ["/history"],
   },
   { href: "/report", label: "리포트", icon: "chart" },
   { href: "/projects", label: "프로젝트", icon: "projects" },
