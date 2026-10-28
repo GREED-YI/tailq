@@ -7,12 +7,16 @@ import s from "./landing.module.css";
 // - 꼬리질문 섹션(#peak)을 페이지의 반대 테마로 둔다. 헤더 토글로 테마가 바뀌면 따라 바꾼다
 //   (첫 그림 전에는 page.tsx의 인라인 스크립트가 같은 일을 한다. 앱 안에서 이동해 오면 그 스크립트는 돌지 않는다)
 // - 첫 화면 버튼(#try)을 누르면 체험 칸으로 내려가며 고른 분야(radio)에 초점을 준다
-// - 기록의 이번 주 칸(.week)과 만들어진 질문 목록(.pq)이 35% 보이면 data-seen을 한 번 건다(CSS가 그때 재생, 다시 숨기지 않는다)
+// - 화면 줄(.reel)과 무대(.duo)가 35% 보이면 data-seen을 한 번 건다(CSS가 그때 재생, 다시 숨기지 않는다)
+// - 화면 줄의 이전·다음 버튼은 한 칸씩 넘긴다
+// - §7 녹화는 보일 때만 재생한다. 화면을 벗어나거나, 마우스를 올리거나, "녹화 멈추기"를 켜면 선다.
+//   동작 줄이기면 재생하지 않는다(CSS가 녹화 대신 정지 화면을 보인다)
 export function LandingMotion() {
   useEffect(() => {
     const root = document.querySelector<HTMLElement>(`.${s.root}`);
     if (!root) return;
     const html = document.documentElement;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)");
 
     const peak = document.getElementById("peak");
     const invert = () => {
@@ -34,8 +38,17 @@ export function LandingMotion() {
           )
           ?.focus({ preventScroll: true }),
       );
+    const reel = root.querySelector<HTMLElement>(`.${s.reel}`);
     const onClick = (e: MouseEvent) => {
-      if ((e.target as Element).closest('a[href="#try"]')) focusTry();
+      const t = e.target as Element;
+      if (t.closest('a[href="#try"]')) focusTry();
+      const nav = t.closest<HTMLElement>("[data-reel]");
+      const item = reel?.querySelector("li");
+      if (nav && reel && item)
+        reel.scrollBy({
+          left: Number(nav.dataset.reel) * (item.clientWidth + 24),
+          behavior: reduce.matches ? "auto" : "smooth",
+        });
     };
     root.addEventListener("click", onClick);
     // 이 스크립트가 붙기 전에 버튼을 눌렀거나 #try로 들어왔으면 붙는 즉시 초점을 준다
@@ -54,13 +67,55 @@ export function LandingMotion() {
       { threshold: 0.35 },
     );
     root
-      .querySelectorAll(`.${s.week}, .${s.pq}`)
+      .querySelectorAll(`.${s.reel}, .${s.duo}`)
       .forEach((el) => io.observe(el));
+
+    // 녹화: 다크·라이트 두 편 중 보이는(display) 쪽만 교차하므로 테마가 바뀌면 저절로 바뀐 쪽이 재생된다
+    const videos = [...root.querySelectorAll("video")];
+    const stage = videos[0]?.closest<HTMLElement>(`.${s.desktop}`);
+    const pause = root.querySelector<HTMLInputElement>(`.${s.pause} input`);
+    const inView = new Set<Element>();
+    let hover = false;
+    const sync = () => {
+      for (const v of videos) {
+        if (inView.has(v) && !hover && !pause?.checked && !reduce.matches) {
+          v.muted = true;
+          v.play().catch(() => {});
+        } else v.pause();
+      }
+    };
+    const vio = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries)
+          if (e.isIntersecting) inView.add(e.target);
+          else inView.delete(e.target);
+        sync();
+      },
+      { threshold: 0.25 },
+    );
+    videos.forEach((v) => vio.observe(v));
+    const enter = () => {
+      hover = true;
+      sync();
+    };
+    const leave = () => {
+      hover = false;
+      sync();
+    };
+    stage?.addEventListener("pointerenter", enter);
+    stage?.addEventListener("pointerleave", leave);
+    pause?.addEventListener("change", sync);
+    reduce.addEventListener("change", sync);
 
     return () => {
       themeWatch.disconnect();
       io.disconnect();
+      vio.disconnect();
       root.removeEventListener("click", onClick);
+      stage?.removeEventListener("pointerenter", enter);
+      stage?.removeEventListener("pointerleave", leave);
+      pause?.removeEventListener("change", sync);
+      reduce.removeEventListener("change", sync);
     };
   }, []);
   return null;
