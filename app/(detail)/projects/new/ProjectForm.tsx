@@ -81,7 +81,7 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
             aria-invalid={length > CONTENT_MAX || undefined}
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="README나 프로젝트 설명을 붙여 넣으세요"
+            placeholder="README나 프로젝트 설명을 붙여넣어 주세요"
             spellCheck={false}
             aria-describedby="project-help"
             required
@@ -94,12 +94,12 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
             <span className={s.mobileHelp}>
               {length > 0 && length < CONTENT_MIN
                 ? `${CONTENT_MIN}자 이상 써 주세요`
-                : "README를 넣으면 예상 질문 5개를 만들어요"}
+                : "README를 넣으면 예상 질문 5개를 만들어 줘요"}
             </span>
             <span className={`num ${s.pcHelp}`}>
               {length > 0 && length < CONTENT_MIN
                 ? `${CONTENT_MIN}자 이상 써 주세요`
-                : "최대 10,000자까지 붙여 넣을 수 있어요"}
+                : "최대 10,000자까지 붙여넣을 수 있어요"}
             </span>
             <span className="mono">
               {length.toLocaleString()} / {CONTENT_MAX.toLocaleString()}

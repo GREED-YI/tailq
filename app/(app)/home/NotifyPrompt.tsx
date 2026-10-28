@@ -79,7 +79,7 @@ export function NotifyPrompt({
       onCancel={close}
     >
       <h2 id="notify-prompt-title">매일 질문을 알림으로 받을까요?</h2>
-      <p>정한 시각에 오늘의 질문을 알려드려요. 이미 푼 날은 보내지 않아요.</p>
+      <p>정한 시각에 오늘의 질문을 알려 줄게요. 이미 푼 날은 보내지 않아요.</p>
       <label className={s.dialogRow}>
         <span>알림 시각</span>
         <select

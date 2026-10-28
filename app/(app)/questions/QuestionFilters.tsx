@@ -21,7 +21,7 @@ export function QuestionFilters({
   counts: Record<QuestionFilter, number>;
 }) {
   return (
-    <nav className={s.chips} aria-label="내 질문 거르기">
+    <nav className={s.chips} aria-label="내 질문 필터">
       {FILTERS.map((f) => (
         <Link
           key={f.key}

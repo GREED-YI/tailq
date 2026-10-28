@@ -39,7 +39,7 @@ export default function QuestionsPage({
   );
 }
 
-const DESC = "잘 답하면 간격이 늘어나고, 부족하면 처음부터 다시 나와요";
+const DESC = "잘 답하면 복습 간격이 늘어나고, 부족하면 처음부터 다시 나와요";
 
 // 불러오는 동안: 같은 높이의 행 자리 4개
 function Loading() {
@@ -59,7 +59,7 @@ function Loading() {
 const EMPTY: Record<QuestionFilter, string> = {
   today: "오늘 복습할 질문이 없어요",
   week: "이번 주 복습할 질문이 없어요",
-  bookmark: "면접 화면이나 기록 상세에서 별표를 누르면 여기에 모여요",
+  bookmark: "면접 화면이나 기록 상세에서 별표를 누르면 여기에 질문이 모여요",
   mastered: "아직 복습 완료한 질문이 없어요",
   all: "오늘의 질문을 마치면 여기에 질문이 쌓여요",
 };
@@ -160,7 +160,7 @@ async function Questions({ filter: raw }: { filter: unknown }) {
         <p>
           잘 답할수록 다음 복습까지 간격이 길어져요.
           <br />
-          숙련도 5칸을 다 채우면 복습 완료한 질문이 돼요.
+          숙련도 5칸을 다 채우면 &lsquo;복습 완료&rsquo;로 옮겨져요.
         </p>
       </div>
     </>

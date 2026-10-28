@@ -15,12 +15,12 @@ type Save = (body: Body) => Promise<boolean>;
 
 const STEPS: { title: ReactNode; desc: ReactNode }[] = [
   {
-    title: "서비스 이용에 동의해주세요",
-    desc: "세 가지 모두 동의하면 시작할 수 있어요",
+    title: "서비스 이용에 동의해 주세요",
+    desc: "세 항목에 모두 동의하면 시작할 수 있어요",
   },
   {
-    title: "연습할 범위를 골라주세요",
-    desc: "여러 개 고를 수 있고, 나중에 MY에서 바꿀 수 있어요",
+    title: "연습할 범위를 골라 주세요",
+    desc: "여러 개 골라도 돼요. 나중에 MY에서 바꿀 수 있어요",
   },
 ];
 
@@ -153,7 +153,7 @@ const AGREEMENTS = [
   {
     id: "privacy",
     text: "개인정보처리방침",
-    note: "국외 이전 포함. 답변은 AI 채점을 위해 미국의 AI 서비스(Anthropic)⁠로 전송돼요.",
+    note: "국외 이전 포함. AI 채점을 위해 답변이 미국의 AI 서비스(Anthropic)⁠로 전송돼요.",
     href: "/privacy",
   },
   { id: "age", text: "만 14세 이상이에요" },

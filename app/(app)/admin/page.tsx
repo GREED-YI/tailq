@@ -285,7 +285,7 @@ async function Dashboard() {
           <Soon
             area="visit"
             title="첫 방문 → 첫 답변"
-            body="첫 방문자 중 첫 답변까지 간 비율(목표 50%)을 보여줄 자리예요."
+            body="첫 방문자 중 첫 답변을 제출한 비율(목표 50%)을 보여 줄 자리예요."
             issue={44}
           />
         </div>

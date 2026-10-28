@@ -21,7 +21,7 @@ export function HistoryFilters({
 }) {
   const current = bookmarkOnly ? "bookmark" : "all";
   return (
-    <nav className={s.filters} aria-label="기록 거르기">
+    <nav className={s.filters} aria-label="기록 필터">
       {FILTERS.map((f) => (
         <Link
           key={f.key}

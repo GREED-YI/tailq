@@ -4,16 +4,16 @@ import { expect, test } from "@playwright/test";
 test("섹션이 문서 순서대로 있다", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-    "하루 한 문제, AI가 채점하고 꼬리질문으로 되물어요",
+    "하루 한 문제, AI가 채점하고 되묻는 개발자 기술 면접 연습",
   );
   await expect(page.getByRole("heading", { level: 2 })).toHaveText([
-    "15개 주제에서 매일 한 문제가 나와요",
-    "잘한 점을 먼저, 보완할 점을 다음에 말해요",
-    "답한 문장에서 다음 질문이 나와요",
-    "약했던 질문은 다음 날 다시 나와요",
-    "점수와 약한 주제가 날마다 쌓여요",
-    "내 프로젝트 README를 붙이면, 그 프로젝트로 물어요",
-    "분야 하나 골라서 지금 한 문제 풀어 봐요",
+    "15개 주제, 매일 한 문제",
+    "100점 만점 채점, 잘한 점부터 짚는 피드백",
+    "내 답변에서 이어지는 꼬리질문",
+    "점수에 맞춰 돌아오는 복습",
+    "숫자로 남는 기록과 약한 주제",
+    "내 프로젝트 README로 만드는 예상 질문",
+    "가입 전에 풀어 보는 한 문제",
   ]);
   await expect(page.getByRole("contentinfo")).toContainText("이용약관");
 });

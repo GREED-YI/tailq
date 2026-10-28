@@ -51,7 +51,8 @@ export function FeedbackForm({
     }
     const data = await res?.json().catch(() => null);
     setError(
-      data?.error?.message ?? "보내지 못했어요. 잠시 뒤 다시 해 주세요.",
+      data?.error?.message ??
+        "의견을 보내지 못했어요. 잠시 뒤 다시 시도해 주세요.",
     );
     setBusy(false);
   }
@@ -91,7 +92,8 @@ export function FeedbackForm({
       </header>
 
       <p className={f.sub}>
-        불편했던 점, 바라는 기능, 채점이 이상했던 질문까지 무엇이든 좋아요.
+        불편했던 점, 바라는 기능, 채점이 이상했던 질문까지 무엇이든 편하게 남겨
+        주세요.
       </p>
 
       <p id="feedback-category" className={`${s.label} ${s.gap}`}>
@@ -132,7 +134,9 @@ export function FeedbackForm({
         className={s.helpRow}
         data-invalid={length > FEEDBACK_MAX || undefined}
       >
-        <span id="feedback-help">운영자만 읽어요. 답장은 드리지 못해요.</span>
+        <span id="feedback-help">
+          운영자만 읽어요. 따로 답장은 드리지 못해요.
+        </span>
         <span className="mono" aria-hidden="true">
           {length} / {FEEDBACK_MAX}
         </span>

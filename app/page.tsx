@@ -162,11 +162,11 @@ export default function Landing() {
         <section className={s.hero} aria-labelledby="hero-title">
           <div className={s.heroCopy}>
             <h1 id="hero-title" className={s.h1}>
-              하루 한 문제, AI가 채점하고 꼬리질문으로 되물어요
+              하루 한 문제, AI가 채점하고 되묻는 개발자 기술 면접 연습
             </h1>
             <p className={s.heroSub}>
-              개발자 기술 면접을 매일 한 문제씩 연습해요. 약했던 질문은 며칠 뒤
-              다시 나와요.
+              답변을 쓰면 AI가 100점 만점으로 채점하고, 내 답변에 맞춰 꼬리질문을
+              이어 가요. 70점이 안 된 질문은 다음 날 다시 물어요.
             </p>
             <a href="#try" className={`btn btn-primary press ${s.cta}`}>
               로그인 없이 한 문제 풀어보기
@@ -222,10 +222,11 @@ export default function Landing() {
         <section className={s.band} aria-labelledby="band-title">
           <div className={s.wrap}>
             <h2 id="band-title" className={s.h2} data-reveal>
-              15개 주제에서 매일 한 문제가 나와요
+              15개 주제, 매일 한 문제
             </h2>
             <p className={s.lead} data-reveal data-i="1">
-              자료구조부터 React까지. 내 연습 범위를 정하면 거기서 나와요.
+              자료구조부터 React까지, 내가 고른 연습 범위 안에서 매일 한 문제씩
+              질문해요.
             </p>
           </div>
           <div className={s.tracks}>
@@ -266,12 +267,12 @@ export default function Landing() {
         <section className={`${s.wrap} ${s.split} ${s.grade}`} aria-labelledby="grade-title">
           <div className={s.copy5}>
             <h2 id="grade-title" className={s.h2} data-reveal>
-              잘한 점을 먼저, 보완할 점을 다음에 말해요
+              100점 만점 채점, 잘한 점부터 짚는 피드백
             </h2>
             <p className={s.lead} data-reveal data-i="1">
               점수 아래에 잘한 점, 보완할 점, 모범 답안을 차례로 보여 줘요.
-              모르면 &lsquo;모르겠어요&rsquo;를 눌러도 돼요. 기대 답안을 보고
-              다음 날 다시 풀어요.
+              모르는 질문은 &lsquo;모르겠어요&rsquo;를 누르면 기대 답안을 보여
+              주고 다음 날 다시 물어요.
             </p>
           </div>
           <div className={`${i.result} ${s.media7}`} data-reveal data-i="1">
@@ -307,7 +308,7 @@ export default function Landing() {
             </details>
             <div className={s.dontKnow}>
               <VerdictMark verdict="unknown" />
-              <span className={s.caption}>기대 답안을 보여 주고 · 1일 뒤 다시</span>
+              <span className={s.caption}>기대 답안 확인 · 내일 다시</span>
             </div>
           </div>
         </section>
@@ -321,11 +322,11 @@ export default function Landing() {
             <div className={`${s.wrap} ${s.split}`}>
               <div className={s.copy5}>
                 <h2 id="peak-title" className={s.h2}>
-                  답한 문장에서 다음 질문이 나와요
+                  내 답변에서 이어지는 꼬리질문
                 </h2>
                 <p className={s.lead}>
-                  꼬리질문은 내 답변을 읽고 만들어요. 외운 답은 두 번째 질문에서
-                  드러나요.
+                  AI가 내 답변을 읽고 꼬리질문을 만들어요. 외워 둔 답은 두 번째
+                  질문에서 드러나요.
                 </p>
               </div>
               <ol className={`${s.tl} ${s.peakThread}`}>
@@ -356,7 +357,7 @@ export default function Landing() {
                   );
                 })}
               </ol>
-              <p className={s.hold}>본 질문은 점수, 꼬리질문은 판정으로 남아요.</p>
+              <p className={s.hold}>본 질문은 점수로, 꼬리질문은 판정으로 남아요.</p>
             </div>
           </div>
         </section>
@@ -366,11 +367,11 @@ export default function Landing() {
         <section className={`${s.wrap} ${s.split} ${s.sec}`} aria-labelledby="review-title">
           <div className={s.copy5}>
             <h2 id="review-title" className={s.h2} data-reveal>
-              약했던 질문은 다음 날 다시 나와요
+              점수에 맞춰 돌아오는 복습
             </h2>
             <p className={s.lead} data-reveal data-i="1">
-              70점을 넘기면 3일, 7일, 14일, 30일로 간격이 벌어지고, 놓치면 다음
-              날로 돌아와요. 복습은 미뤄도 사라지지 않아요.
+              70점이 안 되면 다음 날 다시 묻고, 70점 이상이면 3일, 7일, 14일,
+              30일로 간격을 늘려 가요. 미룬 복습도 사라지지 않아요.
             </p>
           </div>
           <div className={s.media7} data-reveal data-i="1">
@@ -398,7 +399,7 @@ export default function Landing() {
             <div className={s.mastery}>
               <span className={s.masteryName}>숙련도</span>
               <p className="sr-only">
-                맞히면 칸이 늘고 간격이 1일, 3일, 7일로 벌어져요. 틀리면 1칸, 1일 뒤로 돌아가요.
+                맞히면 숙련도 칸이 하나씩 늘고 간격이 1일, 3일, 7일로 벌어져요. 틀리면 1칸으로 돌아가 내일 다시 나와요.
               </p>
               <div className={s.loop} aria-hidden="true">
                 <span data-still>
@@ -407,7 +408,7 @@ export default function Landing() {
                 </span>
                 <span>
                   <Dots level={1} />
-                  1일 뒤 다시
+                  내일 다시
                 </span>
                 <span>
                   <Dots level={2} />
@@ -420,7 +421,7 @@ export default function Landing() {
                 <span>
                   <Dots level={1} />
                   <VerdictMark verdict="wrong" />
-                  <span>→ 1일 뒤 다시</span>
+                  <span>→ 내일 다시</span>
                 </span>
               </div>
             </div>
@@ -431,11 +432,11 @@ export default function Landing() {
         <section className={`${s.wrap} ${s.split} ${s.sec}`} aria-labelledby="record-title">
           <div className={s.copy5}>
             <h2 id="record-title" className={s.h2} data-reveal>
-              점수와 약한 주제가 날마다 쌓여요
+              숫자로 남는 기록과 약한 주제
             </h2>
             <p className={s.lead} data-reveal data-i="1">
-              오늘 몇 점이었는지, 어디가 약한지 숫자로 남아요. 꼬리잇기는 하루도
-              빠지지 않고 이어서 푼 날 수예요.
+              날마다 받은 점수와 약한 주제를 기록과 리포트로 모아 보여 줘요.
+              꼬리잇기는 하루도 빠지지 않고 이어서 푼 날 수예요.
             </p>
           </div>
           <div className={s.media7} data-reveal data-i="1">
@@ -511,11 +512,11 @@ export default function Landing() {
         <section className={`${s.wrap} ${s.split} ${s.sec}`} aria-labelledby="project-title">
           <div className={s.copy5}>
             <h2 id="project-title" className={s.h2} data-reveal>
-              내 프로젝트 README를 붙이면, 그 프로젝트로 물어요
+              내 프로젝트 README로 만드는 예상 질문
             </h2>
             <p className={s.lead} data-reveal data-i="1">
-              설계 이유 2개, 기술 선택 2개, 트러블슈팅 1개를 만들어요. README에
-              적힌 것만 물어요.
+              README를 붙여넣으면 설계 이유 2개, 기술 선택 2개, 트러블슈팅 1개로
+              질문 5개를 만들어요. README에 적힌 내용만 물어요.
             </p>
             <div className={s.readme} data-reveal data-i="2">
               <span className={i.label}>README 또는 설명</span>

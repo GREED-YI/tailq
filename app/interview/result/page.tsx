@@ -106,7 +106,7 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
                 마쳤어요"였는데 딱딱한 완료 보고처럼 읽혀 바꿨다(2026-10-27) */}
             {!sessionId ? (
               <>
-                오늘 하루 면접도
+                오늘 면접도
                 <br />
                 고생 많았어요
               </>

@@ -37,7 +37,7 @@ function Header({ children }: { children?: ReactNode }) {
       <Link
         href="/questions"
         className="press icon-btn"
-        aria-label="내 질문으로"
+        aria-label="내 질문 목록으로"
       >
         <Icon name="chevronLeft" />
       </Link>
@@ -130,7 +130,7 @@ async function Detail({ id }: { id: string }) {
         <ul className={h.list}>
           {attempts.length === 0 && (
             <li className={h.rowEmpty}>
-              오늘 질문을 끝내면 여기에 기록이 남아요
+              오늘의 질문을 마치면 여기에 기록이 남아요
             </li>
           )}
           {attempts.map((r) => {
@@ -157,7 +157,7 @@ async function Detail({ id }: { id: string }) {
       </section>
 
       <a className={s.report} href={`/my/feedback?category=report&q=${q.id}`}>
-        질문·채점이 이상해요
+        질문이나 채점에 문제가 있나요?
       </a>
     </>
   );

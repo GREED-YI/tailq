@@ -39,7 +39,7 @@ export function ReviewList({ items, today }: { items: Item[]; today: string }) {
 
   return (
     <>
-      <div className={s.chips} role="group" aria-label="복습 질문 거르기">
+      <div className={s.chips} role="group" aria-label="복습 질문 필터">
         {FILTERS.map((f) => (
           <button
             key={f.key}
@@ -86,7 +86,7 @@ export function ReviewList({ items, today }: { items: Item[]; today: string }) {
         <p>
           잘 답할수록 다음 복습까지 간격이 길어져요.
           <br />
-          숙련도 5칸을 다 채우면 복습 완료한 질문이 돼요.
+          숙련도 5칸을 다 채우면 &lsquo;복습 완료&rsquo;로 옮겨져요.
         </p>
       </div>
     </>

@@ -136,7 +136,7 @@ export function ProjectView({
           <h2 className={`num ${s.title}`}>
             면접관이 물을 법한 질문 {questions.length}개
           </h2>
-          <p className={s.desc}>질문을 누르면 바로 연습해요</p>
+          <p className={s.desc}>질문을 누르면 바로 연습할 수 있어요</p>
           {notice && <LimitNotice {...notice} />}
           <ol className={`${s.rows} ${s.qRows}`}>
             {questions.map((q, i) => {
@@ -206,7 +206,8 @@ export function ProjectView({
               <strong>질문 5개를 만들고 있어요</strong>
               <p>
                 1분쯤 걸려요.
-                <br />이 화면을 나가도 계속 만들어요.
+                <br />
+                다른 화면으로 가도 계속 만들고 있을게요.
               </p>
             </>
           ) : (
@@ -215,7 +216,7 @@ export function ProjectView({
               {canRetry ? (
                 <>
                   <p>
-                    쓴 README는 그대로 있어요.
+                    쓴 README는 그대로 남아 있어요.
                     <br />
                     다시 만들어 볼까요?
                   </p>
@@ -281,7 +282,7 @@ export function ProjectView({
       >
         <h2 id="delete-title">{name} 프로젝트를 지울까요?</h2>
         <p>
-          질문 {questions.length || 5}개와 답변 기록, 복습 일정도
+          질문 {questions.length || 5}개와 답변 기록, 복습 일정까지
           <br />
           함께 지워지고 되돌릴 수 없어요.
         </p>

@@ -83,7 +83,7 @@ export function LogoutButton() {
         <p>
           같은 방법으로 다시 로그인하면
           <br />
-          기록이 그대로 있어요.
+          기록이 그대로 남아 있어요.
         </p>
         <form action="/auth/logout" method="post" className={s.dialogButtons}>
           <button

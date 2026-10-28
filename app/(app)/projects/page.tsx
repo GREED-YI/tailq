@@ -19,7 +19,7 @@ export default function ProjectsPage() {
     <div className={s.page}>
       <AppHeader title="내 프로젝트" />
       <h1 className={s.pageTitle}>내 프로젝트</h1>
-      <p className={s.desc}>README를 넣으면 예상 질문 5개를 만들어요</p>
+      <p className={s.desc}>README를 넣으면 예상 질문 5개를 만들어 줘요</p>
       <div className={`${s.cols} ${s.list}`}>
         <Suspense>
           <Projects />
@@ -37,7 +37,7 @@ function Guide() {
       <ol>
         <li>
           <span className="mono">01</span>
-          <strong>README나 프로젝트 설명 붙여 넣기</strong>
+          <strong>README나 프로젝트 설명 붙여넣기</strong>
           <span className="num">최대 10,000자</span>
         </li>
         <li>
@@ -48,7 +48,7 @@ function Guide() {
         <li>
           <span className="mono">03</span>
           <strong>질문을 골라 바로 연습</strong>
-          <span>부족했던 질문은 복습 상자에 들어가요</span>
+          <span>부족했던 질문은 복습 목록에 모아 둬요</span>
         </li>
       </ol>
     </section>
@@ -111,7 +111,7 @@ async function Projects() {
               p.status === "generating" ? (
                 <>
                   <span className="tag tag-neutral">만드는 중</span>
-                  질문을 만들고 있어요
+                  예상 질문을 만들고 있어요
                 </>
               ) : p.status === "failed" ? (
                 "질문을 만들지 못했어요 · 다시 만들 수 있어요"
@@ -156,7 +156,7 @@ async function Projects() {
         <p className={s.guideNote}>
           프로젝트는 최대 {MAX_PROJECTS}개까지 등록할 수 있어요.
           <br />
-          프로젝트 질문 생성과 연습에는 하루 사용 한도가 있어요.
+          프로젝트 질문 만들기와 연습은 하루에 할 수 있는 횟수가 정해져 있어요.
         </p>
       </div>
       {data.length === 0 && <Guide />}

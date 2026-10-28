@@ -69,10 +69,10 @@ export function WithdrawForm(props: { provider: string }) {
           </li>
         ))}
       </ol>
-      <p className={s.warn}>되돌릴 수 없어요.</p>
+      <p className={s.warn}>지운 기록은 되돌릴 수 없어요.</p>
 
       <label htmlFor="confirm" className={`${s.label} ${s.gap}`}>
-        확인을 위해 &apos;{WITHDRAW_PHRASE}&apos;를 입력해주세요
+        확인을 위해 &apos;{WITHDRAW_PHRASE}&apos;를 입력해 주세요
       </label>
       <input
         id="confirm"

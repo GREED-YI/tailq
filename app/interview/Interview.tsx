@@ -330,7 +330,7 @@ export function Interview({
               <p>
                 {error && error !== FAILED
                   ? error
-                  : "쓴 답변은 그대로 있어요. 잠시 후 다시 시도해 주세요."}
+                  : "쓴 답변은 그대로 남아 있어요. 잠시 뒤 다시 시도해 주세요."}
               </p>
             </div>
           )}
@@ -368,7 +368,7 @@ export function Interview({
                 className={s.input}
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
-                placeholder={`${nickname ? `${nickname}님의` : "내"} 생각을 자유롭게 적어보세요`}
+                placeholder={`${nickname ? `${nickname}님의` : "내"} 생각을 자유롭게 적어 보세요`}
                 spellCheck={false}
                 autoComplete="off"
                 readOnly={grading}
@@ -697,7 +697,7 @@ function ReportLink({ questionId }: { questionId: number }) {
       className={s.report}
       href={`/my/feedback?category=report&q=${questionId}`}
     >
-      질문·채점이 이상해요
+      질문이나 채점에 문제가 있나요?
     </Link>
   );
 }

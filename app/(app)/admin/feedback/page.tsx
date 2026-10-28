@@ -73,7 +73,7 @@ async function FeedbackList({ category }: { category: string | null }) {
           {(count ?? 0) > LIMIT && ` · 최근 ${LIMIT}개`}
         </span>
       </header>
-      <nav className={s.filters} aria-label="분류로 거르기">
+      <nav className={s.filters} aria-label="분류 필터">
         {[{ id: null, label: "전체" }, ...FEEDBACK_CATEGORIES].map((c) => (
           <Link
             key={c.id ?? "all"}

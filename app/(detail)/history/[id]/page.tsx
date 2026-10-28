@@ -43,7 +43,7 @@ function Header({
 }) {
   return (
     <header className={s.detailHeader}>
-      <Link href={backHref} className="press icon-btn" aria-label="질문으로">
+      <Link href={backHref} className="press icon-btn" aria-label="질문 상세로">
         <Icon name="chevronLeft" />
       </Link>
       <h1>기록 상세</h1>
@@ -171,7 +171,7 @@ function MainResult({
         )}
         {result.missingKeywords.length > 0 && (
           <div className={s.concepts}>
-            <h3 className={s.label}>놓친 개념</h3>
+            <h3 className={s.label}>보완할 개념</h3>
             <div>
               {result.missingKeywords.map((k) => (
                 <span key={k} className="tag tag-concept">

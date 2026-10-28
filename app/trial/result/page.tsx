@@ -105,9 +105,9 @@ async function TrialResult() {
           <span>일째</span>
         </p>
         <p className={s.tileNote}>
-          꼬리잇기는 매일 이어서 푼 날 수예요.
+          꼬리잇기는 하루도 빠지지 않고 이어서 푼 날 수예요.
           <br />
-          보완할 질문은 며칠 뒤 다시 나와요.
+          질문은 점수에 맞춰 다시 물어요.
         </p>
       </section>
 

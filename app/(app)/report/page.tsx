@@ -151,8 +151,8 @@ async function Report() {
         )}
         {weak.topics.length === 0 ? (
           <p className={h.rowEmpty}>
-            데이터가 모이는 중이에요. 한 주제를 3번 이상 풀면 평균 점수와 추이를
-            보여드려요.
+            데이터가 모이고 있어요. 한 주제를 3번 이상 풀면 평균 점수와 추이를
+            보여 줄게요.
           </p>
         ) : (
           weak.collecting > 0 && (

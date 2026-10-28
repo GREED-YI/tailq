@@ -65,7 +65,7 @@ export function MonthJump({
         className={`icon-btn press ${s.jumpButton}`}
         aria-expanded={open}
         aria-controls={id}
-        aria-label="다른 달로 가기"
+        aria-label="다른 달로 이동"
         onClick={() => setOpen(!open)}
       >
         <Icon name="chevronDown" size={18} bold />

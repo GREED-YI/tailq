@@ -36,7 +36,7 @@ export default function HomePage() {
 const TITLES: Record<HomeState["kind"], string> = {
   todo: "오늘도 한 문제 도전해 볼까요?",
   doing: "하던 질문 마저 이어가 볼까요?",
-  done: "오늘 면접 응시 완료했어요",
+  done: "오늘 면접을 마쳤어요",
 };
 
 // "2026-10-28" → "2026.10.28 WED"(기록 상세와 같은 숫자형)
@@ -191,7 +191,7 @@ async function Home() {
             </ul>
           ) : (
             <p className={s.tileNote}>
-              데이터가 모이는 중이에요. 한 주제를 3번 이상 풀면 보여드려요
+              데이터가 모이고 있어요. 한 주제를 3번 이상 풀면 보여 줄게요
             </p>
           )}
         </Link>
@@ -324,7 +324,7 @@ function Empty() {
     <>
       <QuestionTag />
       <h1 className={s.emptyText}>
-        범위 안의 새 질문을 다 풀었어요. 범위를 넓혀볼까요?
+        범위 안의 새 질문을 모두 풀었어요. 연습 범위를 넓혀 볼까요?
       </h1>
       <div className={s.actions}>
         <button type="button" className={`btn btn-primary ${s.go}`} disabled>

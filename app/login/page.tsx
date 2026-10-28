@@ -91,7 +91,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
       <div className={s.body}>
         <Logo height="var(--logo-h)" />
         <h1 className={s.title}>TailQ 시작하기</h1>
-        <p className={s.sub}>매일 5분, AI 면접관에게 채점과 피드백 받기</p>
+        <p className={s.sub}>매일 5분, AI 면접관이 채점하고 피드백해 줘요</p>
 
         <ol className={s.points}>
           {POINTS.map((point, i) => (
@@ -126,9 +126,9 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
             </button>
           ))}
           <p className={s.note}>
-            이메일이 같은 로그인 방법은 한 계정으로 이어져요.
+            이메일이 같으면 한 계정으로 이어지고,
             <br />
-            이메일이 다르면 새 계정이 만들어져요.
+            다르면 새 계정이 만들어져요.
           </p>
         </form>
       </div>

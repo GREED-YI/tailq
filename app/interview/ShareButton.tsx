@@ -41,7 +41,9 @@ export function ShareButton({ sessionId }: { sessionId: string }) {
         () => false,
       );
     showToast(
-      copied ? "공유 링크를 복사했어요" : "링크를 복사하지 못했어요.",
+      copied
+        ? "공유 링크를 복사했어요"
+        : "링크를 복사하지 못했어요. 잠시 뒤 다시 시도해 주세요.",
       copied ? "link" : undefined,
     );
   }

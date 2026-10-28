@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     return fail(
       429,
       "FEEDBACK_LIMIT",
-      "오늘은 피드백을 충분히 보냈어요. 내일 다시 보내 주세요.",
+      "오늘 보낼 수 있는 피드백을 다 보냈어요. 내일 다시 보내 주세요.",
     );
   if (error) return fail(500, "INTERNAL", "보내지 못했어요.");
 

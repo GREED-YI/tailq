@@ -80,7 +80,7 @@ async function ShareView({ id }: { id: string }) {
         </p>
         <p className={s.note}>
           <Icon name="lock" size={14} />
-          질문 원문과 답변은 공유되지 않아요
+          질문 원문과 내 답변은 공유 카드에 보이지 않아요
         </p>
 
         <div className={s.actions}>

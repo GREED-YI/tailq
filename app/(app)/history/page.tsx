@@ -84,7 +84,7 @@ async function Sessions({ bookmarkOnly }: { bookmarkOnly: boolean }) {
       {months.length === 0 ? (
         <p className={s.empty}>
           {bookmarkOnly
-            ? "면접 화면이나 기록 상세에서 별표를 누르면 여기에 모여요"
+            ? "면접 화면이나 기록 상세에서 별표를 누르면 여기에 질문이 모여요"
             : "오늘의 질문을 마치면 여기에 기록이 남아요"}
         </p>
       ) : (
