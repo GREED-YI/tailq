@@ -126,9 +126,28 @@ button {
   color: var(--on-danger);
   box-shadow: none;
 }
+/* 목록 끝에서 삭제·탈퇴 확인으로 들어가는 작은 글자 링크(danger-ghost). 실행 버튼은 .btn-danger */
+.btn-danger-ghost {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  background: none;
+  border: 0;
+  color: var(--danger);
+  font-size: 14px;
+  font-weight: 600;
+}
+@media (hover: hover) {
+  .btn-danger-ghost:not(:disabled):hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
 .btn:disabled,
 .icon-btn:disabled,
-.chip:disabled {
+.chip:disabled,
+.btn-danger-ghost:disabled {
   opacity: 0.4;
   cursor: default;
 }

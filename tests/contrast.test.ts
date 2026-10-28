@@ -19,6 +19,7 @@ const TEXT_PAIRS: [Key, Key][] = [
   ["on-primary", "primary"],
   ["accent", "canvas"],
   ["accent", "accent-soft"],
+  // 오류 글자와 danger-ghost 링크(탈퇴하기·프로젝트 삭제하기)
   ["danger", "canvas"],
   ["danger", "surface"],
   ["on-danger", "danger-fill"],

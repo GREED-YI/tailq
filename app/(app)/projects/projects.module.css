@@ -17,9 +17,16 @@
   display: flex;
   flex-direction: column;
 }
-.guide,
-.guideNote {
+/* 처음 쓰는 사람용 안내 열(프로젝트 0개일 때만 그린다)은 PC에서만 보인다 */
+.guide {
   display: none;
+}
+/* 한도 안내 두 줄: 늘 목록 아래 */
+.guideNote {
+  margin-top: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
 }
 
 /* 화면 안 제목(title 역할) + 설명 */
@@ -120,9 +127,17 @@
   gap: 2px;
 }
 .meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
   font-size: 13px;
   line-height: 1.45;
   color: var(--text-muted);
+}
+/* 만들지 못한 프로젝트: 다시 만들 수 있으니 danger 대신 한 단계 진한 글자 */
+.meta[data-failed] {
+  color: var(--text-sub);
 }
 .name {
   font-size: 16px;
@@ -216,13 +231,11 @@
   text-overflow: ellipsis;
 }
 
-/* 프로젝트 삭제하기(S24): 목록 아래. 내용이 짧으면 화면 맨 아래로 밀린다(PC는 목록 바로 아래) */
+/* 프로젝트 삭제하기(S24, danger-ghost): 질문 목록 끝 오른쪽에 작은 글자 링크 */
 .deleteBottom {
-  margin-top: auto;
-  padding-top: 32px;
-}
-.deleteBottom > * {
-  width: 100%;
+  padding-top: 8px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 /* 등록(S23): 칸 이름은 칸 밖 위, 도움말은 칸 밖 아래(text-area field) */
@@ -425,12 +438,12 @@
     line-height: 1.35;
     font-weight: 700;
     letter-spacing: -0.02em;
-    margin-bottom: 24px;
   }
   .page {
     flex: none;
   }
   .cols {
+    margin-top: 8px;
     display: grid;
     grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
     gap: 40px;
@@ -448,8 +461,10 @@
     width: auto;
     min-width: 200px;
   }
+  /* 목록 머리(.listHead)와 같은 높이에서 시작한다 */
   .guide {
     display: block;
+    margin-top: 24px;
   }
   .guide h3 {
     min-height: 44px;
@@ -489,13 +504,6 @@
     line-height: 1.45;
     color: var(--text-muted);
   }
-  .guideNote {
-    display: block;
-    margin-top: 16px;
-    font-size: 13px;
-    line-height: 1.6;
-    color: var(--text-muted);
-  }
 
   .detail {
     width: 100%;
@@ -530,8 +538,5 @@
   }
   .pcHelp {
     display: inline;
-  }
-  .deleteBottom > * {
-    width: auto;
   }
 }

@@ -9,6 +9,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { loadQuota } from "@/lib/usage";
 import s from "./projects.module.css";
+import { RefreshWhileGenerating } from "./RefreshWhileGenerating";
 
 export const metadata: Metadata = { title: "내 프로젝트 · TailQ" };
 
@@ -18,47 +19,44 @@ export default function ProjectsPage() {
     <div className={s.page}>
       <AppHeader title="내 프로젝트" />
       <h1 className={s.pageTitle}>내 프로젝트</h1>
+      <p className={s.desc}>README를 넣으면 예상 질문 5개를 만들어요</p>
       <div className={`${s.cols} ${s.list}`}>
-        <div className={s.list}>
-          <h2 className={s.title}>내 프로젝트로 면접 연습</h2>
-          <p className={s.desc}>README를 넣으면 예상 질문 5개를 만들어요</p>
-          <Suspense>
-            <Projects />
-          </Suspense>
-        </div>
-        <div>
-          <section className={s.guide} aria-label="이렇게 연습해요">
-            <h3>이렇게 연습해요</h3>
-            <ol>
-              <li>
-                <span className="mono">01</span>
-                <strong>README나 프로젝트 설명 붙여 넣기</strong>
-                <span className="num">최대 10,000자</span>
-              </li>
-              <li>
-                <span className="mono">02</span>
-                <strong>예상 질문 5개 생성</strong>
-                <span>설계 이유 · 기술 선택 · 트러블슈팅 위주</span>
-              </li>
-              <li>
-                <span className="mono">03</span>
-                <strong>질문을 골라 바로 연습</strong>
-                <span>부족했던 질문은 복습 상자에 들어가요</span>
-              </li>
-            </ol>
-          </section>
-          <p className={s.guideNote}>
-            프로젝트는 최대 {MAX_PROJECTS}개까지 등록할 수 있어요.
-            <br />
-            프로젝트 질문 생성과 연습에는 하루 사용 한도가 있어요.
-          </p>
-        </div>
+        <Suspense>
+          <Projects />
+        </Suspense>
       </div>
     </div>
   );
 }
 
-// RLS가 내 프로젝트와 그 질문·세션만 보여준다. 본 질문을 채점받은(답했거나 모르겠어요) 질문을 "연습함"으로 센다.
+// 처음 쓰는 사람(프로젝트 0개)에게만 PC 오른쪽 열에 보인다
+function Guide() {
+  return (
+    <section className={s.guide} aria-label="이렇게 연습해요">
+      <h3>이렇게 연습해요</h3>
+      <ol>
+        <li>
+          <span className="mono">01</span>
+          <strong>README나 프로젝트 설명 붙여 넣기</strong>
+          <span className="num">최대 10,000자</span>
+        </li>
+        <li>
+          <span className="mono">02</span>
+          <strong>예상 질문 5개 생성</strong>
+          <span>설계 이유 · 기술 선택 · 트러블슈팅 위주</span>
+        </li>
+        <li>
+          <span className="mono">03</span>
+          <strong>질문을 골라 바로 연습</strong>
+          <span>부족했던 질문은 복습 상자에 들어가요</span>
+        </li>
+      </ol>
+    </section>
+  );
+}
+
+// RLS가 내 프로젝트와 그 질문·세션만 보여준다. 본 질문을 채점받은(답했거나 모르겠어요) 질문을 "연습함"으로 세고,
+// 평균은 질문마다 가장 최근 본 질문 점수로 낸다(모르겠어요 빼고. 상세 화면 S24와 같은 기준).
 // 하루 한도·월 예산은 시작하기 전에 확인해 안내(S26)를 보여주고, 등록할 수 없으면 버튼을 막는다
 async function Projects() {
   const supabase = await createClient();
@@ -66,7 +64,9 @@ async function Projects() {
   const [{ data }, quota] = await Promise.all([
     supabase
       .from("projects")
-      .select("id, name, status, questions(id, sessions(turns(idx, status)))")
+      .select(
+        "id, name, status, questions(id, sessions(created_at, turns(idx, status, score, verdict)))",
+      )
       .order("created_at")
       .throwOnError(),
     loadQuota(createAdminClient(), auth?.claims.sub ?? null),
@@ -77,58 +77,89 @@ async function Projects() {
     data.length >= MAX_PROJECTS ||
     quota.budget === "exceeded" ||
     quota.gensLeft <= 0;
+  const generating = data.some((p) => p.status === "generating");
   return (
     <>
-      <div className={s.listHead}>
-        <h3>등록한 프로젝트</h3>
-        <span className={`num ${s.count}`}>
-          <span className="mono">
-            {data.length} / {MAX_PROJECTS}
+      <div className={s.list}>
+        {generating && <RefreshWhileGenerating />}
+        <div className={s.listHead}>
+          <h3>등록한 프로젝트</h3>
+          <span className={`num ${s.count}`}>
+            <span className="mono">
+              {data.length} / {MAX_PROJECTS}
+            </span>
+            개 등록
           </span>
-          개 등록
-        </span>
+        </div>
+        <ul className={s.rows}>
+          {data.length === 0 && (
+            <li className={s.empty}>아직 등록한 프로젝트가 없어요</li>
+          )}
+          {data.map((p) => {
+            const mains = p.questions.flatMap((q) => {
+              const main = [...q.sessions]
+                .sort((a, b) => b.created_at.localeCompare(a.created_at))
+                .map((ss) => ss.turns.find((t) => t.idx === 0))
+                .find((t) => t?.status === "graded");
+              return main ? [main] : [];
+            });
+            const scores = mains
+              .filter((t) => t.verdict !== "unknown" && t.score !== null)
+              .map((t) => t.score as number);
+            const n = p.questions.length;
+            const meta =
+              p.status === "generating" ? (
+                <>
+                  <span className="tag tag-neutral">만드는 중</span>
+                  질문을 만들고 있어요
+                </>
+              ) : p.status === "failed" ? (
+                "질문을 만들지 못했어요 · 다시 만들 수 있어요"
+              ) : mains.length === 0 ? (
+                `질문 ${n}개 · 아직 연습 안 함`
+              ) : (
+                `${n}문제 중 ${mains.length}개 연습${scores.length ? ` · 평균 ${Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)}` : ""}`
+              );
+            return (
+              <li key={p.id}>
+                <Link
+                  href={`/projects/${p.id}`}
+                  className={`hover-row ${s.row}`}
+                >
+                  <span className={s.text}>
+                    <span
+                      className={`num ${s.meta}`}
+                      data-failed={p.status === "failed" || undefined}
+                    >
+                      {meta}
+                    </span>
+                    <span className={s.name}>{p.name}</span>
+                  </span>
+                  <Icon name="chevronRight" size={18} />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+        {notice && <LimitNotice {...notice} />}
+        <div className={s.bottom}>
+          {full ? (
+            <button type="button" className="btn btn-primary" disabled>
+              프로젝트 등록
+            </button>
+          ) : (
+            <Link href="/projects/new" className="btn btn-primary press">
+              프로젝트 등록
+            </Link>
+          )}
+        </div>
+        <p className={s.guideNote}>
+          프로젝트는 최대 {MAX_PROJECTS}개까지 등록할 수 있어요.
+          <br />
+          프로젝트 질문 생성과 연습에는 하루 사용 한도가 있어요.
+        </p>
       </div>
-      <ul className={s.rows}>
-        {data.length === 0 && (
-          <li className={s.empty}>아직 등록한 프로젝트가 없어요</li>
-        )}
-        {data.map((p) => {
-          const practiced = p.questions.filter((q) =>
-            q.sessions.some((ss) =>
-              ss.turns.some((t) => t.idx === 0 && t.status === "graded"),
-            ),
-          ).length;
-          const meta =
-            p.status === "generating"
-              ? "질문을 만들고 있어요"
-              : p.status === "failed"
-                ? "질문을 만들지 못했어요"
-                : `질문 ${p.questions.length}개 · ${practiced ? `${practiced}개 연습함` : "아직 연습 안 함"}`;
-          return (
-            <li key={p.id}>
-              <Link href={`/projects/${p.id}`} className={`hover-row ${s.row}`}>
-                <span className={s.text}>
-                  <span className={`num ${s.meta}`}>{meta}</span>
-                  <span className={s.name}>{p.name}</span>
-                </span>
-                <Icon name="chevronRight" size={18} />
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-      {notice && <LimitNotice {...notice} />}
-      <div className={s.bottom}>
-        {full ? (
-          <button type="button" className="btn btn-primary" disabled>
-            프로젝트 등록
-          </button>
-        ) : (
-          <Link href="/projects/new" className="btn btn-primary press">
-            프로젝트 등록
-          </Link>
-        )}
-      </div>
+      {data.length === 0 && <Guide />}
     </>
   );
 }

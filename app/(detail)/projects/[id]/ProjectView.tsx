@@ -256,11 +256,12 @@ export function ProjectView({
         </p>
       )}
 
-      {/* 처음엔 머리 오른쪽 알약이었는데, 실수로 누르기 쉬운 자리라 목록 맨 아래로 내렸다(#118, 사용자 요청) */}
+      {/* 처음엔 머리 오른쪽 알약이었는데, 실수로 누르기 쉬운 자리라 목록 맨 아래로 내렸다(#118, 사용자 요청).
+          확인 창으로 들어가는 길이라 작은 글자 링크(danger-ghost), 실행 버튼은 확인 창 안의 "삭제" */}
       <div className={s.deleteBottom}>
         <button
           type="button"
-          className="btn btn-md btn-danger press"
+          className="btn-danger-ghost press"
           disabled={busy === "delete"}
           onClick={() => {
             setDeleteError("");
