@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { kstDay } from "@/lib/daily-pick";
 import { computeStreak, grassStart, studyDay, type Streak } from "@/lib/streak";
 import { createClient } from "@/lib/supabase/server";
@@ -16,7 +17,8 @@ export type Study = {
 // 약점 리포트도 같은 1년 치 본 질문 점수로 계산한다.
 // 오늘의 질문 세션(daily, 이어받은 체험 포함)만 친다. 프로젝트 질문 세션은 넣지 않는다(08 설계)
 // ponytail: 1년보다 긴 꼬리잇기는 1년에서 잘린다. 필요해지면 끊긴 날까지 더 거슬러 읽는다
-export async function loadStudy(): Promise<Study> {
+// 같은 요청에서 머리 막대(꼬리잇기)와 홈·리포트가 함께 불러도 한 번만 읽는다(React cache)
+export const loadStudy = cache(async (): Promise<Study> => {
   const supabase = await createClient();
   const today = kstDay(new Date());
   // 학습한 날은 제출 시각의 한국 날짜라 세션 날짜가 아니라 제출 시각으로 거른다
@@ -57,4 +59,4 @@ export async function loadStudy(): Promise<Study> {
     streak: computeStreak([...scores.keys()], today),
     attempts,
   };
-}
+});

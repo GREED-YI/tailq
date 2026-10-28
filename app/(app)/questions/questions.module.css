@@ -57,8 +57,9 @@
   border-top: 2px solid var(--text);
 }
 
-/* 모바일(question-stacked): 위 줄 라벨 · 점수 · 숙련도, 아래 줄 질문, 그 아래 메타 */
-.row {
+/* 모바일(question-stacked): 위 줄 라벨 · 점수 · 숙련도, 아래 줄 질문, 그 아래 메타.
+   history의 .rowLink(flex)와 같이 붙어 .rows 안으로 한 단계 높여 스타일시트 순서와 상관없이 grid가 이기게 한다 */
+.rows .row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   grid-template-areas:
@@ -119,7 +120,7 @@
     margin-inline: -4px;
     padding-inline: 4px;
   }
-  .row {
+  .rows .row {
     grid-template-columns: 104px minmax(0, 1fr) 56px auto;
     grid-template-areas: "due body score level";
     column-gap: 16px;

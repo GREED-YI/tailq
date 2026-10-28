@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Icon } from "@/components/icons";
 import { limitNotice } from "@/components/LimitNotice";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { loadQuota } from "@/lib/usage";
@@ -37,7 +38,8 @@ function Loading() {
         </Link>
         <h1>프로젝트 등록</h1>
       </header>
-      <div className={s.form} aria-busy="true">
+      <LoadingStatus />
+      <div className={s.form} aria-busy="true" aria-hidden="true">
         <span className={`skeleton ${s.fieldSkeleton}`} />
         <span className={`skeleton ${s.fieldSkeleton}`} data-kind="textarea" />
       </div>

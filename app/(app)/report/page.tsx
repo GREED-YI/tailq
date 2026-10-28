@@ -14,6 +14,7 @@ import { loadStudy } from "@/lib/study";
 import { createClient } from "@/lib/supabase/server";
 import { weaknessReport, type TopicScore } from "@/lib/weakness";
 import { GrassTip } from "@/components/GrassTip";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import { ScoreBar } from "@/app/interview/ScoreRing";
 import { Score } from "../history/marks";
 import h from "../history/history.module.css";
@@ -38,58 +39,61 @@ export default function ReportPage() {
 // 불러오는 동안: 제목·설명 글은 그대로 두고 숫자·달력·주제 행만 같은 크기의 빈 칸으로(레이아웃이 밀리지 않게)
 function Loading() {
   return (
-    <div aria-busy="true">
-      <section className={w.stats} aria-label="꼬리잇기">
-        {["꼬리잇기", "최장"].map((label) => (
-          <div key={label} className={w.stat}>
-            <span>{label}</span>
-            <p>
-              <b className="skeleton" style={{ width: "2em" }} />
-            </p>
-          </div>
-        ))}
-      </section>
-
-      <section className={w.section}>
-        <div className={h.listHead}>
-          <h2 className={w.grassTitle}>
-            <TailIcon size={18} />
-            꼬리잇기 달력
-          </h2>
-        </div>
-        <div className={w.grassScroll}>
-          <div className={w.stripWrap}>
-            <div className={w.months} />
-            <span className={`skeleton ${w.stripSkeleton}`} />
-          </div>
-        </div>
-        <p className={w.caption}>
-          진할수록 점수가 높고, 빗금은 휴식권을 쓴 날이에요
-        </p>
-      </section>
-
-      <section className={w.section}>
-        <div className={h.listHead}>
-          <h2>약점 리포트</h2>
-          <span className={w.headNote}>3번 이상 푼 주제만 보여줘요</span>
-        </div>
-        <ul className={`${h.list} ${w.list}`}>
-          {[0, 1].map((i) => (
-            <li key={i} className={w.row}>
-              <span className={w.left}>
-                <strong>
-                  <span className="skeleton" style={{ width: "40%" }} />
-                </strong>
-                <span className={w.avg}>
-                  <span className="skeleton" style={{ width: "30%" }} />
-                </span>
-                <span className="skeleton" style={{ height: 6 }} />
-              </span>
-            </li>
+    <>
+      <LoadingStatus />
+      <div aria-busy="true" aria-hidden="true">
+        <section className={w.stats} aria-label="꼬리잇기">
+          {["꼬리잇기", "최장"].map((label) => (
+            <div key={label} className={w.stat}>
+              <span>{label}</span>
+              <p>
+                <b className="skeleton" style={{ width: "2em" }} />
+              </p>
+            </div>
           ))}
-        </ul>
-      </section>
-    </div>
+        </section>
+
+        <section className={w.section}>
+          <div className={h.listHead}>
+            <h2 className={w.grassTitle}>
+              <TailIcon size={18} />
+              꼬리잇기 달력
+            </h2>
+          </div>
+          <div className={w.grassScroll}>
+            <div className={w.stripWrap}>
+              <div className={w.months} />
+              <span className={`skeleton ${w.stripSkeleton}`} />
+            </div>
+          </div>
+          <p className={w.caption}>
+            진할수록 점수가 높고, 빗금은 휴식권을 쓴 날이에요
+          </p>
+        </section>
+
+        <section className={w.section}>
+          <div className={h.listHead}>
+            <h2>약점 리포트</h2>
+            <span className={w.headNote}>3번 이상 푼 주제만 보여줘요</span>
+          </div>
+          <ul className={`${h.list} ${w.list}`}>
+            {[0, 1].map((i) => (
+              <li key={i} className={w.row}>
+                <span className={w.left}>
+                  <strong>
+                    <span className="skeleton" style={{ width: "40%" }} />
+                  </strong>
+                  <span className={w.avg}>
+                    <span className="skeleton" style={{ width: "30%" }} />
+                  </span>
+                  <span className="skeleton" style={{ height: 6 }} />
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
+    </>
   );
 }
 

@@ -41,26 +41,30 @@ export function ScoreRing({
         </p>
         {aside}
       </div>
-      <ScoreBar value={n} />
+      <ScoreBar value={n} decorative />
     </div>
   );
 }
 
-// 점수 막대(DESIGN.md score-bar). 5점마다 한 칸, 채운 칸은 글자색, 빈 칸은 mark-empty 테두리
+// 점수 막대(DESIGN.md score-bar). 5점마다 한 칸, 채운 칸은 글자색, 빈 칸은 mark-empty 테두리.
+// decorative면 옆 숫자가 이미 점수를 읽어 주므로 화면 읽기에서 뺀다(차오르는 동안 이름이 매번 바뀌지 않게)
 export function ScoreBar({
   value,
   small = false,
+  decorative = false,
 }: {
   value: number;
   small?: boolean;
+  decorative?: boolean;
 }) {
   const on = Math.round(value / 5);
   return (
     <div
       className={s.bar}
       data-small={small || undefined}
-      role="img"
-      aria-label={`점수 막대 ${value}%`}
+      {...(decorative
+        ? { "aria-hidden": true }
+        : { role: "img", "aria-label": `점수 막대 ${value}%` })}
     >
       {Array.from({ length: 20 }, (_, i) => (
         <span key={i} data-on={i < on || undefined} />

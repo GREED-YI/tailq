@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense, type CSSProperties, type ReactNode } from "react";
 import { AppHeader } from "@/components/AppHeader";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import { scoreColor, VERDICTS } from "@/app/interview/verdict";
 import {
   answersSince,
@@ -49,33 +50,36 @@ const TILE_AREAS = [
 
 function Loading() {
   return (
-    <div aria-busy="true">
-      <div className={s.top}>
-        <span className="skeleton" style={{ width: 200, height: 30 }} />
+    <>
+      <LoadingStatus />
+      <div aria-busy="true" aria-hidden="true">
+        <div className={s.top}>
+          <span className="skeleton" style={{ width: 200, height: 30 }} />
+        </div>
+        {TILE_AREAS.map((areas, i) => (
+          <section key={i} className={s.block}>
+            <div className={s.blockHead} />
+            <div className={`${s.tiles} ${i === 0 ? s.core : s.state}`}>
+              {areas.map((area) =>
+                area === "hero" ? (
+                  <div key={area} className={s.hero} style={{ gridArea: area }}>
+                    <span
+                      className="skeleton"
+                      style={{ width: "40%", height: 96 }}
+                    />
+                    <div className={s.weeks} />
+                  </div>
+                ) : (
+                  <div key={area} className={s.stat} style={{ gridArea: area }}>
+                    <span className="skeleton" style={{ width: "50%" }} />
+                  </div>
+                ),
+              )}
+            </div>
+          </section>
+        ))}
       </div>
-      {TILE_AREAS.map((areas, i) => (
-        <section key={i} className={s.block}>
-          <div className={s.blockHead} />
-          <div className={`${s.tiles} ${i === 0 ? s.core : s.state}`}>
-            {areas.map((area) =>
-              area === "hero" ? (
-                <div key={area} className={s.hero} style={{ gridArea: area }}>
-                  <span
-                    className="skeleton"
-                    style={{ width: "40%", height: 96 }}
-                  />
-                  <div className={s.weeks} />
-                </div>
-              ) : (
-                <div key={area} className={s.stat} style={{ gridArea: area }}>
-                  <span className="skeleton" style={{ width: "50%" }} />
-                </div>
-              ),
-            )}
-          </div>
-        </section>
-      ))}
-    </div>
+    </>
   );
 }
 

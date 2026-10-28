@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { Icon } from "@/components/icons";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import { kstDay } from "@/lib/daily-pick";
 import { LEVELS } from "@/lib/profile";
 import { ATTEMPT_COLUMNS, tagLine } from "@/lib/questions";
@@ -50,16 +51,19 @@ function Header({ children }: { children?: ReactNode }) {
 // 불러오는 동안: 머리 · 질문 자리 · 행 자리 2개
 function Loading() {
   return (
-    <div aria-busy="true">
-      <Header />
-      <div className={h.question}>
-        <span className={s.skeleton} />
+    <>
+      <LoadingStatus />
+      <div aria-busy="true">
+        <Header />
+        <div className={h.question} aria-hidden="true">
+          <span className={s.skeleton} />
+        </div>
+        <ul className={`${h.list} ${s.history}`} aria-hidden="true">
+          <li className={s.skeleton} />
+          <li className={s.skeleton} />
+        </ul>
       </div>
-      <ul className={`${h.list} ${s.history}`}>
-        <li className={s.skeleton} />
-        <li className={s.skeleton} />
-      </ul>
-    </div>
+    </>
   );
 }
 

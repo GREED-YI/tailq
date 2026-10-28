@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { Icon } from "@/components/icons";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import { kstDay } from "@/lib/daily-pick";
 import { ATTEMPT_COLUMNS, tagLine } from "@/lib/questions";
 import {
@@ -44,15 +45,18 @@ const DESC = "잘 답하면 복습 간격이 늘어나고, 부족하면 처음�
 // 불러오는 동안: 같은 높이의 행 자리 4개
 function Loading() {
   return (
-    <div aria-busy="true">
-      <p className={`num ${s.count}`}>질문</p>
-      <p className={s.desc}>{DESC}</p>
-      <ul className={`${h.list} ${s.rows}`}>
-        {[0, 1, 2, 3].map((i) => (
-          <li key={i} className={s.skeleton} />
-        ))}
-      </ul>
-    </div>
+    <>
+      <LoadingStatus />
+      <div aria-busy="true" aria-hidden="true">
+        <p className={`num ${s.count}`}>질문</p>
+        <p className={s.desc}>{DESC}</p>
+        <ul className={`${h.list} ${s.rows}`}>
+          {[0, 1, 2, 3].map((i) => (
+            <li key={i} className={s.skeleton} />
+          ))}
+        </ul>
+      </div>
+    </>
   );
 }
 

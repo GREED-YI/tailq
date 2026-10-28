@@ -99,7 +99,11 @@ export function ProjectForm({ notice }: { notice: Notice | null }) {
             id="project-content"
             className={s.textarea}
             data-over={length > CONTENT_MAX || undefined}
-            aria-invalid={length > CONTENT_MAX || undefined}
+            aria-invalid={
+              (length > 0 && length < CONTENT_MIN) ||
+              length > CONTENT_MAX ||
+              undefined
+            }
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="README나 프로젝트 설명을 붙여넣어 주세요"

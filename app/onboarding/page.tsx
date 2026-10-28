@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import f from "@/components/Flow.module.css";
 import { Logo } from "@/components/Logo";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import { LEVELS, type Level } from "@/lib/profile";
 import { createClient } from "@/lib/supabase/server";
 import { OnboardingFlow } from "./OnboardingFlow";
@@ -27,19 +28,22 @@ export default function OnboardingPage() {
 // 불러오는 동안: 머리 높이 · 제목 · 설명 · 동의 목록(처음 들어오면 1단계) · 버튼 자리. 몇 단계인지 몰라 단계 표시는 비운다
 function Loading() {
   return (
-    <div className={f.loading} aria-busy="true">
-      <header className={f.top} />
-      <p className={f.title}>
-        <span className="skeleton" style={{ width: "70%" }} />
-      </p>
-      <p className={f.sub}>
-        <span className="skeleton" style={{ width: "85%" }} />
-      </p>
-      <span className="skeleton" style={{ marginTop: 32, height: 280 }} />
-      <div className={f.bottom}>
-        <span className="skeleton" style={{ height: 52 }} />
+    <>
+      <LoadingStatus />
+      <div className={f.loading} aria-busy="true" aria-hidden="true">
+        <header className={f.top} />
+        <p className={f.title}>
+          <span className="skeleton" style={{ width: "70%" }} />
+        </p>
+        <p className={f.sub}>
+          <span className="skeleton" style={{ width: "85%" }} />
+        </p>
+        <span className="skeleton" style={{ marginTop: 32, height: 280 }} />
+        <div className={f.bottom}>
+          <span className="skeleton" style={{ height: 52 }} />
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

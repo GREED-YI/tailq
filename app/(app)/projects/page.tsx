@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { AppHeader } from "@/components/AppHeader";
 import { Icon } from "@/components/icons";
 import { LimitNotice, limitNotice } from "@/components/LimitNotice";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import { MAX_PROJECTS } from "@/lib/questions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -69,29 +70,32 @@ function GuideNote() {
 // 불러오는 동안: 목록 머리 · 행 자리 2개 · 등록 버튼 자리(레이아웃이 밀리지 않게)
 function Loading() {
   return (
-    <div className={s.list} aria-busy="true">
-      <div className={s.listHead}>
-        <h2>등록한 프로젝트</h2>
-      </div>
-      <ul className={s.rows}>
-        {[0, 1].map((i) => (
-          <li key={i} className={s.row}>
-            <span className={s.text}>
-              <span className={s.meta}>
-                <span className="skeleton" style={{ width: "40%" }} />
+    <>
+      <LoadingStatus />
+      <div className={s.list} aria-busy="true" aria-hidden="true">
+        <div className={s.listHead}>
+          <h2>등록한 프로젝트</h2>
+        </div>
+        <ul className={s.rows}>
+          {[0, 1].map((i) => (
+            <li key={i} className={s.row}>
+              <span className={s.text}>
+                <span className={s.meta}>
+                  <span className="skeleton" style={{ width: "40%" }} />
+                </span>
+                <span className={s.name}>
+                  <span className="skeleton" style={{ width: "60%" }} />
+                </span>
               </span>
-              <span className={s.name}>
-                <span className="skeleton" style={{ width: "60%" }} />
-              </span>
-            </span>
-          </li>
-        ))}
-      </ul>
-      <div className={s.bottom}>
-        <span className="skeleton" style={{ height: 52 }} />
+            </li>
+          ))}
+        </ul>
+        <div className={s.bottom}>
+          <span className="skeleton" style={{ height: 52 }} />
+        </div>
+        <GuideNote />
       </div>
-      <GuideNote />
-    </div>
+    </>
   );
 }
 

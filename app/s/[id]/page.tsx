@@ -6,6 +6,7 @@ import { ScoreRing } from "@/app/interview/ScoreRing";
 import { Icon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
 import { SiteFooter } from "@/components/SiteFooter";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import f from "@/app/_landing/footer.module.css";
 import { kstDay } from "@/lib/daily-pick";
 import { shareDate, shareName, shareSentence } from "@/lib/share";
@@ -68,23 +69,26 @@ export default function SharePage({ params }: PageProps<"/s/[id]">) {
 // 불러오는 동안: 카드 · 문장 두 줄 자리. 점수는 ScoreRing의 빈 표시(··/100, 빈 막대)라 크기가 같다
 function Loading() {
   return (
-    <div aria-busy="true">
-      <section className={s.card}>
-        <div className={s.meta}>
-          <span className="skeleton" style={{ width: 160, height: 28 }} />
-        </div>
-        <p className={s.topic}>
-          <span className="skeleton" style={{ width: "50%" }} />
+    <>
+      <LoadingStatus />
+      <div aria-busy="true" aria-hidden="true">
+        <section className={s.card}>
+          <div className={s.meta}>
+            <span className="skeleton" style={{ width: 160, height: 28 }} />
+          </div>
+          <p className={s.topic}>
+            <span className="skeleton" style={{ width: "50%" }} />
+          </p>
+          <ScoreRing shown={0} label="점수를 불러오고 있어요" />
+          <p className={s.who}>
+            <span className="skeleton" style={{ width: "40%" }} />
+          </p>
+        </section>
+        <p className={s.sentence}>
+          <span className="skeleton" style={{ width: "80%", height: "2lh" }} />
         </p>
-        <ScoreRing shown={0} label="점수를 불러오고 있어요" />
-        <p className={s.who}>
-          <span className="skeleton" style={{ width: "40%" }} />
-        </p>
-      </section>
-      <p className={s.sentence}>
-        <span className="skeleton" style={{ width: "80%", height: "2lh" }} />
-      </p>
-    </div>
+      </div>
+    </>
   );
 }
 

@@ -35,7 +35,10 @@ export function FeedbackForm({
   const [sent, setSent] = useState(false);
 
   const length = feedbackLength(body);
-  const valid = FeedbackBody.safeParse(body).success;
+  // 미리 채운 첫 줄만 있으면 아직 아무것도 안 쓴 것이라 보내지 않는다
+  const valid =
+    FeedbackBody.safeParse(body).success &&
+    (!initialBody || body.trim() !== initialBody.trim());
 
   async function send() {
     setBusy(true);

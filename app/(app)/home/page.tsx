@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { GrassTip } from "@/components/GrassTip";
 import { Icon } from "@/components/icons";
 import { LimitNotice } from "@/components/LimitNotice";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import { startDailySession, type DailySession } from "@/lib/daily";
 import { kstDay } from "@/lib/daily-pick";
 import { homeState, type HomeState } from "@/lib/home";
@@ -66,15 +67,18 @@ function Greeting({
 // 미리 그리는 화면이라 오늘 날짜(new Date)는 쓸 수 없어 인사 글만 둔다
 function Loading() {
   return (
-    <div className={s.home} aria-busy="true">
-      <section className={s.today} aria-label="오늘의 질문">
-        <Greeting title="오늘의 질문을 준비하고 있어요" />
-        <QuestionTag />
-        <span className={s.skeleton} data-kind="line" />
-        <span className={s.skeleton} data-kind="short" />
-        <span className={s.skeleton} data-kind="button" />
-      </section>
-    </div>
+    <>
+      <LoadingStatus />
+      <div className={s.home} aria-busy="true" aria-hidden="true">
+        <section className={s.today} aria-label="오늘의 질문">
+          <Greeting title="오늘의 질문을 준비하고 있어요" />
+          <QuestionTag />
+          <span className={s.skeleton} data-kind="line" />
+          <span className={s.skeleton} data-kind="short" />
+          <span className={s.skeleton} data-kind="button" />
+        </section>
+      </div>
+    </>
   );
 }
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Logo } from "@/components/Logo";
+import { LoadingStatus } from "@/components/LoadingStatus";
 import { loadTrialSession } from "@/lib/trial-session";
 import { ScoreRing } from "../../interview/ScoreRing";
 import { SkeletonLines } from "../../interview/Skeleton";
@@ -25,7 +26,14 @@ export default function TrialResultPage() {
         </div>
       </header>
       <main className={s.main}>
-        <Suspense fallback={<SkeletonLines />}>
+        <Suspense
+          fallback={
+            <>
+              <LoadingStatus />
+              <SkeletonLines />
+            </>
+          }
+        >
           <TrialResult />
         </Suspense>
       </main>
