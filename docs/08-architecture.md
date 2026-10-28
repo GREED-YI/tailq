@@ -195,7 +195,12 @@ Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로
 3. 화면은 `study_notes` 행을 2초마다 다시 읽는다(프로젝트와 같은 `router.refresh()`). 다시 생성은 `POST /api/notes/{id}/generations`(`failed`일 때만, 한도는 다시 예약하지 않고 월 예산만 본다).
 4. **연습 세션은 프로젝트 질문 세션과 같다.** `start_project_session`이 "내 프로젝트의 질문 또는 내 학습 자료의 질문"이면 세션을 연다(주인 확인만 넓혔다). 세션 종류도 `kind = 'project'`로 두어 하루 3세션 한도, 이어하기(`?session=`), 채점·꼬리질문·복습이 그대로 돈다. 따로 `note` 종류를 두면 세션 종류를 보는 곳(이어하기, 지표, 한도)을 모두 고쳐야 하는데 동작이 같아 나누지 않았다. 질문이 어느 쪽인지는 `questions.project_id`·`note_id`로 안다(돌아갈 화면, 채점 `<topic>`, 화면 라벨).
 5. 본 질문 채점의 `<topic>`은 `내 학습 자료 / {제목}`이다([09 채점](09-grading.md) "채점 사용자 메시지").
-6. 처음엔 `projects`에 종류 컬럼을 두는 안을 봤으나 프로젝트와 학습 자료는 다른 것이라 테이블을 나눴다 (2026-10-28, #141). PDF·Word 변환은 이번 범위가 아니다.
+6. 처음엔 `projects`에 종류 컬럼을 두는 안을 봤으나 프로젝트와 학습 자료는 다른 것이라 테이블을 나눴다 (2026-10-28, #141).
+7. **파일 → 글 변환은 브라우저에서 한다**(#144, `lib/note-file.ts`). 파일은 서버로 올리지도 저장하지도 않고, 바꾼 글만 입력칸에 넣어 위 1번으로 등록한다. 서버 쪽은 내용 길이(30~30,000자, `/api/notes`의 zod와 `study_notes` CHECK)만 본다. 원본은 50MB까지(브라우저 메모리 기준).
+   - **변환 코드와 라이브러리는 파일을 고를 때 `import()`로 불러온다**. 등록 화면 처음 크기는 그대로다(빌드에서 첫 로딩 JS가 약 0.3KB(gzip) 늘었다). 형식마다 필요한 라이브러리만 받는다.
+   - 라이브러리(모두 무료, 버전 고정): `pdfjs-dist`(PDF 글자 층. 휴대폰 브라우저를 위해 legacy 빌드, 워커 파일은 `new URL(…, import.meta.url)`로 번들러가 `/_next/static/media/`에 따로 내보낸다), `mammoth`(docx → HTML → 마크다운에 가까운 글), `fflate`(pptx·xlsx·epub·hwpx 압축 풀기, HWP 본문 raw deflate 풀기), `cfb`(HWP 5.0의 복합 파일). pptx·xlsx·epub·hwpx의 XML은 브라우저 `DOMParser`로 읽어 라이브러리를 더하지 않았다.
+   - HWP 5.0은 공개된 "한글 문서 파일 형식 5.0"을 따라 `FileHeader`의 속성(압축·암호·배포용)을 보고, `BodyText/Section*`을 레코드로 나눠 문단 글(`HWPTAG_PARA_TEXT`)만 읽는다. 표·각주 같은 컨트롤 문자는 건너뛴다. 암호·배포용 문서는 본문이 암호화돼 있어 읽지 않고 안내한다.
+   - 한계: PDF는 글꼴을 넣지 않은 옛 한글 PDF(CMap 파일이 필요한 경우)에서 글자가 비거나 깨질 수 있다. CMap 파일 수백 개를 함께 내보내야 해서 넣지 않았다. 엑셀 날짜는 일련번호로 나온다.
 
 ### 꼬리잇기·잔디·휴식권
 
@@ -300,7 +305,7 @@ erDiagram
     uuid id PK
     uuid user_id FK
     text title
-    text content "마크다운 10,000자 이하"
+    text content "마크다운 30,000자 이하"
     text status "generating ready failed"
   }
 ```
@@ -345,7 +350,7 @@ or exists (select 1 from study_notes n where n.id = questions.note_id and n.user
 | `bookmarks` | `user_id`, `question_id`, `created_at` | PK `(user_id, question_id)` |
 | `feedback` | `id`, `user_id`, `body`(앞뒤 공백 빼고 5~1000자), `category`(feature·bug·report·etc, 기본 etc), `created_at` | 앱 안 피드백. 보낸 사람도 다시 읽지 못한다. 탈퇴하면 같이 지운다. `category`는 #118에서 더했고 그 전 행은 etc |
 | `projects` | `id`, `user_id`, `name`, `content`(10,000자 이하), `status`(generating·ready·failed), `error_code`, `created_at` | 사용자당 3개. 지우면 그 질문·세션·복습이 함께 지워진다(`on delete cascade`). **오늘의 daily 세션이 이 프로젝트의 질문이면 그날은 지울 수 없다**(`delete_project`가 거부, 화면은 "오늘의 질문으로 나온 프로젝트는 내일 지울 수 있어요"). 처음엔 제한이 없었으나 cascade로 오늘 세션과 학습한 날이 사라지고 새 세션이 하나 더 만들어졌다 (2026-10-25) |
-| `study_notes` | `id`, `user_id`, `title`(1~40자), `content`(마크다운 30~10,000자), `status`(generating·ready·failed), `error_code`, `created_at` | 학습 자료(#141). 사용자당 3개(프로젝트와 따로). 지우면 그 질문·세션·복습이 함께 지워진다(`on delete cascade`). 오늘의 daily 세션이 이 학습 자료의 질문이면 그날은 지울 수 없다(`delete_note`가 `NOTE_IN_TODAY_SESSION`). 올린 파일은 저장하지 않고 글만 둔다. 처음엔 `projects`에 종류 컬럼을 두는 안을 봤으나 프로젝트와 학습 자료는 다른 것이라 테이블을 나눴다 (2026-10-28, #141) |
+| `study_notes` | `id`, `user_id`, `title`(1~40자), `content`(마크다운 30~30,000자, 처음엔 10,000자였으나 #144에서 늘렸다), `status`(generating·ready·failed), `error_code`, `created_at` | 학습 자료(#141). 사용자당 3개(프로젝트와 따로). 지우면 그 질문·세션·복습이 함께 지워진다(`on delete cascade`). 오늘의 daily 세션이 이 학습 자료의 질문이면 그날은 지울 수 없다(`delete_note`가 `NOTE_IN_TODAY_SESSION`). 올린 파일은 저장하지 않고 글만 둔다. 처음엔 `projects`에 종류 컬럼을 두는 안을 봤으나 프로젝트와 학습 자료는 다른 것이라 테이블을 나눴다 (2026-10-28, #141) |
 
 ### jsonb 스키마
 
@@ -440,7 +445,7 @@ HTTP 상태 코드에 더해 본문은 항상 `{ "error": { "code", "message" } 
 
 | 코드 | HTTP | 언제 |
 |---|---|---|
-| `VALIDATION` | 400 | 길이·형식(답변 30~2,000자, 프로젝트 이름 1~40자·README 30~10,000자, 학습 자료 제목 1~40자·내용 30~10,000자, 닉네임 2~12자, 알림 시각 0~23) |
+| `VALIDATION` | 400 | 길이·형식(답변 30~2,000자, 프로젝트 이름 1~40자·README 30~10,000자, 학습 자료 제목 1~40자·내용 30~30,000자, 닉네임 2~12자, 알림 시각 0~23) |
 | `UNAUTHORIZED` | 401 | 로그인 필요. 알림 발송 입구의 비밀 헤더가 틀릴 때도 |
 | `REAUTH` | 403 | 탈퇴할 때 로그인한 지 24시간이 지남. 소셜 로그인으로 다시 확인 |
 | `OTHER_ACCOUNT` | 403 | 탈퇴 재확인을 처음과 다른 계정으로 함 |
@@ -558,6 +563,9 @@ Vercel 무료 플랜의 실행 로그는 **1시간**(확인 필요)만 남아 �
 | Vercel Analytics 사용자 지정 이벤트 | 무료 플랜에서 쓸 수 없다. 이벤트 테이블에 직접 쌓는다 |
 | ORM(Prisma 등) | Supabase 클라이언트와 자동 생성 타입, DB 함수로 충분하다. 서버리스에서 연결 관리 부담도 없다 |
 | 프로필 사진 저장소(Storage) | 사진 업로드를 받지 않는다(04 기능 명세) |
+| 학습 자료 파일을 서버로 올려 변환하기 | 파일을 받아 두는 저장소와 개인정보 처리가 늘고, Vercel 함수 요청 크기 제한(4.5MB)에 걸린다. 브라우저에서 바꾸면 글만 보낸다 (2026-10-28, #144) |
+| PDF를 Claude API에 통째로 보내기 | 스캔본도 읽지만 페이지마다 비용이 들고 요청 크기 제한(4.5MB)에 걸린다 (2026-10-28, #144) |
+| 이미지 OCR | 비용과 정확도. 글자 층이 없는 스캔 PDF는 읽을 수 없다고 안내한다 (2026-10-28, #144) |
 
 ### 다음 버전 메모
 
