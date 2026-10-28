@@ -59,18 +59,48 @@ function Guide() {
   );
 }
 
-// 한도 안내 두 줄. 불러오는 동안에도 같은 자리에 둔다
-function GuideNote() {
+// 한도 안내 두 줄. 불러오는 동안에도 같은 자리에 둔다. 3개를 다 채웠으면 첫 줄로 버튼이 꺼진 이유를 말한다
+function GuideNote({ full = false }: { full?: boolean }) {
   return (
     <p className={s.guideNote}>
-      프로젝트는 최대 {MAX_PROJECTS}개까지 등록할 수 있어요.
+      {full
+        ? `프로젝트 ${MAX_PROJECTS}개를 모두 등록했어요. 하나를 지우면 새로 등록할 수 있어요.`
+        : `프로젝트는 최대 ${MAX_PROJECTS}개까지 등록할 수 있어요.`}
       <br />
       프로젝트 질문 만들기와 연습은 하루에 할 수 있는 횟수가 정해져 있어요.
     </p>
   );
 }
 
-// 불러오는 동안: 목록 머리 · 행 자리 2개 · 등록 버튼 자리(레이아웃이 밀리지 않게)
+function NoteGuideNote({ full = false }: { full?: boolean }) {
+  return (
+    <p className={s.guideNote}>
+      {full
+        ? `학습 자료 ${MAX_NOTES}개를 모두 등록했어요. 하나를 지우면 새로 등록할 수 있어요.`
+        : `학습 자료는 최대 ${MAX_NOTES}개까지 등록할 수 있어요.`}
+      <br />
+      질문 만들기와 연습 횟수는 프로젝트와 함께 세요.
+    </p>
+  );
+}
+
+// 행 자리 하나(불러오는 동안)
+function RowSkeleton() {
+  return (
+    <li className={s.row}>
+      <span className={s.text}>
+        <span className={s.meta}>
+          <span className="skeleton" style={{ width: "40%" }} />
+        </span>
+        <span className={s.name}>
+          <span className="skeleton" style={{ width: "60%" }} />
+        </span>
+      </span>
+    </li>
+  );
+}
+
+// 불러오는 동안: 구획마다 목록 머리 · 행 자리 · 등록 버튼 자리(레이아웃이 밀리지 않게). 움직이지 않는 칸이다
 function Loading() {
   return (
     <>
@@ -81,18 +111,8 @@ function Loading() {
             <h2>등록한 프로젝트</h2>
           </div>
           <ul className={s.rows}>
-            {[0, 1].map((i) => (
-              <li key={i} className={s.row}>
-                <span className={s.text}>
-                  <span className={s.meta}>
-                    <span className="skeleton" style={{ width: "40%" }} />
-                  </span>
-                  <span className={s.name}>
-                    <span className="skeleton" style={{ width: "60%" }} />
-                  </span>
-                </span>
-              </li>
-            ))}
+            <RowSkeleton />
+            <RowSkeleton />
           </ul>
           <div className={s.bottom}>
             <span className="skeleton" style={{ height: 52 }} />
@@ -103,6 +123,13 @@ function Loading() {
           <div className={s.listHead}>
             <h2>학습 자료</h2>
           </div>
+          <ul className={s.rows}>
+            <RowSkeleton />
+          </ul>
+          <div className={`${s.bottom} ${s.static}`}>
+            <span className="skeleton" style={{ height: 44 }} />
+          </div>
+          <NoteGuideNote />
         </div>
       </div>
     </>
@@ -190,6 +217,7 @@ async function Projects() {
     loadQuota(createAdminClient(), auth?.claims.sub ?? null),
   ]);
 
+  // 하루 한도·월 예산 안내는 두 구획이 함께 쓰므로 구획 위에 한 번만 둔다(PC는 안내 열까지 걸친 한 줄)
   const notice = limitNotice(quota, "both");
   const noGen = quota.budget === "exceeded" || quota.gensLeft <= 0;
   const full = data.length >= MAX_PROJECTS || noGen;
@@ -197,11 +225,17 @@ async function Projects() {
   const generating = [...data, ...notes].some((p) => p.status === "generating");
   return (
     <>
+      {notice && (
+        <div className={s.noticeRow}>
+          <LimitNotice {...notice} />
+        </div>
+      )}
       <div className={s.list}>
         {generating && <RefreshWhileGenerating />}
-        <div>
+        {/* 모바일에서 화면 아래에 붙는 프로젝트 등록 버튼은 이 구획 안에서만 따라온다 */}
+        <section aria-labelledby="projects-head">
           <div className={s.listHead}>
-            <h2>등록한 프로젝트</h2>
+            <h2 id="projects-head">등록한 프로젝트</h2>
             <span className={`num ${s.count}`}>
               <span className="mono">
                 {data.length} / {MAX_PROJECTS}
@@ -217,7 +251,6 @@ async function Projects() {
               <Row key={p.id} href={`/projects/${p.id}`} item={p} />
             ))}
           </ul>
-          {notice && <LimitNotice {...notice} />}
           <div className={s.bottom}>
             {full ? (
               <button type="button" className="btn btn-primary" disabled>
@@ -229,8 +262,8 @@ async function Projects() {
               </Link>
             )}
           </div>
-          <GuideNote />
-        </div>
+          <GuideNote full={data.length >= MAX_PROJECTS} />
+        </section>
 
         <section className={s.notes} aria-labelledby="notes-head">
           <div className={s.listHead}>
@@ -245,6 +278,7 @@ async function Projects() {
           <ul className={s.rows}>
             {notes.length === 0 && (
               <li className={s.empty}>
+                <strong>아직 등록한 학습 자료가 없어요</strong>
                 정리한 노트나 수업 자료로 개념 질문을 만들어 보세요
               </li>
             )}
@@ -266,11 +300,7 @@ async function Projects() {
               </Link>
             )}
           </div>
-          <p className={s.guideNote}>
-            학습 자료는 최대 {MAX_NOTES}개까지 등록할 수 있어요.
-            <br />
-            질문 만들기와 연습 횟수는 프로젝트와 함께 세요.
-          </p>
+          <NoteGuideNote full={notes.length >= MAX_NOTES} />
         </section>
       </div>
       {data.length === 0 && <Guide />}
