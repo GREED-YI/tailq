@@ -32,11 +32,18 @@ export default function HistoryDetailPage({
   );
 }
 
-// 모바일은 뒤로 · 가운데 제목 · 북마크, PC는 뒤로 + 큰 제목(Figma S20)
-function Header({ children }: { children?: ReactNode }) {
+// 모바일은 뒤로 · 가운데 제목 · 북마크, PC는 뒤로 + 큰 제목(Figma S20).
+// 뒤로는 이 기록의 질문 상세(W3). 질문을 읽기 전(불러오는 중)에는 내 질문으로
+function Header({
+  backHref = "/questions",
+  children,
+}: {
+  backHref?: string;
+  children?: ReactNode;
+}) {
   return (
     <header className={s.detailHeader}>
-      <Link href="/history" className="press icon-btn" aria-label="기록으로">
+      <Link href={backHref} className="press icon-btn" aria-label="질문으로">
         <Icon name="chevronLeft" />
       </Link>
       <h1>기록 상세</h1>
@@ -84,7 +91,7 @@ async function Detail({ id }: { id: string }) {
 
   return (
     <>
-      <Header>
+      <Header backHref={`/questions/${q.id}`}>
         {/* RLS가 내 북마크만 붙여 준다 */}
         <BookmarkButton questionId={q.id} initial={q.bookmarks.length > 0} />
       </Header>
@@ -228,7 +235,8 @@ function MainResult({
 }
 
 // 꼬리질문 한 단계(thread result): 단계 이름 · 판정(모양 점 + 글자) · 질문. 누르면 내 답변과 AI 코멘트를 펼친다.
-// 펼침 표시로 "답변 보기 ⌄"(펼치면 "접기")를 붙인다(#117). 기대 답안은 면접 화면과 같이 모르겠어요일 때만 보여준다
+// 펼침 표시로 "답변 보기 ⌄"(펼치면 "접기")를 붙인다(#117). 순서는 내 답변(모르겠어요면 생략) → AI 코멘트 → 기대 답안.
+// 기대 답안은 처음엔 모르겠어요일 때만 보여줬는데, 다시 보는 화면이라 판정과 상관없이 늘 보여준다(W3)
 function FollowUp({
   idx,
   prompt,
@@ -281,7 +289,7 @@ function FollowUp({
               <p>{result.feedback.summary}</p>
             </div>
           )}
-          {unknown && (
+          {result.modelAnswer && (
             <div>
               <span className={s.label}>기대 답안</span>
               <p className={s.text}>{result.modelAnswer}</p>

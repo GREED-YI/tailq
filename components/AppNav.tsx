@@ -13,12 +13,17 @@ const TABS: {
   label: string;
   icon: IconName;
   where?: "wide" | "mobile";
+  // 이 주소들에서도 탭을 켠다. 옛 복습·기록 주소(#132까지 열림)와 기록 상세는 내 질문 탭
+  also?: string[];
 }[] = [
   { href: "/home", label: "홈", icon: "home" },
-  { href: "/review", label: "복습", icon: "review" },
-  { href: "/history", label: "기록", icon: "history" },
-  // 모바일은 MY 메뉴와 홈 링크로 들어간다
-  { href: "/report", label: "리포트", icon: "chart", where: "wide" },
+  {
+    href: "/questions",
+    label: "내 질문",
+    icon: "review",
+    also: ["/review", "/history"],
+  },
+  { href: "/report", label: "리포트", icon: "chart" },
   { href: "/projects", label: "프로젝트", icon: "projects" },
   // 태블릿·PC는 오른쪽 위 프로필 원이 MY로 간다
   { href: "/my", label: "MY", icon: "my", where: "mobile" },
@@ -60,6 +65,8 @@ export function NavBar({
 }: { pathname: string; sub?: boolean } & Viewer) {
   const on = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);
+  const tabOn = (t: { href: string; also?: string[] }) =>
+    [t.href, ...(t.also ?? [])].some(on);
   return (
     <header className={`${s.bar} ${sub ? s.barSub : ""}`}>
       <div className={s.barIn}>
@@ -88,9 +95,9 @@ export function NavBar({
                 <Link
                   href={t.href}
                   className={`press ${s.navItem}`}
-                  aria-current={on(t.href) ? "page" : undefined}
+                  aria-current={tabOn(t) ? "page" : undefined}
                 >
-                  <Icon name={t.icon} size={22} bold={on(t.href)} />
+                  <Icon name={t.icon} size={22} bold={tabOn(t)} />
                   <span>{t.label}</span>
                 </Link>
               </li>

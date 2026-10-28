@@ -5,6 +5,7 @@ import { isAdmin } from "@/lib/admin";
 // 로그인해야 들어가는 탭 화면(app/(app))과 면접 화면
 const APP_PATHS = [
   "/home",
+  "/questions",
   "/review",
   "/history",
   "/report",
