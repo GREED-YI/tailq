@@ -1,6 +1,5 @@
-/* 리포트(S21): 꼬리잇기·최장 칸, 구역 머리, 꼬리잇기 달력, 약점 리포트. 값은 Figma C안 S21.
-   처음엔 기록 탭 안이었고 PC 가운데 열 720이었으나, 별도 화면으로 옮기며 셸 폭을 다 쓰게 했다. 넓은 화면에서 카드가
-   지나치게 늘어나, 꼬리잇기 1년 달력과 약점 두 열이 들어가는 976(1년 52주가 스크롤 없이 들어가는 폭)에서 멈추고 가운데에 둔다(#117) */
+/* 리포트(S21): 꼬리잇기 숫자 타일 · 꼬리잇기 달력 · 약점 리포트. 기준은 DESIGN.md stat-tiles, 2px 머리선 + 1px 구분선.
+   PC는 1년 52주 달력이 스크롤 없이 들어가는 976에서 멈추고 가운데에 둔다(#117) */
 @media (min-width: 1024px) {
   .page {
     width: 100%;
@@ -9,53 +8,64 @@
   }
 }
 
+/* 숫자 타일 묶음: 바탕을 line 색으로 칠하고 1px 간격으로 타일 사이 선을 만든다 */
 .stats {
-  margin-top: 12px;
+  margin-top: 16px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+  overflow: hidden;
 }
 .stat {
-  min-height: 88px;
-  border-radius: 22px;
-  padding: 17px 16px 16px;
+  padding: 16px;
+  background: var(--surface);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 8px;
 }
 .stat > span {
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--sub);
-}
-.stat strong {
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 37px;
-}
-.value {
-  font-size: 28px;
+  font-size: 13px;
   font-weight: 600;
+  color: var(--text-sub);
 }
-.accent {
-  color: var(--accent);
-}
-
-/* 구역 머리: 왼쪽 제목, 오른쪽 보조 글 */
-.head {
-  margin: 22px 0 12px;
+.stat p {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-}
-.head h2 {
-  font-size: 17px;
-  font-weight: 700;
-}
-.head > span {
+  gap: 4px;
   font-size: 14px;
-  color: var(--sub);
+  font-weight: 600;
+}
+.stat b {
+  font-size: 28px;
+  line-height: 1;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+@media (min-width: 768px) {
+  .stat {
+    padding: 20px;
+    gap: 10px;
+  }
+  .stat b {
+    font-size: 34px;
+  }
+}
+@media (min-width: 1024px) {
+  .stat b {
+    font-size: 40px;
+  }
+}
+
+.section {
+  margin-top: 40px;
+}
+.headNote {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: right;
 }
 /* 제목 앞 여우 꼬리(components/Streak.tsx TailIcon) */
 .grassTitle {
@@ -68,30 +78,22 @@
 }
 
 .caption {
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--sub);
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 
-/* 꼬리잇기 달력 카드: 달력 · 설명. 처음엔 위에 보기 고르기(주·월·3개월·1년)가 있었으나 1년 고정으로 뺐다(#117) */
-.grassCard {
-  border-radius: 22px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* 열이 주, 행이 요일(월~일). 시작한 주가 왼쪽 끝이라 넘치면 처음엔 왼쪽(시작)이 보이고 오른쪽 끝을 흐린다(docs/07).
-   처음엔 rtl로 최근 주(오른쪽 끝)부터 보였으나 시작부터 채워지는 달력으로 바꿨다(#117) */
+/* 꼬리잇기 달력: 열이 주, 행이 요일(월~일). 시작한 주가 왼쪽 끝이라 넘치면 처음엔 왼쪽(시작)이 보이고 가로로 넘긴다.
+   위아래 4px 여유는 칸 초점·hover 테두리가 잘리지 않게 */
 .grassScroll {
+  margin-top: 16px;
   container-type: inline-size;
   overflow-x: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--scroll) transparent;
-  mask-image: linear-gradient(to left, transparent, #000 28px);
+  scrollbar-color: var(--line-strong) transparent;
 }
-/* 칸 크기: 52열이 카드 폭을 꽉 채우게 늘리되 14px보다 작아지면(모바일) 14px로 두고 가로 스크롤 */
+/* 칸 크기: 52열이 폭을 꽉 채우게 늘리되 14px보다 작아지면(모바일) 14px로 두고 가로 스크롤 */
 .stripWrap {
   --gap: 3px;
   --cell: max(14px, (100cqw - 51 * var(--gap)) / 52);
@@ -99,11 +101,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-@media (min-width: 1024px) {
-  .grassScroll {
-    mask-image: none;
-  }
+  padding-bottom: 4px;
 }
 /* 칸 위 달 이름. 칸 폭 열에 글자가 넘쳐 옆 열로 이어진다 */
 .months {
@@ -117,7 +115,7 @@
   font-size: 12px;
   line-height: 18px;
   white-space: nowrap;
-  color: var(--sub);
+  color: var(--text-muted);
 }
 .strip {
   display: grid;
@@ -126,51 +124,14 @@
   grid-auto-flow: column;
   gap: var(--gap);
 }
-
-.grass span {
-  border-radius: 4px;
-}
-.grass [data-level="0"] {
-  background: var(--grass-0);
-}
-.grass [data-level="1"] {
-  background: var(--grass-1);
-}
-.grass [data-level="2"] {
-  background: var(--grass-2);
-}
-.grass [data-level="3"] {
-  background: var(--grass-3);
-}
-.grass [data-level="4"] {
-  background: var(--grass-4);
-}
-/* 휴식권 쓴 날은 빗금 */
-.grass [data-rest] {
-  background:
-    repeating-linear-gradient(
-      135deg,
-      var(--grass-2) 0 2px,
-      transparent 2px 4px
-    ),
-    var(--grass-0);
-}
-/* 오늘은 강조색 안쪽 테두리 */
-.grass [data-today] {
-  box-shadow: inset 0 0 0 2px var(--accent);
-}
-/* 오늘 뒤는 앞으로 채울 칸이라 테두리만 흐리게, 시작한 날 앞(첫 주)은 비운다 */
-.grass [data-future] {
-  background: none;
-  box-shadow: inset 0 0 0 1px var(--glass-edge);
-}
+/* 칸 색은 GrassTip.module.css(.cells). 시작한 날 앞(첫 주)은 비운다 */
 .grass [data-out] {
   visibility: hidden;
 }
 /* 처음 열릴 때 학습한 칸이 왼쪽(시작)부터 차례로 나타난다. 늦춤(--delay)은 page.tsx가 0~0.45초로 준다 */
 @media (prefers-reduced-motion: no-preference) {
   .grass [style] {
-    animation: fill 0.15s var(--delay) ease-out backwards;
+    animation: fill 0.15s var(--delay) var(--ease) backwards;
   }
 }
 @keyframes fill {
@@ -179,25 +140,8 @@
     transform: scale(0.4);
   }
 }
-/* 마우스가 올라간 칸을 안쪽 테두리로 짚는다. 처음엔 바깥 그림자(0 0 0 1.5px)였으나 칸 사이 틈으로 번져 바꿨다(#117) */
-@media (hover: hover) {
-  .grass span[data-tip]:hover {
-    outline: 2px solid var(--text);
-    outline-offset: -2px;
-  }
-}
 
-.weakCard {
-  border-radius: 28px;
-  padding: 8px 16px;
-}
-.weakCard > p {
-  padding: 12px 0;
-}
-.list {
-  list-style: none;
-}
-/* 넓은 화면은 주제를 두 열로 */
+/* 약점 리포트: 넓은 화면은 주제를 두 열로 */
 @media (min-width: 1024px) {
   .list {
     display: grid;
@@ -206,42 +150,58 @@
   }
 }
 .row {
-  min-height: 60px;
+  padding: 16px 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
 }
-.left,
-.right {
+.left {
+  flex: 1;
+  min-width: 0;
+  max-width: 280px;
   display: flex;
   flex-direction: column;
-}
-.right {
-  align-items: flex-end;
-  text-align: right;
-}
-.left > span,
-.right > span {
-  font-size: 13px;
-  line-height: 18px;
-  color: var(--sub);
+  gap: 6px;
 }
 .left strong {
   font-size: 16px;
-  line-height: 23px;
+  line-height: 1.5;
   font-weight: 700;
   overflow-wrap: anywhere;
 }
+.avg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.avg > span {
+  font-size: 14px;
+}
+.right {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+.right > span {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
 .right strong {
   font-size: 15px;
-  line-height: 21px;
-  font-weight: 700;
-  color: var(--sub);
+  line-height: 1.4;
+  font-weight: 600;
+  color: var(--text-sub);
 }
 .right [data-trend="up"] {
-  color: var(--good);
+  color: var(--text);
 }
 .right [data-trend="down"] {
-  color: var(--low);
+  color: var(--danger);
 }

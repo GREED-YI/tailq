@@ -26,14 +26,14 @@ export function HistoryFilters({
         <Link
           key={f.key}
           href={f.href}
-          className="chip glass press"
+          className="chip press"
           aria-current={current === f.key ? "page" : undefined}
         >
           {f.key === "bookmark" && (
             <Icon name="star" size={16} bold={current === f.key} />
           )}
           {f.label}
-          {counts && <span className="num">{counts[f.key]}</span>}
+          {counts && <span className="mono">{counts[f.key]}</span>}
         </Link>
       ))}
     </nav>

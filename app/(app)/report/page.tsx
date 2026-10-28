@@ -14,6 +14,8 @@ import { loadStudy } from "@/lib/study";
 import { createClient } from "@/lib/supabase/server";
 import { weaknessReport, type TopicScore } from "@/lib/weakness";
 import { GrassTip } from "@/components/GrassTip";
+import { ScoreBar } from "@/app/interview/ScoreRing";
+import { Score } from "../history/marks";
 import h from "../history/history.module.css";
 import w from "./report.module.css";
 
@@ -96,74 +98,69 @@ async function Report() {
 
   return (
     <>
+      {/* 숫자 타일(stat-tiles): 1px 선으로 나뉜 한 묶음 */}
       <section className={w.stats} aria-label="꼬리잇기">
-        <div className={`glass ${w.stat}`}>
+        <div className={w.stat}>
           <span>꼬리잇기</span>
-          <strong>
-            <span className={`mono ${w.value} ${w.accent}`}>
-              {streak.current}
-            </span>
-            {streak.current > 0 ? " 일째" : " 일"}
-          </strong>
+          <p>
+            <b className="mono">{streak.current}</b>
+            {streak.current > 0 ? "일째" : "일"}
+          </p>
         </div>
-        <div className={`glass ${w.stat}`}>
+        <div className={w.stat}>
           <span>최장</span>
-          <strong>
-            <span className={`mono ${w.value}`}>{streak.longest}</span> 일
-          </strong>
+          <p>
+            <b className="mono">{streak.longest}</b>일
+          </p>
         </div>
       </section>
 
-      <section aria-labelledby="grass-head">
-        <div className={w.head}>
+      <section className={w.section} aria-labelledby="grass-head">
+        <div className={h.listHead}>
           {/* 처음엔 "학습 잔디"였으나 꼬리잇기와 이어지게 "꼬리잇기 달력"으로 바꿨다(#117) */}
           <h2 id="grass-head" className={w.grassTitle}>
             <TailIcon size={18} />
             꼬리잇기 달력
           </h2>
-          <span className="num">
+          <span className={`num ${w.headNote}`}>
             {range} · {studied}일 학습
           </span>
         </div>
-        <div className={`glass ${w.grassCard}`}>
-          <div className={w.grassScroll}>
-            <div className={w.stripWrap}>
-              <MonthLabels cells={cells} joined={joined} />
-              {grid}
-            </div>
+        <div className={w.grassScroll}>
+          <div className={w.stripWrap}>
+            <MonthLabels cells={cells} joined={joined} />
+            {grid}
           </div>
-          <p className={w.caption}>
-            진할수록 점수가 높고, 빗금은 휴식권을 쓴 날이에요
-          </p>
         </div>
+        <p className={w.caption}>
+          진할수록 점수가 높고, 빗금은 휴식권을 쓴 날이에요
+        </p>
       </section>
 
-      <section aria-labelledby="weak-head">
-        <div className={w.head}>
+      <section className={w.section} aria-labelledby="weak-head">
+        <div className={h.listHead}>
           <h2 id="weak-head">약점 리포트</h2>
-          <span>3번 이상 푼 주제만 보여줘요</span>
+          <span className={w.headNote}>3번 이상 푼 주제만 보여줘요</span>
         </div>
-        <div className={`glass ${w.weakCard}`}>
-          {weak.topics.length > 0 && (
-            <ul className={w.list}>
-              {weak.topics.map((t) => (
-                <TopicRow key={t.topicId} t={t} />
-              ))}
-            </ul>
-          )}
-          {weak.topics.length === 0 ? (
+        {weak.topics.length > 0 && (
+          <ul className={`${h.list} ${w.list}`}>
+            {weak.topics.map((t) => (
+              <TopicRow key={t.topicId} t={t} />
+            ))}
+          </ul>
+        )}
+        {weak.topics.length === 0 ? (
+          <p className={h.rowEmpty}>
+            데이터가 모이는 중이에요. 한 주제를 3번 이상 풀면 평균 점수와 추이를
+            보여드려요.
+          </p>
+        ) : (
+          weak.collecting > 0 && (
             <p className={w.caption}>
-              데이터가 모이는 중이에요. 한 주제를 3번 이상 풀면 평균 점수와
-              추이를 보여드려요.
+              그 밖의 {weak.collecting}개 주제는 데이터가 모이는 중이에요
             </p>
-          ) : (
-            weak.collecting > 0 && (
-              <p className={w.caption}>
-                그 밖의 {weak.collecting}개 주제는 데이터가 모이는 중이에요
-              </p>
-            )
-          )}
-        </div>
+          )
+        )}
       </section>
     </>
   );
@@ -197,13 +194,17 @@ function MonthLabels({
   );
 }
 
-// 왼쪽 평균 점수·주제 이름, 오른쪽 지난주 대비 변화(S21)
+// 주제 이름 · 평균 점수와 20칸 막대 · 지난주 대비 변화(S21). 오르면 text, 내리면 danger(색과 ▲▼를 같이 쓴다)
 function TopicRow({ t }: { t: TopicScore }) {
   return (
     <li className={w.row}>
       <span className={w.left}>
-        <span className="num">평균 {t.average}점</span>
         <strong>{t.topic}</strong>
+        <span className={w.avg}>
+          평균
+          <Score value={t.average} />
+        </span>
+        <ScoreBar value={t.average} small />
       </span>
       <span className={w.right}>
         <span>{t.change == null ? "지난주 기록 없음" : "지난주 대비"}</span>

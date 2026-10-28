@@ -1,34 +1,38 @@
-/* 꼬리잇기 칸(Figma C안 홈 통계·오늘의 결과 칸) */
+/* 꼬리잇기 숫자 타일(DESIGN.md stat-tiles의 한 칸). 1px 선 묶음은 쓰는 화면이 감싼다 */
 
 .tile {
-  border-radius: 22px;
-  padding: 16px;
+  padding: 20px;
+  background: var(--surface);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
 }
 .label {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 14px;
-  color: var(--sub);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-sub);
 }
 .label svg {
   color: var(--accent);
 }
 .value {
-  font-size: 15px;
-  font-weight: 500;
-  line-height: 34px;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 600;
 }
 .days {
-  margin-right: 2px;
-  font-size: 28px;
+  font-size: 40px;
+  line-height: 1;
   font-weight: 600;
-  color: var(--accent);
+  letter-spacing: -0.04em;
 }
 .note {
-  font-size: 14px;
-  color: var(--sub);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
 }

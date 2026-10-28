@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense, type CSSProperties, type ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { z } from "zod";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { Icon } from "@/components/icons";
@@ -11,7 +11,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { turnResult, type TurnResult } from "@/lib/turn";
 import { ScoreRing } from "@/app/interview/ScoreRing";
-import { scoreColor, VERDICTS } from "@/app/interview/verdict";
+import { VerdictMark } from "@/app/interview/VerdictMark";
+import { scoreVerdict } from "@/app/interview/verdict";
 import s from "@/app/(app)/history/history.module.css";
 
 export const metadata: Metadata = { title: "기록 상세 · TailQ" };
@@ -35,11 +36,7 @@ export default function HistoryDetailPage({
 function Header({ children }: { children?: ReactNode }) {
   return (
     <header className={s.detailHeader}>
-      <Link
-        href="/history"
-        className="glass press icon-btn"
-        aria-label="기록으로"
-      >
+      <Link href="/history" className="press icon-btn" aria-label="기록으로">
         <Icon name="chevronLeft" />
       </Link>
       <h1>기록 상세</h1>
@@ -105,9 +102,11 @@ async function Detail({ id }: { id: string }) {
       <MainResult answer={main.answer} result={results.get(main.id)!} />
 
       {session.turns.length > 1 && (
-        <>
-          <h2 className={s.sectionHead}>꼬리질문</h2>
-          <ol className={`glass ${s.card} ${s.followUps}`}>
+        <section className={s.block} aria-labelledby="follow-ups">
+          <div className={s.listHead}>
+            <h2 id="follow-ups">꼬리질문</h2>
+          </div>
+          <ol className={s.thread}>
             {session.turns.slice(1).map((t) => (
               <FollowUp
                 key={t.id}
@@ -118,13 +117,14 @@ async function Detail({ id }: { id: string }) {
               />
             ))}
           </ol>
-        </>
+        </section>
       )}
     </>
   );
 }
 
-// 본 질문: 내 답변 · 점수 · 잘한 점과 보완할 점 · 접힌 모범 답안과 참고 자료(S20)
+// 본 질문: 내 답변 · 채점 결과 묶음(점수 · 막대 · 한 줄 평 · 놓친 개념 · 잘한 점과 보완할 점) · 접힌 모범 답안과 참고 자료(S20).
+// 구획은 상자 없이 여백과 1px 선으로 나누고, surface 면은 채점 결과 묶음에만 깐다(DESIGN.md)
 function MainResult({
   answer,
   result,
@@ -137,76 +137,77 @@ function MainResult({
   const improve = result.feedback?.improve ?? [];
   return (
     <>
-      <section
-        className={`glass ${s.card} ${s.answerCard}`}
-        aria-label="내 답변"
-      >
-        <span className={s.label}>내 답변</span>
-        <p className={s.well}>{unknown ? "모르겠어요" : answer}</p>
+      <section className={s.block} aria-labelledby="my-answer">
+        <h3 id="my-answer" className={s.label}>
+          내 답변
+        </h3>
+        <p className={s.text}>{unknown ? "모르겠어요" : answer}</p>
       </section>
 
-      <section className={`glass ${s.card} ${s.scoreCard}`} aria-label="채점">
-        {/* 링 색도 점수 구간 색(scoreColor). 면접 화면 공통 링의 --ring을 여기서만 바꾼다 */}
-        <div
-          className={s.ring}
-          style={{ "--ring": scoreColor(result.score ?? 0) } as CSSProperties}
-        >
-          <ScoreRing
-            shown={result.score ?? 0}
-            value={result.score ?? 0}
-            label={`100점 만점에 ${result.score ?? 0}점`}
-          />
-        </div>
-        <div className={s.headline}>
-          <strong>{unknown ? "모르겠어요" : result.feedback?.summary}</strong>
-          {result.missingKeywords.length > 0 && (
-            <span>놓친 개념 · {result.missingKeywords.join(", ")}</span>
-          )}
-        </div>
+      <section className={s.result} aria-label="채점 결과">
+        {/* 숫자 줄 오른쪽에 점수 구간 판정(모양 점 + 글자), 모르겠어요면 모르겠어요 */}
+        <ScoreRing
+          shown={result.score ?? 0}
+          value={result.score ?? 0}
+          label={`100점 만점에 ${result.score ?? 0}점`}
+          aside={
+            <VerdictMark
+              verdict={unknown ? "unknown" : scoreVerdict(result.score ?? 0)}
+            />
+          }
+        />
+        {!unknown && result.feedback?.summary && (
+          <p className={s.summary}>{result.feedback.summary}</p>
+        )}
+        {result.missingKeywords.length > 0 && (
+          <div className={s.concepts}>
+            <h3 className={s.label}>놓친 개념</h3>
+            <div>
+              {result.missingKeywords.map((k) => (
+                <span key={k} className="tag tag-concept">
+                  {k}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        {(good.length > 0 || improve.length > 0) && (
+          <div className={s.points}>
+            {good.length > 0 && (
+              <div>
+                <h3>잘한 점</h3>
+                <ul>
+                  {good.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {improve.length > 0 && (
+              <div>
+                <h3>보완할 점</h3>
+                <ul>
+                  {improve.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
-      {(good.length > 0 || improve.length > 0) && (
-        <section
-          className={`glass ${s.card} ${s.points}`}
-          aria-label="잘한 점과 보완할 점"
-        >
-          {good.length > 0 && (
-            <div>
-              <h3 className={s.goodLabel}>잘한 점</h3>
-              <ul>
-                {good.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {improve.length > 0 && (
-            <div>
-              <h3 className={s.improveLabel}>보완할 점</h3>
-              <ul>
-                {improve.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </section>
-      )}
-
-      <section
-        className={`glass ${s.card} ${s.folds}`}
-        aria-label="모범 답안과 참고 자료"
-      >
+      <section className={s.folds} aria-label="모범 답안과 참고 자료">
         <details>
-          <summary className="hover-row">
+          <summary>
             모범 답안
             <Icon name="chevronDown" size={18} />
           </summary>
-          <p className={s.well}>{result.modelAnswer}</p>
+          <p className={s.text}>{result.modelAnswer}</p>
         </details>
         {result.links.length > 0 && (
           <details>
-            <summary className="hover-row">
+            <summary>
               참고 자료
               <Icon name="chevronDown" size={18} />
             </summary>
@@ -226,9 +227,8 @@ function MainResult({
   );
 }
 
-// 꼬리질문: 번호 · 질문 · 판정 한 줄. 누르면 내 답변과 AI 코멘트를 펼친다.
-// 처음엔 펼침 표시가 없어 그냥 글로 보여, 오른쪽에 "답변 보기 ⌄"를 붙였다(#117).
-// 기대 답안은 면접 화면과 같이 모르겠어요일 때만 보여준다
+// 꼬리질문 한 단계(thread result): 단계 이름 · 판정(모양 점 + 글자) · 질문. 누르면 내 답변과 AI 코멘트를 펼친다.
+// 펼침 표시로 "답변 보기 ⌄"(펼치면 "접기")를 붙인다(#117). 기대 답안은 면접 화면과 같이 모르겠어요일 때만 보여준다
 function FollowUp({
   idx,
   prompt,
@@ -240,49 +240,54 @@ function FollowUp({
   answer: string | null;
   result: TurnResult | undefined;
 }) {
-  const verdict =
-    result && (VERDICTS[result.verdict ?? ""] ?? VERDICTS.unknown);
   const unknown = result?.verdict === "unknown";
-  return (
-    <li>
-      <details className={s.followUp}>
-        <summary className="hover-row">
-          <span className={`num ${s.followUpIdx}`}>
-            {String(idx).padStart(2, "0")}
-          </span>
-          <span className={s.followUpPrompt}>{prompt}</span>
-          {/* 모르겠어요의 점 색(--dot-off)은 글자로 읽기 어려워 글자는 보조색으로 둔다 */}
-          <span
-            className={s.verdict}
-            style={{ color: verdict && !unknown ? verdict.color : undefined }}
-          >
-            {verdict ? verdict.label : "건너뜀"}
-          </span>
-          {verdict && (
-            <span className={s.more} aria-hidden="true">
-              <span className={s.moreOpen}>답변 보기</span>
-              <span className={s.moreClose}>접기</span>
-              <Icon name="chevronDown" size={16} />
-            </span>
-          )}
-        </summary>
-        {verdict && (
-          <div className={s.followUpBody}>
-            {!unknown && <p className={s.well}>{answer}</p>}
-            {result.feedback?.summary && (
-              <div className={s.comment}>
-                <span className={s.aiLabel}>AI 코멘트</span>
-                <p className={s.feedbackLine}>{result.feedback.summary}</p>
-              </div>
-            )}
-            {unknown && (
-              <>
-                <span className={s.label}>기대 답안</span>
-                <p className={s.well}>{result.modelAnswer}</p>
-              </>
-            )}
-          </div>
+  const head = (
+    <>
+      <span className={s.stepHead}>
+        <span className={`num ${s.stepName}`}>꼬리질문 {idx}</span>
+        {/* 판정이 없으면(날짜를 넘겨 닫힘) 건너뜀 */}
+        {result ? (
+          <VerdictMark verdict={result.verdict ?? "unknown"} />
+        ) : (
+          <VerdictMark verdict="unknown">건너뜀</VerdictMark>
         )}
+      </span>
+      <span className={s.stepPrompt}>{prompt}</span>
+    </>
+  );
+  // 판정이 없으면(날짜를 넘겨 닫힘) 펼칠 내용이 없다
+  if (!result)
+    return (
+      <li className={s.step}>
+        <div className={s.stepStatic}>{head}</div>
+      </li>
+    );
+  return (
+    <li className={s.step}>
+      <details>
+        <summary>
+          {head}
+          <span className={s.stepMore} aria-hidden="true">
+            <span className={s.stepMoreOpen}>답변 보기</span>
+            <span className={s.stepMoreClose}>접기</span>
+            <Icon name="chevronDown" size={16} />
+          </span>
+        </summary>
+        <div className={s.stepBody}>
+          {!unknown && <p className={s.text}>{answer}</p>}
+          {result.feedback?.summary && (
+            <div className={s.comment}>
+              <span className={s.aiLabel}>AI 코멘트</span>
+              <p>{result.feedback.summary}</p>
+            </div>
+          )}
+          {unknown && (
+            <div>
+              <span className={s.label}>기대 답안</span>
+              <p className={s.text}>{result.modelAnswer}</p>
+            </div>
+          )}
+        </div>
       </details>
     </li>
   );

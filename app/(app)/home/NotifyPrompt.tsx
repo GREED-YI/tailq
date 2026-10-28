@@ -83,7 +83,7 @@ export function NotifyPrompt({ vapidKey }: { vapidKey: string }) {
       <div className={s.dialogButtons}>
         <button
           type="button"
-          className="btn btn-md btn-secondary glass press"
+          className="btn btn-md btn-secondary press"
           onClick={close}
         >
           나중에

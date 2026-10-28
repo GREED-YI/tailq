@@ -16,7 +16,7 @@ export function TailIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-// "꼬리잇기 12일째"(docs/07 "꼬리잇기"). 숫자는 강조색
+// "꼬리잇기 12일째"(docs/07 "꼬리잇기"). 숫자는 Geist Mono
 export function StreakDays({ days }: { days: number }) {
   return (
     <>
@@ -26,10 +26,10 @@ export function StreakDays({ days }: { days: number }) {
   );
 }
 
-// 홈 통계·오늘의 결과의 꼬리잇기 칸
+// 오늘의 결과의 꼬리잇기 칸
 export function StreakTile({ days, note }: { days: number; note?: string }) {
   return (
-    <div className={`glass ${s.tile}`}>
+    <div className={s.tile}>
       <span className={s.label}>
         <TailIcon />
         꼬리잇기
