@@ -55,6 +55,7 @@ async function Project({ id }: { id: string }) {
       status={project.status as "generating" | "ready" | "failed"}
       questions={toQuestionRows(project.questions)}
       notice={limitNotice(quota, "practice")}
+      sessionsLeft={quota.budget === "exceeded" ? null : quota.sessionsLeft}
       canRetry={quota.budget !== "exceeded"}
     />
   );

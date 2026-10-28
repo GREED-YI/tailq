@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icons";
-import { LimitNotice, type Notice } from "@/components/LimitNotice";
+import { LimitNotice, type Notice, UsageLine } from "@/components/LimitNotice";
 import { scoreColor } from "@/app/interview/verdict";
 import s from "@/app/(app)/projects/projects.module.css";
 import { openModal, useCloseOnLeave } from "@/lib/dialog";
+import { DAILY_SESSIONS } from "@/lib/questions";
 
 // state: 최근 점수("72점"·"모르겠어요"), 연습 중("doing"), 아직 안 함(null). score는 점수 색을 고를 때 쓴다
 // open: 열린 세션이 있으면 한도와 상관없이 이어 할 수 있다(점수가 있어도 꼬리질문 중일 수 있다)
@@ -52,6 +53,7 @@ export function ProjectView({
   status,
   questions,
   notice,
+  sessionsLeft,
   canRetry,
 }: {
   kind?: keyof typeof COPY;
@@ -61,6 +63,8 @@ export function ProjectView({
   questions: QuestionRow[];
   // 하루 연습 한도나 월 예산에 닿았으면 안내(S26). 새 연습은 막고 하던 연습만 이어 할 수 있다
   notice: Notice | null;
+  // 오늘 남은 면접 연습 횟수. 월 예산이 다 찼으면 null(숨긴다)
+  sessionsLeft: number | null;
   canRetry: boolean;
 }) {
   const c = COPY[kind];
@@ -158,6 +162,9 @@ export function ProjectView({
             면접관이 물을 법한 질문 {questions.length}개
           </h2>
           <p className={s.desc}>질문을 누르면 바로 연습할 수 있어요</p>
+          {sessionsLeft !== null && (
+            <UsageLine items={[["면접 연습", sessionsLeft, DAILY_SESSIONS]]} />
+          )}
           {notice && <LimitNotice {...notice} />}
           <ol className={`${s.rows} ${s.qRows}`}>
             {questions.map((q, i) => {
