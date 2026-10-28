@@ -14,29 +14,32 @@ export class NoteFileError extends Error {
 }
 
 export const NOTE_FILE_MESSAGES = {
-  tooBig:
-    "파일이 50MB를 넘어요. 필요한 부분만 나누거나 내보내서 다시 불러와 주세요.",
+  tooBig: "파일이 50MB를 넘어요. 필요한 부분만 따로 저장해 다시 불러와 주세요.",
   unsupported:
     "읽을 수 없는 형식이에요. PDF, Word, PowerPoint, Excel, 한글, EPUB, HTML, 텍스트 파일을 불러와 주세요.",
-  legacy: (ext: string, to: string) =>
-    `옛 형식(.${ext}) 파일은 읽지 못해요. ${to} 또는 PDF로 저장해서 다시 불러와 주세요.`,
+  legacy: (ext: string, app: string, to: string) =>
+    `예전 ${app} 형식(.${ext})은 읽지 못해요. ${app}에서 ${to}나 PDF로 다시 저장해 불러와 주세요.`,
   legacyHwp:
-    "한글 97 이전 형식은 읽지 못해요. 한글에서 .hwp(또는 .hwpx)로 다시 저장해서 불러와 주세요.",
+    "예전 한글 형식(한글 97 이하)은 읽지 못해요. 최신 한글에서 다시 저장하거나 PDF로 저장해 불러와 주세요.",
   noText:
-    "파일에서 글자를 찾지 못했어요. 스캔한 PDF나 그림만 있는 파일은 읽을 수 없어요.",
+    "글자를 찾지 못했어요. 스캔본이면 글자 인식(OCR)한 파일을 불러오거나 글을 붙여넣어 주세요.",
   encrypted:
     "암호가 걸린 파일은 읽지 못해요. 암호를 풀고 다시 저장해서 불러와 주세요.",
+  // 산 전자책의 DRM은 사용자가 풀 수 없으니 암호(encrypted)와 달리 풀라고 하지 않는다
+  epubDrm:
+    "복제 방지(DRM)가 걸린 전자책은 읽지 못해요. 필요한 부분을 정리해 붙여넣어 주세요.",
   distribution:
-    "배포용 한글 문서는 읽지 못해요. 일반 문서로 저장하거나 PDF로 내보내서 불러와 주세요.",
+    "배포용 한글(HWP) 문서는 읽지 못해요. 배포용 설정을 푼 문서나 PDF 파일을 불러와 주세요.",
   broken:
-    "파일을 읽지 못했어요. 파일이 손상되지 않았는지 확인하거나 내용을 복사해 붙여넣어 주세요.",
+    "파일을 읽지 못했어요. 원래 프로그램에서 열리는지 확인하거나 내용을 복사해 붙여넣어 주세요.",
 };
 const M = NOTE_FILE_MESSAGES;
 
-const LEGACY: Record<string, string> = {
-  doc: ".docx",
-  ppt: ".pptx",
-  xls: ".xlsx",
+// 확장자 → [프로그램 이름, 새 형식]. 안내에 어느 프로그램에서 다시 저장할지 쓴다
+const LEGACY: Record<string, [string, string]> = {
+  doc: ["Word", ".docx"],
+  ppt: ["PowerPoint", ".pptx"],
+  xls: ["Excel", ".xlsx"],
 };
 
 // 파일을 글(마크다운에 가까운 텍스트)로 바꾼다. 읽을 수 없으면 안내를 담은 NoteFileError를 던진다.
@@ -46,7 +49,7 @@ export async function fileToText(
 ): Promise<{ text: string; truncated: boolean }> {
   if (file.size > NOTE_FILE_MAX_BYTES) throw new NoteFileError(M.tooBig);
   const ext = file.name.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1] ?? "";
-  if (LEGACY[ext]) throw new NoteFileError(M.legacy(ext, LEGACY[ext]));
+  if (LEGACY[ext]) throw new NoteFileError(M.legacy(ext, ...LEGACY[ext]));
   const read = READERS[ext];
   if (!read) throw new NoteFileError(M.unsupported);
 
@@ -268,7 +271,7 @@ async function readEpub(d: Uint8Array) {
   // DRM으로 본문을 암호화한 책은 encryption.xml에 본문 파일이 적혀 있다(글꼴만 감춘 책은 읽을 수 있다)
   try {
     if (/URI="[^"]+\.x?html?"/i.test(text("META-INF/encryption.xml"))) {
-      throw new NoteFileError(M.encrypted);
+      throw new NoteFileError(M.epubDrm);
     }
   } catch (e) {
     if (e instanceof NoteFileError) throw e;

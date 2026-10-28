@@ -38,13 +38,13 @@ describe("학습 자료 파일 → 글(#144)", () => {
 
   it("옛 형식은 새 형식으로 저장하라고 안내한다", async () => {
     await expect(fileToText(file("a.doc", "x"))).rejects.toThrow(
-      M.legacy("doc", ".docx"),
+      M.legacy("doc", "Word", ".docx"),
     );
     await expect(fileToText(file("a.PPT", "x"))).rejects.toThrow(
-      M.legacy("ppt", ".pptx"),
+      M.legacy("ppt", "PowerPoint", ".pptx"),
     );
     await expect(fileToText(file("a.xls", "x"))).rejects.toThrow(
-      M.legacy("xls", ".xlsx"),
+      M.legacy("xls", "Excel", ".xlsx"),
     );
   });
 
@@ -147,7 +147,7 @@ describe("학습 자료 파일 → 글(#144)", () => {
       "META-INF/encryption.xml": `<encryption><EncryptedData><CipherData><CipherReference URI="OEBPS/text/ch2.xhtml"/></CipherData></EncryptedData></encryption>`,
     };
     await expect(fileToText(file("a.epub", zip(drm)))).rejects.toThrow(
-      M.encrypted,
+      M.epubDrm,
     );
   });
 
