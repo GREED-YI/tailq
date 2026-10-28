@@ -13,12 +13,8 @@ import { createClient } from "@/lib/supabase/server";
 import { track } from "@/lib/track";
 import { TRIAL_COOKIE } from "@/lib/trial";
 import { recordUsage } from "@/lib/usage";
-import {
-  dbErrorResponse,
-  errorResponse,
-  turnResult,
-  type TurnResult,
-} from "@/lib/turn";
+import { dbErrorResponse, turnResult, type TurnResult } from "@/lib/turn";
+import { errorResponse, withApiErrors } from "@/lib/api-error";
 
 // 채점(최대 15초)과 결과 저장(after)까지 끊기지 않게(08 설계 "실행 환경")
 export const maxDuration = 60;
@@ -30,7 +26,7 @@ const Body = z.union([
 
 // 답변 저장 → 채점(SSE). { dontKnow: true }면 AI 없이 JSON으로 결과를 돌려준다(08 설계 4장).
 // 실패한 턴에 같은 요청을 다시 보내면 다시 채점이다.
-export async function PUT(
+export const PUT = withApiErrors(async function PUT(
   request: Request,
   ctx: RouteContext<"/api/turns/[id]/answer">,
 ) {
@@ -42,25 +38,24 @@ export async function PUT(
     ? undefined
     : (await cookies()).get(TRIAL_COOKIE)?.value;
   if (!userId && !trialToken) {
-    return errorResponse(401, "UNAUTHORIZED", "로그인이 필요해요.");
+    return errorResponse("UNAUTHORIZED", "로그인이 필요해요.");
   }
 
   const { id } = await ctx.params;
   const body = Body.safeParse(await request.json().catch(() => null));
   if (!body.success) {
-    return errorResponse(400, "VALIDATION", "답변 형식이 맞지 않아요.");
+    return errorResponse("VALIDATION", "답변 형식이 맞지 않아요.");
   }
   const dontKnow = "dontKnow" in body.data;
   const text = "text" in body.data ? body.data.text.trim() : "";
   if (!dontKnow && (text.length < 30 || text.length > 2000)) {
     return errorResponse(
-      400,
       "VALIDATION",
       "답변은 30자 이상 2,000자 이하로 써 주세요.",
     );
   }
   if (!z.uuid().safeParse(id).success) {
-    return errorResponse(404, "NOT_FOUND", "질문을 찾을 수 없어요.");
+    return errorResponse("NOT_FOUND", "질문을 찾을 수 없어요.");
   }
 
   const db = createAdminClient();
@@ -71,12 +66,12 @@ export async function PUT(
     )
     .eq("id", id)
     .maybeSingle();
-  if (!turn) return errorResponse(404, "NOT_FOUND", "질문을 찾을 수 없어요.");
+  if (!turn) return errorResponse("NOT_FOUND", "질문을 찾을 수 없어요.");
   const owner = userId
     ? turn.sessions.user_id === userId
     : !turn.sessions.user_id && turn.sessions.trial_token === trialToken;
   if (!owner) {
-    return errorResponse(403, "NOT_OWNER", "내 질문이 아니에요.");
+    return errorResponse("NOT_OWNER", "내 질문이 아니에요.");
   }
 
   try {
@@ -242,7 +237,7 @@ export async function PUT(
       "cache-control": "no-cache, no-transform",
     },
   });
-}
+});
 
 async function gradingFailedJson(
   db: ReturnType<typeof createAdminClient>,
@@ -250,11 +245,7 @@ async function gradingFailedJson(
 ) {
   console.error("question_keys missing", id);
   await db.rpc("save_grading", { p_turn_id: id, p_result: null });
-  return errorResponse(
-    502,
-    "AI_FAILED",
-    "채점하지 못했어요. 다시 채점해 주세요.",
-  );
+  return errorResponse("AI_FAILED", "채점하지 못했어요. 다시 채점해 주세요.");
 }
 
 // 꼬리질문 채점에 넣을 지금까지의 턴(docs/09 "꼬리질문 채점 사용자 메시지"의 <history>·<current>)

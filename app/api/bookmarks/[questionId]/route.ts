@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { dbErrorResponse, errorResponse } from "@/lib/turn";
+import { dbErrorResponse } from "@/lib/turn";
+import { errorResponse, withApiErrors } from "@/lib/api-error";
 
 // 북마크 저장(PUT)·해제(DELETE). 여러 번 불러도 결과가 같다(08 설계 "멱등성")
 async function setBookmark(
@@ -10,12 +11,12 @@ async function setBookmark(
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
-  if (!userId) return errorResponse(401, "UNAUTHORIZED", "로그인이 필요해요.");
+  if (!userId) return errorResponse("UNAUTHORIZED", "로그인이 필요해요.");
 
   const { questionId } = await ctx.params;
   // 질문 번호는 int 범위 안의 양의 정수
   if (!/^[1-9]\d{0,8}$/.test(questionId)) {
-    return errorResponse(404, "NOT_FOUND", "질문을 찾을 수 없어요.");
+    return errorResponse("NOT_FOUND", "질문을 찾을 수 없어요.");
   }
 
   try {
@@ -32,12 +33,12 @@ async function setBookmark(
   return Response.json({ bookmarked: on });
 }
 
-export const PUT = (
-  _: Request,
-  ctx: RouteContext<"/api/bookmarks/[questionId]">,
-) => setBookmark(ctx, true);
+export const PUT = withApiErrors(
+  async (_: Request, ctx: RouteContext<"/api/bookmarks/[questionId]">) =>
+    setBookmark(ctx, true),
+);
 
-export const DELETE = (
-  _: Request,
-  ctx: RouteContext<"/api/bookmarks/[questionId]">,
-) => setBookmark(ctx, false);
+export const DELETE = withApiErrors(
+  async (_: Request, ctx: RouteContext<"/api/bookmarks/[questionId]">) =>
+    setBookmark(ctx, false),
+);

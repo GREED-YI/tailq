@@ -1,5 +1,9 @@
 import "server-only";
-import { NextResponse } from "next/server";
+import {
+  errorResponse,
+  INTERNAL_MESSAGE,
+  type ErrorCode,
+} from "@/lib/api-error";
 import type { createAdminClient } from "@/lib/supabase/admin";
 
 type Admin = ReturnType<typeof createAdminClient>;
@@ -95,25 +99,22 @@ export async function turnResult(
   };
 }
 
-// DB 함수가 던진 에러 코드 → HTTP 응답(08 설계 "에러 형식")
-const ERRORS: Record<string, [number, string]> = {
-  VALIDATION: [400, "답변은 30자 이상 2,000자 이하로 써 주세요."],
-  NOT_FOUND: [404, "질문을 찾을 수 없어요."],
-  NOT_OWNER: [403, "내 질문이 아니에요."],
-  ALREADY_GRADED: [409, "이미 채점이 끝났어요."],
-  NOT_GRADED: [409, "채점이 끝난 뒤에 평가할 수 있어요."],
-  GRADING_IN_PROGRESS: [409, "채점하고 있어요. 잠시 뒤에 다시 확인해 주세요."],
-  SESSION_CLOSED: [409, "지난 질문에는 더 답할 수 없어요."],
-  REGRADE_LIMIT: [429, "오늘은 더 다시 채점할 수 없어요."],
+// DB 함수가 던진 에러 코드 → 메시지. HTTP 상태는 lib/api-error의 목록이 정한다(08 설계 "에러 형식")
+const MESSAGES: Partial<Record<ErrorCode, string>> = {
+  VALIDATION: "답변은 30자 이상 2,000자 이하로 써 주세요.",
+  NOT_FOUND: "질문을 찾을 수 없어요.",
+  NOT_OWNER: "내 질문이 아니에요.",
+  ALREADY_GRADED: "이미 채점이 끝났어요.",
+  NOT_GRADED: "채점이 끝난 뒤에 평가할 수 있어요.",
+  GRADING_IN_PROGRESS: "채점하고 있어요. 잠시 뒤에 다시 확인해 주세요.",
+  SESSION_CLOSED: "지난 질문에는 더 답할 수 없어요.",
+  REGRADE_LIMIT: "오늘은 더 다시 채점할 수 없어요.",
 };
 
-export const errorResponse = (status: number, code: string, message: string) =>
-  NextResponse.json({ error: { code, message } }, { status });
-
 export function dbErrorResponse(e: unknown) {
-  const code = (e as { message?: string } | null)?.message ?? "";
-  const known = ERRORS[code];
-  if (known) return errorResponse(known[0], code, known[1]);
+  const code = (e as { message?: string } | null)?.message as ErrorCode;
+  const message = MESSAGES[code];
+  if (message) return errorResponse(code, message);
   console.error("turn write failed", e);
-  return errorResponse(500, "INTERNAL", "잠시 뒤에 다시 시도해 주세요.");
+  return errorResponse("INTERNAL", INTERNAL_MESSAGE);
 }

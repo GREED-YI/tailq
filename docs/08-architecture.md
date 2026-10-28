@@ -409,23 +409,41 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 
 HTTP 상태 코드에 더해 본문은 항상 `{ "error": { "code", "message" } }`다. 스트리밍 중(HTTP 200이 이미 나간 뒤)의 실패는 SSE `error` 이벤트에 같은 모양을 담는다.
 
+**코드 → HTTP 상태는 `lib/api-error.ts`의 `ERROR_STATUS` 한 곳에서만 정한다.** 라우트는 `errorResponse(코드, 메시지)`로 응답하고 상태 숫자를 직접 쓰지 않는다. 모든 API 라우트는 `withApiErrors`로 감싸서, 어디서든 `throw new ApiError(코드, 메시지)`를 던지면 그 코드로 응답하고, 처리하지 않은 예외는 로그를 남긴 뒤 `500 INTERNAL`로 응답한다. 처음엔 라우트마다 상태 숫자와 응답 헬퍼를 따로 두었고, 감싸지 않은 예외는 빈 본문 500으로 나갔다. 코드와 이 표가 어긋나서(`REAUTH`·`OTHER_ACCOUNT`·`NOT_GRADED`·`NOT_FAILED`·`INTERNAL`이 표에 없었다) 한 곳으로 모았다 (2026-10-28, #139).
+
 | 코드 | HTTP | 언제 |
 |---|---|---|
 | `VALIDATION` | 400 | 길이·형식(답변 30~2,000자, 프로젝트 이름 1~40자·README 30~10,000자, 닉네임 2~12자, 알림 시각 0~23) |
-| `UNAUTHORIZED` | 401 | 로그인 필요 |
+| `UNAUTHORIZED` | 401 | 로그인 필요. 알림 발송 입구의 비밀 헤더가 틀릴 때도 |
+| `REAUTH` | 403 | 탈퇴할 때 로그인한 지 24시간이 지남. 소셜 로그인으로 다시 확인 |
+| `OTHER_ACCOUNT` | 403 | 탈퇴 재확인을 처음과 다른 계정으로 함 |
 | `NOT_OWNER` | 403 | 내 것이 아닌 턴·세션·프로젝트 |
 | `NOT_FOUND` | 404 | |
-| `ALREADY_GRADED` | 409 | 채점이 끝난 턴에 답변. 본문에 현재 턴 상태를 함께 준다 |
+| `ALREADY_GRADED` | 409 | 채점이 끝난 턴에 답변 |
+| `NOT_GRADED` | 409 | 채점이 끝나기 전에 👍/👎 |
 | `GRADING_IN_PROGRESS` | 409 | 20초 안의 채점이 진행 중. 화면은 버튼을 두고 현재 상태를 다시 읽는다 |
-| `PROJECT_IN_TODAY_SESSION` | 409 | 오늘의 질문으로 나온 프로젝트 삭제 |
-| `PROJECT_LIMIT` | 409 | 프로젝트 3개 초과 |
 | `SESSION_CLOSED` | 409 | 이미 닫힌 세션(지난 날 `expired`·`done`)의 턴에 답변. 처음엔 없었으나, 자정을 넘겨 어제 화면에서 제출하면 닫힌 세션에서 복습 칸이 옮겨져서 더했다 (2026-10-26, #31) |
+| `NOT_FAILED` | 409 | 실패하지 않은 프로젝트에 질문 다시 생성 |
+| `PROJECT_LIMIT` | 409 | 프로젝트 3개 초과 |
+| `PROJECT_IN_TODAY_SESSION` | 409 | 오늘의 질문으로 나온 프로젝트 삭제 |
 | `REGRADE_LIMIT` | 429 | 다시 채점 횟수 초과 |
 | `FEEDBACK_LIMIT` | 429 | 피드백 24시간 5개 초과 |
 | `LIMIT_EXCEEDED` | 429 | 개인 하루 한도 |
 | `BUDGET_EXCEEDED` | 429 | 서비스 월 예산 |
 | `TRIAL_LIMIT` | 429 | 체험 하루 제한 |
+| `INTERNAL` | 500 | DB 오류나 처리하지 않은 예외. 메시지는 "잠시 뒤에 다시 시도해 주세요." 같은 일반 안내만 주고 원인은 서버 로그에만 남긴다 |
 | `AI_FAILED` | 502 | 모델 호출·출력 검증 실패(턴은 `failed`) |
+
+성공 응답의 상태:
+
+| HTTP | 언제 |
+|---|---|
+| 200 | 본문을 돌려줄 때(세션 만들기, 채점 결과 JSON·SSE, 👍/👎, 북마크, 알림 구독, 공유 카드) |
+| 201 | 새로 만들었을 때(피드백, 프로젝트 등록, 체험 시작) |
+| 202 | 받기만 하고 일은 뒤에서 할 때(프로젝트 질문 다시 생성, 알림 발송) |
+| 204 | 본문 없이 끝났을 때(내 정보 바꾸기·탈퇴, 지표 이벤트, 알림 구독 해제, 프로젝트 삭제) |
+
+화면 오류는 `app/error.tsx`(뼈대 밖)와 `(app)`·`(detail)/error.tsx`(메뉴를 남기고 뼈대 안)가 받고, 루트 레이아웃까지 터지면 `app/global-error.tsx`가 받는다. 모두 한국어 안내와 다시 시도를 보여준다.
 
 ### 멱등성
 

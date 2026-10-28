@@ -1,10 +1,14 @@
 import "server-only";
 import { generateProjectQuestions, GradingError } from "@/lib/ai";
+import {
+  errorResponse,
+  INTERNAL_MESSAGE,
+  type ErrorCode,
+} from "@/lib/api-error";
 import type { Json } from "@/lib/database.types";
 import { toProjectQuestions } from "@/lib/project-questions";
 import { MAX_PROJECTS } from "@/lib/questions";
 import type { createAdminClient } from "@/lib/supabase/admin";
-import { errorResponse } from "@/lib/turn";
 import { LIMIT_MESSAGE, recordUsage } from "@/lib/usage";
 
 type Admin = ReturnType<typeof createAdminClient>;
@@ -46,24 +50,22 @@ export async function generateAndSave(
   if (error) console.error("project questions save failed", project.id, error);
 }
 
-// DB 함수가 던진 에러 코드 → HTTP 응답(08 설계 "에러 형식")
-const ERRORS: Record<string, [number, string]> = {
-  NOT_FOUND: [404, "프로젝트를 찾을 수 없어요."],
-  NOT_OWNER: [403, "내 프로젝트가 아니에요."],
-  NOT_FAILED: [409, "질문을 이미 만들었거나 만들고 있어요."],
-  PROJECT_LIMIT: [409, `프로젝트는 ${MAX_PROJECTS}개까지 등록할 수 있어요.`],
-  PROJECT_IN_TODAY_SESSION: [
-    409,
+// DB 함수가 던진 에러 코드 → 메시지. HTTP 상태는 lib/api-error의 목록이 정한다(08 설계 "에러 형식")
+const MESSAGES: Partial<Record<ErrorCode, string>> = {
+  NOT_FOUND: "프로젝트를 찾을 수 없어요.",
+  NOT_OWNER: "내 프로젝트가 아니에요.",
+  NOT_FAILED: "질문을 이미 만들었거나 만들고 있어요.",
+  PROJECT_LIMIT: `프로젝트는 ${MAX_PROJECTS}개까지 등록할 수 있어요.`,
+  PROJECT_IN_TODAY_SESSION:
     "오늘의 질문으로 나온 프로젝트는 내일 지울 수 있어요",
-  ],
-  LIMIT_EXCEEDED: [429, LIMIT_MESSAGE],
-  BUDGET_EXCEEDED: [429, LIMIT_MESSAGE],
+  LIMIT_EXCEEDED: LIMIT_MESSAGE,
+  BUDGET_EXCEEDED: LIMIT_MESSAGE,
 };
 
 export function projectErrorResponse(e: unknown) {
-  const code = (e as { message?: string } | null)?.message ?? "";
-  const known = ERRORS[code];
-  if (known) return errorResponse(known[0], code, known[1]);
+  const code = (e as { message?: string } | null)?.message as ErrorCode;
+  const message = MESSAGES[code];
+  if (message) return errorResponse(code, message);
   console.error("project write failed", e);
-  return errorResponse(500, "INTERNAL", "잠시 뒤에 다시 시도해 주세요.");
+  return errorResponse("INTERNAL", INTERNAL_MESSAGE);
 }
