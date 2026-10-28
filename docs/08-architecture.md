@@ -33,7 +33,7 @@ flowchart LR
 |---|---|---|
 | Vercel 함수 리전 | `icn1`(서울). 무료 플랜도 리전 1개를 고를 수 있다 | 기본 `iad1`(미국 동부)이면 Supabase 서울까지 왕복 200ms쯤 걸려, 서버 컴포넌트가 3~4번 읽으면 1초가 간다 |
 | Supabase 리전 | `ap-northeast-2`(서울) | 위와 같다 |
-| 함수 실행 시간 | Fluid compute를 켠다(무료 플랜 최대 300초). 라우트마다 `export const maxDuration`을 적는다: 채점(`/api/turns/{id}/answer`) 60, 프로젝트 질문 생성·다시 생성(`/api/projects`, `/api/projects/{id}/generations`) 300. `after()`도 그 라우트의 `maxDuration`을 따른다 | Fluid compute가 꺼진 무료 플랜은 기본 10초라 채점(최대 15초)과 `after()` 저장이 끊긴다. 질문 5개 생성은 30~60초 넘게 걸릴 수 있다 |
+| 함수 실행 시간 | Fluid compute를 켠다(무료 플랜 최대 300초). 라우트마다 `export const maxDuration`을 적는다: 채점(`/api/turns/{id}/answer`) 60, 프로젝트·학습 자료 질문 생성·다시 생성(`/api/projects`, `/api/projects/{id}/generations`, `/api/notes`, `/api/notes/{id}/generations`) 300. `after()`도 그 라우트의 `maxDuration`을 따른다 | Fluid compute가 꺼진 무료 플랜은 기본 10초라 채점(최대 15초)과 `after()` 저장이 끊긴다. 질문 5개 생성은 30~60초 넘게 걸릴 수 있다 |
 | 런타임 | Node.js (Edge 아님) | `web-push`와 Anthropic SDK 스트리밍이 Node에서 돈다. 공유 카드 이미지(`next/og`)도 Node다. 처음엔 Edge로 두었으나, Next 16 문서의 미리보기 이미지 예시가 Node에서 글꼴 파일을 읽는 방식이고 Edge는 한글 글꼴(서브셋 350KB×2)을 묶음 크기 제한 안에 넣기 번거로워 바꿨다 (2026-10-27, #41) |
 | 스트리밍 중단 | Claude 호출에 브라우저의 `request.signal`을 넘기지 않는다 | 사용자가 떠나도 채점을 끝까지 받아 저장해야 한다 |
 | 환경변수 | `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PUBLIC_KEY`·`VAPID_PRIVATE_KEY`·`VAPID_SUBJECT`, `CRON_SECRET`, `TRIAL_IP_HMAC_SECRET`, `AI_MONTHLY_BUDGET_USD`, `KRW_PER_USD`, `AI_MOCK`, `ADMIN_USER_IDS`(운영 대시보드에 들어갈 사용자 id, 쉼표로 구분) | 목록만 여기 두고 값·발급 방법은 #11. `NEXT_PUBLIC_` 둘만 브라우저에 간다 |
@@ -186,6 +186,17 @@ Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로
 4. 다시 생성은 `POST /api/projects/{id}/generations`. `failed`일 때만 받고 한도는 다시 예약하지 않는다(처음 예약한 몫을 쓴다).
 5. 프로젝트 질문에는 참고 자료 링크를 넣지 않는다. 모델이 만든 URL은 없는 주소일 수 있다.
 
+### 학습 자료 질문 생성
+
+수업 노트·정리한 학습 내용(마크다운)으로 질문 5개를 만든다(04 기능 명세 9번 "학습 자료", #141). 위 프로젝트 흐름을 그대로 따르고 테이블·함수·API·프롬프트만 따로 둔다.
+
+1. `POST /api/notes` → `create_note`: 3개 제한(`NOTE_LIMIT`)·월 예산·하루 1회 확인과 생성 몫 예약 후 `study_notes`를 `generating`으로 저장하고 바로 응답한다. 생성 몫은 `purpose = note_gen`, `quota = project_gen`이라 **하루 1회를 프로젝트와 함께 센다**. 그래서 `create_project`와 같은 사용자 잠금(`project:`)을 잡는다.
+2. 생성은 `after()`에서 `generateNoteQuestions`(프로젝트와 같은 Sonnet 5.5, 학습 자료 프롬프트, [09 채점](09-grading.md) 4장) → 프로젝트와 같은 검증(`toProjectQuestions`) → `save_note_questions`가 `questions`(`note_id`, `topic_id`·`level` 없음)와 `question_keys`(링크 없음)를 넣고 `ready`. 실패하면 `failed` + `error_code`.
+3. 화면은 `study_notes` 행을 2초마다 다시 읽는다(프로젝트와 같은 `router.refresh()`). 다시 생성은 `POST /api/notes/{id}/generations`(`failed`일 때만, 한도는 다시 예약하지 않고 월 예산만 본다).
+4. **연습 세션은 프로젝트 질문 세션과 같다.** `start_project_session`이 "내 프로젝트의 질문 또는 내 학습 자료의 질문"이면 세션을 연다(주인 확인만 넓혔다). 세션 종류도 `kind = 'project'`로 두어 하루 3세션 한도, 이어하기(`?session=`), 채점·꼬리질문·복습이 그대로 돈다. 따로 `note` 종류를 두면 세션 종류를 보는 곳(이어하기, 지표, 한도)을 모두 고쳐야 하는데 동작이 같아 나누지 않았다. 질문이 어느 쪽인지는 `questions.project_id`·`note_id`로 안다(돌아갈 화면, 채점 `<topic>`, 화면 라벨).
+5. 본 질문 채점의 `<topic>`은 `내 학습 자료 / {제목}`이다([09 채점](09-grading.md) "채점 사용자 메시지").
+6. 처음엔 `projects`에 종류 컬럼을 두는 안을 봤으나 프로젝트와 학습 자료는 다른 것이라 테이블을 나눴다 (2026-10-28, #141). PDF·Word 변환은 이번 범위가 아니다.
+
 ### 꼬리잇기·잔디·휴식권
 
 따로 저장하지 않고 **읽을 때 계산한다.** 학습한 날(daily 세션의 본 질문 제출일) 목록을 1년 치 읽어서, 하루 빈 날을 그 주(월~일)의 휴식권으로 메울 수 있으면 휴식일로 표시하고 이어간다. 사용자당 최대 366일이라 계산이 가볍고, 따로 저장했을 때 생기는 어긋남이 없다. 계산은 순수 함수 하나로 만들고 테스트로 지킨다. 잔디 색은 그날 본 질문 점수다.
@@ -199,9 +210,9 @@ Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로
 | 테이블 | 읽기 정책 |
 |---|---|
 | `profiles` | `id = auth.uid()` |
-| `push_subscriptions`, `sessions`, `reviews`, `bookmarks`, `projects` | `user_id = auth.uid()` |
+| `push_subscriptions`, `sessions`, `reviews`, `bookmarks`, `projects`, `study_notes` | `user_id = auth.uid()` |
 | `turns` | 세션을 거친다: `exists (select 1 from sessions s where s.id = turns.session_id and s.user_id = auth.uid())` |
-| `questions` | 내 세션·복습·북마크·프로젝트의 질문만("질문" 절) |
+| `questions` | 내 세션·복습·북마크·프로젝트·학습 자료의 질문만("질문" 절) |
 | `topics` | 로그인한 사람 누구나 |
 | `question_keys`, `turn_keys` | 정책 없음. 서버 전용, 서버가 조건을 확인한 뒤 `service_role`로 읽는다 |
 | `shares`, `ai_usage`, `events`, `feedback` | 정책 없음. 서버만 읽고 쓴다(공유 페이지는 서버가 `id`로 읽는다, 피드백은 운영 대시보드만 읽는다) |
@@ -211,11 +222,13 @@ erDiagram
   auth_users ||--|| profiles : "1:1"
   auth_users ||--o{ push_subscriptions : "기기"
   auth_users ||--o{ projects : "최대 3개"
+  auth_users ||--o{ study_notes : "최대 3개"
   auth_users ||--o{ sessions : "학습"
   auth_users ||--o{ reviews : "복습 일정"
   auth_users ||--o{ bookmarks : "북마크"
   topics ||--o{ questions : "주제"
   projects ||--o{ questions : "프로젝트 질문"
+  study_notes ||--o{ questions : "학습 자료 질문"
   questions ||--|| question_keys : "정답지(서버 전용)"
   questions ||--o{ sessions : "출제"
   questions ||--o{ reviews : ""
@@ -238,6 +251,7 @@ erDiagram
     text level
     text prompt
     uuid project_id FK
+    uuid note_id FK
     text trial_field "체험 질문이면 분야"
   }
   question_keys {
@@ -282,6 +296,13 @@ erDiagram
     text content "10,000자 이하"
     text status "generating ready failed"
   }
+  study_notes {
+    uuid id PK
+    uuid user_id FK
+    text title
+    text content "마크다운 10,000자 이하"
+    text status "generating ready failed"
+  }
 ```
 
 그림에는 관계가 있는 테이블만 그렸다. `ai_usage`(AI 사용량)와 `events`(지표)는 일부러 다른 테이블과 외래키로 묶지 않아서 그림에서 뺐다(프로젝트를 지워도 사용량이 남아야 하고, 지표는 따로 쌓는다). 열은 아래 표에 있다.
@@ -291,16 +312,17 @@ erDiagram
 | 테이블 | 주요 열 | 메모 |
 |---|---|---|
 | `topics` | `id`(예: `jpa`), `field`(cs·backend·frontend), `name`, `sort` | 기능 명세의 세부 주제 15개 |
-| `questions` | `id`(정수), `topic_id`, `level`(basic·mid·deep), `prompt`, `is_hidden`, `project_id`, `trial_field`(cs·backend·frontend, 체험 샘플 질문이면 그 분야. 보통은 null) | 질문 은행과 프로젝트 질문을 한 테이블에. 체험은 분야마다 `trial_field`가 그 분야인 질문 1개를 낸다(`start_trial`). 화면의 `Q.042`는 은행 질문의 `id`다(프로젝트 질문은 "내 프로젝트"로 표시). 프로젝트 질문은 `topic_id`·`level`이 없고 약점 리포트·연습 범위에서 빠진다 |
+| `questions` | `id`(정수), `topic_id`, `level`(basic·mid·deep), `prompt`, `is_hidden`, `project_id`, `note_id`, `trial_field`(cs·backend·frontend, 체험 샘플 질문이면 그 분야. 보통은 null) | 질문 은행과 프로젝트 질문을 한 테이블에. 체험은 분야마다 `trial_field`가 그 분야인 질문 1개를 낸다(`start_trial`). 화면의 `Q.042`는 은행 질문의 `id`다(프로젝트 질문은 "내 프로젝트"로 표시). 프로젝트 질문은 `topic_id`·`level`이 없고 약점 리포트·연습 범위에서 빠진다. 학습 자료 질문(`note_id`, 화면 "내 학습 자료")도 같다. CHECK(`questions_source`): 은행·프로젝트·학습 자료 중 정확히 하나(#141) |
 | `question_keys` | `question_id`, `rubric`(jsonb), `model_answer`, `links`(공식 문서 링크 1~3개, jsonb, 프로젝트 질문은 null) | 서버 전용(읽기 정책 없음). 처음엔 `references`였으나 SQL 예약어라 모든 쿼리에 따옴표가 필요해서 바꿨다 (2026-10-25) |
 
-**`questions` 읽기 정책**: "내 세션·복습·북마크에 있는 질문, 또는 내 프로젝트의 질문"만 읽는다.
+**`questions` 읽기 정책**: "내 세션·복습·북마크에 있는 질문, 또는 내 프로젝트·학습 자료의 질문"만 읽는다.
 
 ```sql
 exists (select 1 from sessions s where s.question_id = questions.id and s.user_id = auth.uid())
 or exists (select 1 from reviews r where r.question_id = questions.id and r.user_id = auth.uid())
 or exists (select 1 from bookmarks b where b.question_id = questions.id and b.user_id = auth.uid())
 or exists (select 1 from projects p where p.id = questions.project_id and p.user_id = auth.uid())
+or exists (select 1 from study_notes n where n.id = questions.note_id and n.user_id = auth.uid())
 ```
 
 처음엔 "은행 질문은 로그인한 사람 누구나"였으나, 그러면 공개 키와 로그인 토큰으로 질문 150개를 한 번에 내려받을 수 있었다. 질문 고르기는 `service_role` 함수가 하므로 정책을 좁혀도 영향이 없다 (2026-10-25). 홈·복습·기록·북마크·프로젝트 화면이 읽는 질문은 모두 위 넷 중 하나에 들어 있다.
@@ -323,6 +345,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `bookmarks` | `user_id`, `question_id`, `created_at` | PK `(user_id, question_id)` |
 | `feedback` | `id`, `user_id`, `body`(앞뒤 공백 빼고 5~1000자), `category`(feature·bug·report·etc, 기본 etc), `created_at` | 앱 안 피드백. 보낸 사람도 다시 읽지 못한다. 탈퇴하면 같이 지운다. `category`는 #118에서 더했고 그 전 행은 etc |
 | `projects` | `id`, `user_id`, `name`, `content`(10,000자 이하), `status`(generating·ready·failed), `error_code`, `created_at` | 사용자당 3개. 지우면 그 질문·세션·복습이 함께 지워진다(`on delete cascade`). **오늘의 daily 세션이 이 프로젝트의 질문이면 그날은 지울 수 없다**(`delete_project`가 거부, 화면은 "오늘의 질문으로 나온 프로젝트는 내일 지울 수 있어요"). 처음엔 제한이 없었으나 cascade로 오늘 세션과 학습한 날이 사라지고 새 세션이 하나 더 만들어졌다 (2026-10-25) |
+| `study_notes` | `id`, `user_id`, `title`(1~40자), `content`(마크다운 30~10,000자), `status`(generating·ready·failed), `error_code`, `created_at` | 학습 자료(#141). 사용자당 3개(프로젝트와 따로). 지우면 그 질문·세션·복습이 함께 지워진다(`on delete cascade`). 오늘의 daily 세션이 이 학습 자료의 질문이면 그날은 지울 수 없다(`delete_note`가 `NOTE_IN_TODAY_SESSION`). 올린 파일은 저장하지 않고 글만 둔다. 처음엔 `projects`에 종류 컬럼을 두는 안을 봤으나 프로젝트와 학습 자료는 다른 것이라 테이블을 나눴다 (2026-10-28, #141) |
 
 ### jsonb 스키마
 
@@ -339,8 +362,8 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 
 | 테이블 | 주요 열 | 메모 |
 |---|---|---|
-| `shares` | `id`(짧은 무작위 문자열), `session_id`(유일), `nickname`(뺄 수 있음), `topic_name`(프로젝트 질문이면 "내 프로젝트"), `score`, `streak`, `created_at` | daily·project 세션 모두 공유할 수 있다. 읽기 정책 없음. 공유 페이지는 서버가 `id` 하나로만 읽고 누구의 세션인지는 내보내지 않는다. 만들 때는 `session_id`만 받고 점수·꼬리잇기는 서버가 계산한다(위조 방지). 세션당 하나라 다시 누르면 기존 카드를 돌려준다. 이때 닉네임만 지금 설정(`profiles.share_nickname`)으로 고친다(닉네임 공개를 끄고 다시 공유하면 빠지게, 2026-10-27, #41). `id`는 16진수 12자, 체험 세션과 본 질문 점수가 없는 세션은 공유할 수 없다 |
-| `ai_usage` | `id`, `user_id`(체험이면 null, 탈퇴하면 `on delete set null`), `purpose`(grade·follow_up·project_gen·trial), `quota`(project_session·project_gen, 하루 한도 몫을 잡은 행만), `status`(reserved·used·released·failed), `ref_id`(세션·프로젝트 id, 외래키 없음), `model`, `error_code`, `latency_ms`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_write_tokens`, `cost_usd`, `day`, `created_at` | 개인 하루 한도, 서비스 월 예산, 그리고 **AI 실패율·지연 관측**(7장). `quota`·`ref_id`·`model`·캐시 토큰은 #43에서 더했다 |
+| `shares` | `id`(짧은 무작위 문자열), `session_id`(유일), `nickname`(뺄 수 있음), `topic_name`(프로젝트 질문이면 "내 프로젝트", 학습 자료 질문이면 "내 학습 자료"), `score`, `streak`, `created_at` | daily·project 세션 모두 공유할 수 있다. 읽기 정책 없음. 공유 페이지는 서버가 `id` 하나로만 읽고 누구의 세션인지는 내보내지 않는다. 만들 때는 `session_id`만 받고 점수·꼬리잇기는 서버가 계산한다(위조 방지). 세션당 하나라 다시 누르면 기존 카드를 돌려준다. 이때 닉네임만 지금 설정(`profiles.share_nickname`)으로 고친다(닉네임 공개를 끄고 다시 공유하면 빠지게, 2026-10-27, #41). `id`는 16진수 12자, 체험 세션과 본 질문 점수가 없는 세션은 공유할 수 없다 |
+| `ai_usage` | `id`, `user_id`(체험이면 null, 탈퇴하면 `on delete set null`), `purpose`(grade·follow_up·project_gen·note_gen·trial), `quota`(project_session·project_gen, 하루 한도 몫을 잡은 행만. 학습 자료 생성도 project_gen), `status`(reserved·used·released·failed), `ref_id`(세션·프로젝트·학습 자료 id, 외래키 없음), `model`, `error_code`, `latency_ms`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_write_tokens`, `cost_usd`, `day`, `created_at` | 개인 하루 한도, 서비스 월 예산, 그리고 **AI 실패율·지연 관측**(7장). `quota`·`ref_id`·`model`·캐시 토큰은 #43에서 더했다 |
 | `events` | `id`, `name`, `user_id`, `anon_id`, `props`(jsonb), `created_at` | 지표 이벤트(첫 방문, 체험 시작·완료, 가입, 세션 시작, 본 질문 제출, 세션 완료, 👍/👎, 공유, 알림 클릭). 서버만 쓴다. 비로그인도 보낼 수 있는 입구라 이름은 허용 목록만, `props`는 1KB까지, `anon_id`당 하루 200건을 넘으면 버린다. 90일 지난 행은 새벽 정리에서 지운다. `anon_id`는 브라우저 쿠키 `tailq-anon`(무작위 UUID, 1년)이다. 첫 방문 신호를 보낼지 브라우저가 알아야 해서 `httpOnly`가 아니고, 아무 권한도 주지 않는다. 로그인한 뒤의 이벤트에도 함께 남겨 첫 방문 → 첫 답변을 잇는다 (2026-10-27, #44) |
 
 ### DB 함수
@@ -350,7 +373,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | 함수 | 하는 일 |
 |---|---|
 | `start_daily_session(user_id, question_id, pick)` | 사용자 잠금 → 전날 열린 daily 세션 정리(`expired` 또는 `done` + `skipped`) → 오늘 세션이 있으면 반환, 없으면 서버가 고른 질문으로 세션·턴 0 생성. 고르기(복습 → 새 질문 → 앞당기기)는 서버의 순수 함수(`lib/daily-pick.ts`)가 한다. 처음엔 함수 안에서 골랐으나, 주제 고르게 돌리기 같은 규칙을 단위 테스트로 지키기 쉽게 고르기만 서버로 옮겼다. 동시에 와도 잠금과 유일 인덱스로 먼저 만든 세션이 돌아온다 (2026-10-26, #30) |
-| `start_project_session(user_id, question_id, budget_usd)` | 주인 확인, 같은 질문의 열린 세션이 있으면 그것을 돌려준다(이어하기, 한도를 보지 않는다), 없으면 사용자 잠금 안에서 월 예산(`BUDGET_EXCEEDED`)·하루 3세션(`LIMIT_EXCEEDED`) 확인, 세션(`grade_model`)·턴 0 생성과 본 질문 채점 몫 예약 |
+| `start_project_session(user_id, question_id, budget_usd)` | 주인 확인(내 프로젝트 또는 내 학습 자료의 질문, #141), 같은 질문의 열린 세션이 있으면 그것을 돌려준다(이어하기, 한도를 보지 않는다), 없으면 사용자 잠금 안에서 월 예산(`BUDGET_EXCEEDED`)·하루 3세션(`LIMIT_EXCEEDED`) 확인, 세션(`grade_model`)·턴 0 생성과 본 질문 채점 몫 예약 |
 | `ai_quota(user_id, budget_usd)` | `{ budget: ok·downgrade·exceeded, spent_usd, sessions_left, gens_left }`. 시작 함수와 화면(시작 버튼 대신 안내)이 같은 기준을 쓴다. 예산은 서버 환경변수라 인자로 받는다 (#43) |
 | `record_ai_usage(user_id, purpose, ref_id, usage)` · `release_ai_usage(ref_id)` | AI 호출 한 번 기록(같은 `ref_id`·`purpose`의 `reserved` 행이 있으면 그 행을 `used`·`failed`로) · 쓰지 않은 몫 돌려주기 (#43) |
 | `start_trial(trial_token, ip_hash, field, budget_usd)` | 브라우저 1번·IP 20번 확인, 월 예산 확인(`BUDGET_EXCEEDED`, 열린 체험은 그대로 이어 한다), `trial_field = field`인 샘플 질문으로 세션 생성(`grade_model`도 정한다). 체험의 AI 호출은 `ai_usage`에 `user_id` 없이 `purpose = trial`로 남아 월 예산에 들어간다 (#43) |
@@ -363,6 +386,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `save_project_questions(project_id, questions, error_code)` | 질문 5개 + 정답지 저장, `ready`. 실패면 `failed` + `error_code`. `generating`일 때만 저장한다(두 번 저장 방지) |
 | `restart_project_generation(user_id, project_id)` | 다시 생성: 주인 확인, `failed`일 때만 `generating`으로 되돌린다. 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-27, #39) |
 | `delete_project(user_id, project_id)` | 오늘 daily 세션이 이 프로젝트 질문이면 거부, 아니면 삭제(cascade) |
+| `create_note(user_id, title, content, budget_usd)` · `save_note_questions(note_id, questions, error_code)` · `restart_note_generation(user_id, note_id, budget_usd)` · `delete_note(user_id, note_id)` | 학습 자료(#141). 프로젝트의 네 함수와 같다. 다른 점: 3개 제한은 `NOTE_LIMIT`, 생성 몫은 `purpose = note_gen`·`quota = project_gen`(하루 1회를 프로젝트와 함께 센다), 오늘의 질문이면 `NOTE_IN_TODAY_SESSION` |
 | `adopt_trial(user_id, trial_token)` | 이어받기(2장) |
 | `record_event(name, user_id, anon_id, props)` | 지표 이벤트 한 줄. 같은 `anon_id`가 24시간에 200건을 넘으면 버린다. 서버는 응답을 보낸 뒤(`after()`) `lib/track.ts`의 `track()`으로 부르고, 실패해도 사용자 요청은 실패시키지 않는다 (2026-10-27, #44) |
 | `delete_user_events(user_id)` · `purge_old_events()` | 탈퇴 때 그 사용자와 그 사용자가 쓴 브라우저(`anon_id`)의 이벤트 삭제 · 90일 지난 이벤트 삭제(`pg_cron` 매일 4시 KST) |
@@ -387,7 +411,7 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `GET /auth/callback?next=` | 소셜 로그인 돌아오는 곳(Supabase 규칙). 체험 이어받기, 첫 로그인이면 온보딩으로, `next`가 있으면 그곳으로(탈퇴 재인증) | - |
 | `PATCH /api/me` | 내 프로필·설정 바꾸기(닉네임, 아바타, 연습 범위, 알림 켜기·시각, 테마, 온보딩 동의) | ○ |
 | `DELETE /api/me` | 탈퇴 | ○ |
-| `POST /api/sessions` | 세션 만들기. `{ kind: "daily" }`면 오늘의 세션(이미 있으면 그것을 돌려줌), `{ kind: "project", questionId }`면 프로젝트 질문 세션(한도 예약) | ○ |
+| `POST /api/sessions` | 세션 만들기. `{ kind: "daily" }`면 오늘의 세션(이미 있으면 그것을 돌려줌), `{ kind: "project", questionId }`면 프로젝트·학습 자료 질문 세션(한도 예약) | ○ |
 | `PUT /api/turns/{id}/answer` | 답변 저장 → 채점 + 다음 꼬리질문(SSE). `{ text }` 또는 `{ dontKnow: true }`(AI를 부르지 않음, JSON 응답). 실패한 턴에 같은 요청을 다시 보내면 다시 채점이다. 체험 턴도 같은 주소(쿠키 토큰으로 소유 확인) | ○ 또는 체험 쿠키 |
 | `PUT /api/turns/{id}/rating` | 👍/👎 | ○ |
 | `PUT /api/bookmarks/{questionId}` · `DELETE` | 북마크 저장·해제 | ○ |
@@ -395,6 +419,9 @@ or exists (select 1 from projects p where p.id = questions.project_id and p.user
 | `POST /api/projects` | 프로젝트 등록(한도 예약) → `generating`으로 바로 응답. 질문 생성은 뒤에서 | ○ |
 | `POST /api/projects/{id}/generations` | 실패한 프로젝트의 질문 다시 생성 | ○ |
 | `DELETE /api/projects/{id}` | 프로젝트와 딸린 질문·기록 삭제. 오늘의 질문이면 `409 PROJECT_IN_TODAY_SESSION` | ○ |
+| `POST /api/notes` | 학습 자료 등록 `{ title, content }`(한도 예약) → `201 { note: { id, status } }`, 질문 생성은 뒤에서 (#141) | ○ |
+| `POST /api/notes/{id}/generations` | 실패한 학습 자료의 질문 다시 생성(`202`) | ○ |
+| `DELETE /api/notes/{id}` | 학습 자료와 딸린 질문·기록 삭제(`204`). 오늘의 질문이면 `409 NOTE_IN_TODAY_SESSION` | ○ |
 | `POST /api/push-subscriptions` · `DELETE /api/push-subscriptions/{id}` | 알림 구독·해제 | ○ |
 | `POST /api/shares` | 결과 공유 카드 만들기(`sessionId`만 받음). 이미 있으면 그것을 돌려줌 | ○ |
 | `POST /api/trial-sessions` | 체험 시작(브라우저 1번, IP 하루 20번) | ✕ |
@@ -413,19 +440,21 @@ HTTP 상태 코드에 더해 본문은 항상 `{ "error": { "code", "message" } 
 
 | 코드 | HTTP | 언제 |
 |---|---|---|
-| `VALIDATION` | 400 | 길이·형식(답변 30~2,000자, 프로젝트 이름 1~40자·README 30~10,000자, 닉네임 2~12자, 알림 시각 0~23) |
+| `VALIDATION` | 400 | 길이·형식(답변 30~2,000자, 프로젝트 이름 1~40자·README 30~10,000자, 학습 자료 제목 1~40자·내용 30~10,000자, 닉네임 2~12자, 알림 시각 0~23) |
 | `UNAUTHORIZED` | 401 | 로그인 필요. 알림 발송 입구의 비밀 헤더가 틀릴 때도 |
 | `REAUTH` | 403 | 탈퇴할 때 로그인한 지 24시간이 지남. 소셜 로그인으로 다시 확인 |
 | `OTHER_ACCOUNT` | 403 | 탈퇴 재확인을 처음과 다른 계정으로 함 |
-| `NOT_OWNER` | 403 | 내 것이 아닌 턴·세션·프로젝트 |
+| `NOT_OWNER` | 403 | 내 것이 아닌 턴·세션·프로젝트·학습 자료 |
 | `NOT_FOUND` | 404 | |
 | `ALREADY_GRADED` | 409 | 채점이 끝난 턴에 답변 |
 | `NOT_GRADED` | 409 | 채점이 끝나기 전에 👍/👎 |
 | `GRADING_IN_PROGRESS` | 409 | 20초 안의 채점이 진행 중. 화면은 버튼을 두고 현재 상태를 다시 읽는다 |
 | `SESSION_CLOSED` | 409 | 이미 닫힌 세션(지난 날 `expired`·`done`)의 턴에 답변. 처음엔 없었으나, 자정을 넘겨 어제 화면에서 제출하면 닫힌 세션에서 복습 칸이 옮겨져서 더했다 (2026-10-26, #31) |
-| `NOT_FAILED` | 409 | 실패하지 않은 프로젝트에 질문 다시 생성 |
+| `NOT_FAILED` | 409 | 실패하지 않은 프로젝트·학습 자료에 질문 다시 생성 |
 | `PROJECT_LIMIT` | 409 | 프로젝트 3개 초과 |
 | `PROJECT_IN_TODAY_SESSION` | 409 | 오늘의 질문으로 나온 프로젝트 삭제 |
+| `NOTE_LIMIT` | 409 | 학습 자료 3개 초과(#141) |
+| `NOTE_IN_TODAY_SESSION` | 409 | 오늘의 질문으로 나온 학습 자료 삭제(#141) |
 | `REGRADE_LIMIT` | 429 | 다시 채점 횟수 초과 |
 | `FEEDBACK_LIMIT` | 429 | 피드백 24시간 5개 초과 |
 | `LIMIT_EXCEEDED` | 429 | 개인 하루 한도 |
@@ -439,9 +468,9 @@ HTTP 상태 코드에 더해 본문은 항상 `{ "error": { "code", "message" } 
 | HTTP | 언제 |
 |---|---|
 | 200 | 본문을 돌려줄 때(세션 만들기, 채점 결과 JSON·SSE, 👍/👎, 북마크, 알림 구독, 공유 카드) |
-| 201 | 새로 만들었을 때(피드백, 프로젝트 등록, 체험 시작) |
-| 202 | 받기만 하고 일은 뒤에서 할 때(프로젝트 질문 다시 생성, 알림 발송) |
-| 204 | 본문 없이 끝났을 때(내 정보 바꾸기·탈퇴, 지표 이벤트, 알림 구독 해제, 프로젝트 삭제) |
+| 201 | 새로 만들었을 때(피드백, 프로젝트·학습 자료 등록, 체험 시작) |
+| 202 | 받기만 하고 일은 뒤에서 할 때(프로젝트·학습 자료 질문 다시 생성, 알림 발송) |
+| 204 | 본문 없이 끝났을 때(내 정보 바꾸기·탈퇴, 지표 이벤트, 알림 구독 해제, 프로젝트·학습 자료 삭제) |
 
 화면 오류는 `app/error.tsx`(뼈대 밖)와 `(app)`·`(detail)/error.tsx`(메뉴를 남기고 뼈대 안)가 받고, 루트 레이아웃까지 터지면 `app/global-error.tsx`가 받는다. 모두 한국어 안내와 다시 시도를 보여준다.
 
