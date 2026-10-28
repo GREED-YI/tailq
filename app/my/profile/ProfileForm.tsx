@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar } from "@/components/Avatar";
 import { BackButton } from "@/components/BackButton";
 import f from "@/components/Flow.module.css";
@@ -17,9 +17,9 @@ import s from "../my.module.css";
 
 const AVATAR_LABELS: Record<AvatarChoice, string> = {
   social: "소셜 계정 사진",
-  mint: "기본 아바타 민트",
-  sky: "기본 아바타 하늘",
-  orange: "기본 아바타 주황",
+  mint: "기본 아바타 진한 회색",
+  sky: "기본 아바타 회색",
+  orange: "기본 아바타 옅은 회색",
 };
 
 export function ProfileForm(props: {
@@ -34,6 +34,15 @@ export function ProfileForm(props: {
   const [share, setShare] = useState(props.shareNickname);
   const [tip, setTip] = useState(false);
   const [busy, setBusy] = useState(false);
+  // 요청 중인지. 저장에 성공하면 이동하는 동안 잠금을 유지하고, 화면이 보관되어 숨겨지거나 다시 보일 때
+  // 요청 중이 아니면 푼다(cacheComponents라 상태를 그대로 들고 다시 보인다. TrialPicker와 같다)
+  const inFlight = useRef(false);
+  useEffect(() => {
+    if (!inFlight.current) setBusy(false);
+    return () => {
+      if (!inFlight.current) setBusy(false);
+    };
+  }, []);
   const [failed, setFailed] = useState(false);
 
   // 규칙에 맞지 않으면 저장 버튼을 잠그고 안내 글씨를 빨갛게 바꾼다
@@ -43,6 +52,7 @@ export function ProfileForm(props: {
 
   async function save() {
     setBusy(true);
+    inFlight.current = true;
     setFailed(false);
     const res = await fetch("/api/me", {
       method: "PATCH",
@@ -54,6 +64,7 @@ export function ProfileForm(props: {
         shareNickname: share,
       }),
     }).catch(() => null);
+    inFlight.current = false;
     if (res?.ok) {
       // 닉네임·이미지를 쓰는 화면이 새 값으로 다시 그려지게 한다
       router.replace("/my");

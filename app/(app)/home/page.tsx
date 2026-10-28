@@ -39,12 +39,6 @@ const TITLES: Record<HomeState["kind"], string> = {
   done: "오늘 면접을 마쳤어요",
 };
 
-// "2026-10-28" → "2026.10.28 WED"(기록 상세와 같은 숫자형)
-const dateLine = (day: string) =>
-  `${day.replaceAll("-", ".")} ${new Date(`${day}T00:00:00Z`)
-    .toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" })
-    .toUpperCase()}`;
-
 // 날짜 · 닉네임 인사 한 줄. 닉네임은 사용자 요청(#115)
 function Greeting({
   day,
@@ -59,7 +53,7 @@ function Greeting({
     <p className={s.greet}>
       {day && (
         <>
-          <span className="mono">{dateLine(day)}</span> ·{" "}
+          <span className="num">{dayLabel(day)}</span> ·{" "}
         </>
       )}
       {name && <span className={s.name}>{name}님, </span>}
@@ -318,7 +312,7 @@ function Today({
   );
 }
 
-// 낼 질문이 없음(empty-state): 그림 없이 글과 (누를 수 없는) 버튼
+// 낼 질문이 없음(empty-state): 그림 없이 글과 버튼. 버튼은 연습 범위 화면(MY → 연습 범위)으로 간다
 function Empty() {
   return (
     <>
@@ -327,9 +321,10 @@ function Empty() {
         범위 안의 새 질문을 모두 풀었어요. 연습 범위를 넓혀 볼까요?
       </h1>
       <div className={s.actions}>
-        <button type="button" className={`btn btn-primary ${s.go}`} disabled>
-          시작하기
-        </button>
+        <Link href="/my/range" className={`press btn btn-primary ${s.go}`}>
+          연습 범위 넓히기
+          <Icon name="arrowRight" size={18} bold />
+        </Link>
       </div>
     </>
   );
@@ -403,12 +398,16 @@ function Week({ study }: { study: Study }) {
   const tips = cells.map((c) => weekTip(c, study.today));
   return (
     <div className={`${s.tile} ${s.week}`}>
-      <span className={s.tileLabel}>
-        이번 주
-        <span className={`num ${s.weekNote}`}>
-          {studied}일 학습{rest > 0 && ` · 휴식 ${rest}일`}
-        </span>
-      </span>
+      <span className={s.tileLabel}>이번 주</span>
+      {/* 학습한 날 수는 타일 큰 숫자(Geist Mono, 리포트 타일과 같은 크기) */}
+      <p className={`num ${s.weekNum}`}>
+        <b className="mono">{studied}</b>일 학습
+        {rest > 0 && (
+          <span className={s.weekNote}>
+            · 휴식 <span className="mono">{rest}</span>일
+          </span>
+        )}
+      </p>
       {/* 칸에 마우스를 올리면(터치는 누르면) 날짜·점수 말풍선(리포트와 같다) */}
       <GrassTip className={s.days} label="이번 주" focusable>
         {cells.map((c, i) => (

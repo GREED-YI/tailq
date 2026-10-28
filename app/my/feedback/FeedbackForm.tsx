@@ -137,7 +137,7 @@ export function FeedbackForm({
         <span id="feedback-help">
           운영자만 읽어요. 따로 답장은 드리지 못해요.
         </span>
-        <span className="mono" aria-hidden="true">
+        <span className="mono" aria-live="polite">
           {length} / {FEEDBACK_MAX}
         </span>
       </p>

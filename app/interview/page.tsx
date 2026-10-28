@@ -6,6 +6,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { turnResult } from "@/lib/turn";
 import { Interview, type InterviewStatus } from "./Interview";
+import { InterviewSkeleton } from "./Skeleton";
 import { steps } from "./steps";
 
 export const metadata: Metadata = { title: "면접 · TailQ" };
@@ -17,7 +18,7 @@ export default function InterviewPage({
   searchParams,
 }: PageProps<"/interview">) {
   return (
-    <Suspense>
+    <Suspense fallback={<InterviewSkeleton />}>
       {searchParams.then((p) => (
         <SessionInterview
           sessionId={typeof p.session === "string" ? p.session : undefined}

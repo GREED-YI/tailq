@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import f from "@/components/Flow.module.css";
 import { createClient } from "@/lib/supabase/server";
 import s from "../my.module.css";
 import { WithdrawForm } from "./WithdrawForm";
@@ -12,11 +11,11 @@ export const metadata: Metadata = { title: "탈퇴하기 · TailQ" };
 // 다시 확인하라고 안내한다. 재확인 로그인은 /auth/callback?next=/my/delete로 이 화면에 돌아온다.
 export default function DeletePage() {
   return (
-    <main className={`${f.main} ${s.main}`}>
+    <div className={s.main}>
       <Suspense>
         <Withdraw />
       </Suspense>
-    </main>
+    </div>
   );
 }
 

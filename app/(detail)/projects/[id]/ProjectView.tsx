@@ -157,6 +157,7 @@ export function ProjectView({
                     className={`hover-row ${s.row} ${s.qRow}`}
                     disabled={busy !== null || locked}
                     data-locked={locked ? "" : undefined}
+                    aria-busy={busy === q.id || undefined}
                     onClick={() => practice(q.id)}
                   >
                     <span className={`mono ${s.qNo}`}>
@@ -190,6 +191,9 @@ export function ProjectView({
                         <Icon name="lock" size={14} />
                         오늘 한도
                       </span>
+                    ) : busy === q.id ? (
+                      // 누른 행만 화살표 자리에 진행 표시(list-row loading)
+                      <span className={s.qSpin} aria-hidden="true" />
                     ) : (
                       <Icon name="chevronRight" size={18} />
                     )}

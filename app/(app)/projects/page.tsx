@@ -33,7 +33,7 @@ export default function ProjectsPage() {
 function Guide() {
   return (
     <section className={s.guide} aria-label="이렇게 연습해요">
-      <h3>이렇게 연습해요</h3>
+      <h2>이렇게 연습해요</h2>
       <ol>
         <li>
           <span className="mono">01</span>
@@ -83,7 +83,7 @@ async function Projects() {
       <div className={s.list}>
         {generating && <RefreshWhileGenerating />}
         <div className={s.listHead}>
-          <h3>등록한 프로젝트</h3>
+          <h2>등록한 프로젝트</h2>
           <span className={`num ${s.count}`}>
             <span className="mono">
               {data.length} / {MAX_PROJECTS}

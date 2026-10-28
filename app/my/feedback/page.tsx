@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import f from "@/components/Flow.module.css";
 import { FEEDBACK_CATEGORIES } from "@/lib/feedback";
 import s from "../my.module.css";
 import { FeedbackForm } from "./FeedbackForm";
@@ -14,7 +13,7 @@ export default function FeedbackPage({
   searchParams,
 }: PageProps<"/my/feedback">) {
   return (
-    <main className={`${f.main} ${s.main}`}>
+    <div className={s.main}>
       <Suspense>
         {searchParams.then(({ category, q }) => {
           const initialCategory =
@@ -32,6 +31,6 @@ export default function FeedbackPage({
           );
         })}
       </Suspense>
-    </main>
+    </div>
   );
 }

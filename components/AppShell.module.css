@@ -257,25 +257,6 @@
   }
 }
 
-/* 로그인 전 화면(로그인·약관) 아래 피드백 링크(FeedbackLink.tsx) */
-.footer {
-  margin-top: auto;
-  padding-top: 32px;
-  text-align: center;
-  font-size: 14px;
-}
-.footer a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  color: var(--text-sub);
-}
-@media (hover: hover) {
-  .footer a:hover {
-    color: var(--text);
-  }
-}
-
 /* 토스트(components/Toast.tsx): 하단 가운데. 모바일은 아래 탭 12px 위 */
 .toastArea {
   position: fixed;

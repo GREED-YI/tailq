@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { Icon } from "@/components/icons";
 import type { SessionQuestion } from "@/lib/daily";
@@ -93,6 +93,8 @@ export function Interview({
     length < MIN ? "30자 이상 · " : length > MAX ? "2,000자 이하 · " : "";
   const exitRef = useRef<HTMLDialogElement>(null);
   useCloseOnLeave(exitRef);
+  const dontKnowRef = useRef<HTMLDialogElement>(null);
+  useCloseOnLeave(dontKnowRef);
   const draftKey = `tailq-draft:${turn.id}`;
 
   // 나가기 전에 쓰던 답변을 되살린다(서버에 저장된 답변이 있으면 그쪽이 먼저)
@@ -112,19 +114,29 @@ export function Interview({
   // 실패한 뒤 "다시 채점하기"는 실패한 요청과 같은 종류로 다시 보낸다(모르겠어요 포함)
   const [lastDontKnow, setLastDontKnow] = useState(false);
 
-  function saveDraft() {
+  // 쓰는 대로 이 기기에 남긴다. 나가기 창으로 나갈 때만 남기면 새로고침·탭 닫기·모바일 백그라운드 종료에 사라진다
+  function saveDraft(text: string) {
     try {
       if (phase !== "answer" && phase !== "failed") return;
-      // 답변을 다 지우고 나가면 전에 남긴 초안도 지운다
-      if (answer.trim()) localStorage.setItem(draftKey, answer);
+      // 답변을 다 지우면 전에 남긴 초안도 지운다
+      if (text.trim()) localStorage.setItem(draftKey, text);
       else localStorage.removeItem(draftKey);
     } catch {
       // 저장소를 못 쓰면 쓰던 답변은 남지 않는다
     }
   }
 
+  // 포커스 옮기기: 채점 결과가 생기면 결과 묶음으로, 다음 꼬리질문으로 넘어가면 새 질문으로.
+  // 누른 버튼·입력칸이 화면에서 사라지면 포커스가 body로 떨어진다. 처음 열 때는 옮기지 않는다
+  const panelRef = useRef<HTMLElement>(null);
+  const promptRef = useRef<HTMLHeadingElement>(null);
+  const moved = useRef(false);
+
   async function submit(body: { text: string } | { dontKnow: true }) {
     const before = phase;
+    moved.current = true;
+    // 키보드를 먼저 닫아 레이아웃이 한 번만 바뀌게 한다(iOS는 버튼을 눌러도 입력칸 포커스가 남는다)
+    (document.activeElement as HTMLElement | null)?.blur();
     setLastDontKnow("dontKnow" in body);
     try {
       localStorage.removeItem(draftKey);
@@ -185,6 +197,7 @@ export function Interview({
 
   // 다음 꼬리질문으로: 끝낸 단계를 흐름에 더하고, 질문이 바뀌며 페이드되고 답변 입력으로 돌아간다
   function goNext(next: Turn) {
+    moved.current = true;
     if (result) {
       setSteps((v) => [
         ...v,
@@ -212,6 +225,14 @@ export function Interview({
   const showResult =
     phase === "result" || (phase === "grading" && Boolean(streamed));
   const grading = phase === "grading";
+
+  useEffect(() => {
+    if (moved.current && showResult)
+      panelRef.current?.focus({ preventScroll: true });
+  }, [showResult, phase]);
+  useEffect(() => {
+    if (moved.current) promptRef.current?.focus({ preventScroll: true });
+  }, [turn.id]);
 
   return (
     <div className={`${s.screen} fade`}>
@@ -321,7 +342,9 @@ export function Interview({
             >
               {tag}
             </span>
-            <h1 className={s.prompt}>{turn.prompt}</h1>
+            <h1 ref={promptRef} tabIndex={-1} className={s.prompt}>
+              {turn.prompt}
+            </h1>
           </div>
 
           {phase === "failed" && (
@@ -344,6 +367,7 @@ export function Interview({
               result={phase === "result" ? result : null}
               streamed={streamed}
               onNext={goNext}
+              panelRef={panelRef}
             />
           ) : (
             <section
@@ -367,7 +391,10 @@ export function Interview({
                 id="answer"
                 className={s.input}
                 value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
+                onChange={(e) => {
+                  setAnswer(e.target.value);
+                  saveDraft(e.target.value);
+                }}
                 placeholder={`${nickname ? `${nickname}님의` : "내"} 생각을 자유롭게 적어 보세요`}
                 spellCheck={false}
                 autoComplete="off"
@@ -384,6 +411,7 @@ export function Interview({
                 {/* 한글이 섞이면 본문 글꼴, 숫자만이면 mono(globals.css 규칙) */}
                 <span
                   id="answer-count"
+                  aria-live="polite"
                   className={`${hint ? "num" : "mono"} ${s.count}`}
                   data-over={length > MAX || undefined}
                 >
@@ -395,7 +423,12 @@ export function Interview({
                     type="button"
                     className="btn btn-md btn-secondary press"
                     disabled={grading}
-                    onClick={() => submit({ dontKnow: true })}
+                    // 쓴 답이 있으면 지우고 넘어갈지 먼저 묻는다. 빈 칸이면 바로 넘어간다
+                    onClick={() =>
+                      answer.trim()
+                        ? openModal(dontKnowRef.current)
+                        : submit({ dontKnow: true })
+                    }
                   >
                     모르겠어요
                   </button>
@@ -451,7 +484,7 @@ export function Interview({
             href={exitHref}
             className="btn btn-md btn-secondary press"
             onClick={() => {
-              saveDraft();
+              saveDraft(answer);
               // 열린 채로 떠나면 돌아왔을 때 창이 반쯤 열린 상태로 남는다
               exitRef.current?.close();
             }}
@@ -468,6 +501,36 @@ export function Interview({
           </button>
         </div>
       </dialog>
+
+      {/* 답을 쓴 채 모르겠어요: 0점으로 기록되고 쓴 답은 지워지니 한 번 묻는다. 기록을 지우는 일은 아니라 확인 버튼은 주 버튼 */}
+      <dialog
+        ref={dontKnowRef}
+        className={s.dialog}
+        aria-labelledby="dont-know-title"
+      >
+        <h2 id="dont-know-title">쓴 답을 지우고 넘어갈까요?</h2>
+        <p>모르겠어요를 고르면 쓴 답은 지워지고 기대 답안을 보여 줘요.</p>
+        <div className={s.dialogActions}>
+          <button
+            type="button"
+            className="btn btn-md btn-secondary press"
+            autoFocus
+            onClick={() => dontKnowRef.current?.close()}
+          >
+            계속 쓰기
+          </button>
+          <button
+            type="button"
+            className="btn btn-md btn-primary press"
+            onClick={() => {
+              dontKnowRef.current?.close();
+              submit({ dontKnow: true });
+            }}
+          >
+            넘어가기
+          </button>
+        </div>
+      </dialog>
     </div>
   );
 }
@@ -480,6 +543,7 @@ function ResultView({
   result,
   streamed,
   onNext,
+  panelRef,
 }: {
   trial: boolean;
   questionId: number;
@@ -488,6 +552,7 @@ function ResultView({
   result: TurnResult | null;
   streamed: string;
   onNext: (next: Turn) => void;
+  panelRef: RefObject<HTMLElement | null>;
 }) {
   if (followUp) {
     return (
@@ -498,6 +563,7 @@ function ResultView({
         streamed={streamed}
         onNext={onNext}
         resultHref={resultHref}
+        panelRef={panelRef}
       />
     );
   }
@@ -505,7 +571,12 @@ function ResultView({
     // 채점 중: 끝난 화면과 같은 자리에 점수 자리 표시(··와 빈 막대)를 두고, 피드백 글이 생기는 대로 보인다
     return (
       <div className={s.result}>
-        <section className={s.panel} aria-label="채점 결과">
+        <section
+          ref={panelRef}
+          tabIndex={-1}
+          className={s.panel}
+          aria-label="채점 결과"
+        >
           <ScoreRing
             shown={0}
             label="채점하고 있어요"
@@ -521,7 +592,12 @@ function ResultView({
   const score = unknown ? undefined : (result.score ?? 0);
   return (
     <div className={s.result}>
-      <section className={s.panel} aria-label="채점 결과">
+      <section
+        ref={panelRef}
+        tabIndex={-1}
+        className={s.panel}
+        aria-label="채점 결과"
+      >
         {/* 0에서 점수까지 차오르는 것은 ScoreRing이 맡는다 */}
         <ScoreRing
           shown={score ?? 0}
@@ -630,6 +706,7 @@ function FollowUpResult({
   streamed,
   onNext,
   resultHref,
+  panelRef,
 }: {
   trial: boolean;
   questionId: number;
@@ -637,11 +714,17 @@ function FollowUpResult({
   streamed: string;
   onNext: (next: Turn) => void;
   resultHref: string;
+  panelRef: RefObject<HTMLElement | null>;
 }) {
   if (!result) {
     return (
       <div className={s.result}>
-        <section className={s.panel} aria-label="채점 결과">
+        <section
+          ref={panelRef}
+          tabIndex={-1}
+          className={s.panel}
+          aria-label="채점 결과"
+        >
           <span className={`${s.verdictLine} ${s.pending}`}>
             채점하고 있어요
           </span>
@@ -653,7 +736,12 @@ function FollowUpResult({
   const unknown = result.verdict === "unknown";
   return (
     <div className={s.result}>
-      <section className={s.panel} aria-label="채점 결과">
+      <section
+        ref={panelRef}
+        tabIndex={-1}
+        className={s.panel}
+        aria-label="채점 결과"
+      >
         <VerdictMark verdict={result.verdict ?? ""} className={s.verdictLine} />
         {result.feedback?.summary && (
           <p className={s.summary}>{result.feedback.summary}</p>

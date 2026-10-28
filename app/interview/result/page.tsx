@@ -11,6 +11,7 @@ import { createClient } from "@/lib/supabase/server";
 import s from "../interview.module.css";
 import { ScoreBar } from "../ScoreRing";
 import { ShareButton } from "../ShareButton";
+import { ResultSkeleton } from "../Skeleton";
 import { TurnRows } from "../TurnRows";
 import { VerdictMark } from "../VerdictMark";
 import { scoreColor } from "../verdict";
@@ -24,7 +25,7 @@ export default function ResultPage({
   searchParams,
 }: PageProps<"/interview/result">) {
   return (
-    <Suspense>
+    <Suspense fallback={<ResultSkeleton />}>
       {searchParams.then((p) => (
         <SessionResult
           sessionId={typeof p.session === "string" ? p.session : undefined}
@@ -94,7 +95,8 @@ async function SessionResult({ sessionId }: { sessionId?: string }) {
       <main className={s.summaryMain}>
         <div className={s.hero}>
           <div className={s.heroMeta}>
-            <span className="tag tag-today">
+            {/* today 라벨은 오늘의 질문에만. 프로젝트 질문은 neutral(DESIGN.md label) */}
+            <span className={`tag ${sessionId ? "tag-neutral" : "tag-today"}`}>
               {sessionId ? "프로젝트 질문" : "오늘의 결과"}
             </span>
             <span className={q.projectId ? "" : "mono"}>

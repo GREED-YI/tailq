@@ -54,7 +54,7 @@
   gap: 12px;
   border-bottom: 2px solid var(--text);
 }
-.listHead h3 {
+.listHead h2 {
   font-size: 18px;
   line-height: 1.4;
   font-weight: 700;
@@ -185,8 +185,26 @@
   align-items: start;
 }
 .qRow > svg,
-.qRow > .lockTag {
+.qRow > .lockTag,
+.qRow > .qSpin {
   align-self: center;
+}
+/* 누른 질문 행(list-row loading): 눌림과 같은 surface 바탕 + 화살표 자리에 진행 표시 */
+.qRow[aria-busy="true"] {
+  background: var(--surface);
+}
+.qSpin {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--text-muted);
+  border-right-color: transparent;
+  animation: qSpin 0.8s linear infinite;
+}
+@keyframes qSpin {
+  to {
+    rotate: 1turn;
+  }
 }
 .qNo {
   padding-top: 3px;
@@ -207,8 +225,9 @@
   line-height: 1.45;
   color: var(--text-muted);
 }
+/* 연습함: 오렌지는 지금 할 일에만 쓰므로 text 색과 굵기로 구분한다 */
 .done {
-  color: var(--accent);
+  color: var(--text);
   font-weight: 700;
 }
 
@@ -258,7 +277,7 @@
 .textarea {
   margin-top: 8px;
   width: 100%;
-  border: 1px solid var(--line-strong);
+  border: 1px solid var(--mark-empty);
   border-radius: var(--radius-control);
   background: var(--surface);
   padding: 0 16px;
@@ -466,7 +485,7 @@
     display: block;
     margin-top: 24px;
   }
-  .guide h3 {
+  .guide h2 {
     min-height: 44px;
     display: flex;
     align-items: center;

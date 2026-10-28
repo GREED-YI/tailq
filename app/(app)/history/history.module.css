@@ -552,16 +552,13 @@ a.rowLink:focus-visible {
 .step:last-child {
   border-left-color: transparent;
 }
-.step::before {
-  content: "";
-  position: absolute;
-  left: -6px;
+/* 단계 점은 면접 흐름의 threadDot(판정 모양·색)을 쓰고 높이만 단계 이름 줄에 맞춘다 */
+.step > .stepDot {
   top: 16px;
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  background: var(--canvas);
-  box-shadow: inset 0 0 0 1.5px var(--mark-empty);
+}
+/* 모양 점은 왼쪽 단계 점이 맡아 판정에는 글자만 */
+.stepHead .stepVerdict::before {
+  display: none;
 }
 .step summary,
 .stepStatic {
@@ -635,7 +632,7 @@ a.rowLink:focus-visible {
   gap: 6px;
   font-size: 13px;
   font-weight: 700;
-  color: var(--accent);
+  color: var(--text);
 }
 .aiLabel::before {
   content: "";

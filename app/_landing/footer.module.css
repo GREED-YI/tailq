@@ -1,0 +1,38 @@
+/* 로그인 전 화면(랜딩·로그인·약관·공유) 맨 아래 SiteFooter(DESIGN.md Layout rules).
+   화면 맨 아래에 붙고(margin-top: auto), 좌우 여백은 놓이는 단을 따른다. 랜딩·공유는 각자 화면 끝까지 넓힌다 */
+.footer {
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 24px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.footer > [role="img"] {
+  color: var(--text);
+}
+.footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 24px;
+}
+.footer nav a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-sub);
+  transition: color var(--dur-fast) var(--ease);
+}
+.footer small {
+  margin-left: auto;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 13px;
+}
+@media (hover: hover) {
+  .footer nav a:hover {
+    color: var(--text);
+  }
+}

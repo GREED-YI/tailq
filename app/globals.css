@@ -91,11 +91,12 @@ button {
   color: var(--on-primary);
   box-shadow: none;
 }
+/* 누르는 요소의 테두리는 mark-empty(그래픽 대비 3:1). line-strong은 장식 선에만 쓴다 */
 .btn-secondary {
   height: 44px;
   background: transparent;
   color: var(--text);
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+  box-shadow: inset 0 0 0 1px var(--mark-empty);
 }
 .btn-ghost {
   height: 44px;
@@ -182,7 +183,7 @@ button {
   padding: 0 16px;
   border-radius: var(--radius-pill);
   background: transparent;
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+  box-shadow: inset 0 0 0 1px var(--mark-empty);
   color: var(--text-sub);
   font-size: 14px;
   font-weight: 600;
@@ -263,7 +264,8 @@ button {
   .icon-btn.press:not(:disabled):hover,
   .chip.press:not(:disabled):not(
       [aria-pressed="true"],
-      [aria-checked="true"]
+      [aria-checked="true"],
+      [aria-current="page"]
     ):hover {
     background-color: var(--surface);
     color: var(--text);

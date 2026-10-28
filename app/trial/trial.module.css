@@ -106,7 +106,7 @@
   color: var(--text-sub);
 }
 .point > .good {
-  color: var(--accent);
+  color: var(--text);
 }
 
 /* 꼬리잇기 타일(DESIGN.md stat-tiles 한 칸) */
@@ -135,7 +135,7 @@
   font-size: 32px;
   letter-spacing: -0.04em;
   line-height: 1;
-  color: var(--accent);
+  color: var(--text);
 }
 .tileNote {
   font-size: 14px;

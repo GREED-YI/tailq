@@ -1,0 +1,40 @@
+/* 없는 주소·화면 오류 안내(DESIGN.md empty-state). 그림 없이 2px text 머리선 아래 제목 · 설명 · 버튼 */
+.screen {
+  padding-top: 24px;
+  border-top: 2px solid var(--text);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+/* 앱 뼈대 밖(루트 404·오류): 폭 520 단을 화면 가운데에 */
+.full {
+  width: min(100% - 40px, 520px);
+  min-height: 100dvh;
+  margin: 0 auto;
+  justify-content: center;
+  border-top: 0;
+}
+.title {
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.body {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--text-sub);
+}
+.actions {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+@media (min-width: 1024px) {
+  .title {
+    font-size: 26px;
+  }
+}

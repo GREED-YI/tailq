@@ -314,7 +314,8 @@
   flex: 1 1 auto;
   min-height: 200px;
   resize: none;
-  border: 1px solid var(--line-strong);
+  /* 입력칸 테두리는 mark-empty(그래픽 대비 3:1). line-strong은 장식 선에만 */
+  border: 1px solid var(--mark-empty);
   border-radius: var(--radius-control);
   background: var(--surface);
   color: var(--text);
@@ -614,7 +615,7 @@
   color: var(--text-sub);
 }
 .rating button {
-  box-shadow: inset 0 0 0 1px var(--line-strong);
+  box-shadow: inset 0 0 0 1px var(--mark-empty);
 }
 .rating [aria-pressed="true"] {
   color: var(--accent);
@@ -853,7 +854,7 @@
   display: none;
 }
 
-/* 단계별 결과: 2px 머리선 + 1px 구분선 목록 */
+/* 단계별 결과(DESIGN.md thread result): 2px 머리선 아래 세로 선과 판정 모양 점. 점은 면접 흐름의 threadDot을 쓴다 */
 .steplist h2 {
   padding-bottom: 12px;
   border-bottom: 2px solid var(--text);
@@ -866,6 +867,9 @@
   list-style: none;
 }
 .stepRow {
+  /* 점 가운데 높이: 위 여백 + 첫 줄(단계 이름 · 결과)의 반 */
+  --dot-y: 21px;
+  position: relative;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
@@ -874,8 +878,21 @@
   align-items: center;
   column-gap: 24px;
   row-gap: 4px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
+  padding: 12px 0 12px 28px;
+}
+/* 세로 선: 이 점에서 다음 점까지. 마지막 단계 아래로는 잇지 않는다 */
+.stepRow:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: var(--dot-y);
+  bottom: calc(-1 * var(--dot-y));
+  width: 1px;
+  background: var(--line-strong);
+}
+.stepRow > .threadDot {
+  left: 0;
+  top: calc(var(--dot-y) - 5.5px);
 }
 .stepRowLabel {
   grid-area: label;
@@ -885,6 +902,10 @@
 .stepRowResult {
   grid-area: result;
   font-size: 13px;
+}
+/* 모양 점은 왼쪽 단계 점이 맡아 결과에는 글자만 */
+.stepRowResult::before {
+  display: none;
 }
 .stepRowSkip {
   grid-area: result;
@@ -961,10 +982,11 @@
     display: grid;
   }
   .stepRow {
+    --dot-y: 28px;
     grid-template-areas:
       "label result"
       "prompt result";
-    padding: 18px 0;
+    padding: 18px 0 18px 28px;
   }
   .stepRowLabel {
     font-size: 13px;
@@ -995,6 +1017,29 @@
   .title {
     font-size: 40px;
   }
+}
+
+/* 불러오는 동안의 자리 표시(DESIGN.md components-states). 움직이지 않는 line 색 칸이라 동작 줄이기와 상관없다 */
+.skeleton {
+  display: block;
+  height: 32px;
+  border-radius: var(--radius-control);
+  background: var(--line);
+}
+.skeleton[data-kind="tag"] {
+  width: 120px;
+  height: 20px;
+}
+.skeleton[data-kind="short"] {
+  width: 60%;
+}
+.skeleton[data-kind="input"] {
+  height: 200px;
+}
+.skeletonGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 @media (prefers-reduced-motion: no-preference) {

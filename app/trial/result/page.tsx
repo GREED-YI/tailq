@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { Logo } from "@/components/Logo";
 import { loadTrialSession } from "@/lib/trial-session";
 import { ScoreRing } from "../../interview/ScoreRing";
+import { SkeletonLines } from "../../interview/Skeleton";
 import { scoreVerdict } from "../../interview/verdict";
 import { VerdictMark } from "../../interview/VerdictMark";
 import s from "../trial.module.css";
@@ -24,7 +25,7 @@ export default function TrialResultPage() {
         </div>
       </header>
       <main className={s.main}>
-        <Suspense>
+        <Suspense fallback={<SkeletonLines />}>
           <TrialResult />
         </Suspense>
       </main>
@@ -51,7 +52,7 @@ async function TrialResult() {
   return (
     <>
       <div className={s.hero}>
-        <span className="tag tag-today">체험 결과</span>
+        <span className="tag tag-neutral">체험 결과</span>
         <h1 className={s.title}>
           지금 가입하면 이 기록이
           <br />첫 기록이 돼요

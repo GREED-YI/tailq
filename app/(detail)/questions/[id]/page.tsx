@@ -63,10 +63,9 @@ function Loading() {
   );
 }
 
+// 요일 한 글자(DESIGN.md 날짜 "10월 30일(금)", 면접 결과 화면과 같다)
 const weekday = (day: string) =>
-  new Date(`${day}T00:00:00Z`)
-    .toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" })
-    .toUpperCase();
+  "일월화수목금토"[new Date(`${day}T00:00:00Z`).getUTCDay()];
 
 async function Detail({ id }: { id: string }) {
   const questionId = Number(id);
@@ -144,8 +143,8 @@ async function Detail({ id }: { id: string }) {
                   className={`${h.rowLink} ${s.attempt}`}
                   aria-label={`${m}월 ${d}일 기록, ${score === null ? "모르겠어요" : `${score}점`}`}
                 >
-                  <span className={`mono ${s.attemptDate}`}>
-                    {r.day.slice(5).replace("-", ".")} {weekday(r.day)}
+                  <span className={`num ${s.attemptDate}`}>
+                    {m}월 {d}일({weekday(r.day)})
                   </span>
                   <Score value={score} />
                   <Icon name="chevronRight" size={18} />

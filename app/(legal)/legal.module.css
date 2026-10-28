@@ -1,11 +1,19 @@
 /* 약관과 정책(S09). 뼈대는 components/Flow.module.css. 읽기 좋은 문서 화면(본문 최대 720px, 16px·행간 1.7) */
 
 /* 긴 문서라 PC에서도 위에서부터. 폭은 Flow의 520 대신 문서 폭 */
-main.main {
+div.main {
   justify-content: flex-start;
+  /* 아래 여백은 맨 아래 SiteFooter가 맡는다 */
+  padding-bottom: 0;
+}
+/* PC 왼쪽 위 로고(70×28): 보이는 자리는 그대로 두고 누르는 영역만 44px 넘게 넓힌다 */
+.pcLogo {
+  padding: 10px;
+  margin: -10px;
+  border-radius: var(--radius-control);
 }
 @media (min-width: 768px) {
-  main.main {
+  div.main {
     width: 100%;
     max-width: 784px;
     padding-left: 32px;
@@ -13,7 +21,7 @@ main.main {
   }
 }
 @media (min-width: 1024px) {
-  main.main {
+  div.main {
     padding-top: 80px;
   }
 }
@@ -56,6 +64,7 @@ main.main {
 
 .doc {
   margin-top: 32px;
+  padding-bottom: 40px;
 }
 .doc h1 {
   font-size: 22px;

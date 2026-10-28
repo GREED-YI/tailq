@@ -67,14 +67,14 @@
   color: var(--text-muted);
   text-align: right;
 }
-/* 제목 앞 여우 꼬리(components/Streak.tsx TailIcon) */
+/* 제목 앞 여우 꼬리(components/Streak.tsx TailIcon). 장식이라 오렌지 대신 무채색 */
 .grassTitle {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 .grassTitle svg {
-  color: var(--accent);
+  color: var(--text-sub);
 }
 
 .caption {

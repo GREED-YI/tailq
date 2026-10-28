@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type CSSProperties, type ReactNode } from "react";
-import { FeedbackLink } from "@/components/FeedbackLink";
 import { Icon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import { SiteFooter } from "@/components/SiteFooter";
+import f from "@/app/_landing/footer.module.css";
 import s from "./login.module.css";
 
 export const metadata: Metadata = { title: "로그인 · TailQ" };
@@ -30,7 +31,7 @@ const PROVIDERS: {
     style: {
       background: "#24292F",
       color: "#FFFFFF",
-      boxShadow: "inset 0 0 0 1px var(--line-strong)",
+      boxShadow: "inset 0 0 0 1px var(--mark-empty)",
     },
     logo: (
       <svg viewBox="0 0 16 16" fill="currentColor">
@@ -81,26 +82,23 @@ const PROVIDERS: {
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
-    <main className={s.main}>
+    <div className={s.main}>
       <header className={s.top}>
         <Link href="/" className={`press icon-btn ${s.back}`} aria-label="뒤로">
           <Icon name="chevronLeft" />
         </Link>
       </header>
 
-      <div className={s.body}>
+      <main className={s.body}>
         <Logo height="var(--logo-h)" />
         <h1 className={s.title}>TailQ 시작하기</h1>
         <p className={s.sub}>매일 5분, AI 면접관이 채점하고 피드백해 줘요</p>
 
-        <ol className={s.points}>
-          {POINTS.map((point, i) => (
-            <li key={point}>
-              <span className={`mono ${s.no}`}>0{i + 1}</span>
-              {point}
-            </li>
+        <ul className={s.points}>
+          {POINTS.map((point) => (
+            <li key={point}>{point}</li>
           ))}
-        </ol>
+        </ul>
 
         <Suspense>
           <ErrorNotice searchParams={searchParams} />
@@ -131,10 +129,10 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
             다르면 새 계정이 만들어져요.
           </p>
         </form>
-      </div>
+      </main>
 
-      <FeedbackLink />
-    </main>
+      <SiteFooter className={f.footer} logoHeight={22} />
+    </div>
   );
 }
 

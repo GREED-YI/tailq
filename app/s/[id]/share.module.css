@@ -33,9 +33,14 @@
   width: 100%;
   max-width: calc(560px + 2 * var(--gutter));
   margin: 0 auto;
-  padding: 24px var(--gutter) calc(24px + env(safe-area-inset-bottom));
+  padding: 24px var(--gutter);
   display: flex;
   flex-direction: column;
+}
+/* 맨 아래 SiteFooter(footer.module.css): 선은 화면 끝까지, 글은 머리의 로고 선에 맞춘다 */
+.page > footer {
+  padding-left: max(var(--gutter), calc((100% - 1200px) / 2));
+  padding-right: max(var(--gutter), calc((100% - 1200px) / 2));
 }
 .card {
   background: var(--surface);

@@ -5,7 +5,8 @@
   max-width: 440px;
   min-height: 100dvh;
   margin: 0 auto;
-  padding: 0 20px calc(16px + env(safe-area-inset-bottom));
+  /* 아래 여백은 맨 아래 SiteFooter가 맡는다 */
+  padding: 0 20px;
   display: flex;
   flex-direction: column;
 }
@@ -59,15 +60,9 @@
   border-bottom: 1px solid var(--line);
   display: flex;
   align-items: center;
-  gap: 16px;
   font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
-}
-.no {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-muted);
 }
 
 .error {

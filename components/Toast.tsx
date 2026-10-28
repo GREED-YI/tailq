@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { Icon, type IconName } from "./icons";
 import s from "./AppShell.module.css";
 
-// 짧은 알림 토스트(04 "모달과 토스트", Figma S34). 2초 뒤 사라진다.
+// 짧은 알림 토스트(04 "모달과 토스트", Figma S34). 4초 뒤 사라진다(DESIGN.md toast).
 // const [toast, showToast] = useToast(); showToast("북마크에 저장했어요", "bookmark");
 // 모든 화면에서 하단 가운데. top: 아래가 답변 시트·버튼으로 막힌 화면(면접·오늘의 결과)은
 // 막힌 높이를 재서 그 바로 위 하단 가운데에 띄운다. 처음엔 헤더 아래(위쪽)에 띄웠는데,
@@ -20,7 +20,7 @@ export function useToast({ top = false }: { top?: boolean } = {}) {
 
   useEffect(() => {
     if (!toast.text) return;
-    const t = setTimeout(() => setToast((v) => ({ ...v, text: "" })), 2000);
+    const t = setTimeout(() => setToast((v) => ({ ...v, text: "" })), 4000);
     return () => clearTimeout(t);
   }, [toast]);
 

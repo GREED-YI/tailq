@@ -12,7 +12,8 @@ import { createClient } from "@/lib/supabase/server";
 import { turnResult, type TurnResult } from "@/lib/turn";
 import { ScoreRing } from "@/app/interview/ScoreRing";
 import { VerdictMark } from "@/app/interview/VerdictMark";
-import { scoreVerdict } from "@/app/interview/verdict";
+import { scoreVerdict, VERDICTS } from "@/app/interview/verdict";
+import i from "@/app/interview/interview.module.css";
 import s from "@/app/(app)/history/history.module.css";
 
 export const metadata: Metadata = { title: "기록 상세 · TailQ" };
@@ -51,11 +52,6 @@ function Header({
     </header>
   );
 }
-
-const weekday = (day: string) =>
-  new Date(`${day}T00:00:00Z`)
-    .toLocaleDateString("en-US", { weekday: "short", timeZone: "UTC" })
-    .toUpperCase();
 
 async function Detail({ id }: { id: string }) {
   if (!z.uuid().safeParse(id).success) notFound();
@@ -100,8 +96,8 @@ async function Detail({ id }: { id: string }) {
         {/* 난이도가 한글이라 본문 글꼴 + 고정폭 숫자(globals.css .mono 주석) */}
         <span className={`num ${s.tag}`}>
           {tagLine(q)}
-          {level && ` · ${level}`} · {session.day.replaceAll("-", ".")}{" "}
-          {weekday(session.day)}
+          {/* 날짜는 결과 화면 머리와 같은 숫자형(DESIGN.md ko 날짜) */}
+          {level && ` · ${level}`} · {session.day.replaceAll("-", ".")}
         </span>
         <h2>{q.prompt}</h2>
       </div>
@@ -252,15 +248,30 @@ function FollowUp({
   result: TurnResult | undefined;
 }) {
   const unknown = result?.verdict === "unknown";
+  // 판정이 없으면(날짜를 넘겨 닫힘) 모르겠어요와 같은 빈 원
+  const mark = VERDICTS[result?.verdict ?? "unknown"] ?? VERDICTS.unknown;
+  const dot = (
+    <span
+      className={`${i.threadDot} ${s.stepDot}`}
+      data-shape={mark.shape}
+      style={{ color: mark.color }}
+      aria-hidden="true"
+    />
+  );
   const head = (
     <>
       <span className={s.stepHead}>
         <span className={`num ${s.stepName}`}>꼬리질문 {idx}</span>
         {/* 판정이 없으면(날짜를 넘겨 닫힘) 건너뜀 */}
         {result ? (
-          <VerdictMark verdict={result.verdict ?? "unknown"} />
+          <VerdictMark
+            verdict={result.verdict ?? "unknown"}
+            className={s.stepVerdict}
+          />
         ) : (
-          <VerdictMark verdict="unknown">건너뜀</VerdictMark>
+          <VerdictMark verdict="unknown" className={s.stepVerdict}>
+            건너뜀
+          </VerdictMark>
         )}
       </span>
       <span className={s.stepPrompt}>{prompt}</span>
@@ -270,11 +281,13 @@ function FollowUp({
   if (!result)
     return (
       <li className={s.step}>
+        {dot}
         <div className={s.stepStatic}>{head}</div>
       </li>
     );
   return (
     <li className={s.step}>
+      {dot}
       <details>
         <summary>
           {head}

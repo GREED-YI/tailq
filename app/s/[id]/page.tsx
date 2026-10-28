@@ -5,6 +5,8 @@ import { Suspense } from "react";
 import { ScoreRing } from "@/app/interview/ScoreRing";
 import { Icon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
+import { SiteFooter } from "@/components/SiteFooter";
+import f from "@/app/_landing/footer.module.css";
 import { kstDay } from "@/lib/daily-pick";
 import { shareDate, shareName, shareSentence } from "@/lib/share";
 import { loadShare } from "./load";
@@ -37,7 +39,10 @@ async function ShareView({ id }: { id: string }) {
   const card = await loadShare(id);
   // 없는 카드(탈퇴로 지워진 카드 포함)는 랜딩으로(05 사용자 흐름 "예외")
   if (!card) redirect("/");
-  const [line1, line2] = shareSentence(card, kstDay(new Date()));
+  const today = kstDay(new Date());
+  const [line1, line2] = shareSentence(card, today);
+  // 오늘 만든 카드만 오늘 라벨, 지난 카드는 중립 라벨(DESIGN.md label)
+  const isToday = kstDay(new Date(card.created_at)) === today;
 
   return (
     <div className={`${s.page} fade`}>
@@ -53,7 +58,7 @@ async function ShareView({ id }: { id: string }) {
       <main className={s.main}>
         <section className={s.card} aria-label="결과 카드">
           <div className={s.meta}>
-            <span className="tag tag-today">오늘의 기술면접</span>
+            <span className={`tag ${isToday ? "tag-today" : "tag-neutral"}`}>오늘의 기술면접</span>
             <span className={`mono ${s.date}`}>{shareDate(card)}</span>
           </div>
           <h1 className={s.topic}>{card.topic_name}</h1>
@@ -67,7 +72,7 @@ async function ShareView({ id }: { id: string }) {
             {card.streak > 0 && (
               <>
                 {" · 꼬리잇기"}
-                <b className={`num ${s.streak}`}>{card.streak}</b> 일째
+                <b className={`mono ${s.streak}`}>{card.streak}</b> 일째
               </>
             )}
           </p>
@@ -93,6 +98,8 @@ async function ShareView({ id }: { id: string }) {
           </Link>
         </div>
       </main>
+
+      <SiteFooter className={f.footer} logoHeight={22} />
     </div>
   );
 }

@@ -18,6 +18,7 @@ import { Dots, Score } from "./(app)/history/marks";
 import h from "./(app)/history/history.module.css";
 import home from "./(app)/home/home.module.css";
 import g from "@/components/GrassTip.module.css";
+import f from "./_landing/footer.module.css";
 import s from "./_landing/landing.module.css";
 import { LandingMotion } from "./_landing/LandingMotion";
 import { TrialPicker, type TrialQuestions } from "./_landing/TrialPicker";
@@ -221,10 +222,10 @@ export default function Landing() {
         {/* §2 질문 띠 */}
         <section className={s.band} aria-labelledby="band-title">
           <div className={s.wrap}>
-            <h2 id="band-title" className={s.h2} data-reveal>
+            <h2 id="band-title" className={s.h2}>
               15개 주제, 매일 한 문제
             </h2>
-            <p className={s.lead} data-reveal data-i="1">
+            <p className={s.lead}>
               자료구조부터 React까지, 내가 고른 연습 범위 안에서 매일 한 문제씩
               질문해요.
             </p>
@@ -266,16 +267,16 @@ export default function Landing() {
         {/* §3 채점 결과 */}
         <section className={`${s.wrap} ${s.split} ${s.grade}`} aria-labelledby="grade-title">
           <div className={s.copy5}>
-            <h2 id="grade-title" className={s.h2} data-reveal>
+            <h2 id="grade-title" className={s.h2}>
               100점 만점 채점, 잘한 점부터 짚는 피드백
             </h2>
-            <p className={s.lead} data-reveal data-i="1">
+            <p className={s.lead}>
               점수 아래에 잘한 점, 보완할 점, 모범 답안을 차례로 보여 줘요.
               모르는 질문은 &lsquo;모르겠어요&rsquo;를 누르면 기대 답안을 보여
               주고 다음 날 다시 물어요.
             </p>
           </div>
-          <div className={`${i.result} ${s.media7}`} data-reveal data-i="1">
+          <div className={`${i.result} ${s.media7}`}>
             {/* 앱에서는 접혀 있는 칸. 랜딩에서는 펼쳐 두고, 눌러 접을 수 있다 */}
             <details className={i.more} open>
               <summary className="press">
@@ -299,9 +300,9 @@ export default function Landing() {
                   <span className={i.label}>모범 답안</span>
                   <p className={i.well}>
                     컬렉션을 fetch join하면 행이 컬렉션 수만큼 늘어나서 데이터베이스에서 페이징할 수
-                    없습니다. 그래서 전체를 메모리로 가져와 페이징하고, 데이터가 많으면 메모리가
-                    위험합니다. 이때는 fetch join 대신 batch size(default_batch_fetch_size)로 IN 쿼리
-                    묶음 조회를 씁니다.
+                    없어요. 그래서 전체를 메모리로 가져와 페이징하고, 데이터가 많으면 메모리가
+                    위험해요. 이때는 fetch join 대신 batch size(default_batch_fetch_size)로 IN 쿼리
+                    묶음 조회를 써요.
                   </p>
                 </div>
               </div>
@@ -366,15 +367,15 @@ export default function Landing() {
         {/* §5 복습 */}
         <section className={`${s.wrap} ${s.split} ${s.sec}`} aria-labelledby="review-title">
           <div className={s.copy5}>
-            <h2 id="review-title" className={s.h2} data-reveal>
+            <h2 id="review-title" className={s.h2}>
               점수에 맞춰 돌아오는 복습
             </h2>
-            <p className={s.lead} data-reveal data-i="1">
+            <p className={s.lead}>
               70점이 안 되면 다음 날 다시 묻고, 70점 이상이면 3일, 7일, 14일,
               30일로 간격을 늘려 가요. 미룬 복습도 사라지지 않아요.
             </p>
           </div>
-          <div className={s.media7} data-reveal data-i="1">
+          <div className={s.media7}>
             <div className={h.listHead}>
               <h3 className={s.h3}>
                 복습할 질문<span className={`mono ${h.count}`}>3</span>
@@ -431,15 +432,15 @@ export default function Landing() {
         {/* §6 기록·리포트 */}
         <section className={`${s.wrap} ${s.split} ${s.sec}`} aria-labelledby="record-title">
           <div className={s.copy5}>
-            <h2 id="record-title" className={s.h2} data-reveal>
+            <h2 id="record-title" className={s.h2}>
               숫자로 남는 기록과 약한 주제
             </h2>
-            <p className={s.lead} data-reveal data-i="1">
+            <p className={s.lead}>
               날마다 받은 점수와 약한 주제를 기록과 리포트로 모아 보여 줘요.
               꼬리잇기는 하루도 빠지지 않고 이어서 푼 날 수예요.
             </p>
           </div>
-          <div className={s.media7} data-reveal data-i="1">
+          <div className={s.media7}>
             <div className={`${home.stats} ${s.stats}`} role="group" aria-label="학습 현황 예시">
               <div className={home.tile}>
                 <span className={home.tileLabel}>꼬리잇기</span>
@@ -511,14 +512,14 @@ export default function Landing() {
         {/* §7 내 프로젝트 */}
         <section className={`${s.wrap} ${s.split} ${s.sec}`} aria-labelledby="project-title">
           <div className={s.copy5}>
-            <h2 id="project-title" className={s.h2} data-reveal>
+            <h2 id="project-title" className={s.h2}>
               내 프로젝트 README로 만드는 예상 질문
             </h2>
-            <p className={s.lead} data-reveal data-i="1">
+            <p className={s.lead}>
               README를 붙여넣으면 설계 이유 2개, 기술 선택 2개, 트러블슈팅 1개로
               질문 5개를 만들어요. README에 적힌 내용만 물어요.
             </p>
-            <div className={s.readme} data-reveal data-i="2">
+            <div className={s.readme}>
               <span className={i.label}>README 또는 설명</span>
               <div className={s.readmeBox}>
                 {README.map((line) => (
@@ -528,8 +529,8 @@ export default function Landing() {
             </div>
           </div>
           <ol className={`${s.media7} ${s.pq}`} aria-label="만들어진 질문 예시">
-            {PROJECT_QS.map(([kind, q], n) => (
-              <li key={q} data-reveal data-i={n}>
+            {PROJECT_QS.map(([kind, q]) => (
+              <li key={q}>
                 <span className={s.pqKind}>{kind}</span>
                 {q}
               </li>
@@ -545,7 +546,7 @@ export default function Landing() {
         </section>
       </main>
 
-      <SiteFooter className={s.footer} logoHeight={22} feedback />
+      <SiteFooter className={f.footer} logoHeight={22} />
     </div>
   );
 }

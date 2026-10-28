@@ -115,12 +115,24 @@ export function OnboardingFlow(props: {
   );
 }
 
-// 누르는 동안 버튼을 잠그고, 실패하면 다시 누를 수 있게 푼다
+// 누르는 동안 버튼을 잠그고, 실패하면 다시 누를 수 있게 푼다.
+// 성공하면 이동하는 동안 잠금을 유지하고, 화면이 보관되어 숨겨지거나 다시 보일 때 요청 중이 아니면 푼다
+// (cacheComponents라 상태를 그대로 들고 다시 보인다. TrialPicker와 같다)
 function useBusy() {
   const [busy, setBusy] = useState(false);
+  const inFlight = useRef(false);
+  useEffect(() => {
+    if (!inFlight.current) setBusy(false);
+    return () => {
+      if (!inFlight.current) setBusy(false);
+    };
+  }, []);
   const run = async (task: () => Promise<boolean | void>) => {
     setBusy(true);
-    if (!(await task())) setBusy(false);
+    inFlight.current = true;
+    const ok = await task();
+    inFlight.current = false;
+    if (!ok) setBusy(false);
   };
   return [busy, run] as const;
 }
