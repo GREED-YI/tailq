@@ -1,6 +1,7 @@
 /* 로그인(S05). 상자 없이 화면 가운데 좁은 단 하나(본문 최대 400px) */
 .main {
-  --logo-h: 30px;
+  /* 오렌지 Q 표시(AppMark) 한 변 */
+  --mark: 48px;
   width: 100%;
   max-width: 440px;
   min-height: 100dvh;
@@ -29,7 +30,7 @@
   flex-direction: column;
   justify-content: center;
 }
-/* 워드마크(마스크 span)가 단 폭으로 늘어나 가운데로 가지 않게 */
+/* 오렌지 Q 표시(role="img")가 단 폭으로 늘어나 가운데로 가지 않게 */
 .body > [role="img"] {
   align-self: flex-start;
 }
@@ -110,7 +111,7 @@
 
 @media (min-width: 768px) {
   .main {
-    --logo-h: 34px;
+    --mark: 56px;
   }
   .title {
     font-size: 26px;

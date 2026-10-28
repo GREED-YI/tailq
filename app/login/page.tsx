@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense, type CSSProperties, type ReactNode } from "react";
 import { Icon } from "@/components/icons";
-import { Logo } from "@/components/Logo";
+import { AppMark } from "@/components/Logo";
 import { SiteFooter } from "@/components/SiteFooter";
 import f from "@/app/_landing/footer.module.css";
 import s from "./login.module.css";
@@ -90,7 +90,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
       </header>
 
       <main className={s.body}>
-        <Logo height="var(--logo-h)" />
+        <AppMark size="var(--mark)" />
         <h1 className={s.title}>TailQ 시작하기</h1>
         <p className={s.sub}>매일 5분, AI 면접관이 채점하고 피드백해 줘요</p>
 
