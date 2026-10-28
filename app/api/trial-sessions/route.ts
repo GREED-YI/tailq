@@ -10,17 +10,17 @@ import {
   TRIAL_FIELDS,
   trialCookie,
 } from "@/lib/trial";
-import { errorResponse } from "@/lib/turn";
 import { budgetUsd, LIMIT_MESSAGE } from "@/lib/usage";
+import { errorResponse, withApiErrors } from "@/lib/api-error";
 
 const Body = z.object({ field: z.enum(TRIAL_FIELDS) });
 
 // 체험 시작(08 설계 4장 POST /api/trial-sessions). 같은 브라우저 하루 1번, 같은 IP 하루 20번은 start_trial이 센다.
 // 쿠키에 토큰이 없으면 새로 만든다. 오늘 이 브라우저의 체험이 열려 있으면 그 세션을 그대로 돌려준다.
-export async function POST(request: Request) {
+export const POST = withApiErrors(async function POST(request: Request) {
   const body = Body.safeParse(await request.json().catch(() => null));
   if (!body.success) {
-    return errorResponse(400, "VALIDATION", "분야를 골라 주세요.");
+    return errorResponse("VALIDATION", "분야를 골라 주세요.");
   }
 
   const jar = await cookies();
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     ipHash = hashIp(clientIp(request.headers));
   } catch (e) {
     console.error("trial ip hash failed", e);
-    return errorResponse(500, "INTERNAL", "잠시 뒤에 다시 시도해 주세요.");
+    return errorResponse("INTERNAL", "잠시 뒤에 다시 시도해 주세요.");
   }
 
   const { data, error } = await createAdminClient().rpc("start_trial", {
@@ -41,21 +41,20 @@ export async function POST(request: Request) {
   });
   if (error) {
     if (error.message === "TRIAL_LIMIT") {
-      return errorResponse(429, "TRIAL_LIMIT", "오늘 체험은 끝났어요");
+      return errorResponse("TRIAL_LIMIT", "오늘 체험은 끝났어요");
     }
     // 서비스 월 예산에 닿으면 체험도 시작 전에 막는다(04 기능 명세 12장)
     if (error.message === "BUDGET_EXCEEDED") {
-      return errorResponse(429, "BUDGET_EXCEEDED", LIMIT_MESSAGE);
+      return errorResponse("BUDGET_EXCEEDED", LIMIT_MESSAGE);
     }
     if (error.message === "NOT_FOUND") {
       return errorResponse(
-        404,
         "NOT_FOUND",
         "체험 질문을 준비하고 있어요. 잠시 뒤에 다시 시도해 주세요.",
       );
     }
     console.error("trial start failed", error);
-    return errorResponse(500, "INTERNAL", "잠시 뒤에 다시 시도해 주세요.");
+    return errorResponse("INTERNAL", "잠시 뒤에 다시 시도해 주세요.");
   }
 
   // 이어서 하려고 다시 누른 것(이미 있던 세션)은 세지 않는다
@@ -68,4 +67,4 @@ export async function POST(request: Request) {
     trialCookie(new URL(request.url).protocol === "https:"),
   );
   return Response.json({ sessionId: data.id }, { status: 201 });
-}
+});

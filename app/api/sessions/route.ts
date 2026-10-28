@@ -5,9 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { track } from "@/lib/track";
 import { budgetUsd, LIMIT_MESSAGE } from "@/lib/usage";
-
-const error = (status: number, code: string, message: string) =>
-  NextResponse.json({ error: { code, message } }, { status });
+import { errorResponse, withApiErrors } from "@/lib/api-error";
 
 const Body = z.union([
   z.object({ kind: z.literal("daily") }),
@@ -16,15 +14,15 @@ const Body = z.union([
 
 // 세션 만들기(08 설계 4장). { kind: "daily" }면 오늘의 질문(같은 날에는 같은 세션),
 // { kind: "project", questionId }면 내 프로젝트 질문 세션(그 질문의 열린 세션이 있으면 그것)
-export async function POST(request: Request) {
+export const POST = withApiErrors(async function POST(request: Request) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   const userId = data?.claims?.sub;
-  if (!userId) return error(401, "UNAUTHORIZED", "로그인이 필요해요.");
+  if (!userId) return errorResponse("UNAUTHORIZED", "로그인이 필요해요.");
 
   const body = Body.safeParse(await request.json().catch(() => null));
   if (!body.success) {
-    return error(400, "VALIDATION", "kind는 daily나 project여야 해요.");
+    return errorResponse("VALIDATION", "kind는 daily나 project여야 해요.");
   }
 
   if (body.data.kind === "project") {
@@ -38,17 +36,17 @@ export async function POST(request: Request) {
       },
     );
     if (e?.message === "NOT_FOUND") {
-      return error(404, "NOT_FOUND", "질문을 찾을 수 없어요.");
+      return errorResponse("NOT_FOUND", "질문을 찾을 수 없어요.");
     }
     if (e?.message === "NOT_OWNER") {
-      return error(403, "NOT_OWNER", "내 질문이 아니에요.");
+      return errorResponse("NOT_OWNER", "내 질문이 아니에요.");
     }
     if (e?.message === "LIMIT_EXCEEDED" || e?.message === "BUDGET_EXCEEDED") {
-      return error(429, e.message, LIMIT_MESSAGE);
+      return errorResponse(e.message, LIMIT_MESSAGE);
     }
     if (e) {
       console.error("start_project_session failed", e);
-      return error(500, "INTERNAL", "연습을 시작하지 못했어요.");
+      return errorResponse("INTERNAL", "연습을 시작하지 못했어요.");
     }
     // 열린 세션을 이어 할 때도 남는다. 지표는 session_id로 한 번만 센다
     await track(
@@ -64,14 +62,14 @@ export async function POST(request: Request) {
     session = await startDailySession(userId);
   } catch (e) {
     console.error("startDailySession failed", e);
-    return error(500, "INTERNAL", "오늘의 질문을 만들지 못했어요.");
+    return errorResponse("INTERNAL", "오늘의 질문을 만들지 못했어요.");
   }
   if (session === "budget") {
-    return error(429, "BUDGET_EXCEEDED", LIMIT_MESSAGE);
+    return errorResponse("BUDGET_EXCEEDED", LIMIT_MESSAGE);
   }
   // exhausted면 화면이 "범위 안의 새 질문을 다 풀었어요. 범위를 넓혀볼까요?"를 보여준다
   return NextResponse.json({
     session,
     exhausted: session === null || session.pick === "advance",
   });
-}
+});
