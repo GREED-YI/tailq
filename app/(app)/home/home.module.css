@@ -30,10 +30,49 @@
   line-height: 1.5;
   color: var(--text-sub);
 }
-.greet > :global(.num) {
+.name {
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* 첫 방문 안내(#146, DESIGN.md inline-notice guide): 상자 없이 위아래 1px line 구분선(LimitNotice와 같은 평평한 구획).
+   닫은 브라우저는 첫 그림 전에 html[data-home-guide]가 붙어 숨는다(lib/home.ts) */
+.guide {
+  border-block: 1px solid var(--line);
+  padding: 12px 0 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+:global(html[data-home-guide]) .guide {
+  display: none;
+}
+.guide > strong {
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 700;
+}
+.guide ol {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.guide li {
+  display: flex;
+  gap: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-sub);
+}
+.guide li > :global(.mono) {
+  flex: none;
+  font-size: 13px;
+  line-height: 24px;
   color: var(--text-muted);
 }
-.name {
+.guide b {
   font-weight: 700;
   color: var(--text);
 }
@@ -388,6 +427,10 @@ a.tile:active {
   .stats {
     grid-column: span 4;
     grid-template-columns: minmax(0, 1fr);
+  }
+  /* 첫 방문 안내가 보이는 동안은 왼쪽 단이 길어지니 타일을 늘리지 않는다(빈 면 방지). 닫으면 다시 늘어난다 */
+  :global(html:not([data-home-guide])) .stats {
+    align-self: start;
   }
   .reviews {
     grid-column: 1 / -1;

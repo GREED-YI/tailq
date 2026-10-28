@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { homeState } from "@/lib/home";
+import { HOME_GUIDE_KEY, homeGuideScript, homeState } from "@/lib/home";
 
 describe("homeState", () => {
   it("본 질문에 아직 답하지 않았으면 오늘 안 풂", () => {
@@ -27,5 +27,30 @@ describe("homeState", () => {
     expect(homeState("done", [{ idx: 0, status: "graded" }])).toEqual({
       kind: "done",
     });
+  });
+});
+
+describe("homeGuideScript", () => {
+  // 첫 그림 전 스크립트를 가짜 저장소·문서로 돌려 html에 붙는 표시를 본다
+  function run(getItem: (k: string) => string | null) {
+    const dataset: Record<string, string> = {};
+    new Function("localStorage", "document", homeGuideScript)(
+      { getItem },
+      { documentElement: { dataset } },
+    );
+    return dataset.homeGuide;
+  }
+
+  it("닫은 브라우저만 숨긴다", () => {
+    expect(run((k) => (k === HOME_GUIDE_KEY ? "1" : null))).toBe("closed");
+    expect(run(() => null)).toBeUndefined();
+  });
+
+  it("저장소를 못 읽으면 안내를 보여준다", () => {
+    expect(
+      run(() => {
+        throw new Error("blocked");
+      }),
+    ).toBeUndefined();
   });
 });

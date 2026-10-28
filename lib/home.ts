@@ -17,3 +17,11 @@ export function homeState(
   }
   return { kind: "doing", step: last.idx };
 }
+
+// 홈 첫 방문 안내(#146)를 닫았는지 이 브라우저에 남기는 키
+export const HOME_GUIDE_KEY = "tailq-home-guide";
+
+// 첫 그림 전에 닫은 안내를 숨긴다(app/layout.tsx head). 서버는 저장소를 모르니 안내를 늘 그리고,
+// 닫은 브라우저는 html에 data-home-guide를 달아 CSS로 숨긴다. 그래서 다시 온 사람은 레이아웃이 밀리지 않고,
+// 처음 온 사람도 첫 그림부터 안내가 있다. 저장소를 못 읽으면 안내를 보여준다
+export const homeGuideScript = `try{if(localStorage.getItem("${HOME_GUIDE_KEY}")!==null)document.documentElement.dataset.homeGuide="closed"}catch(e){}`;
