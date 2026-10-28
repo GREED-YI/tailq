@@ -31,7 +31,7 @@ const COPY = {
     api: "/api/projects",
     noun: "프로젝트",
     nameLabel: "프로젝트 이름",
-    source: "README",
+    source: "쓴 README",
     back: "프로젝트 목록으로",
     backHref: "/projects",
   },
@@ -39,7 +39,7 @@ const COPY = {
     api: "/api/notes",
     noun: "학습 자료",
     nameLabel: "학습 자료 제목",
-    source: "학습 자료",
+    source: "넣은 학습 자료",
     back: "학습 자료 목록으로",
     backHref: "/projects/notes",
   },
@@ -121,8 +121,10 @@ export function ProjectView({
       router.refresh();
       return;
     }
+    // 페이지를 연 뒤 월 예산이 바닥났으면(429) 서버 문구로 알린다
+    const json = await res?.json().catch(() => null);
     setBusy(null);
-    setError("잠시 뒤에 다시 시도해 주세요.");
+    setError(json?.error?.message ?? "잠시 뒤에 다시 시도해 주세요.");
   }
 
   async function remove() {
@@ -239,9 +241,9 @@ export function ProjectView({
               {canRetry ? (
                 <>
                   <p>
-                    쓴 {c.source}는 그대로 남아 있어요.
+                    {c.source}는 그대로 남아 있어요.
                     <br />
-                    다시 만들어 볼까요?
+                    다시 만들어도 오늘 한도는 그대로예요.
                   </p>
                   <button
                     type="button"
@@ -318,7 +320,7 @@ export function ProjectView({
           }}
         >
           <label htmlFor="delete-name" className={s.dialogLabel}>
-            삭제하려면 {c.nameLabel} 「{name}」을 입력하세요
+            삭제하려면 {c.nameLabel}을 똑같이 입력해 주세요
           </label>
           <input
             id="delete-name"

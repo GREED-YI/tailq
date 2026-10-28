@@ -26,10 +26,11 @@ const COPY = {
     title: "학습 자료 등록",
     nameLabel: "학습 자료 제목",
     namePlaceholder: "예: 운영체제 - 프로세스와 스레드",
-    contentLabel: "학습 자료(마크다운)",
+    contentLabel: "학습 자료(마크다운·텍스트)",
     contentPlaceholder:
       "정리한 노트나 수업 자료를 붙여넣거나 .md 파일을 불러와 주세요",
-    help: "학습 자료를 넣으면 개념 질문 5개를 만들어 줘요",
+    // 375에서 글자 수와 한 줄에 들어가게 짧게 둔다
+    help: "개념 질문 5개를 만들어 줘요",
     back: "학습 자료 목록으로",
     backHref: "/projects/notes",
   },
@@ -117,7 +118,7 @@ export function ProjectForm({
     const n = text.trim().length;
     if (n > CONTENT_MAX) {
       setFileError(
-        `파일이 ${CONTENT_MAX.toLocaleString()}자를 넘어요(${n.toLocaleString()}자). 줄이거나 나눠서 등록해 주세요.`,
+        `파일이 ${n.toLocaleString()}자예요. ${CONTENT_MAX.toLocaleString()}자 이하로 줄여서 다시 불러와 주세요.`,
       );
       return;
     }
