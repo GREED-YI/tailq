@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BackButton } from "@/components/BackButton";
 import f from "@/components/Flow.module.css";
 import {
@@ -12,9 +12,24 @@ import {
 } from "@/lib/feedback";
 import s from "../my.module.css";
 
-export function FeedbackForm() {
-  const [category, setCategory] = useState<string>("etc");
-  const [body, setBody] = useState("");
+// 신고 링크(#134)에서 오면 분류와 본문 첫 줄("Q.225 질문 신고: ")이 미리 채워진다. "하나 더 보내기"는 빈 칸으로
+export function FeedbackForm({
+  initialCategory = "etc",
+  initialBody = "",
+}: {
+  initialCategory?: string;
+  initialBody?: string;
+}) {
+  const [category, setCategory] = useState<string>(initialCategory);
+  const [body, setBody] = useState(initialBody);
+  const textarea = useRef<HTMLTextAreaElement>(null);
+  // 미리 채운 본문이 있으면 그 뒤에 커서를 둬 바로 이어 쓰게 한다
+  useEffect(() => {
+    const el = textarea.current;
+    if (!el || !initialBody) return;
+    el.focus();
+    el.setSelectionRange(el.value.length, el.value.length);
+  }, [initialBody]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [sent, setSent] = useState(false);
@@ -105,6 +120,7 @@ export function FeedbackForm() {
         의견
       </label>
       <textarea
+        ref={textarea}
         id="feedback"
         className={`${s.input} ${s.textarea}`}
         value={body}

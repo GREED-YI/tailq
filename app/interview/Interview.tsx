@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { Icon } from "@/components/icons";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import type { SessionQuestion } from "@/lib/daily";
 import type { TurnResult } from "@/lib/turn";
 import s from "./interview.module.css";
@@ -263,7 +262,6 @@ export function Interview({
                 toastTop
               />
             )}
-            <ThemeToggle />
           </div>
         </div>
       </header>
@@ -340,6 +338,7 @@ export function Interview({
           {showResult ? (
             <ResultView
               trial={trial}
+              questionId={question.id}
               followUp={turn.idx > 0}
               resultHref={resultHref}
               result={phase === "result" ? result : null}
@@ -475,6 +474,7 @@ export function Interview({
 
 function ResultView({
   trial,
+  questionId,
   followUp,
   resultHref,
   result,
@@ -482,6 +482,7 @@ function ResultView({
   onNext,
 }: {
   trial: boolean;
+  questionId: number;
   followUp: boolean;
   resultHref: string;
   result: TurnResult | null;
@@ -492,6 +493,7 @@ function ResultView({
     return (
       <FollowUpResult
         trial={trial}
+        questionId={questionId}
         result={result}
         streamed={streamed}
         onNext={onNext}
@@ -533,6 +535,28 @@ function ResultView({
         )}
       </section>
 
+      {/* 잘한 점을 먼저, 보완할 점을 다음에(DESIGN.md Voice). 펼친 채로 둔다 */}
+      {!unknown && !!result.feedback?.good.length && (
+        <div className={s.block}>
+          <span className={s.label}>잘한 점</span>
+          <ul className={s.list}>
+            {result.feedback.good.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {!unknown && !!result.feedback?.improve.length && (
+        <div className={s.block}>
+          <span className={s.label}>보완할 점</span>
+          <ul className={s.list}>
+            {result.feedback.improve.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {result.missingKeywords.length > 0 && (
         <div className={s.block}>
           <span className={s.label}>보완할 개념</span>
@@ -549,35 +573,13 @@ function ResultView({
         </div>
       )}
 
-      {/* 점수·한 줄·보완할 개념만 바로 보이고, 잘한 점·보완할 점·모범 답안·참고 자료·평가(04 기능 명세)는
-          접어 둔다. 모르겠어요는 모범 답안이 전부라 펼친 채로 */}
+      {/* 모범 답안·참고 자료만 접어 둔다. 모르겠어요는 모범 답안이 전부라 펼친 채로 */}
       <details className={s.more} open={unknown}>
         <summary>
-          모범 답안과 피드백 자세히 보기
+          모범 답안과 참고 자료
           <Icon name="chevronDown" size={18} />
         </summary>
         <div className={s.moreBody}>
-          {!!result.feedback?.good.length && (
-            <div className={s.block}>
-              <span className={s.label}>잘한 점</span>
-              <ul className={s.list}>
-                {result.feedback.good.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {!!result.feedback?.improve.length && (
-            <div className={s.block}>
-              <span className={s.label}>보완할 점</span>
-              <ul className={s.list}>
-                {result.feedback.improve.map((t) => (
-                  <li key={t}>{t}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
           <div className={s.block}>
             <span className={s.label}>모범 답안</span>
             <p className={s.well}>{result.modelAnswer}</p>
@@ -597,32 +599,36 @@ function ResultView({
               </ul>
             </div>
           )}
-
-          {!unknown && !trial && (
-            <Rating turnId={result.turnId} initial={result.rating} />
-          )}
         </div>
       </details>
 
+      {/* 평가는 주 버튼 바로 위. 모르겠어요·체험은 평가가 없고, 체험은 신고도 없다(피드백은 로그인해야 보낸다) */}
+      {!unknown && !trial && (
+        <Rating turnId={result.turnId} initial={result.rating} />
+      )}
       <NextButton
         result={result}
         onNext={onNext}
         resultHref={resultHref}
         followUps={trial ? 1 : 3}
       />
+      {!trial && <ReportLink questionId={questionId} />}
     </div>
   );
 }
 
-// 꼬리질문 결과: 점수 없이 판정과 한 줄 피드백. "모르겠어요"면 기대 답안을 보여준다(docs/04 C-7)
+// 꼬리질문 결과: 점수 없이 판정과 한 줄 피드백, 기대 답안(docs/04 C-7).
+// 잘 답했으면 기대 답안을 접어 두고, 부족·틀림·모르겠어요면 펼쳐 둔다
 function FollowUpResult({
   trial,
+  questionId,
   result,
   streamed,
   onNext,
   resultHref,
 }: {
   trial: boolean;
+  questionId: number;
   result: TurnResult | null;
   streamed: string;
   onNext: (next: Turn) => void;
@@ -649,12 +655,23 @@ function FollowUpResult({
           <p className={s.summary}>{result.feedback.summary}</p>
         )}
       </section>
-      {unknown && (
-        <div className={s.block}>
-          <span className={s.label}>기대 답안</span>
-          <p className={s.well}>{result.modelAnswer}</p>
-        </div>
-      )}
+      {result.modelAnswer &&
+        (result.verdict === "good" ? (
+          <details className={s.more}>
+            <summary>
+              기대 답안 보기
+              <Icon name="chevronDown" size={18} />
+            </summary>
+            <div className={s.moreBody}>
+              <p className={s.well}>{result.modelAnswer}</p>
+            </div>
+          </details>
+        ) : (
+          <div className={s.block}>
+            <span className={s.label}>기대 답안</span>
+            <p className={s.well}>{result.modelAnswer}</p>
+          </div>
+        ))}
       {!unknown && !trial && (
         <Rating turnId={result.turnId} initial={result.rating} />
       )}
@@ -664,7 +681,20 @@ function FollowUpResult({
         resultHref={resultHref}
         followUps={trial ? 1 : 3}
       />
+      {!trial && <ReportLink questionId={questionId} />}
     </div>
+  );
+}
+
+// 질문·채점 신고(#134). 피드백 화면이 분류 "신고"와 질문 번호를 미리 채운다. 꼬리질문도 본 질문 번호로 보낸다
+function ReportLink({ questionId }: { questionId: number }) {
+  return (
+    <Link
+      className={s.report}
+      href={`/my/feedback?category=report&q=${questionId}`}
+    >
+      질문·채점이 이상해요
+    </Link>
   );
 }
 
@@ -722,6 +752,7 @@ function Rating({
   }
   return (
     <div className={s.rating}>
+      <span className={s.ratingText}>이 채점이 도움이 됐나요?</span>
       <button
         type="button"
         className="press icon-btn"
