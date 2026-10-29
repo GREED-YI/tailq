@@ -5,7 +5,7 @@ import { z } from "zod";
 import { limitNotice } from "@/components/LimitNotice";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { loadQuota } from "@/lib/server/usage";
+import { loadQuota, retryBlocked } from "@/lib/server/usage";
 import { DetailLoading, toQuestionRows } from "./detail";
 import { ProjectView } from "./ProjectView";
 import s from "@/app/(app)/projects/projects.module.css";
@@ -56,7 +56,7 @@ async function Project({ id }: { id: string }) {
       questions={toQuestionRows(project.questions)}
       notice={limitNotice(quota, "practice")}
       sessionsLeft={quota.budget === "exceeded" ? null : quota.sessionsLeft}
-      canRetry={quota.budget !== "exceeded"}
+      retryBlocked={retryBlocked(quota)}
     />
   );
 }

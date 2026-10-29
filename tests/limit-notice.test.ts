@@ -6,6 +6,7 @@ const q = (over: Partial<Parameters<typeof limitNotice>[0]> = {}) => ({
   spentUsd: 0,
   sessionsLeft: 3,
   gensLeft: 1,
+  regensLeft: 3,
   ...over,
 });
 

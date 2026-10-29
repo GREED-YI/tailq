@@ -9,7 +9,7 @@ import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 export const maxDuration = 300;
 
 // 실패한 프로젝트의 질문 다시 생성(08 설계 4장). failed일 때만 받고, 생성은 등록처럼 뒤에서 한다.
-// 하루 한도는 등록 때 잡은 몫을 쓰므로 다시 보지 않고, 월 예산만 본다
+// 월 예산과 다시 만들기 하루 3번(학습 자료와 합쳐, REGEN_LIMIT)을 본다(docs/10 "남용 제한")
 export const POST = withApiErrors(async function POST(
   _request: Request,
   ctx: RouteContext<"/api/projects/[id]/generations">,
