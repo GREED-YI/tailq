@@ -14,6 +14,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   viewportFit: "cover",
+  // 다크·라이트를 직접 지원한다고 알려, 휴대폰 다크 모드 브라우저가 화면을 강제로 어둡게 칠하지 않게 한다(#171)
+  colorScheme: "dark light",
   themeColor: [
     { media: "(prefers-color-scheme: dark)", color: "#0E0F0E" },
     { media: "(prefers-color-scheme: light)", color: "#F3F4F2" },
