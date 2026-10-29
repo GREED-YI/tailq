@@ -98,7 +98,8 @@ A·B 모두 같은 일을 한다.
 
 ```powershell
 $env:NEXT_PUBLIC_SUPABASE_URL = "https://<ref>.supabase.co"
-$env:SUPABASE_SERVICE_ROLE_KEY = "<비밀 키>"
+# 키는 명령문에 쓰지 않고 입력받는다. 명령문에 쓰면 PowerShell 기록(PSReadLine)에 남는다
+$env:SUPABASE_SERVICE_ROLE_KEY = [Net.NetworkCredential]::new("", (Read-Host "service role 키" -AsSecureString)).Password
 npm run seed:questions -- <비공개 콘텐츠 저장소>/questions
 Remove-Item Env:NEXT_PUBLIC_SUPABASE_URL, Env:SUPABASE_SERVICE_ROLE_KEY
 ```
@@ -201,13 +202,16 @@ select vault.update_secret((select id from vault.secrets where name = 'push_cron
 - [ ] MY에서 알림을 켜고(알림 시각을 지금 시각으로, 오늘 질문은 아직 답하지 않은 계정으로) SQL `select public.request_push_cron();`을 한 번 실행하면 알림이 온다
 - [ ] 결과 공유 링크를 만들어 다른 브라우저(로그인 안 한 창)에서 열리고, 메신저에 붙이면 미리보기 카드가 뜬다
 - [ ] `/admin`(운영 대시보드)이 열린다
-- [ ] Actions → **Supabase 깨우기** → Run workflow가 성공한다
+- [ ] Actions → **Supabase 깨우기** → Run workflow가 성공하고, 로그에 `운영 DB 조회 응답: 200`이 찍힌다. "건너뜁니다" 알림만 있고 성공했다면 Secrets가 비어 있어 요청을 보내지 않은 것이라 확인이 아니다
 - [ ] Anthropic Console 사용량에 방금 채점한 호출이 찍힌다 (`AI_MOCK`이 꺼져 있다는 뜻)
 
 ## 평소 배포
 
 - PR을 main에 합치면 Vercel이 코드를, **DB 배포** 워크플로가 마이그레이션을 반영한다. 둘은 거의 동시에 돈다.
-- 그래서 마이그레이션은 **옛 코드와 새 코드가 둘 다 견디게** 쓴다. 열·표 추가는 그대로 괜찮다. 열·표 삭제나 이름 바꾸기는 먼저 코드가 그것을 안 쓰게 한 PR을 합치고, 다음 PR에서 지운다(#154 테마 열 삭제처럼).
+- 그래서 마이그레이션은 **옛 코드와 새 코드가 둘 다 견디게** 쓴다.
+  - 열·표 추가: 옛 코드는 새 열을 모르니 괜찮다. 다만 새 코드가 새 열·표를 꼭 읽는다면, 아직 열이 없을 때도 동작하게(기본값으로 처리 등) 짜거나, 마이그레이션만 담은 PR을 먼저 합쳐 DB에 반영한 뒤 코드를 합친다.
+  - 열·표 삭제나 이름 바꾸기: 먼저 코드가 그것을 안 쓰게 한 PR을 합치고, 다음 PR에서 지운다(#154 테마 열 삭제처럼).
+- 운영 주제(`topics`)를 고치거나 더할 때는 `seed.sql`이 아니라 새 마이그레이션으로 한다. 이미 넣은 시드 파일이 바뀌어도 CLI가 다시 돌리지 않는다.
 - 새 마이그레이션은 로컬에서 `npx supabase migration new <이름>`으로 만들고 `npm run db:reset`·`npm run db:test`로 확인한다. 운영 DB를 대시보드에서 손으로 바꾸지 않는다. 바꾸면 마이그레이션 기록과 어긋나 다음 `db push`가 실패할 수 있다.
 
 ## 되돌리기

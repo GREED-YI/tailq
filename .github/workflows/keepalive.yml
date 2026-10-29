@@ -28,8 +28,13 @@ jobs:
             echo "::notice::SUPABASE_URL·SUPABASE_ANON_KEY가 없어 건너뜁니다(docs/11)."
             exit 0
           fi
-          # 응답이 2xx가 아니면 실패해서 GitHub가 실패 알림 메일을 보낸다. 일시정지된 뒤라면 대시보드에서 복구한다
-          curl --fail-with-body --silent --show-error --max-time 30 --retry 2 \
+          # 응답이 2xx가 아니면(3xx 리디렉션 포함) 실패해서 GitHub가 실패 알림 메일을 보낸다.
+          # 일시정지된 뒤라면 대시보드에서 복구한다
+          status=$(curl --silent --show-error --max-time 30 --retry 2 -o body.txt -w '%{http_code}' \
             -H "apikey: $SUPABASE_ANON_KEY" \
-            "$SUPABASE_URL/rest/v1/topics?select=id&limit=1"
-          echo
+            "$SUPABASE_URL/rest/v1/topics?select=id&limit=1")
+          echo "운영 DB 조회 응답: $status"
+          case "$status" in
+            2??) ;;
+            *) cat body.txt; exit 1 ;;
+          esac
