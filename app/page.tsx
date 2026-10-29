@@ -126,8 +126,8 @@ export default function Landing() {
               하루 한 문제, AI가 채점하고 되묻는 개발자 기술 면접 연습
             </h1>
             <p className={s.heroSub}>
-              답변을 쓰면 AI가 100점 만점으로 채점하고, 내 답변에 맞춰
-              꼬리질문을 이어 가요. 70점이 안 된 질문은 다음 날 다시 물어요.
+              답변을 쓰면 AI가 점수를 매기고, 내 답변에 맞춰 꼬리질문을 이어
+              가요. 70점을 넘기지 못한 질문은 다음 날 다시 물어요.
             </p>
             <a href="#try" className={`btn btn-primary press ${s.cta}`}>
               로그인 없이 한 문제 풀어보기
@@ -152,7 +152,7 @@ export default function Landing() {
         >
           <div className={`${s.gradeCopy} ${s.reveal}`}>
             <h2 id="grade-title" className={s.h2}>
-              100점 만점 채점, 잘한 점부터
+              잘한 점부터 알려 주는 채점
             </h2>
             <p className={s.lead}>
               점수 아래에 잘한 점과 보완할 개념을 차례로 짚어요. 모르는 질문은
