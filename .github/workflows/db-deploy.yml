@@ -26,13 +26,21 @@ jobs:
       - id: secrets
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
         run: |
-          if [ -n "$SUPABASE_DB_URL" ]; then
-            echo "ready=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::notice::SUPABASE_DB_URL이 비어 있어 운영 DB 반영을 건너뜁니다(docs/11)."
+          if [ -z "$SUPABASE_DB_URL" ] || [ -z "$SUPABASE_PROJECT_REF" ]; then
+            echo "::notice::SUPABASE_DB_URL·SUPABASE_PROJECT_REF 중 비어 있는 값이 있어 운영 DB 반영을 건너뜁니다(docs/11)."
             echo "ready=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+          # 다른 프로젝트 DB에 마이그레이션을 밀지 않게, 접속 주소의 사용자 이름이 운영 프로젝트(postgres.<ref>)인지 본다
+          case "$SUPABASE_DB_URL" in
+            "postgresql://postgres.${SUPABASE_PROJECT_REF}:"*|"postgres://postgres.${SUPABASE_PROJECT_REF}:"*)
+              echo "ready=true" >> "$GITHUB_OUTPUT" ;;
+            *)
+              echo "::error::SUPABASE_DB_URL이 운영 프로젝트(SUPABASE_PROJECT_REF)의 세션 풀러 주소가 아닙니다. Connect → Session pooler 주소를 다시 넣어 주세요(docs/11)."
+              exit 1 ;;
+          esac
 
   migrate:
     needs: check

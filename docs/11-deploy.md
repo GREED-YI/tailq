@@ -51,6 +51,7 @@ DB가 따로 반영되지 않으면, 새 코드는 배포됐는데 그 코드가
 | 이름 | 값 | 쓰는 곳 |
 |---|---|---|
 | `SUPABASE_DB_URL` | 대시보드 위쪽 **Connect** → Connection String → Method **Session pooler**의 URI. `[YOUR-PASSWORD]` 자리를 1단계 Database password로 바꾼 전체 문자열. 비밀번호에 `@` `#` `%` `/` `:` 같은 특수문자가 있으면 퍼센트 인코딩해서 넣는다(CLI 문서: `--db-url`은 percent-encoded여야 한다). Generate a password로 만든 영문·숫자 비밀번호면 그대로 넣으면 된다 | DB 배포 |
+| `SUPABASE_PROJECT_REF` | `<ref>` | DB 배포(접속 주소가 이 프로젝트를 가리키는지 확인) |
 | `SUPABASE_URL` | `https://<ref>.supabase.co` | 깨우기 |
 | `SUPABASE_ANON_KEY` | 공개 키 (Vercel의 `NEXT_PUBLIC_SUPABASE_ANON_KEY`와 같은 값) | 깨우기 |
 
