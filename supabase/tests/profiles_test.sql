@@ -25,9 +25,9 @@ select is(
   '면접 준비생', '2자보다 짧으면 기본 닉네임을 쓴다'
 );
 select is(
-  (select (nickname, avatar, notify_hour, theme, onboarded_at is null)::text
+  (select (nickname, avatar, notify_hour, onboarded_at is null)::text
    from public.profiles where id = '00000000-0000-0000-0000-00000000000d'),
-  '("면접 준비생",https://example.com/d.png,8,system,t)', '이름이 없으면 기본값으로 만든다'
+  '("면접 준비생",https://example.com/d.png,8,t)', '이름이 없으면 기본값으로 만든다'
 );
 select is(
   (select share_nickname from public.profiles where id = '00000000-0000-0000-0000-00000000000a'),

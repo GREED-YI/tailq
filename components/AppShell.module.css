@@ -255,10 +255,6 @@
   .header {
     display: none;
   }
-  /* 머리 줄 밖에서 h1로 쓸 때(ComingSoon) PC 제목 크기(DESIGN.md title) */
-  .headerTitle {
-    font-size: 26px;
-  }
 }
 
 /* 토스트(components/Toast.tsx): 하단 가운데. 모바일은 아래 탭 12px 위 */
