@@ -361,7 +361,7 @@ or exists (select 1 from study_notes n where n.id = questions.note_id and n.user
 | `question_keys.rubric` | `{ "keywords": string[], "criteria": string[] }` — `keywords`는 보완할 개념 칩의 후보, `criteria`는 채점 기준 문장 |
 | `question_keys.links` | `[{ "title": string, "url": string }]` 1~3개. 프로젝트 질문은 null |
 | `turns.feedback` | `{ "summary": string, "good": string[], "improve": string[], "missing_keywords": string[], "criteria": { "concept": int, "reason": int, "application": int, "delivery": int } }` — `missing_keywords ⊆ rubric.keywords`를 서버가 검증. `good`은 0~3개(빈 배열이면 화면에서 잘한 점 줄을 숨긴다). `criteria`는 본 질문의 기준별 점수로 저장만 하고 화면에는 보여주지 않는다(약점 리포트용). 꼬리질문 턴은 `summary`만 있어도 된다. 처음엔 `criteria`를 둘 곳이 없었다 (2026-10-26) |
-| `events.props` | 1KB 이하의 평평한 객체. id와 종류만 넣고 답변 글은 넣지 않는다. 이름별 키: `first_visit`·`signup`·`notification_click` `{}`, `trial_start` `{field}`, `trial_complete`·`share` `{session_id}`, `session_start`·`session_complete` `{session_id, kind}`, `answer_submit` `{session_id, turn_id, kind, dont_know}`(본 질문만), `rating` `{turn_id, rating}`. 처음엔 "지표 이슈에서 정한다"였다 (2026-10-27, #44) |
+| `events.props` | 1KB 이하의 평평한 객체. id와 종류만 넣고 답변 글은 넣지 않는다. 이름별 키: `first_visit`·`signup`·`notification_click`·`install_click`·`app_installed` `{}`, `trial_start` `{field}`, `trial_complete`·`share` `{session_id}`, `session_start`·`session_complete` `{session_id, kind}`, `answer_submit` `{session_id, turn_id, kind, dont_know}`(본 질문만), `rating` `{turn_id, rating}`. 처음엔 "지표 이슈에서 정한다"였다 (2026-10-27, #44). 앱 설치 버튼 누름·설치 완료 두 이름은 마이그레이션 `20261029170000_events_install.sql`에서 허용 목록에 더했다 (2026-10-29, #150) |
 
 ### 공유 · 운영
 
@@ -369,7 +369,7 @@ or exists (select 1 from study_notes n where n.id = questions.note_id and n.user
 |---|---|---|
 | `shares` | `id`(짧은 무작위 문자열), `session_id`(유일), `nickname`(뺄 수 있음), `topic_name`(프로젝트 질문이면 "내 프로젝트", 학습 자료 질문이면 "내 학습 자료"), `score`, `streak`, `created_at` | daily·project 세션 모두 공유할 수 있다. 읽기 정책 없음. 공유 페이지는 서버가 `id` 하나로만 읽고 누구의 세션인지는 내보내지 않는다. 만들 때는 `session_id`만 받고 점수·꼬리잇기는 서버가 계산한다(위조 방지). 세션당 하나라 다시 누르면 기존 카드를 돌려준다. 이때 닉네임만 지금 설정(`profiles.share_nickname`)으로 고친다(닉네임 공개를 끄고 다시 공유하면 빠지게, 2026-10-27, #41). `id`는 16진수 12자, 체험 세션과 본 질문 점수가 없는 세션은 공유할 수 없다 |
 | `ai_usage` | `id`, `user_id`(체험이면 null, 탈퇴하면 `on delete set null`), `purpose`(grade·follow_up·project_gen·note_gen·trial), `quota`(project_session·project_gen, 하루 한도 몫을 잡은 행만. 학습 자료 생성도 project_gen), `status`(reserved·used·released·failed), `ref_id`(세션·프로젝트·학습 자료 id, 외래키 없음), `model`, `error_code`, `latency_ms`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_write_tokens`, `cost_usd`, `day`, `created_at` | 개인 하루 한도, 서비스 월 예산, 그리고 **AI 실패율·지연 관측**(7장). `quota`·`ref_id`·`model`·캐시 토큰은 #43에서 더했다 |
-| `events` | `id`, `name`, `user_id`, `anon_id`, `props`(jsonb), `created_at` | 지표 이벤트(첫 방문, 체험 시작·완료, 가입, 세션 시작, 본 질문 제출, 세션 완료, 👍/👎, 공유, 알림 클릭). 서버만 쓴다. 비로그인도 보낼 수 있는 입구라 이름은 허용 목록만, `props`는 1KB까지, `anon_id`당 하루 200건을 넘으면 버린다. 90일 지난 행은 새벽 정리에서 지운다. `anon_id`는 브라우저 쿠키 `tailq-anon`(무작위 UUID, 1년)이다. 첫 방문 신호를 보낼지 브라우저가 알아야 해서 `httpOnly`가 아니고, 아무 권한도 주지 않는다. 로그인한 뒤의 이벤트에도 함께 남겨 첫 방문 → 첫 답변을 잇는다 (2026-10-27, #44) |
+| `events` | `id`, `name`, `user_id`, `anon_id`, `props`(jsonb), `created_at` | 지표 이벤트(첫 방문, 체험 시작·완료, 가입, 세션 시작, 본 질문 제출, 세션 완료, 👍/👎, 공유, 알림 클릭, 앱 설치 버튼 누름·설치 완료). 서버만 쓴다. 비로그인도 보낼 수 있는 입구라 이름은 허용 목록만, `props`는 1KB까지, `anon_id`당 하루 200건을 넘으면 버린다. 90일 지난 행은 새벽 정리에서 지운다. `anon_id`는 브라우저 쿠키 `tailq-anon`(무작위 UUID, 1년)이다. 첫 방문 신호를 보낼지 브라우저가 알아야 해서 `httpOnly`가 아니고, 아무 권한도 주지 않는다. 로그인한 뒤의 이벤트에도 함께 남겨 첫 방문 → 첫 답변을 잇는다 (2026-10-27, #44) |
 
 ### DB 함수
 
@@ -430,7 +430,7 @@ or exists (select 1 from study_notes n where n.id = questions.note_id and n.user
 | `POST /api/push-subscriptions` · `DELETE /api/push-subscriptions/{id}` | 알림 구독·해제 | ○ |
 | `POST /api/shares` | 결과 공유 카드 만들기(`sessionId`만 받음). 이미 있으면 그것을 돌려줌 | ○ |
 | `POST /api/trial-sessions` | 체험 시작(브라우저 1번, IP 하루 20번) | ✕ |
-| `POST /api/events` | 브라우저가 보내는 지표 이벤트 `{ name }`. `first_visit`·`notification_click`만 받는다. `tailq-anon`이 없으면 여기서 준다. 첫 방문은 값을 처음 받는 비로그인 브라우저만 센다. 나머지 이벤트는 서버가 그 일을 처리하면서 남긴다 | ✕ |
+| `POST /api/events` | 브라우저가 보내는 지표 이벤트 `{ name }`. `first_visit`·`notification_click`·`install_click`·`app_installed`만 받는다. `tailq-anon`이 없으면 여기서 준다. 첫 방문은 값을 처음 받는 비로그인 브라우저만 센다. 나머지 이벤트는 서버가 그 일을 처리하면서 남긴다 | ✕ |
 | `POST /api/cron/push` | 매시 알림 발송(`pg_cron` 전용, 비밀 헤더). 외부에 공개하는 API가 아니라 예약 작업이 부르는 내부 입구 | 비밀값 |
 
 처음엔 `PUT /api/trial-sessions/current/turns/{idx}/answer`(체험)와 `POST /api/turns/{id}/gradings`(다시 채점)가 따로 있었으나, 체험 턴도 같은 `turns`에 있고 다시 채점도 같은 상태 전이라 둘 다 `PUT /api/turns/{id}/answer`로 합쳤다. 스트리밍 코드가 한 벌이 된다 (2026-10-25).
