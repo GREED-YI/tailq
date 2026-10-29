@@ -18,12 +18,12 @@ export function StatusScreen({
 }) {
   const Tag = inShell ? "div" : "main";
   return (
-    <Tag
-      className={`${s.screen} ${inShell ? "" : s.full}`}
-      role={alert ? "alert" : undefined}
-    >
-      <h1 className={s.title}>{title}</h1>
-      <p className={s.body}>{body}</p>
+    <Tag className={`${s.screen} ${inShell ? "" : s.full}`}>
+      {/* alert는 제목·설명 묶음에 단다. main에 role을 주면 main 랜드마크가 사라진다 */}
+      <div className={s.message} role={alert ? "alert" : undefined}>
+        <h1 className={s.title}>{title}</h1>
+        <p className={s.body}>{body}</p>
+      </div>
       <div className={s.actions}>{children}</div>
     </Tag>
   );

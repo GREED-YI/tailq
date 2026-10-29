@@ -12,6 +12,12 @@ div.main {
   margin: -10px;
   border-radius: var(--radius-control);
 }
+/* 랜딩 로고와 같은 hover(눌림은 press) */
+@media (hover: hover) {
+  .pcLogo:hover {
+    background: var(--surface);
+  }
+}
 @media (min-width: 768px) {
   div.main {
     width: 100%;

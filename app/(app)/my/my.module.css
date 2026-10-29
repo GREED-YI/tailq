@@ -234,8 +234,9 @@
   line-height: 1.45;
   color: var(--danger);
 }
+/* 화면 테마 창: "모드" 줄 아래 선택지(4px 단위 12) */
 .choicesCol {
-  margin-top: 16px;
+  margin-top: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;

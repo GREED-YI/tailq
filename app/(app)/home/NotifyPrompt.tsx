@@ -112,6 +112,7 @@ export function NotifyPrompt({
           type="button"
           className="btn btn-md btn-primary press"
           disabled={busy}
+          aria-busy={busy || undefined}
           onClick={allow}
         >
           알림 받기

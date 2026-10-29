@@ -10,6 +10,7 @@ import {
   FeedbackBody,
   feedbackLength,
 } from "@/lib/feedback";
+import { useRadioGroup } from "@/lib/radio-group";
 import s from "../my.module.css";
 
 // 신고 링크(#134)에서 오면 분류와 본문 첫 줄("Q.225 질문 신고: ")이 미리 채워진다. "하나 더 보내기"는 빈 칸으로
@@ -21,6 +22,11 @@ export function FeedbackForm({
   initialBody?: string;
 }) {
   const [category, setCategory] = useState<string>(initialCategory);
+  const categoryRadios = useRadioGroup(
+    FEEDBACK_CATEGORIES.map((c) => c.id),
+    category,
+    setCategory,
+  );
   const [body, setBody] = useState(initialBody);
   const textarea = useRef<HTMLTextAreaElement>(null);
   // 미리 채운 본문이 있으면 그 뒤에 커서를 둬 바로 이어 쓰게 한다
@@ -63,8 +69,8 @@ export function FeedbackForm({
   if (sent)
     return (
       <>
-        <header className={f.top}>
-          <BackButton className={f.back} />
+        <header className={`${f.top} ${s.top}`}>
+          <BackButton className={`${f.back} ${s.back}`} />
         </header>
         <h1 className={f.title}>보내 주셔서 고마워요</h1>
         <p className={f.sub}>
@@ -89,8 +95,8 @@ export function FeedbackForm({
 
   return (
     <>
-      <header className={f.top}>
-        <BackButton className={f.back} />
+      <header className={`${f.top} ${s.top}`}>
+        <BackButton className={`${f.back} ${s.back}`} />
         <h1 className={f.topTitle}>피드백 보내기</h1>
       </header>
 
@@ -103,7 +109,7 @@ export function FeedbackForm({
         분류
       </p>
       <div
-        role="radiogroup"
+        {...categoryRadios.group}
         aria-labelledby="feedback-category"
         className={s.categories}
       >
@@ -111,10 +117,8 @@ export function FeedbackForm({
           <button
             key={c.id}
             type="button"
-            role="radio"
-            aria-checked={category === c.id}
+            {...categoryRadios.radio(c.id)}
             className="chip press"
-            onClick={() => setCategory(c.id)}
           >
             {c.label}
           </button>
@@ -141,7 +145,7 @@ export function FeedbackForm({
           운영자만 읽어요. 따로 답장은 드리지 못해요.
         </span>
         <span className="mono" aria-live="polite">
-          {length} / {FEEDBACK_MAX}
+          {length.toLocaleString()} / {FEEDBACK_MAX.toLocaleString()}
         </span>
       </p>
       {error && (

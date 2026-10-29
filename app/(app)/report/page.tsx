@@ -188,7 +188,13 @@ async function Report() {
             {range} · {studied}일 학습
           </span>
         </div>
-        <div className={w.grassScroll}>
+        {/* 모바일은 가로로 넘친다. 칸이 초점을 받지 않아 상자에 초점을 줘서 방향키로 넘길 수 있게 한다 */}
+        <div
+          className={w.grassScroll}
+          tabIndex={0}
+          role="region"
+          aria-label="꼬리잇기 달력 가로 스크롤"
+        >
           <div className={w.stripWrap}>
             <MonthLabels cells={cells} joined={joined} />
             {grid}
@@ -228,8 +234,8 @@ async function Report() {
   );
 }
 
-// 달력 위 달 이름: 첫 열은 실제 시작한 날(시작 전 날은 비어 있다)의 달, 그 뒤로는 그 달 1일이 든 열에 "N월".
-// 끝 열은 글자가 밖으로 넘쳐 뺀다
+// 달력 위 달 이름: 그 달 1일이 든 열에 "N월". 첫 열은 1일이 없으면 실제 시작한 날(시작 전 날은 비어 있다)의 달.
+// 첫 열에 다음 달 1일이 들면 그 달을 단다(둘째 열에 달면 바로 앞 열 글자와 겹친다). 끝 열은 글자가 밖으로 넘쳐 뺀다
 function MonthLabels({
   cells,
   joined,
@@ -242,9 +248,9 @@ function MonthLabels({
   );
   const label = (col: GrassCell[], i: number) => {
     if (col.length === 0 || i === cols.length - 1) return null;
-    if (i === 0) return col[0].day.slice(5, 7);
     const first = col.find((c) => c.day.slice(8) === "01");
-    return first ? first.day.slice(5, 7) : null;
+    if (first) return first.day.slice(5, 7);
+    return i === 0 ? col[0].day.slice(5, 7) : null;
   };
   return (
     <div className={w.months} aria-hidden="true">
