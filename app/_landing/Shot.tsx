@@ -3,7 +3,8 @@ import s from "./landing.module.css";
 
 // 실제 앱 화면 캡처(public/landing/<id>-<dark|light>.<avif|webp|png>). 다크·라이트 두 장을 두고
 // 보이는 쪽은 CSS가 data-theme으로 고른다(landing.module.css "테마 쌍 이미지"). 숨은 쪽은 lazy라 받지 않는다.
-// eager는 첫 화면 다크 한 벌에만 쓴다. from을 주면 그보다 좁은 화면에서는 빈 그림을 골라 받지 않는다
+// eager는 첫 화면에만 쓰고 두 테마 모두 받는다(라이트가 lazy면 LCP가 늦다). 우선순위 high는 기본 테마인 다크에만.
+// from을 주면 그보다 좁은 화면에서는 빈 그림을 골라 받지 않는다
 // (첫 화면 데스크톱 캡처는 휴대폰 폭에서 숨는데 eager라 숨어도 받기 때문)
 const BLANK =
   "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
@@ -40,7 +41,7 @@ export function Shot({
           width={w}
           height={h}
           alt={alt}
-          loading={first ? "eager" : "lazy"}
+          loading={eager ? "eager" : "lazy"}
           fetchPriority={first ? "high" : undefined}
           decoding={first ? undefined : "async"}
         />
