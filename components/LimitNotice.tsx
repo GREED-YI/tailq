@@ -1,3 +1,4 @@
+import { useId } from "react";
 import type { Quota } from "@/lib/server/usage";
 import s from "./LimitNotice.module.css";
 
@@ -33,11 +34,13 @@ export function limitNotice(
   return null;
 }
 
-// 하루 사용 한도·월 예산에 닿았을 때 시작 버튼 대신 보여주는 안내(04 기능 명세 12장, Figma C안 S26)
+// 하루 사용 한도·월 예산에 닿았을 때 시작 버튼 대신 보여주는 안내(04 기능 명세 12장, Figma C안 S26).
+// DESIGN inline-notice limit: 바깥은 role=note(랜드마크 없음)에 제목 strong을 aria-labelledby로 잇는다
 export function LimitNotice({ title, lines }: Notice) {
+  const id = useId();
   return (
-    <section className={s.notice} role="status">
-      <strong>{title}</strong>
+    <div className={s.notice} role="note" aria-labelledby={id}>
+      <strong id={id}>{title}</strong>
       <p>
         {lines.map((line, i) => (
           <span key={line}>
@@ -46,7 +49,7 @@ export function LimitNotice({ title, lines }: Notice) {
           </span>
         ))}
       </p>
-    </section>
+    </div>
   );
 }
 
