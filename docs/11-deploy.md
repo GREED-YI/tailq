@@ -73,8 +73,8 @@ B를 쓴다면 저장소 폴더에서 (DB 비밀번호를 물으면 1단계 값)
 ```powershell
 # 주소에 비밀번호가 들어 있어 명령문에 쓰지 않고 입력받는다(PowerShell 기록에 남지 않게)
 $env:SUPABASE_DB_URL = [Net.NetworkCredential]::new("", (Read-Host "Session pooler URI" -AsSecureString)).Password
-npx supabase db push --db-url $env:SUPABASE_DB_URL --include-seed --dry-run   # 적용할 목록만 본다
-npx supabase db push --db-url $env:SUPABASE_DB_URL --include-seed
+npx supabase db push --db-url $env:SUPABASE_DB_URL --include-seed --skip-vault --dry-run   # 적용할 목록만 본다
+npx supabase db push --db-url $env:SUPABASE_DB_URL --include-seed --skip-vault
 Remove-Item Env:SUPABASE_DB_URL
 ```
 
@@ -86,7 +86,7 @@ A·B 모두 같은 일을 한다.
 - 평소에는 `supabase/migrations/`나 `supabase/seed.sql`이 바뀐 커밋이 main에 들어올 때만 워크플로가 자동으로 돈다
 - 처음 실행에서는 `supabase/migrations/`의 **모든 파일**이 순서대로 들어간다. 테마 열 삭제(#154, `drop_profiles_theme`), 앱 설치 이벤트(#157, `events_install`), 다시 생성 횟수 제한(#160, `regen_limit`, 그 PR이 합쳐진 뒤) 같은 최근 마이그레이션도 따로 챙길 필요 없이 같이 들어간다.
 - `--include-seed`로 `supabase/seed.sql`(주제 15개)도 들어간다. 내용이 upsert라 여러 번 돌아도 같다.
-- 6단계에서 넣을 vault 값은 `--db-url`로 밀 때 건드리지 않는다.
+- `--skip-vault`로 6단계에서 넣을 vault 값을 건드리지 않는다.
 - 두 번 연달아 합쳐도 `concurrency`로 하나씩 돈다.
 
 확인: Table Editor에서 `topics`가 15행이고, SQL `select jobname, schedule from cron.job;`에 `send-push`, `purge-old-events`, `cleanup-trials` 세 개가 보인다.
