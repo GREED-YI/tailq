@@ -188,7 +188,13 @@ async function Report() {
             {range} · {studied}일 학습
           </span>
         </div>
-        <div className={w.grassScroll}>
+        {/* 모바일은 가로로 넘친다. 칸이 초점을 받지 않아 상자에 초점을 줘서 방향키로 넘길 수 있게 한다 */}
+        <div
+          className={w.grassScroll}
+          tabIndex={0}
+          role="region"
+          aria-label="꼬리잇기 달력 가로 스크롤"
+        >
           <div className={w.stripWrap}>
             <MonthLabels cells={cells} joined={joined} />
             {grid}
