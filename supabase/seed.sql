@@ -1,4 +1,4 @@
--- 로컬 `supabase db reset` 때 들어가는 공개 시드. 질문 은행은 비공개 저장소에서 넣는다(08 설계 5장).
+-- 로컬 `supabase db reset`과 운영 DB 배포(`db push --include-seed`, docs/11) 때 들어가는 공개 시드. 여러 번 돌아도 같게 upsert한다. 질문 은행은 비공개 저장소에서 넣는다(08 설계 5장).
 insert into public.topics (id, field, name, sort) values
   ('dsa', 'cs', '자료구조·알고리즘', 1),
   ('network', 'cs', '네트워크', 2),

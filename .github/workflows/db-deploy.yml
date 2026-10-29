@@ -1,0 +1,74 @@
+name: DB 배포
+
+# main에 마이그레이션이 합쳐지면 운영 Supabase에 반영한다(docs/11 배포).
+# 코드는 Vercel이 배포하지만 DB 구조는 바꾸지 않으므로 둘이 어긋나지 않게 여기서 맞춘다.
+# 처음 한 번(마이그레이션 전부 + 주제 시드)은 Actions 탭에서 손으로 돌린다(workflow_dispatch).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/seed.sql"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  # 운영 설정(GitHub Secrets)을 하기 전에는 실패하지 않고 건너뛴다
+  check:
+    # 수동 실행에서 다른 브랜치를 고르면 합쳐지지 않은 마이그레이션이 운영에 들어가므로 main에서만 돈다
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      ready: ${{ steps.secrets.outputs.ready }}
+    steps:
+      - id: secrets
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+        run: |
+          if [ -n "$SUPABASE_ACCESS_TOKEN" ] && [ -n "$SUPABASE_DB_PASSWORD" ] && [ -n "$SUPABASE_PROJECT_REF" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::SUPABASE_ACCESS_TOKEN·SUPABASE_DB_PASSWORD·SUPABASE_PROJECT_REF 중 비어 있는 값이 있어 운영 DB 반영을 건너뜁니다(docs/11)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  migrate:
+    needs: check
+    if: needs.check.outputs.ready == 'true'
+    runs-on: ubuntu-latest
+    # 두 번 합쳐도 마이그레이션이 동시에 돌지 않게 줄을 세운다. 도중에 끊으면 반만 적용될 수 있어 취소하지 않는다.
+    # 워크플로 전체가 아니라 이 job에 걸어, main이 아니라서 건너뛰는 실행이 대기 중인 운영 배포를 밀어내지 않게 한다
+    concurrency:
+      group: db-deploy
+      cancel-in-progress: false
+    steps:
+      # 운영 토큰·비밀번호가 도는 job이라 액션은 커밋 SHA로 고정한다(태그는 바뀔 수 있다)
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
+        with:
+          version: 2.122.0
+      - name: 운영 프로젝트 연결
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+      # 무엇이 적용될지 로그에 먼저 남긴다
+      - name: 적용할 마이그레이션 (dry run)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase db push --include-seed --skip-vault --dry-run
+      # --include-seed: 처음 한 번 주제 15개를 넣는다. CLI는 이미 넣은 seed.sql이 바뀌면 다시 돌지 않고
+      # 해시만 바꾸므로, 운영 주제를 고치거나 더할 때는 seed.sql이 아니라 새 마이그레이션으로 한다(docs/11).
+      # --skip-vault: 운영 vault(푸시 크론 주소·비밀값)를 config.toml 값으로 덮어쓰지 않는다
+      - name: 마이그레이션 적용
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase db push --include-seed --skip-vault --yes
