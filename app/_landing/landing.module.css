@@ -69,6 +69,11 @@
   border-radius: var(--radius-control);
   color: var(--text);
 }
+@media (hover: hover) {
+  .logo:hover {
+    background: var(--surface);
+  }
+}
 .headerEnd {
   display: flex;
   align-items: center;
@@ -95,12 +100,12 @@
 }
 
 /* ---------- 글 ---------- */
-/* 랜딩 첫 문장만 크게(랜딩 전용 예외): 모바일 36 · 태블릿 48 · PC 60~64 */
+/* 랜딩 첫 문장만 크게(DESIGN display-landing): 모바일 36(320 폭 32) · 태블릿 48 · 1024~1279 56 · 1280 이상 64 */
 .h1 {
   font-size: 36px;
-  line-height: 1.22;
+  line-height: 1.2;
   font-weight: 700;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   text-wrap: balance;
 }
 .h2 {
@@ -140,7 +145,6 @@
 @media (min-width: 768px) {
   .h1 {
     font-size: 48px;
-    line-height: 1.18;
   }
 }
 @media (min-width: 1024px) {
@@ -154,7 +158,6 @@
 @media (min-width: 1280px) {
   .h1 {
     font-size: 64px;
-    line-height: 1.15;
   }
 }
 
@@ -456,11 +459,14 @@
     transform: translateX(4px);
   }
 }
+/* 1024 미만은 휴대폰을 글 블록 사이 빈칸에서 끊고 아래에 1px line을 그어 의도한 끊김으로 보이게 한다.
+   캡처 y의 위치 = 틀 폭 × (14.7% 테두리·베젤·상태 표시줄 + y × 92.6% / 390). 375는 '잘한 점' 목록 아래(y≈515) */
 .heroStage {
   position: relative;
   margin-top: 40px;
-  height: 560px;
+  height: calc(min(340px, 90vw) * 1.37);
   overflow: hidden;
+  border-bottom: 1px solid var(--line);
 }
 .heroBack {
   display: none;
@@ -479,9 +485,10 @@
     width: auto;
     padding-inline: 32px;
   }
+  /* 768은 휴대폰이 80px 아래에서 폭 300. '보완할 점' 목록 아래(y≈666)에서 끊는다 */
   .heroStage {
     margin-top: 56px;
-    height: 600px;
+    height: calc(80px + 300px * 1.728);
   }
   .heroBack {
     display: block;
@@ -524,6 +531,7 @@
     height: auto;
     margin: 0;
     overflow: visible;
+    border-bottom: 0;
   }
   .heroBack {
     top: 12%;

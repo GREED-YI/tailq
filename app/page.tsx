@@ -96,7 +96,11 @@ export default function Landing() {
       <LandingMotion />
 
       <header className={s.header}>
-        <Link href="/" className={s.logo} aria-label="TailQ 처음으로">
+        <Link
+          href="/"
+          className={`press ${s.logo}`}
+          aria-label="TailQ 처음으로"
+        >
           <Logo height="var(--logo-h)" />
         </Link>
         <div className={s.headerEnd}>
