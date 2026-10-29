@@ -39,87 +39,52 @@ const TOPICS = [
   "웹 성능",
 ];
 
-// 캡처마다 대체 글. 캡처는 로컬 쇼케이스 계정의 실제 화면이라(public/landing) 글도 화면에 보이는 것만 쓴다
-const ALT: Record<string, string> = {
-  "d01-home":
-    "TailQ 홈 데스크톱 화면. 오늘의 질문 Q.226과 시작하기 버튼, 오른쪽에 이번 주 3일 학습과 약한 주제 트랜잭션·동시성 평균 38점",
-  "p01-home":
-    "홈 화면. 오늘의 질문 Q.226(일대다 컬렉션 fetch join과 페이징)과 시작하기 버튼, 꼬리잇기 6일",
-  "p01b-home-stats":
-    "홈 학습 현황. 이번 주 3일 학습, 약한 주제 트랜잭션·동시성 평균 38점, 오늘 다시 볼 복습할 질문 목록",
-  "p02-answer": "면접 화면. 본 질문에 답변을 쓰는 중",
-  "p03-result":
+// 캡처마다 대체 글. 캡처는 로컬 쇼케이스 계정의 실제 화면이라(public/landing) 글도 화면에 보이는 것만 쓴다.
+// k로 시작하는 것은 실제 화면에서 블록 하나만 잘라 낸 크롭이다
+const ALT = {
+  hero: "TailQ 홈 데스크톱 화면. 오늘의 질문 Q.226과 시작하기 버튼, 오른쪽에 이번 주 3일 학습과 약한 주제 트랜잭션·동시성 평균 38점",
+  heroPhone:
     "면접 채점 결과. 본 질문 100점 만점에 74점, 20칸 막대, 잘 답했어요, 보완할 개념 경고 로그·batch size·DTO 조회",
-  "p03b-feedback":
-    "채점 피드백. 잘한 점, 보완할 점, 보완할 개념, 모범 답안을 펼친 화면",
-  "e01-score":
-    "점수 묶음. 74/100, 20칸 중 15칸 채운 막대, 잘 답했어요, 잘한 점과 보완할 점, 보완할 개념 경고 로그·batch size·DTO 조회",
-  "d02-result":
-    "면접 데스크톱 화면. 왼쪽 흐름에 본 질문, 오른쪽에 74점 채점 결과와 꼬리질문 받기 버튼",
-  "d03-followup1":
-    "꼬리질문 1 'fetch join 대신 @BatchSize로 컬렉션을 가져오면 쿼리는 몇 번 나가나요?'에 잘 답했어요",
-  "d04-followup2":
-    "꼬리질문 2 '컬렉션 두 개를 동시에 fetch join하면 어떤 일이 생기나요?'에 틀렸어요와 기대 답안",
-  "d05-followup3":
-    "꼬리질문 3 '실무에서 페이징이 필요한 목록 API라면 어떤 조회 방식을 고르겠어요?'에 조금 부족해요와 오늘의 결과 보기 버튼",
-  "p05-followup2":
-    "꼬리질문 2 '컬렉션 두 개를 동시에 fetch join하면 어떤 일이 생기나요?'에 틀렸어요와 기대 답안",
-  "p07-today-result":
-    "오늘의 결과. 본 질문 74점, 꼬리잇기 7일, 다음 복습 3일 뒤와 단계별 결과",
-  "p08-qnote":
-    "Q노트. 오늘 다시 볼 질문 2개(61점, 38점)와 3일 뒤 다시 볼 Q.226(74점), 숙련도 칸",
-  "d06-question":
-    "질문 상세 데스크톱. JPA N+1 문제 질문의 날짜별 풀이 기록과 점수",
-  "d07-report":
-    "리포트 데스크톱. 꼬리잇기 7일·최장 28일, 꼬리잇기 달력, 약점 리포트의 트랜잭션·동시성",
-  "p10-report": "리포트. 꼬리잇기 7일·최장 28일, 꼬리잇기 달력과 약점 리포트",
-  "p11-qmaker-projects":
-    "Q메이커 프로젝트 구획. 오늘 남은 횟수와 등록한 프로젝트 '모여라'",
-  "p12-qmaker-notes":
-    "Q메이커 학습 자료 구획. 오늘 남은 횟수와 등록한 학습 자료 'HTTP 캐시 정리', '7주차 트랜잭션'",
-  "p13-note-new":
-    "학습 자료 등록. '7주차_트랜잭션.pdf'를 불러와 3,524자가 입력칸에 채워진 화면",
-  "p14-note-questions":
+  score:
+    "채점 결과. 100점 만점에 74점, 20칸 중 15칸, 잘 답했어요, 잘한 점과 보완할 점, 보완할 개념 경고 로그·batch size·DTO 조회",
+  qnote:
+    "Q노트. 오늘 다시 볼 질문 2개(61점, 38점)와 3일 뒤 다시 볼 Q.226(74점)",
+  history:
+    "질문 상세. JPA N+1 문제 질문을 6번 풀었고 날짜별 기록에 86, 91, 88, 82점",
+  today: "오늘의 결과. 본 질문 74점, 꼬리잇기 7일째, 다음 복습 3일 뒤",
+  report: "리포트. 꼬리잇기 7일째, 최장 28일, 꼬리잇기 달력",
+  note: "학습 자료 등록. 불러온 7주차_트랜잭션.pdf가 마크다운으로 바뀌어 입력칸에 3,524자 채워진 화면",
+  questions:
     "학습 자료 '7주차 트랜잭션'으로 만든 질문 5개. ACID, MVCC, 격리 수준 비교, 비관적·낙관적 락, 재고 동시 주문",
-  "p15-trial":
-    "로그인 없이 하는 체험 화면. 백엔드 샘플 질문 Q.210(스프링 IoC와 의존성 주입)과 빈 답변 칸",
 };
-// 꼬리질문 정점(§4)의 네 단계. 데스크톱 면접 화면과 같은 상태의 휴대폰 화면
-const PEAK_DESK = [
-  "d02-result",
-  "d03-followup1",
-  "d04-followup2",
-  "d05-followup3",
-];
-const PEAK_PHONE = [
-  ["p03-result", "d02-result"],
-  ["p04-followup1", "d03-followup1"],
-  ["p05-followup2", "d04-followup2"],
-  ["p06-followup3", "d05-followup3"],
-];
-// 하루 한 바퀴(§2): 이름 · 캡처 · 데스크톱 화면이면 true
-const REEL: [string, string, boolean?][] = [
-  ["홈", "p01-home"],
-  ["답변", "p02-answer"],
-  ["채점", "d02-result", true],
-  ["꼬리질문", "p05-followup2"],
-  ["오늘의 결과", "p07-today-result"],
-  ["Q노트", "p08-qnote"],
-  ["리포트", "d07-report", true],
-  ["Q메이커 프로젝트", "p11-qmaker-projects"],
-  ["학습 자료", "p12-qmaker-notes"],
-  ["학습 자료 질문", "p14-note-questions"],
+// 꼬리질문 정점(§3)의 세 단계: 흐름 열(K02)과 질문·판정 블록(K03 데스크톱, K03m 휴대폰)이 같은 자리에서 바뀐다
+const PEAK = [
+  {
+    flow: "면접 흐름. 본 질문 74점, 지금 꼬리질문 1",
+    verdict:
+      "꼬리질문 1 'fetch join 대신 @BatchSize로 컬렉션을 가져오면 쿼리는 몇 번 나가나요?'에 잘 답했어요",
+  },
+  {
+    flow: "면접 흐름. 본 질문 74점, 꼬리질문 1 잘 답했어요, 지금 꼬리질문 2",
+    verdict:
+      "꼬리질문 2 '컬렉션 두 개를 동시에 fetch join하면 어떤 일이 생기나요?'에 틀렸어요와 기대 답안",
+  },
+  {
+    flow: "면접 흐름. 본 질문 74점, 꼬리질문 1 잘 답했어요, 꼬리질문 2 틀렸어요, 지금 꼬리질문 3",
+    verdict:
+      "꼬리질문 3 '실무에서 페이징이 필요한 목록 API라면 어떤 조회 방식을 고르겠어요?'에 조금 부족해요와 기대 답안",
+  },
 ];
 
 // 랜딩은 다크로 시작한다(04 기능 명세 10번). 직접 고른 테마가 있으면 그것을 따른다.
 // 루트 레이아웃의 테마 스크립트 다음, 화면을 그리기 전에 돈다
 const darkFirst = `try{if(!localStorage.getItem("${THEME_STORAGE_KEY}"))document.documentElement.dataset.theme="dark"}catch(e){document.documentElement.dataset.theme="dark"}`;
-// 꼬리질문 섹션(§4)만 반대 테마로 뒤집는다. 첫 그림 전에 걸고, 토글은 LandingMotion이 따라간다
+// 꼬리질문 섹션(§3)만 반대 테마로 뒤집는다. 첫 그림 전에 걸고, 토글은 LandingMotion이 따라간다
 const invertPeak = `(function(){var e=document.getElementById("peak");if(e)e.dataset.theme=document.documentElement.dataset.theme==="light"?"dark":"light"})()`;
 
-// 랜딩(docs/04 10번): 한 사람의 하루를 실제 앱 화면 캡처로 따라간다.
-// 첫 화면 → 하루 한 바퀴(가로로 넘기는 화면 10장) → 채점 → 꼬리질문(정점, 반대 테마) → Q노트 → 기록 → Q메이커 학습 자료 → 체험 → 푸터.
-// 체험 질문만 DB에서 읽고 나머지는 미리 그려 둔다
+// 랜딩(docs/04 10번): 한 사람의 하루에서 되묻는 순간만 실제 화면 크롭으로 꺼내 보인다.
+// 첫 화면(기기 틀, 페이지에서 한 번) → 채점 → 꼬리질문(정점, 반대 테마) → Q노트 → 기록 → 학습 자료(실제 녹화) → 체험 → 푸터.
+// 섹션마다 놓는 법이 다르다(옆 · 스크롤 교차 · 아래 어긋남 · 위아래 · 영상 위 겹침). 체험 질문만 DB에서 읽고 나머지는 미리 그려 둔다
 export default function Landing() {
   return (
     <div className={s.root}>
@@ -145,7 +110,7 @@ export default function Landing() {
       </header>
 
       <main>
-        {/* §1 첫 화면: 데스크톱 홈 뒤, 채점 결과 휴대폰 앞 */}
+        {/* §1 첫 화면: 데스크톱 홈 뒤, 채점 결과 휴대폰 앞(기기 틀은 여기에만) */}
         <section className={s.hero} aria-labelledby="hero-title">
           <div className={s.heroCopy}>
             <h1 id="hero-title" className={s.h1}>
@@ -162,118 +127,42 @@ export default function Landing() {
           </div>
           <div className={s.heroStage}>
             <Desktop className={s.heroBack}>
-              <Shot
-                id="d01-home"
-                {...DESK}
-                alt={ALT["d01-home"]}
-                eager
-                from={768}
-              />
+              <Shot id="d01-home" {...DESK} alt={ALT.hero} eager from={768} />
             </Desktop>
             <Phone className={s.heroFront}>
-              <Shot id="p03-result" {...PHONE} alt={ALT["p03-result"]} eager />
+              <Shot id="p03-result" {...PHONE} alt={ALT.heroPhone} eager />
             </Phone>
           </div>
         </section>
 
-        {/* §2 하루 한 바퀴: 실제 화면 10장을 가로로 넘긴다(자동으로 흐르지 않는다) */}
-        <section className={s.reelSec} aria-labelledby="reel-title">
-          <div className={`${s.wrap} ${s.reelHead}`}>
-            <div>
-              <h2 id="reel-title" className={s.h2}>
-                오늘의 질문부터 복습까지, 실제 화면 그대로
-              </h2>
-              <p className={s.lead}>
-                홈에서 오늘의 질문을 열고, 답하고, 채점받고, 꼬리질문을 이어요.
-                15개 주제 안에서 매일 한 문제씩 나와요.
-              </p>
-            </div>
-            <div className={s.reelNav}>
-              <button
-                type="button"
-                className="icon-btn press"
-                aria-label="이전 화면 보기"
-                data-reel="-1"
-              >
-                <Icon name="chevronLeft" size={20} />
-              </button>
-              <button
-                type="button"
-                className="icon-btn press"
-                aria-label="다음 화면 보기"
-                data-reel="1"
-              >
-                <Icon name="chevronRight" size={20} />
-              </button>
-            </div>
-          </div>
-          <div
-            className={s.reel}
-            role="region"
-            aria-label="실제 화면 10장"
-            tabIndex={0}
-          >
-            <ol className={s.reelList}>
-              {REEL.map(([label, id, desk], n) => (
-                <li key={id}>
-                  <p className={s.reelLabel}>
-                    <span className="mono">
-                      {String(n + 1).padStart(2, "0")}
-                    </span>
-                    {label}
-                  </p>
-                  {desk ? (
-                    <Desktop className={s.reelDesk}>
-                      <Shot id={id} {...DESK} alt={ALT[id]} />
-                    </Desktop>
-                  ) : (
-                    <Phone className={s.reelPhone}>
-                      <Shot id={id} {...PHONE} alt={ALT[id]} />
-                    </Phone>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </div>
-          <div className={s.wrap}>
-            <p className={`${s.caption} ${s.topics}`}>{TOPICS.join(" · ")}</p>
-          </div>
-        </section>
-
-        {/* §3 채점 결과 */}
+        {/* §2 채점: 글 왼쪽, 점수 묶음 크롭 하나 오른쪽(PC는 1.1배로 화면 오른쪽 끝까지) */}
         <section
-          className={`${s.wrap} ${s.split} ${s.sec}`}
+          className={`${s.wrap} ${s.sec} ${s.grade}`}
           aria-labelledby="grade-title"
         >
-          <div className={s.copy5}>
+          <div className={s.gradeCopy}>
             <h2 id="grade-title" className={s.h2}>
-              100점 만점 채점, 잘한 점부터 짚는 피드백
+              100점 만점 채점, 잘한 점부터
             </h2>
             <p className={s.lead}>
-              점수 아래에 잘한 점, 보완할 점, 모범 답안을 차례로 보여 줘요.
-              모르는 질문은 &lsquo;모르겠어요&rsquo;를 누르면 기대 답안을 보여
-              주고 다음 날 다시 물어요.
+              점수 아래에 잘한 점과 보완할 개념을 차례로 짚어요. 모르는 질문은
+              &lsquo;모르겠어요&rsquo;를 누르면 기대 답안을 보여 줘요.
             </p>
           </div>
-          <div className={`${s.media7} ${s.duo} ${s.duoGrade}`}>
-            <Desktop className={`${s.back} ${s.wide}`}>
-              <Shot id="d02-result" {...DESK} alt={ALT["d02-result"]} />
-            </Desktop>
-            <div
-              className={`${s.panel} ${s.front} ${s.fore} ${s.wide} ${s.reveal}`}
-            >
-              <Shot id="e01-score" w={834} h={494} alt={ALT["e01-score"]} />
+          <div className={`${s.crop} ${s.reveal} ${s.gradeShot}`}>
+            <div className={s.wideOnly}>
+              <Shot id="k01-score" w={834} h={494} alt={ALT.score} />
             </div>
-            <Phone className={`${s.solo} ${s.narrow} ${s.reveal}`}>
-              <Shot id="p03b-feedback" {...PHONE} alt={ALT["p03b-feedback"]} />
-            </Phone>
+            <div className={s.phoneOnly}>
+              <Shot id="k01m-score" w={390} h={584} alt={ALT.score} />
+            </div>
           </div>
         </section>
 
         {/* 정점 직전의 빈 바탕 */}
         <div className={s.breath} aria-hidden="true" />
 
-        {/* §4 꼬리질문(정점): 반대 테마. 스크롤에 따라 면접 화면 네 단계가 같은 자리에서 바뀐다 */}
+        {/* §3 꼬리질문(정점): 반대 테마. 스크롤에 따라 흐름 열과 판정 블록이 세 단계로 같은 자리에서 바뀐다(틀 없음) */}
         <section
           id="peak"
           className={s.peak}
@@ -287,7 +176,7 @@ export default function Landing() {
                   내 답변에서 이어지는 꼬리질문
                 </h2>
                 <p className={s.lead}>
-                  AI가 내 답변을 읽고 꼬리질문을 만들어요. 외워 둔 답은 두 번째
+                  AI가 내 답변을 읽고 다음 질문을 만들어요. 외워 둔 답은 두 번째
                   질문에서 드러나요.
                 </p>
               </div>
@@ -295,99 +184,117 @@ export default function Landing() {
                 본 질문은 점수로, 꼬리질문은 판정으로 남아요.
               </p>
             </div>
-            <div className={s.peakFrame}>
-              <Desktop className={`${s.peakDesk} ${s.wide}`}>
-                {PEAK_DESK.map((id) => (
-                  <div key={id} className={s.step}>
-                    <Shot id={id} {...DESK} alt={ALT[id]} />
+            <div className={`${s.wrap} ${s.peakFrame}`}>
+              <div className={s.peakFlow}>
+                {PEAK.map((p, n) => (
+                  <div key={n} className={s.step}>
+                    <Shot
+                      id={`k02-flow-${n + 1}`}
+                      w={412}
+                      h={372}
+                      alt={p.flow}
+                    />
                   </div>
                 ))}
-              </Desktop>
-              <Phone className={`${s.peakPhone} ${s.narrow}`}>
-                {PEAK_PHONE.map(([id, alt]) => (
-                  <div key={id} className={s.step}>
-                    <Shot id={id} {...PHONE} alt={ALT[alt]} />
+              </div>
+              <div className={s.peakVerdict}>
+                {PEAK.map((p, n) => (
+                  <div key={n} className={s.step}>
+                    <Shot
+                      id={`k03-verdict-${n + 1}`}
+                      w={804}
+                      h={372}
+                      alt={p.verdict}
+                    />
                   </div>
                 ))}
-              </Phone>
+              </div>
+              <div className={s.peakVerdictM}>
+                {PEAK.map((p, n) => (
+                  <div key={n} className={s.step}>
+                    <Shot
+                      id={`k03m-verdict-${n + 1}`}
+                      w={390}
+                      h={462}
+                      alt={p.verdict}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </section>
         <script dangerouslySetInnerHTML={{ __html: invertPeak }} />
 
-        {/* §5 Q노트 복습 */}
+        {/* §4 Q노트: 글 위, 크롭 두 장 아래(오늘 다시 세로 열 + 날짜별 기록을 높이 어긋나게) */}
         <section
-          className={`${s.wrap} ${s.split} ${s.sec}`}
+          className={`${s.wrap} ${s.sec} ${s.review}`}
           aria-labelledby="review-title"
         >
-          <div className={s.copy5}>
+          <div>
             <h2 id="review-title" className={s.h2}>
               점수에 맞춰 돌아오는 복습, Q노트
             </h2>
             <p className={s.lead}>
               70점이 안 되면 다음 날 다시 묻고, 70점 이상이면 3일, 7일, 14일,
-              30일로 간격을 늘려 가요. 푼 질문은 Q노트에 모이고, 질문을 열면
-              날짜별 기록을 볼 수 있어요.
+              30일로 간격을 늘려요. 질문을 열면 날짜별 기록이 보여요.
             </p>
           </div>
-          <div className={`${s.media7} ${s.duo}`}>
-            <Desktop className={`${s.back} ${s.wide}`}>
-              <Shot id="d06-question" {...DESK} alt={ALT["d06-question"]} />
-            </Desktop>
-            <Phone className={`${s.solo} ${s.fore} ${s.reveal}`}>
-              <Shot id="p08-qnote" {...PHONE} alt={ALT["p08-qnote"]} />
-            </Phone>
+          <div className={s.reviewShots}>
+            <div className={`${s.crop} ${s.reveal}`}>
+              <Shot id="k04-qnote" w={366} h={346} alt={ALT.qnote} />
+            </div>
+            <div className={`${s.crop} ${s.reveal} ${s.history}`}>
+              <Shot id="k05-history" w={808} h={418} alt={ALT.history} />
+            </div>
           </div>
         </section>
 
-        {/* §6 기록·리포트 */}
+        {/* §5 기록: 위에 글과 오늘의 결과 3칸, 아래에 리포트 달력이 레인 오른쪽 끝에 맞춰 넓게 */}
         <section
-          className={`${s.wrap} ${s.split} ${s.sec}`}
+          className={`${s.wrap} ${s.sec} ${s.record}`}
           aria-labelledby="record-title"
         >
-          <div className={s.copy5}>
+          <div className={s.recordCopy}>
             <h2 id="record-title" className={s.h2}>
-              숫자로 남는 기록과 약한 주제
+              숫자로 남는 꼬리잇기와 약한 주제
             </h2>
             <p className={s.lead}>
-              날마다 받은 점수와 약한 주제를 기록과 리포트로 모아 보여 줘요.
-              꼬리잇기는 하루도 빠지지 않고 이어서 푼 날 수예요.
+              하루도 빠지지 않고 이어서 푼 날이 꼬리잇기로 쌓여요. 리포트에서
+              달력과 주제별 평균 점수로 약한 곳을 찾아요.
             </p>
           </div>
-          <div className={`${s.media7} ${s.duo}`}>
-            <Desktop className={`${s.back} ${s.wide}`}>
-              <Shot id="d07-report" {...DESK} alt={ALT["d07-report"]} />
-            </Desktop>
-            <Phone className={`${s.solo} ${s.fore} ${s.wide} ${s.reveal}`}>
-              <Shot
-                id="p01b-home-stats"
-                {...PHONE}
-                alt={ALT["p01b-home-stats"]}
-              />
-            </Phone>
-            <Phone className={`${s.solo} ${s.narrow} ${s.reveal}`}>
-              <Shot id="p10-report" {...PHONE} alt={ALT["p10-report"]} />
-            </Phone>
+          <div className={`${s.crop} ${s.today}`}>
+            <Shot id="k07-today" w={390} h={138} alt={ALT.today} />
+          </div>
+          <div className={`${s.crop} ${s.reveal} ${s.report}`}>
+            <div className={s.mdUp}>
+              <Shot id="k06-report" w={1008} h={420} alt={ALT.report} />
+            </div>
+            <div className={s.mdDown}>
+              <Shot id="k06m-report" w={390} h={380} alt={ALT.report} />
+            </div>
           </div>
         </section>
 
-        {/* §7 Q메이커 학습 자료: 데스크톱은 등록 화면 녹화(6초 반복), 좁은 화면·동작 줄이기는 정지 화면 두 장 */}
+        {/* §6 학습 자료: PC는 등록 화면 실제 녹화(보일 때만 재생) 위에 질문 5개 크롭을 겹친다.
+            좁은 화면·동작 줄이기는 녹화 대신 정지 이미지 */}
         <section
-          className={`${s.wrap} ${s.split} ${s.sec}`}
+          className={`${s.wrap} ${s.sec} ${s.maker}`}
           aria-labelledby="maker-title"
         >
-          <div className={s.copy5}>
+          <div className={s.makerCopy}>
             <h2 id="maker-title" className={s.h2}>
               학습 자료 파일을 올리면 질문 5개
             </h2>
             <p className={s.lead}>
-              PDF·Word·한글 같은 파일을 올리면 브라우저가 마크다운으로 바꿔
-              입력칸에 채워요. 파일은 서버로 보내지 않고, 등록하면 입력칸의 글만
-              보내요.
+              PDF·Word·한글 파일을 올리면 브라우저가 마크다운으로 바꿔 입력칸에
+              채워요. 파일은 서버로 보내지 않고, 입력칸의 글로 질문 5개를
+              만들어요.
             </p>
             <p className={`${s.caption} ${s.makerNote}`}>
-              파일은 50MB까지, 학습 자료는 3개까지 두고 자료마다 질문 5개를
-              만들어요. 내 프로젝트 README로도 같은 자리에서 질문을 만들어요.
+              파일 50MB까지 · 학습 자료 3개까지 · 내 프로젝트 README도 같은
+              자리에서
             </p>
             {/* 녹화를 멈추는 스위치(녹화가 없는 좁은 화면·동작 줄이기에서는 숨긴다) */}
             <label className={`press ${s.pause}`}>
@@ -395,46 +302,42 @@ export default function Landing() {
               녹화 멈추기
             </label>
           </div>
-          <div className={`${s.media7} ${s.duo} ${s.duoMaker}`}>
-            <Desktop className={`${s.back} ${s.motionOnly}`}>
-              {/* 포스터 자리: 녹화 마지막 장면(D08). 재생 전·JS 없음에는 이 그림이 보이고, 재생하면 녹화가 덮는다.
-                  poster 속성은 숨은 테마·숨은 폭에서도 받아 와서 쓰지 않는다 */}
-              <Shot id="d08-note-new" {...DESK} alt="" />
+          <div className={s.makerStage}>
+            <div className={`${s.panel} ${s.recording}`}>
+              {/* 포스터 자리: 녹화 마지막 장면. 재생 전·JS 없음·동작 줄이기에는 이 그림이 보이고, 재생하면 녹화가 덮는다.
+                  poster 속성은 숨은 테마에서도 받아 와서 쓰지 않는다 */}
+              <Shot id="v02-poster" w={848} h={724} alt="" />
               {(["dark", "light"] as const).map((t) => (
                 <video
                   key={t}
                   data-shot={t}
-                  width={1280}
-                  height={800}
+                  width={848}
+                  height={724}
                   muted
                   loop
                   playsInline
                   preload="none"
                   aria-label="학습 자료 등록 화면 녹화"
                 >
-                  <source src={`/landing/v01-${t}.webm`} type="video/webm" />
-                  <source src={`/landing/v01-${t}.mp4`} type="video/mp4" />
+                  <source src={`/landing/v02-${t}.webm`} type="video/webm" />
+                  <source src={`/landing/v02-${t}.mp4`} type="video/mp4" />
                 </video>
               ))}
               <p className="sr-only">
-                PDF 파일을 불러오면 브라우저가 내용을 바꿔 입력칸에 채우고, 몇
-                자를 넣었는지 알려 줘요.
+                PDF 파일을 불러오면 브라우저가 마크다운으로 바꿔 입력칸에 채우고
+                몇 자를 넣었는지 알려 줘요.
               </p>
-            </Desktop>
-            <Phone className={`${s.solo} ${s.stillOnly}`}>
-              <Shot id="p13-note-new" {...PHONE} alt={ALT["p13-note-new"]} />
-            </Phone>
-            <Phone className={`${s.solo} ${s.fore} ${s.pair} ${s.reveal}`}>
-              <Shot
-                id="p14-note-questions"
-                {...PHONE}
-                alt={ALT["p14-note-questions"]}
-              />
-            </Phone>
+            </div>
+            <div className={`${s.crop} ${s.noteStill}`}>
+              <Shot id="k08m-note" w={390} h={612} alt={ALT.note} />
+            </div>
+            <div className={`${s.crop} ${s.reveal} ${s.questions}`}>
+              <Shot id="k09-questions" w={390} h={636} alt={ALT.questions} />
+            </div>
           </div>
         </section>
 
-        {/* §8 체험 */}
+        {/* §7 체험 */}
         <section
           id="try"
           className={`${s.wrap} ${s.sec} ${s.try}`}
@@ -443,9 +346,9 @@ export default function Landing() {
           <Suspense fallback={<TrialPicker questions={null} />}>
             <TrialSection />
           </Suspense>
-          <Phone className={s.tryPhone}>
-            <Shot id="p15-trial" {...PHONE} alt={ALT["p15-trial"]} />
-          </Phone>
+          <p className={`${s.caption} ${s.topics}`}>
+            15개 주제 · {TOPICS.join(" · ")}
+          </p>
         </section>
       </main>
 

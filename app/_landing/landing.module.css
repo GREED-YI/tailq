@@ -1,8 +1,9 @@
-/* 랜딩(docs/04 10번). 기준은 DESIGN.md와 랜딩 스토리보드(3차, 실제 화면 캡처 쇼케이스). 평평한 면과 1px 선, 그라디언트 없음.
-   앱 화면은 실제 캡처(public/landing)를 기기 틀에 담아 겹친다. 기기 틀 기하와 앞 틀 그림자 하나는 랜딩 로컬 확장이다.
+/* 랜딩(docs/04 10번). 기준은 DESIGN.md와 랜딩 스토리보드(4차, 실제 화면 크롭). 평평한 면과 1px 선, 그라디언트 없음.
+   기기 틀은 첫 화면에만 쓴다(틀 기하·금속 그라데이션·그림자는 랜딩 로컬 확장). 나머지는 실제 캡처에서 블록 하나만 자른 크롭을
+   틀 없이 바탕 위에 바로 놓고, 섹션마다 놓는 법을 바꾼다.
    간격: 섹션 안 32 · 섹션 위아래 80(모바일 56) · 정점 직전 빈 바탕 30svh 한 곳.
-   모션(transform·opacity만): 120ms(hover) · 200ms(전환) · 300ms(등장, 랜딩 로컬 확장) · 곡선 하나(--ease) · 정점 스크롤 연동 · §7 녹화 6초 반복
-   들어올 때 한 번(LandingMotion의 data-seen): §2 화면 줄이 들어온다(slideIn) · §3·§5·§6·§7 앞 화면이 올라온다(stepIn) */
+   모션(transform·opacity만): 120ms(hover) · 200ms(전환) · 300ms(등장, 랜딩 로컬 확장) · 곡선 하나(--ease) · 정점 스크롤 연동 · §6 녹화 9초 반복
+   들어올 때 한 번(LandingMotion의 data-seen): 크롭이 아래에서 올라온다(stepIn) */
 
 .root {
   --g: 20px;
@@ -390,7 +391,7 @@
   background: linear-gradient(to bottom, var(--metal-lo), var(--metal-mid));
   transform: translateX(-50%);
 }
-/* 점수 묶음 요소 캡처(§3) */
+/* §6 녹화 칸의 1px 선 상자(로컬 확장: radius.panel). 겹치는 앞 크롭(.questions)도 같은 상자를 쓴다 */
 .panel {
   overflow: hidden;
   border: 1px solid var(--line-strong);
@@ -401,9 +402,6 @@
   display: block;
   width: 100%;
   height: auto;
-}
-.front {
-  box-shadow: var(--shadow-overlay);
 }
 
 /* ---------- §1 첫 화면 ---------- */
@@ -535,192 +533,76 @@
   padding-top: var(--sec);
   padding-bottom: var(--sec);
 }
-.split {
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
+/* 크롭: 실제 화면에서 블록 하나만 잘라 바탕 위에 바로 놓는다(틀·테두리·그림자 없음, 바탕색이 페이지와 같다).
+   크기는 바깥 요소 width로만 정하고 그림은 그 폭에 맞춘다(width/height 속성으로 비율을 미리 잡아 CLS 0) */
+.crop img,
+.step img,
+.panel video {
+  display: block;
+  width: 100%;
+  height: auto;
 }
-.split > * {
-  min-width: 0;
-}
-@media (min-width: 1024px) {
-  .split {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: 40px;
-    align-items: start;
-  }
-  .copy5 {
-    grid-column: 1 / span 5;
-  }
-  .media7 {
-    grid-column: 6 / span 7;
-  }
-}
-
-/* ---------- §2 하루 한 바퀴(가로로 넘기는 실제 화면) ---------- */
-.reelSec {
-  padding-top: var(--sec);
-}
-.reelHead {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-}
-.reelNav {
-  display: none;
-  flex: none;
-  gap: 8px;
-  margin-right: -12px;
-}
-/* 네이티브 가로 스크롤 + 칸마다 멈춤. 첫 칸은 읽기 레인 왼쪽에 맞춘다. 자동으로 흐르지 않는다 */
-.reel {
-  --lane: max(var(--g), calc((100% - 1200px) / 2));
-  margin-top: 32px;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scroll-snap-type: x mandatory;
-  scroll-padding-inline: var(--lane);
-  scrollbar-width: thin;
-  scrollbar-color: var(--mark-empty) transparent;
-}
-.reel:focus-visible {
-  outline-offset: -2px;
-}
-.reelList {
-  list-style: none;
-  display: flex;
-  align-items: flex-start;
-  gap: 24px;
-  width: max-content;
-  padding: 0 var(--lane) 16px;
-}
-.reelList > li {
-  flex: none;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  scroll-snap-align: start;
-}
-.reelLabel {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.45;
-}
-.reelLabel > :global(.mono) {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-muted);
-}
-/* 높이 ≈480(375) · 520(768) · 555(PC). 휴대폰과 데스크톱 폭이 섞인다 */
-.reelPhone {
-  width: 227px;
-}
-.reelDesk {
-  width: 738px;
-}
-.topics {
-  margin-top: 24px;
-}
-@media (min-width: 768px) {
-  .reelNav {
-    display: flex;
-  }
-  .reelPhone {
-    width: 247px;
-  }
-  .reelDesk {
-    width: 790px;
-  }
-}
-@media (min-width: 1024px) {
-  .reelPhone {
-    width: 264px;
-  }
-  .reelDesk {
-    width: 850px;
-  }
-}
-/* 들어올 때 한 번: 줄이 오른쪽에서 48px 들어온다 */
-@media (prefers-reduced-motion: no-preference) {
-  .root[data-io] .reelList {
-    animation: slideIn 300ms var(--ease) both paused;
-  }
-  .root[data-io] .reel[data-seen] .reelList {
-    animation-play-state: running;
-  }
-}
-
-/* ---------- §3·§5·§6·§7 무대: 데스크톱 뒤 + 휴대폰 앞 ---------- */
-/* 1024 미만은 휴대폰 한 대(잘림 없음). PC는 읽기 레인 오른쪽 7칸에서 데스크톱이 오른쪽 끝까지 나가고(bleed),
-   휴대폰이 그 왼쪽 아래를 덮으며 무대 아래에서 잘린다 */
-.duo {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-}
-.wide {
+/* 폭에 따라 다른 크롭을 고른다. 숨은 쪽은 lazy라 받지 않는다 */
+.wideOnly,
+.mdUp {
   display: none;
 }
-.solo {
-  width: min(330px, 80vw);
-}
 @media (min-width: 768px) {
-  .solo {
-    width: 350px;
+  .wideOnly {
+    display: block;
   }
-}
-@media (min-width: 1024px) {
-  .narrow {
+  .phoneOnly {
     display: none;
   }
-  .wide {
+}
+@media (min-width: 1024px) {
+  .mdUp {
     display: block;
   }
-  .duo {
-    display: block;
-    height: clamp(520px, 44vw, 640px);
-    overflow-y: clip;
-  }
-  .back {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: clamp(600px, 56vw, 808px);
-  }
-  .duo > .fore {
-    position: absolute;
-    top: 120px;
-    left: -40px;
-    width: clamp(280px, 26vw, 412px);
-  }
-  /* §3: 면접 결과 뒤(0.48배) + 점수 묶음 앞 */
-  .duoGrade {
-    height: clamp(560px, 46vw, 640px);
-  }
-  .duoGrade .back {
-    width: clamp(540px, 48vw, 692px);
-  }
-  .duoGrade > .fore {
-    top: 40%;
-    width: 82%;
+  .mdDown {
+    display: none;
   }
 }
-/* 들어올 때 한 번: 앞 화면이 아래에서 올라온다(§3은 뒤 → 앞 60ms) */
+/* 들어올 때 한 번: 크롭이 아래에서 올라온다(LandingMotion의 data-seen). data-io가 없으면(JS 전·실패) 완성 상태 그대로 */
 @media (prefers-reduced-motion: no-preference) {
   .root[data-io] .reveal {
     animation: stepIn 300ms var(--ease) both paused;
   }
-  .root[data-io] .duoGrade .reveal {
-    animation-delay: 60ms;
-  }
-  .root[data-io] .duo[data-seen] .reveal {
+  .root[data-io] .reveal[data-seen] {
     animation-play-state: running;
+  }
+}
+
+/* ---------- §2 채점: 글 왼쪽 4칸, 점수 묶음 오른쪽 8칸 ---------- */
+/* 375: 휴대폰 점수 묶음(K01m). 768~1279: 데스크톱 점수 묶음 1.0배(좁으면 레인 폭).
+   1280 이상: 1.1배까지 키우되 화면 오른쪽 끝을 넘지 않는다(--edge = 칸 끝에서 화면 끝까지) */
+.grade {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.gradeShot {
+  width: min(390px, 100%);
+}
+@media (min-width: 768px) {
+  .gradeShot {
+    width: min(834px, 100%);
+  }
+}
+@media (min-width: 1280px) {
+  .grade {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 40px;
+    align-items: center;
+  }
+  .gradeCopy {
+    grid-column: 1 / span 4;
+  }
+  .gradeShot {
+    --edge: calc(var(--g) + max(0px, (100vw - 1200px - 2 * var(--g)) / 2));
+    grid-column: 5 / span 8;
+    width: min(917px, calc(100% + var(--edge)));
   }
 }
 
@@ -729,9 +611,10 @@
   height: 30svh;
 }
 
-/* ---------- §4 꼬리질문(정점) ---------- */
-/* 섹션에 반대 data-theme이 걸려 토큰이 통째로 바뀐다. 바탕·글자와 캡처도 그 테마를 따른다.
-   정지 상태(동작 줄이기·스크롤 타임라인 미지원·낮은 창): 글 → 마지막 단계 한 장 */
+/* ---------- §3 꼬리질문(정점) ---------- */
+/* 섹션에 반대 data-theme이 걸려 토큰이 통째로 바뀐다. 바탕·글자와 크롭도 그 테마를 따른다.
+   크롭: 1280 이상 흐름 열(K02) + 질문·판정 블록(K03) 나란히 · 1024~1279 K03만 · 1024 미만 휴대폰 블록(K03m).
+   칸마다 세 단계가 같은 자리에 포개진다. 정지 상태(동작 줄이기·스크롤 타임라인 미지원·낮은 창): 글 → 마지막 단계 한 장 */
 .peak {
   background: var(--canvas);
   color: var(--text);
@@ -740,7 +623,7 @@
   padding: var(--sec) 0;
 }
 .peakCopy .lead {
-  max-width: 40em;
+  max-width: 34em;
 }
 .hold {
   margin-top: 16px;
@@ -750,26 +633,58 @@
   color: var(--text-muted);
 }
 .peakFrame {
-  margin: 32px auto 0;
-  padding: 0 var(--g);
-  max-width: calc(1200px + 2 * var(--g));
-  display: flex;
-  justify-content: center;
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: start;
 }
-.peakDesk {
-  width: 100%;
+.peakFlow,
+.peakVerdict,
+.peakVerdictM {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
-.peakPhone {
-  width: min(330px, 80vw);
+.peakFlow > *,
+.peakVerdict > *,
+.peakVerdictM > * {
+  grid-area: 1 / 1;
+}
+.peakFlow,
+.peakVerdict {
+  display: none;
+}
+.peakVerdictM {
+  width: min(390px, 100%);
 }
 .step:not(:last-child) {
   display: none;
 }
+@media (min-width: 1024px) {
+  .peakVerdictM {
+    display: none;
+  }
+  .peakVerdict {
+    display: grid;
+    width: min(804px, 100%);
+  }
+}
+@media (min-width: 1280px) {
+  .peakFrame {
+    grid-template-columns: 412fr 804fr;
+    justify-items: stretch;
+  }
+  .peakFlow {
+    display: grid;
+  }
+  .peakVerdict {
+    width: auto;
+  }
+}
 
 /* 스크롤에 묶인 정점: 섹션이 3화면 높이의 트랙이 되고 무대가 헤더 아래에 붙는다.
-   트랙 14~20 · 32~38 · 50~56%에서 다음 면접 화면이 같은 자리에 겹쳐 나타나고(opacity),
-   58~66%에 데스크톱 틀이 0.82배에서 화면 폭으로 커지며 위 글이 홀드 문장으로 바뀐다(채널 2).
-   66%에 정착하고 남은 34%(약 1화면)는 멈춘 채 읽힌다. 1024 미만은 휴대폰 한 대(최대 1.0배), 커지지 않는다 */
+   트랙 20~28% · 44~52%에 다음 단계가 같은 자리에 겹쳐 나타나고(opacity, 흐름 열과 판정 블록이 같이),
+   56~66%에 위 글이 홀드 문장으로 바뀌며 PC는 크롭 묶음이 0.92배에서 1배로 정착한다(채널 2).
+   66%에 정착하고 남은 34%(약 1화면)는 멈춘 채 읽힌다 */
 @supports (animation-timeline: view()) {
   @media (prefers-reduced-motion: no-preference) and (min-height: 700px) {
     .peak {
@@ -781,44 +696,33 @@
       position: sticky;
       top: var(--hh);
       height: calc(100svh - var(--hh));
-      padding: 0;
+      padding: 0 0 24px;
       display: flex;
       flex-direction: column;
+      justify-content: center;
       overflow: hidden;
     }
     .peakCopy {
-      flex: none;
       display: grid;
       padding-top: 24px;
-      padding-bottom: 24px;
     }
     .peakCopy > * {
       grid-area: 1 / 1;
     }
-    /* 위 글은 58~62%에 사라지고 홀드 문장이 62~66%에 나타난다(같은 자리에서 겹쳐 읽히지 않게) */
     .peakLead {
       animation: vanish linear both;
       animation-timeline: --peak;
-      animation-range: contain 58% contain 62%;
+      animation-range: contain 56% contain 60%;
     }
     .hold {
       margin: 0;
       align-self: start;
       animation: appear linear both;
       animation-timeline: --peak;
-      animation-range: contain 62% contain 66%;
+      animation-range: contain 60% contain 66%;
     }
     .peakFrame {
-      flex: 1;
-      min-height: 0;
-      margin: 0;
-      padding: 0;
-      max-width: none;
-      width: 100%;
-      align-items: flex-start;
-    }
-    .peakPhone {
-      width: min(412px, 90vw);
+      margin-top: 24px;
     }
     .step:not(:last-child) {
       display: block;
@@ -828,98 +732,176 @@
       animation-timeline: --peak;
     }
     .step:nth-child(2) {
-      animation-range: contain 14% contain 20%;
+      animation-range: contain 20% contain 28%;
     }
     .step:nth-child(3) {
-      animation-range: contain 32% contain 38%;
-    }
-    .step:nth-child(4) {
-      animation-range: contain 50% contain 56%;
+      animation-range: contain 44% contain 52%;
     }
   }
   @media (prefers-reduced-motion: no-preference) and (min-height: 700px) and (min-width: 1024px) {
-    /* 위 글 띠 170px. 정착하면 틀 위끝이 56px(홀드 문장 띠)로 올라온다 */
     .peakCopy {
-      height: 170px;
       padding-top: 40px;
-      padding-bottom: 0;
-    }
-    .hold {
-      margin-top: -22px;
     }
     .peakFrame {
-      display: block;
+      margin-top: 32px;
       transform-origin: top center;
       animation: grow linear both;
       animation-timeline: --peak;
-      animation-range: contain 58% contain 66%;
+      animation-range: contain 56% contain 66%;
     }
   }
 }
-@keyframes stepIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
+
+/* ---------- §4 Q노트: 글 위, 크롭 아래 ---------- */
+/* 오늘 다시(K04, 휴대폰 크롭 세로 열) 왼쪽 + 날짜별 기록(K05) 오른쪽을 60px 내려 어긋나게. 1024 미만은 K04만 */
+.review {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.reviewShots {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 24px;
+}
+.reviewShots > :first-child {
+  width: min(366px, 100%);
+}
+.history {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .history {
+    display: block;
+    width: min(808px, 100%);
   }
 }
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(48px);
+@media (min-width: 1280px) {
+  .reviewShots {
+    display: grid;
+    grid-template-columns: 366fr 808fr;
+    align-items: start;
+  }
+  .reviewShots > * {
+    width: auto;
+  }
+  .history {
+    margin-top: 60px;
+    width: auto;
   }
 }
-@keyframes appear {
-  from {
-    opacity: 0;
-  }
-}
-@keyframes vanish {
-  to {
-    opacity: 0;
-  }
-}
-@keyframes grow {
-  from {
-    transform: translateY(0) scale(0.82);
-  }
-  to {
-    transform: translateY(-114px) scale(1);
+@media (prefers-reduced-motion: no-preference) {
+  .root[data-io] .history {
+    animation-delay: 60ms;
   }
 }
 
-/* ---------- §7 Q메이커 학습 자료 ---------- */
-/* PC(동작 줄이기 아님): 등록 화면 녹화(데스크톱 0.75배, bleed R) 뒤 + 질문 5개 휴대폰 앞.
-   그 밖: 등록 화면과 질문 5개 휴대폰 두 장(정지) */
+/* ---------- §5 기록: 위에 글과 오늘의 결과 3칸, 아래에 리포트(꼬리잇기·달력)를 넓게 ---------- */
+/* 1024 미만 리포트는 휴대폰 크롭(K06m). 1280 이상: 오늘의 결과는 글 오른쪽 아래 끝, 리포트는 레인 오른쪽 끝에 맞춘다 */
+.record {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.today,
+.report {
+  width: min(390px, 100%);
+}
+@media (min-width: 1024px) {
+  .report {
+    width: min(1008px, 100%);
+  }
+}
+@media (min-width: 1280px) {
+  .record {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: 40px;
+    row-gap: 40px;
+  }
+  .recordCopy {
+    grid-column: 1 / span 5;
+  }
+  .today {
+    grid-column: 8 / span 5;
+    justify-self: end;
+    align-self: end;
+  }
+  .report {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+/* ---------- §6 학습 자료: 녹화 위에 질문 5개를 겹친다 ---------- */
+/* 1024 이상: 등록 화면 녹화(V02, 1.0배) 왼쪽 + 질문 5개(K09) 오른쪽 아래가 녹화 오른쪽 끝을 덮는다(페이지에서 하나뿐인 겹침).
+   동작 줄이기는 녹화 대신 같은 자리의 포스터. 1024 미만: 녹화 없이 등록 화면(K08m)과 질문 5개 정지 크롭 */
+.maker {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
 .makerNote {
   margin-top: 16px;
-  max-width: 34em;
 }
-.motionOnly {
+.makerStage {
+  display: grid;
+  gap: 24px;
+  justify-items: start;
+}
+.makerStage > .crop {
+  width: min(390px, 100%);
+}
+.recording {
   display: none;
 }
-.duoMaker {
-  flex-direction: column;
-  align-items: center;
-}
 @media (min-width: 768px) {
-  .duoMaker {
-    flex-direction: row;
-    align-items: flex-start;
-  }
-  .duoMaker .solo {
-    width: min(330px, calc(50% - 12px));
-  }
-  .duoMaker .pair {
-    margin-top: 120px;
+  .makerStage {
+    grid-template-columns: 1fr 1fr;
   }
 }
 @media (min-width: 1024px) {
-  .duoMaker {
-    display: flex;
-    height: auto;
+  .recording {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-area: 1 / 1;
+    width: min(848px, 100%);
   }
-  .duoMaker > .fore {
-    position: static;
+  .recording > * {
+    grid-area: 1 / 1;
+  }
+  .noteStill {
+    display: none;
+  }
+  .makerStage {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+  }
+  .makerStage > .questions {
+    justify-self: end;
+  }
+}
+/* 1280 이상: 질문 5개가 녹화 오른쪽 빈 여백(입력칸 오른쪽 끝 바깥)만 덮고 레인 밖으로 20px 나간다.
+   글자 수 줄·입력칸 테두리는 가리지 않는다 */
+@media (min-width: 1280px) {
+  .makerStage {
+    gap: 0;
+  }
+  .makerStage > .questions {
+    grid-area: 1 / 1;
+    justify-self: start;
+    margin: 300px 0 0 830px;
+    width: 390px;
+    overflow: hidden;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-panel);
+    background: var(--canvas);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .root .recording video {
+    display: none;
   }
 }
 /* 멈춤 스위치: 체크하면 녹화가 선다(LandingMotion) */
@@ -959,28 +941,44 @@
   .pause {
     display: inline-flex;
   }
-  .motionOnly {
-    display: block;
-  }
-  .stillOnly {
-    display: none;
-  }
-  .duoMaker {
-    display: block;
-    height: clamp(600px, 52vw, 760px);
-  }
-  .duoMaker .back {
-    width: clamp(720px, 75vw, 1082px);
-  }
-  .duoMaker > .fore {
-    position: absolute;
-    top: 200px;
-    margin: 0;
-    width: clamp(280px, 26vw, 412px);
+}
+
+/* 768 미만: 휴대폰 크롭은 앱의 좌우 여백 20px을 그대로 품고 있어서, 레인 여백만큼 바깥으로 내어
+   크롭 안 글이 섹션 글과 같은 세로선에 서게 한다(오늘 다시 크롭은 여백을 덜 잘라 제외) */
+@media (max-width: 767px) {
+  .gradeShot,
+  .peakVerdictM,
+  .today,
+  .report,
+  .makerStage > .crop {
+    width: min(390px, calc(100% + 2 * var(--g)));
+    margin-left: calc(-1 * var(--g));
   }
 }
 
-/* ---------- §8 체험 ---------- */
+@keyframes stepIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vanish {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes grow {
+  from {
+    transform: scale(0.92);
+  }
+}
+
+/* ---------- §7 체험 ---------- */
 .try {
   scroll-margin-top: var(--hh);
 }
@@ -1062,46 +1060,8 @@
     font-size: 20px;
   }
 }
-
-/* PC: 체험 화면 휴대폰(0.8배 이하)을 오른쪽에 두고 섹션 아래에서 자른다. TrialPicker 칸은 그대로 이 격자에 놓인다 */
-.tryPhone {
-  display: none;
-}
-@media (min-width: 1024px) {
-  .try {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    column-gap: 40px;
-    align-items: start;
-    padding-bottom: 0;
-  }
-  .try .tryGrid {
-    display: contents;
-  }
-  .try .tryStart {
-    grid-column: 6 / span 4;
-    padding-bottom: var(--sec);
-  }
-  .tryPhone {
-    display: block;
-    grid-column: 10 / span 3;
-    grid-row: 1;
-    justify-self: end;
-    width: min(100%, 330px);
-    max-height: 520px;
-    overflow: clip;
-  }
-}
-@media (min-width: 1280px) {
-  .try .tryCopy {
-    grid-column: 1 / span 4;
-  }
-  .try .tryStart {
-    grid-column: 5 / span 4;
-  }
-  .tryPhone {
-    grid-column: 9 / span 4;
-  }
+.topics {
+  margin-top: 32px;
 }
 
 /* 체험 횟수 초과(dialog confirm) */
