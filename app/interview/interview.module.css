@@ -265,10 +265,11 @@
   flex-direction: column;
   gap: 8px;
 }
+/* 질문 번호 · 주제 줄은 다른 화면(홈·결과·기록 상세)처럼 text-muted. 지금 단계는 진행 막대와 스레드 점이 알린다 */
 .tag {
   font-size: 13px;
   font-weight: 500;
-  color: var(--accent);
+  color: var(--text-muted);
 }
 .prompt {
   font-size: 28px;
