@@ -884,9 +884,13 @@
 }
 
 /* ---------- §6 학습 자료: 녹화 위에 질문 5개를 겹친다 ---------- */
-/* 1280 이상: 등록 화면 녹화(V02, 1.0배) 왼쪽 + 질문 5개(K09) 오른쪽 아래가 녹화 오른쪽 끝을 덮는다(페이지에서 하나뿐인 겹침).
-   동작 줄이기는 녹화 대신 같은 자리의 포스터. 1280 미만: 녹화 없이 등록 화면(K08m)과 질문 5개 정지 크롭을 1.0배로,
-   둘이 나란히 들어가는 폭(레인 804 이상)에서만 2열 */
+/* 질문 5개(K09)가 등록 화면의 '학습 자료 내용' 입력칸 오른쪽을 덮어, 입력한 글에서 질문이 나온 것처럼 보이게 한다
+   (페이지에서 하나뿐인 겹침, 1px line 상자). 파일 영역과 'pdf · N자 넣었어요' 줄은 가리지 않는다.
+   940 이상: 등록 화면 녹화(V02) + K09 묶음을 1082 폭 기준으로 놓고 레인이 좁으면 비율로 줄인다(940에서 0.8배).
+     K09는 녹화 오른쪽 끝에서 자기 폭의 40%(156px)를 덮고, 위 끝은 입력칸 위 테두리(375px)에 맞춘다.
+     동작 줄이기는 녹화 대신 같은 자리의 포스터.
+   768~939: 녹화 없이 등록 화면(K08m) 왼쪽, K09 레인 오른쪽 끝, 위 끝은 입력칸 위 테두리(336px).
+   768 미만: K08m과 K09를 차례로 */
 .maker {
   display: flex;
   flex-direction: column;
@@ -897,7 +901,6 @@
 }
 .makerStage {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 390px), 390px));
   gap: 24px;
   justify-items: start;
 }
@@ -907,12 +910,32 @@
 .recording {
   display: none;
 }
-@media (min-width: 1280px) {
+@media (min-width: 768px) {
+  .makerStage {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 0;
+  }
+  .makerStage > * {
+    grid-area: 1 / 1;
+  }
+  .makerStage > .questions {
+    justify-self: end;
+    margin-top: 336px;
+    width: 390px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    background: var(--canvas);
+  }
+}
+@media (min-width: 940px) {
+  .makerStage {
+    width: min(1082px, 100%);
+  }
   .recording {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-area: 1 / 1;
-    width: min(848px, 100%);
+    width: calc(100% * 848 / 1082);
   }
   .recording > * {
     grid-area: 1 / 1;
@@ -920,21 +943,10 @@
   .noteStill {
     display: none;
   }
-  /* 질문 5개가 녹화 오른쪽 빈 여백(입력칸 오른쪽 끝 바깥)만 덮고 레인 밖으로 20px 나간다.
-     글자 수 줄·입력칸 테두리는 가리지 않는다 */
-  .makerStage {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-    gap: 0;
-  }
   .makerStage > .questions {
-    grid-area: 1 / 1;
     justify-self: start;
-    margin: 300px 0 0 830px;
-    width: 390px;
-    overflow: hidden;
-    border: 1px solid var(--line);
-    background: var(--canvas);
+    margin: calc(100% * 375 / 1082) 0 0 calc(100% * 692 / 1082);
+    width: calc(100% * 390 / 1082);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -975,7 +987,7 @@
     color: var(--text);
   }
 }
-@media (min-width: 1280px) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 940px) and (prefers-reduced-motion: no-preference) {
   .pause {
     display: inline-flex;
   }
@@ -998,9 +1010,20 @@
   }
 }
 @media (max-width: 1279px) {
-  .today,
+  .today {
+    width: min(390px, calc(100% + 2 * var(--g)));
+    margin-left: -20px;
+  }
+}
+@media (max-width: 767px) {
   .makerStage > .crop {
     width: min(390px, calc(100% + 2 * var(--g)));
+    margin-left: -20px;
+  }
+}
+@media (min-width: 768px) and (max-width: 939px) {
+  .makerStage > .noteStill {
+    width: 390px;
     margin-left: -20px;
   }
 }
