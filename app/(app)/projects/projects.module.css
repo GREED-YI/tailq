@@ -371,6 +371,10 @@
   .format:nth-child(n + 5):not([data-md]) {
     display: none;
   }
+  .fileLead,
+  .fileDesc {
+    display: none;
+  }
   .fileAct {
     margin-top: 0;
   }
@@ -624,12 +628,18 @@
   margin-top: 24px;
   height: calc(20px + 8px + 240px);
 }
-/* 학습 자료 파일 자리(file-drop) 높이만큼의 자리. 마우스 기기 점선 자리(모바일 폭 한 단 약 300, 2단 약 172·180), 터치 기기 작은 모양(약 175, 넓으면 111) */
+/* 학습 자료 파일 자리(file-drop) 높이만큼의 자리. 실제 높이를 재서 맞췄다(글 줄바꿈 따라 바뀐다).
+   마우스 기기 점선 자리: 모바일 폭 한 단 321(368~439), 2단 193(768~773)·172(774~1023)·180(1024~). 터치 기기 작은 모양 175, 넓으면 111 */
 .fileSkeleton {
   margin-top: 24px;
-  height: 300px;
+  height: 321px;
 }
 @media (min-width: 768px) {
+  .fileSkeleton {
+    height: 193px;
+  }
+}
+@media (min-width: 774px) {
   .fileSkeleton {
     height: 172px;
   }
