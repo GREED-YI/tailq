@@ -127,7 +127,7 @@ export default function Landing() {
             </h1>
             <p className={s.heroSub}>
               답변을 쓰면 AI가 점수를 매기고, 내 답변에 맞춰 꼬리질문을 이어
-              가요. 70점을 넘기지 못한 질문은 다음 날 다시 물어요.
+              가요. 70점 미만이면 다음 날 다시 물어요.
             </p>
             <a href="#try" className={`btn btn-primary press ${s.cta}`}>
               로그인 없이 한 문제 풀어보기
@@ -246,7 +246,7 @@ export default function Landing() {
               점수에 맞춰 돌아오는 복습
             </h2>
             <p className={s.lead}>
-              70점이 안 되면 다음 날 다시 묻고, 70점 이상이면 3일, 7일, 14일,
+              70점 미만이면 다음 날 다시 묻고, 70점 이상이면 3일, 7일, 14일,
               30일로 간격을 늘려요. 푼 질문은 Q노트에 모이고, 열면 날짜별 기록이
               보여요.
             </p>
