@@ -21,11 +21,19 @@
   display: flex;
   align-items: center;
 }
+/* 랜딩 로고와 같다: 글자 자리는 그대로 두고 hover 바탕이 들어갈 좌우 8px */
 .logo {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+  padding: 0 8px;
+  margin-left: -8px;
   border-radius: var(--radius-control);
+}
+@media (hover: hover) {
+  .logo:hover {
+    background: var(--surface);
+  }
 }
 
 .main {

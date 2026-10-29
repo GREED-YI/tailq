@@ -33,7 +33,11 @@ export default function SharePage({ params }: PageProps<"/s/[id]">) {
       {/* 로그인 없이 보는 화면이라 앱 메뉴 없이 로고만 */}
       <header className={s.header}>
         <div className={s.headerIn}>
-          <Link href="/" className={s.logo} aria-label="TailQ 처음으로">
+          <Link
+            href="/"
+            className={`press ${s.logo}`}
+            aria-label="TailQ 처음으로"
+          >
             <Logo height="var(--logo-h)" />
           </Link>
         </div>

@@ -15,6 +15,12 @@
   justify-content: center;
   border-top: 0;
 }
+/* 제목 · 설명 묶음(오류 화면이면 role=alert) */
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 .title {
   font-size: 22px;
   line-height: 1.35;

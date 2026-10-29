@@ -11,16 +11,19 @@ import s from "./legal.module.css";
 export default function LegalLayout({ children }: LayoutProps<"/">) {
   return (
     <div className={`${f.main} ${s.main}`}>
-      <Link
-        href="/"
-        className={`${f.pcLogo} ${s.pcLogo}`}
-        aria-label="TailQ 처음으로"
-      >
-        <Logo />
-      </Link>
-      <header className={f.top}>
-        <BackButton className={f.back} />
-        <p className={f.topTitle}>약관과 정책</p>
+      {/* PC 로고도 머리(banner) 안에 둔다. 자리는 그대로 화면 왼쪽 위(Flow .pcLogo absolute) */}
+      <header>
+        <Link
+          href="/"
+          className={`press ${f.pcLogo} ${s.pcLogo}`}
+          aria-label="TailQ 처음으로"
+        >
+          <Logo />
+        </Link>
+        <div className={f.top}>
+          <BackButton className={f.back} />
+          <p className={f.topTitle}>약관과 정책</p>
+        </div>
       </header>
       <main>
         <LegalTabs />
