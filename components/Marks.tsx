@@ -1,6 +1,6 @@
 import { VerdictMark } from "@/app/interview/VerdictMark";
 import { scoreVerdict } from "@/app/interview/verdict";
-import s from "./history.module.css";
+import s from "./Marks.module.css";
 
 // 목록·타일의 점수 숫자(DESIGN.md score inline). 점수 구간을 판정 모양 점으로 함께 보여 색만으로 말하지 않는다
 // (높음 채운 원 · 중간 반쪽 원 · 낮음 네모). 점수가 없으면(모르겠어요) –. 홈·기록·리포트가 같이 쓴다

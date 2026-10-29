@@ -10,8 +10,8 @@ import { LEVELS } from "@/lib/profile";
 import { ATTEMPT_COLUMNS, tagLine } from "@/lib/questions";
 import { daysUntil, dueLabel } from "@/lib/review";
 import { createClient } from "@/lib/supabase/server";
-import { Dots, Score } from "@/app/(app)/history/marks";
-import h from "@/app/(app)/history/history.module.css";
+import { Dots, Score } from "@/components/Marks";
+import h from "@/components/Marks.module.css";
 import s from "@/app/(app)/questions/questions.module.css";
 
 export const metadata: Metadata = { title: "질문 · TailQ" };

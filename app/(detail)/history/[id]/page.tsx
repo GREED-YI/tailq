@@ -14,7 +14,7 @@ import { ScoreRing } from "@/app/interview/ScoreRing";
 import { VerdictMark } from "@/app/interview/VerdictMark";
 import { scoreVerdict, VERDICTS } from "@/app/interview/verdict";
 import i from "@/app/interview/interview.module.css";
-import s from "@/app/(app)/history/history.module.css";
+import s from "@/components/Marks.module.css";
 
 export const metadata: Metadata = { title: "기록 상세 · TailQ" };
 

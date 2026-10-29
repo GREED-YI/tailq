@@ -98,7 +98,7 @@ a.rowLink:focus-visible {
   color: var(--text-sub);
 }
 
-/* ---------- 점수·숙련도 표시(marks.tsx). 모양 점은 interview.module.css .verdictMark ---------- */
+/* ---------- 점수·숙련도 표시(Marks.tsx). 모양 점은 interview.module.css .verdictMark ---------- */
 
 .score {
   flex: none;

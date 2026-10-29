@@ -1,5 +1,5 @@
 /* 홈(S10·S11·S12). 기준은 DESIGN.md와 시안 MainM(PC)·HomeTabletM(태블릿)·HomeMobileM(모바일).
-   목록 행·점수 표시는 history.module.css(list-row, score, score-bar) */
+   목록 행·점수 표시는 components/Marks.module.css(list-row, score, score-bar) */
 
 /* 모바일·태블릿: 한 단. 오늘의 질문 → 학습 현황 → 복습할 질문 */
 .home {
