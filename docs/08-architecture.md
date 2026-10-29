@@ -416,7 +416,7 @@ or exists (select 1 from study_notes n where n.id = questions.note_id and n.user
 | `GET /auth/callback?next=` | 소셜 로그인 돌아오는 곳(Supabase 규칙). 체험 이어받기, 첫 로그인이면 온보딩으로, `next`가 있으면 그곳으로(탈퇴 재인증) | - |
 | `PATCH /api/me` | 내 프로필·설정 바꾸기(닉네임, 아바타, 연습 범위, 알림 켜기·시각, 테마, 온보딩 동의) | ○ |
 | `DELETE /api/me` | 탈퇴 | ○ |
-| `POST /api/sessions` | 세션 만들기. `{ kind: "daily" }`면 오늘의 세션(이미 있으면 그것을 돌려줌), `{ kind: "project", questionId }`면 프로젝트·학습 자료 질문 세션(한도 예약) | ○ |
+| `POST /api/sessions` | 프로젝트·학습 자료 질문 세션 만들기 `{ kind: "project", questionId }`(한도 예약, 그 질문의 열린 세션이 있으면 그것을 돌려줌). 처음엔 `{ kind: "daily" }`로 오늘의 세션도 만들었으나, 홈·면접 화면이 서버에서 `startDailySession`을 바로 불러 화면이 쓰지 않아 지웠다 (2026-10-29, #132) | ○ |
 | `PUT /api/turns/{id}/answer` | 답변 저장 → 채점 + 다음 꼬리질문(SSE). `{ text }` 또는 `{ dontKnow: true }`(AI를 부르지 않음, JSON 응답). 실패한 턴에 같은 요청을 다시 보내면 다시 채점이다. 체험 턴도 같은 주소(쿠키 토큰으로 소유 확인) | ○ 또는 체험 쿠키 |
 | `PUT /api/turns/{id}/rating` | 👍/👎 | ○ |
 | `PUT /api/bookmarks/{questionId}` · `DELETE` | 북마크 저장·해제 | ○ |
@@ -481,7 +481,7 @@ HTTP 상태 코드에 더해 본문은 항상 `{ "error": { "code", "message" } 
 
 ### 멱등성
 
-- `POST /api/sessions { kind: "daily" }`, `POST /api/shares`, `PUT /api/bookmarks/{id}`, `PUT /api/turns/{id}/rating`, `POST /api/push-subscriptions`(같은 `endpoint`)는 여러 번 불러도 결과가 같다.
+- 오늘의 질문 세션 만들기(`startDailySession`, 처음엔 `POST /api/sessions { kind: "daily" }`였다), `POST /api/shares`, `PUT /api/bookmarks/{id}`, `PUT /api/turns/{id}/rating`, `POST /api/push-subscriptions`(같은 `endpoint`)는 여러 번 불러도 결과가 같다.
 - `PUT /api/turns/{id}/answer`는 `graded`면 409, 진행 중이면 409, 그 외에는 다시 채점이라 AI를 한 번 더 부른다(횟수 제한).
 - `POST /api/cron/push`는 `last_notified_day`로 같은 날 두 번 보내지 않는다.
 
