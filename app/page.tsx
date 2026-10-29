@@ -156,7 +156,7 @@ export default function Landing() {
             </h2>
             <p className={s.lead}>
               점수 아래에 잘한 점과 보완할 개념을 차례로 짚어요. 모르는 질문은
-              &lsquo;모르겠어요&rsquo;를 누르면 기대 답안을 보여 줘요.
+              &lsquo;모르겠어요&rsquo;를 누르면 모범 답안을 보여 줘요.
             </p>
           </div>
           <div className={`${s.crop} ${s.reveal} ${s.gradeShot}`}>
@@ -186,8 +186,8 @@ export default function Landing() {
                   내 답변에서 이어지는 꼬리질문
                 </h2>
                 <p className={s.lead}>
-                  AI가 내 답변을 읽고 다음 질문을 만들어요. 외운 답만으로는 두
-                  번째 질문에 답하기 어려워요.
+                  AI가 내 답변을 읽고 다음 질문을 만들어요. 실제 면접처럼
+                  답변에서 빠진 부분을 이어서 물어요.
                 </p>
               </div>
               <p className={s.hold}>
@@ -296,11 +296,11 @@ export default function Landing() {
         >
           <div className={`${s.makerCopy} ${s.reveal}`}>
             <h2 id="maker-title" className={s.h2}>
-              학습 자료 파일을 올리면 질문 5개
+              내 학습 자료로 만드는 질문 5개
             </h2>
             <p className={s.lead}>
-              PDF·Word·한글 파일을 올리면 브라우저가 마크다운으로 바꿔 입력칸에
-              채워요. 파일은 서버로 보내지 않고, 입력칸의 글로 질문 5개를
+              Q메이커에 PDF·Word·한글 파일을 올리면 내용이 마크다운으로 바뀌어
+              입력칸에 채워져요. 파일은 서버로 보내지 않고, 그 글로 질문 5개를
               만들어요.
             </p>
             <p className={`${s.caption} ${s.makerNote}`}>
