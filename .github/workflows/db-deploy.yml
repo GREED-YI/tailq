@@ -14,11 +14,6 @@ on:
 permissions:
   contents: read
 
-# 두 번 합쳐도 마이그레이션이 동시에 돌지 않게 줄을 세운다. 도중에 끊으면 반만 적용될 수 있어 취소하지 않는다
-concurrency:
-  group: db-deploy
-  cancel-in-progress: false
-
 jobs:
   # 운영 설정(GitHub Secrets)을 하기 전에는 실패하지 않고 건너뛴다
   check:
@@ -45,6 +40,11 @@ jobs:
     needs: check
     if: needs.check.outputs.ready == 'true'
     runs-on: ubuntu-latest
+    # 두 번 합쳐도 마이그레이션이 동시에 돌지 않게 줄을 세운다. 도중에 끊으면 반만 적용될 수 있어 취소하지 않는다.
+    # 워크플로 전체가 아니라 이 job에 걸어, main이 아니라서 건너뛰는 실행이 대기 중인 운영 배포를 밀어내지 않게 한다
+    concurrency:
+      group: db-deploy
+      cancel-in-progress: false
     steps:
       # 운영 토큰·비밀번호가 도는 job이라 액션은 커밋 SHA로 고정한다(태그는 바뀔 수 있다)
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
