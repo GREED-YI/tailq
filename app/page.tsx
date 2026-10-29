@@ -53,7 +53,8 @@ const ALT = {
     "질문 상세. JPA N+1 문제 질문을 6번 풀었고 날짜별 기록에 86, 91, 88, 82점",
   today: "오늘의 결과. 본 질문 74점, 꼬리잇기 7일째, 다음 복습 3일 뒤",
   report: "리포트. 꼬리잇기 7일째, 최장 28일, 꼬리잇기 달력",
-  reportTab: "리포트. 꼬리잇기 7일째와 꼬리잇기 달력",
+  reportTab:
+    "리포트의 꼬리잇기 달력. 9월 말부터 11월 초까지 푼 날이 점수에 따라 진하게 칠해져 있고, 휴식권을 쓴 날은 빗금",
   note: "학습 자료 등록. 불러온 7주차_트랜잭션.pdf가 마크다운으로 바뀌어 입력칸에 3,524자 채워진 화면",
   questions:
     "학습 자료 '7주차 트랜잭션'으로 만든 질문 5개. ACID, MVCC, 격리 수준 비교, 비관적·낙관적 락, 재고 동시 주문",
@@ -288,7 +289,7 @@ export default function Landing() {
               <Shot id="k06-report" w={1008} h={420} alt={ALT.report} />
             </div>
             <div className={s.tabOnly}>
-              <Shot id="k06t-report" w={720} h={420} alt={ALT.reportTab} />
+              <Shot id="k06t-report" w={720} h={255} alt={ALT.reportTab} />
             </div>
             <div className={s.phoneOnly}>
               <Shot id="k06m-report" w={390} h={380} alt={ALT.report} />
