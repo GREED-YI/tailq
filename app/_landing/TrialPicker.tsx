@@ -97,7 +97,7 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
         </h2>
         <p className={s.lead}>
           원하는 분야를 고르면 채점부터 꼬리질문 1개까지 체험해 볼 수 있어요.
-          이어서 바로 가입하면 체험 기록이 바로 저장돼요.
+          같은 날 이 브라우저에서 이어서 가입하면 체험 기록이 그대로 저장돼요.
         </p>
         <div
           className={s.fields}
