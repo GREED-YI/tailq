@@ -199,9 +199,7 @@
   font-weight: 600;
   color: var(--text-sub);
 }
+/* 점수 변화는 오렌지·진홍을 쓰지 않는다(DESIGN score change). 오르면 text, 내리면 기본 text-sub */
 .right [data-trend="up"] {
   color: var(--text);
-}
-.right [data-trend="down"] {
-  color: var(--danger);
 }

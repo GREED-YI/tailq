@@ -228,8 +228,8 @@ async function Report() {
   );
 }
 
-// 달력 위 달 이름: 첫 열은 실제 시작한 날(시작 전 날은 비어 있다)의 달, 그 뒤로는 그 달 1일이 든 열에 "N월".
-// 끝 열은 글자가 밖으로 넘쳐 뺀다
+// 달력 위 달 이름: 그 달 1일이 든 열에 "N월". 첫 열은 1일이 없으면 실제 시작한 날(시작 전 날은 비어 있다)의 달.
+// 첫 열에 다음 달 1일이 들면 그 달을 단다(둘째 열에 달면 바로 앞 열 글자와 겹친다). 끝 열은 글자가 밖으로 넘쳐 뺀다
 function MonthLabels({
   cells,
   joined,
@@ -242,9 +242,9 @@ function MonthLabels({
   );
   const label = (col: GrassCell[], i: number) => {
     if (col.length === 0 || i === cols.length - 1) return null;
-    if (i === 0) return col[0].day.slice(5, 7);
     const first = col.find((c) => c.day.slice(8) === "01");
-    return first ? first.day.slice(5, 7) : null;
+    if (first) return first.day.slice(5, 7);
+    return i === 0 ? col[0].day.slice(5, 7) : null;
   };
   return (
     <div className={w.months} aria-hidden="true">
@@ -256,7 +256,7 @@ function MonthLabels({
   );
 }
 
-// 주제 이름 · 평균 점수와 20칸 막대 · 지난주 대비 변화(S21). 오르면 text, 내리면 danger(색과 ▲▼를 같이 쓴다).
+// 주제 이름 · 평균 점수와 20칸 막대 · 지난주 대비 변화(S21). 오르면 text, 내리면 text-sub(방향은 ▲▼가 알린다).
 // 변화가 없거나 지난주 기록이 없으면 오른쪽 칸을 그리지 않는다(R13)
 function TopicRow({ t }: { t: TopicScore }) {
   return (
