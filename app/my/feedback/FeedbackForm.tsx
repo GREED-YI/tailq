@@ -10,6 +10,7 @@ import {
   FeedbackBody,
   feedbackLength,
 } from "@/lib/feedback";
+import { useRadioGroup } from "@/lib/radio-group";
 import s from "../my.module.css";
 
 // 신고 링크(#134)에서 오면 분류와 본문 첫 줄("Q.225 질문 신고: ")이 미리 채워진다. "하나 더 보내기"는 빈 칸으로
@@ -21,6 +22,11 @@ export function FeedbackForm({
   initialBody?: string;
 }) {
   const [category, setCategory] = useState<string>(initialCategory);
+  const categoryRadios = useRadioGroup(
+    FEEDBACK_CATEGORIES.map((c) => c.id),
+    category,
+    setCategory,
+  );
   const [body, setBody] = useState(initialBody);
   const textarea = useRef<HTMLTextAreaElement>(null);
   // 미리 채운 본문이 있으면 그 뒤에 커서를 둬 바로 이어 쓰게 한다
@@ -103,7 +109,7 @@ export function FeedbackForm({
         분류
       </p>
       <div
-        role="radiogroup"
+        {...categoryRadios.group}
         aria-labelledby="feedback-category"
         className={s.categories}
       >
@@ -111,10 +117,8 @@ export function FeedbackForm({
           <button
             key={c.id}
             type="button"
-            role="radio"
-            aria-checked={category === c.id}
+            {...categoryRadios.radio(c.id)}
             className="chip press"
-            onClick={() => setCategory(c.id)}
           >
             {c.label}
           </button>

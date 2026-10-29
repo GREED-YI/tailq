@@ -19,6 +19,7 @@ import { THEME_STORAGE_KEY, type ThemeName } from "@/lib/theme";
 import p from "../../my/my.module.css";
 import s from "./my.module.css";
 import { openModal, useCloseOnLeave } from "@/lib/dialog";
+import { useRadioGroup } from "@/lib/radio-group";
 
 // 가운데 확인 창(S30 로그아웃 확인 모양). 브라우저 기본 <dialog>라 Esc·바깥 포커스 막기가 된다
 function Dialog({
@@ -264,19 +265,34 @@ function applyTheme(choice: ThemeChoice) {
 export function ThemeRow() {
   const dialog = useRef<HTMLDialogElement>(null);
   useCloseOnLeave(dialog);
-  const theme = useSyncExternalStore(watchTheme, readTheme, () => "system");
+  const theme = useSyncExternalStore<ThemeChoice>(
+    watchTheme,
+    readTheme,
+    () => "system",
+  );
+  const radios = useRadioGroup(
+    THEMES.map((t) => t.id),
+    theme,
+    applyTheme,
+  );
 
   return (
     <>
       <SettingRow
         title="화면 테마"
         meta={THEMES.find((t) => t.id === theme)!.label}
-        onClick={() => openModal(dialog.current)}
+        onClick={() => {
+          openModal(dialog.current);
+          // 창이 열리면 첫 칸이 아니라 고른 칸에 초점(Tab이 멈추는 칸과 같다)
+          dialog.current
+            ?.querySelector<HTMLElement>('[aria-checked="true"]')
+            ?.focus();
+        }}
       />
       <Dialog ref={dialog} title="화면 테마">
         <p id="theme-mode-label">모드</p>
         <div
-          role="radiogroup"
+          {...radios.group}
           aria-labelledby="theme-mode-label"
           className={s.choicesCol}
         >
@@ -284,10 +300,8 @@ export function ThemeRow() {
             <button
               key={t.id}
               type="button"
-              role="radio"
-              aria-checked={theme === t.id}
+              {...radios.radio(t.id)}
               className="chip press"
-              onClick={() => applyTheme(t.id)}
             >
               {t.label}
             </button>

@@ -13,6 +13,7 @@ import {
   nicknameLength,
   type AvatarChoice,
 } from "@/lib/profile";
+import { useRadioGroup } from "@/lib/radio-group";
 import s from "../my.module.css";
 
 const AVATAR_LABELS: Record<AvatarChoice, string> = {
@@ -31,6 +32,7 @@ export function ProfileForm(props: {
   const router = useRouter();
   const [nickname, setNickname] = useState(props.nickname);
   const [avatar, setAvatar] = useState(avatarChoice(props.avatar));
+  const avatarRadios = useRadioGroup(AVATARS, avatar, setAvatar);
   const [share, setShare] = useState(props.shareNickname);
   const [tip, setTip] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -102,7 +104,7 @@ export function ProfileForm(props: {
           className={s.preview}
         />
         <div
-          role="radiogroup"
+          {...avatarRadios.group}
           aria-labelledby="avatar-label"
           className={s.choices}
         >
@@ -110,11 +112,9 @@ export function ProfileForm(props: {
             <button
               key={c}
               type="button"
-              role="radio"
-              aria-checked={avatar === c}
+              {...avatarRadios.radio(c)}
               aria-label={AVATAR_LABELS[c]}
               className={`press ${s.choice}`}
-              onClick={() => setAvatar(c)}
             >
               <Avatar
                 avatar={shown(c)}
