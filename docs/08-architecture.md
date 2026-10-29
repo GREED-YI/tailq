@@ -196,7 +196,7 @@ Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로
 4. **연습 세션은 프로젝트 질문 세션과 같다.** `start_project_session`이 "내 프로젝트의 질문 또는 내 학습 자료의 질문"이면 세션을 연다(주인 확인만 넓혔다). 세션 종류도 `kind = 'project'`로 두어 하루 3세션 한도, 이어하기(`?session=`), 채점·꼬리질문·복습이 그대로 돈다. 따로 `note` 종류를 두면 세션 종류를 보는 곳(이어하기, 지표, 한도)을 모두 고쳐야 하는데 동작이 같아 나누지 않았다. 질문이 어느 쪽인지는 `questions.project_id`·`note_id`로 안다(돌아갈 화면, 채점 `<topic>`, 화면 라벨).
 5. 본 질문 채점의 `<topic>`은 `내 학습 자료 / {제목}`이다([09 채점](09-grading.md) "채점 사용자 메시지").
 6. 처음엔 `projects`에 종류 컬럼을 두는 안을 봤으나 프로젝트와 학습 자료는 다른 것이라 테이블을 나눴다 (2026-10-28, #141).
-7. **파일 → 글 변환은 브라우저에서 한다**(#144, `lib/note-file.ts`). 파일은 서버로 올리지도 저장하지도 않고, 바꾼 글만 입력칸에 넣어 위 1번으로 등록한다. 서버 쪽은 내용 길이(30~30,000자, `/api/notes`의 zod와 `study_notes` CHECK)만 본다. 원본은 50MB까지(브라우저 메모리 기준).
+7. **파일 → 글 변환은 브라우저에서 한다**(#144, `lib/client/note-file.ts`). 파일은 서버로 올리지도 저장하지도 않고, 바꾼 글만 입력칸에 넣어 위 1번으로 등록한다. 서버 쪽은 내용 길이(30~30,000자, `/api/notes`의 zod와 `study_notes` CHECK)만 본다. 원본은 50MB까지(브라우저 메모리 기준).
    - **변환 코드와 라이브러리는 파일을 고를 때 `import()`로 불러온다**. 등록 화면 처음 크기는 그대로다(빌드에서 첫 로딩 JS가 약 0.3KB(gzip) 늘었다). 형식마다 필요한 라이브러리만 받는다.
    - 라이브러리(모두 무료, 버전 고정): `pdfjs-dist`(PDF 글자 층. 휴대폰 브라우저를 위해 legacy 빌드, 워커 파일은 `new URL(…, import.meta.url)`로 번들러가 `/_next/static/media/`에 따로 내보낸다), `mammoth`(docx → HTML → 마크다운에 가까운 글), `fflate`(pptx·xlsx·epub·hwpx 압축 풀기, HWP 본문 raw deflate 풀기), `cfb`(HWP 5.0의 복합 파일). pptx·xlsx·epub·hwpx의 XML은 브라우저 `DOMParser`로 읽어 라이브러리를 더하지 않았다.
    - HWP 5.0은 공개된 "한글 문서 파일 형식 5.0"을 따라 `FileHeader`의 속성(압축·암호·배포용)을 보고, `BodyText/Section*`을 레코드로 나눠 문단 글(`HWPTAG_PARA_TEXT`)만 읽는다. 표·각주 같은 컨트롤 문자는 건너뛴다. 암호·배포용 문서는 본문이 암호화돼 있어 읽지 않고 안내한다.
@@ -393,7 +393,7 @@ or exists (select 1 from study_notes n where n.id = questions.note_id and n.user
 | `delete_project(user_id, project_id)` | 오늘 daily 세션이 이 프로젝트 질문이면 거부, 아니면 삭제(cascade) |
 | `create_note(user_id, title, content, budget_usd)` · `save_note_questions(note_id, questions, error_code)` · `restart_note_generation(user_id, note_id, budget_usd)` · `delete_note(user_id, note_id)` | 학습 자료(#141). 프로젝트의 네 함수와 같다. 다른 점: 3개 제한은 `NOTE_LIMIT`, 생성 몫은 `purpose = note_gen`·`quota = project_gen`(하루 1회를 프로젝트와 함께 센다), 오늘의 질문이면 `NOTE_IN_TODAY_SESSION` |
 | `adopt_trial(user_id, trial_token)` | 이어받기(2장) |
-| `record_event(name, user_id, anon_id, props)` | 지표 이벤트 한 줄. 같은 `anon_id`가 24시간에 200건을 넘으면 버린다. 서버는 응답을 보낸 뒤(`after()`) `lib/track.ts`의 `track()`으로 부르고, 실패해도 사용자 요청은 실패시키지 않는다 (2026-10-27, #44) |
+| `record_event(name, user_id, anon_id, props)` | 지표 이벤트 한 줄. 같은 `anon_id`가 24시간에 200건을 넘으면 버린다. 서버는 응답을 보낸 뒤(`after()`) `lib/server/track.ts`의 `track()`으로 부르고, 실패해도 사용자 요청은 실패시키지 않는다 (2026-10-27, #44) |
 | `delete_user_events(user_id)` · `purge_old_events()` | 탈퇴 때 그 사용자와 그 사용자가 쓴 브라우저(`anon_id`)의 이벤트 삭제 · 90일 지난 이벤트 삭제(`pg_cron` 매일 4시 KST) |
 | `pick_push_targets(now, limit)` · `request_push_cron()` | 웹 푸시 대상 고르기와 `last_notified_day` 적기(2장 "웹 푸시" 3·4번, 한 문장의 `update … returning`. 응답 행 수 제한을 넘지 않게 `limit`명씩 고르고 서버가 빈 묶음까지 되풀이한다) · 매시 `pg_cron`이 부르는 `pg_net` 호출(vault의 `push_cron_url`·`cron_secret`이 없으면 아무것도 안 한다). 구독 저장·해제는 한 문장이라 함수 없이 서버가 `service_role`로 `push_subscriptions`에 바로 쓴다(`/api/me`의 프로필 쓰기와 같다) (2026-10-27, #37) |
 | `handle_new_user()` | `auth.users` insert 트리거. `profiles` 행 생성(닉네임·아바타는 소셜 메타데이터에서) |
@@ -441,7 +441,7 @@ or exists (select 1 from study_notes n where n.id = questions.note_id and n.user
 
 HTTP 상태 코드에 더해 본문은 항상 `{ "error": { "code", "message" } }`다. 스트리밍 중(HTTP 200이 이미 나간 뒤)의 실패는 SSE `error` 이벤트에 같은 모양을 담는다.
 
-**코드 → HTTP 상태는 `lib/api-error.ts`의 `ERROR_STATUS` 한 곳에서만 정한다.** 라우트는 `errorResponse(코드, 메시지)`로 응답하고 상태 숫자를 직접 쓰지 않는다. 모든 API 라우트는 `withApiErrors`로 감싸서, 어디서든 `throw new ApiError(코드, 메시지)`를 던지면 그 코드로 응답하고, 처리하지 않은 예외는 로그를 남긴 뒤 `500 INTERNAL`로 응답한다. 처음엔 라우트마다 상태 숫자와 응답 헬퍼를 따로 두었고, 감싸지 않은 예외는 빈 본문 500으로 나갔다. 코드와 이 표가 어긋나서(`REAUTH`·`OTHER_ACCOUNT`·`NOT_GRADED`·`NOT_FAILED`·`INTERNAL`이 표에 없었다) 한 곳으로 모았다 (2026-10-28, #139).
+**코드 → HTTP 상태는 `lib/server/api-error.ts`의 `ERROR_STATUS` 한 곳에서만 정한다.** 라우트는 `errorResponse(코드, 메시지)`로 응답하고 상태 숫자를 직접 쓰지 않는다. 모든 API 라우트는 `withApiErrors`로 감싸서, 어디서든 `throw new ApiError(코드, 메시지)`를 던지면 그 코드로 응답하고, 처리하지 않은 예외는 로그를 남긴 뒤 `500 INTERNAL`로 응답한다. 처음엔 라우트마다 상태 숫자와 응답 헬퍼를 따로 두었고, 감싸지 않은 예외는 빈 본문 500으로 나갔다. 코드와 이 표가 어긋나서(`REAUTH`·`OTHER_ACCOUNT`·`NOT_GRADED`·`NOT_FAILED`·`INTERNAL`이 표에 없었다) 한 곳으로 모았다 (2026-10-28, #139).
 
 | 코드 | HTTP | 언제 |
 |---|---|---|
@@ -519,7 +519,7 @@ CI는 샘플 질문만으로 돈다. 비공개 저장소는 콘텐츠 작업(#9 
 |---|---|
 | `app/` | 화면(서버 컴포넌트)과 Route Handler(`app/api/**/route.ts`) |
 | `components/` | 화면 공통 컴포넌트(유리, 탭바·사이드 메뉴, 헤더, 3D Q, 테마 토글) |
-| `lib/` | 서버·공용 코드. `lib/ai.ts`(모델 호출), `lib/database.types.ts`(생성 타입, 손으로 고치지 않는다) |
+| `lib/` | 서버(`lib/server`)·브라우저(`lib/client`)·공용 코드. `lib/server/ai.ts`(모델 호출), `lib/database.types.ts`(생성 타입, 손으로 고치지 않는다) |
 | `supabase/migrations/` · `supabase/seed.sql` | DB 구조와 공개 시드(주제 15개) |
 | `tests/` | Vitest 단위·API 테스트. `tests/mocks/`에 MSW 핸들러(Claude API 가짜 응답) |
 | `e2e/` | Playwright E2E |
@@ -527,7 +527,7 @@ CI는 샘플 질문만으로 돈다. 비공개 저장소는 콘텐츠 작업(#9 
 - **마이그레이션**: Supabase CLI(`supabase/migrations/<timestamp>_<이름>.sql`). 로컬은 `supabase start`(Docker) + `supabase db reset`, 운영은 `supabase db push`. 테이블·정책·함수·권한·`pg_cron` 등록이 전부 마이그레이션에 있어야 한다(대시보드에서 손으로 바꾸지 않는다).
 - **타입**: `supabase gen types typescript`로 만든 타입을 저장소에 둔다. 마이그레이션이 바뀌면 다시 만든다(#11).
 - **DB 함수 테스트**: CI에서 `supabase start`를 띄우고(1~2분) 함수를 직접 부른다. 꼭 있어야 하는 것: 하루 1세션(동시 호출 2개 → 세션 1개), 전날 세션 정리(`expired`·`done`+`skipped`), 질문 고르기 순서(복습 → 새 질문 → 앞당기기), `submit_answer` 전이(graded면 거부, 멈춘 grading은 통과, 횟수 제한), 복습 칸 이동, 체험 IP 20번, 프로젝트 삭제 거부. **권한 검사** 1개: `information_schema.routine_privileges`에서 `grantee in ('anon','authenticated')`인 `public` 함수가 0건.
-- **AI 경계**: 모델 호출은 `lib/ai.ts` 한 모듈(`grade`, `gradeFollowUp`, `generateProjectQuestions`)에만 있다. 출력은 zod 스키마로 검증하고, 같은 스키마를 통과하는 픽스처를 `AI_MOCK=1`일 때 돌려준다. CI와 테스트는 항상 mock이라 요금이 나가지 않는다. 스트리밍 mock은 픽스처를 글자 단위로 잘라 흘린다.
+- **AI 경계**: 모델 호출은 `lib/server/ai.ts` 한 모듈(`grade`, `gradeFollowUp`, `generateProjectQuestions`)에만 있다. 출력은 zod 스키마로 검증하고, 같은 스키마를 통과하는 픽스처를 `AI_MOCK=1`일 때 돌려준다. CI와 테스트는 항상 mock이라 요금이 나가지 않는다. 스트리밍 mock은 픽스처를 글자 단위로 잘라 흘린다.
 - **순수 함수 테스트**: 꼬리잇기·휴식권·잔디 계산, SSE 부분 파싱(기대 답안이 `delta`에 섞이지 않는지), `missing_keywords` 부분집합 검증.
 - **E2E**는 9단계에서. 체험 → 가입 → 이어받기 → 오늘의 질문 한 바퀴를 mock으로 돈다.
 
@@ -535,7 +535,7 @@ CI는 샘플 질문만으로 돈다. 비공개 저장소는 콘텐츠 작업(#9 
 
 Vercel 무료 플랜의 실행 로그는 **1시간**(확인 필요)만 남아 밤에 난 채점 실패를 아침에 볼 수 없다. 외부 에러 수집 서비스는 넣지 않고(8장) `ai_usage`에 남긴다 (2026-10-25).
 
-- **AI 호출 기록**: 성공·실패 모두 `ai_usage` 한 행. `status`(used·failed), `error_code`(timeout·refusal·api_error·schema_invalid), `latency_ms`, 토큰(캐시 읽기·쓰기 포함), `model`(대체 모델로 넘어갔으면 그 모델), `cost_usd`(`lib/ai.ts`의 모델 가격표로 계산, 캐시 읽기 0.1배·쓰기 1.25배). 처음 목록의 `budget`은 예산 브레이크가 AI를 부르기 전에 막으므로 호출 기록에 남을 일이 없어 뺐다. 실패율·p95 지연·일별 비용을 SQL 한 번으로 본다.
+- **AI 호출 기록**: 성공·실패 모두 `ai_usage` 한 행. `status`(used·failed), `error_code`(timeout·refusal·api_error·schema_invalid), `latency_ms`, 토큰(캐시 읽기·쓰기 포함), `model`(대체 모델로 넘어갔으면 그 모델), `cost_usd`(`lib/server/ai.ts`의 모델 가격표로 계산, 캐시 읽기 0.1배·쓰기 1.25배). 처음 목록의 `budget`은 예산 브레이크가 AI를 부르기 전에 막으므로 호출 기록에 남을 일이 없어 뺐다. 실패율·p95 지연·일별 비용을 SQL 한 번으로 본다.
 - **보는 방법**: Supabase SQL Editor에 저장한 쿼리 3개(오늘 실패율, 이번 달 비용, 어제 푸시 발송 수). 디스코드 웹훅으로 하루 요약을 보내는 것은 다음 버전 메모(9장)에 둔다.
 - **지표**: `events` 테이블(04 기능 명세 §12의 목록). 성공 지표(01) 중 넷은 뷰 `metrics_weekly`(서버만 읽음)가 주(월요일 시작, KST)별로 센다: 주간 답변 제출 수(본 질문, `turn_id`별 한 번), 첫 방문 브라우저 중 언제든 답변까지 간 비율, D7(가입 다음 날부터 7일 안에 이벤트를 다시 남긴 비율, 7일이 다 지난 가입자만), 👍 비율(턴별 마지막 평가). 화면 방문 이벤트는 목록에 없어서 D7의 "다시 옴"은 홈을 열어 오늘의 세션이 시작되는 것(`session_start`) 같은 행동으로 잰다. 월 운영비는 `ai_usage`(#43)로 본다 (2026-10-27, #44).
 - **보관 기간**: 이어받지 않은 체험 세션은 다음 날 4시, `events`는 90일, `ai_usage`는 무기한(개인 내용 없음, 탈퇴 시 `user_id`만 비움), 그 외 사용자 데이터는 탈퇴까지. 정리는 `pg_cron` 4시 작업 하나에 SQL로 모은다.

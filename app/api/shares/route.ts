@@ -1,10 +1,10 @@
 import { z } from "zod";
-import { loadStudy } from "@/lib/study";
+import { loadStudy } from "@/lib/server/study";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { track } from "@/lib/track";
-import { dbErrorResponse } from "@/lib/turn";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { track } from "@/lib/server/track";
+import { dbErrorResponse } from "@/lib/server/turn";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 const Body = z.strictObject({ sessionId: z.uuid() });
 

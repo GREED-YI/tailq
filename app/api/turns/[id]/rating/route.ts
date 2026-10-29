@@ -1,9 +1,9 @@
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { track } from "@/lib/track";
-import { dbErrorResponse } from "@/lib/turn";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { track } from "@/lib/server/track";
+import { dbErrorResponse } from "@/lib/server/turn";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 const Body = z.object({ rating: z.union([z.literal(1), z.literal(-1)]) });
 

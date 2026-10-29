@@ -19,7 +19,7 @@ export type TopicScore = {
   change: number | null;
 };
 
-export const MIN_ATTEMPTS = 3;
+const MIN_ATTEMPTS = 3;
 
 const mean = (xs: number[]) =>
   Math.round(xs.reduce((a, b) => a + b, 0) / xs.length);

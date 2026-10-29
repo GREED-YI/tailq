@@ -10,14 +10,14 @@ import {
   weekStart,
   type GrassCell,
 } from "@/lib/streak";
-import { loadStudy } from "@/lib/study";
+import { loadStudy } from "@/lib/server/study";
 import { createClient } from "@/lib/supabase/server";
 import { weaknessReport, type TopicScore } from "@/lib/weakness";
 import { GrassTip } from "@/components/GrassTip";
 import { LoadingStatus } from "@/components/LoadingStatus";
 import { ScoreBar } from "@/app/interview/ScoreRing";
-import { Score } from "../history/marks";
-import h from "../history/history.module.css";
+import { Score } from "@/components/Marks";
+import h from "@/components/Marks.module.css";
 import w from "./report.module.css";
 
 export const metadata: Metadata = { title: "리포트 · TailQ" };

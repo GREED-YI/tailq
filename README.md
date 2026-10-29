@@ -36,6 +36,28 @@ PR마다 GitHub Actions가 `verify`(린트·포맷·타입·단위 테스트·�
 
 새 마이그레이션은 `npx supabase migration new <이름>`으로 만든다. DB 구조는 대시보드에서 손으로 바꾸지 않는다.
 
+## 디렉터리 구조
+
+| 폴더 | 역할 |
+|---|---|
+| `app/` | 화면과 API. 폴더 이름이 곧 주소라서 Next.js 규칙을 따른다 (아래) |
+| `components/` | 여러 화면이 같이 쓰는 UI 부품 (`Logo`, `Marks`(점수 표시) 등) |
+| `lib/server/` | 서버 전용 코드. 파일 맨 위에 `import "server-only"`가 있어 브라우저 번들에 들어가면 빌드가 실패한다 (AI 호출, DB 쓰기·읽기, 사용량 기록, 오늘의 세션 만들기, 학습 기록 불러오기 등). 클라이언트 컴포넌트는 여기서 `import type`으로 타입만 가져온다 |
+| `lib/client/` | 브라우저에서만 도는 코드 (푸시 구독, 파일 → 글 변환) |
+| `lib/` (최상위) | 서버·브라우저 어디서나 쓰는 계산·타입 (채점 결과 변환, 연속 학습일, 복습 간격 등). `lib/supabase/`는 Supabase 클라이언트, `lib/database.types.ts`는 `npm run db:types`가 만드는 생성 파일 |
+| `supabase/` | 마이그레이션, 시드, RLS·함수 테스트 (pgTAP) |
+| `tests/` · `e2e/` | 단위·API 테스트(Vitest) · 화면 흐름 테스트(Playwright) |
+| `docs/` | 기획·설계 문서 (`docs/assets/`는 화면에 쓰지 않는 디자인 원본) |
+| `eval/` · `scripts/` | AI 채점 평가 · 질문 시드 스크립트 |
+
+`app/`의 괄호 폴더(`(app)` 등)는 주소에 들어가지 않고 레이아웃만 나눈다.
+
+- `app/(app)/`: 하단 탭이 있는 화면 (홈, Q노트, 프로젝트, 리포트, MY, 관리자)
+- `app/(detail)/`: 뒤로 가기 머리글이 있는 상세 화면. 기록 상세는 `app/(detail)/history/[id]`로, 주소(`/history/:id`)가 이 이름이라 폴더 이름을 그대로 뒀다
+- `app/(legal)/`: 이용약관·개인정보처리방침
+- `app/my/`와 `app/(app)/my/`: 둘 다 주소는 `/my…`다. `(app)/my`는 탭이 있는 MY 화면이고, `app/my`는 탭 없이 열리는 MY 하위 화면(계정 삭제, 피드백, 프로필, 학습 범위)이다
+- `app/api/`: Route Handler(API). 그 밖의 `interview`, `trial`, `onboarding`, `login`, `s/[id]`(공유 페이지)는 탭 없는 단독 화면이고, `_landing`·`_og`는 주소가 되지 않는 내부 폴더다
+
 ## 디자인
 
 - [UI 디자인 기준](docs/07-ui-design.md): 지금 기준은 C안(유리 질감, AI 면접관 3D Q, 다크·라이트)

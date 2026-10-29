@@ -1,9 +1,10 @@
+import "server-only";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { kstDay, pickDailyQuestion, type Pick } from "@/lib/daily-pick";
 import { questionTags } from "@/lib/questions";
-import { track } from "@/lib/track";
-import { budgetUsd } from "@/lib/usage";
+import { track } from "@/lib/server/track";
+import { budgetUsd } from "@/lib/server/usage";
 
 // 면접·결과 화면이 보여주는 질문. 프로젝트 질문이면 projectId, 학습 자료 질문이면 noteId가 있다
 export type SessionQuestion = {

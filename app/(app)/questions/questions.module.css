@@ -1,5 +1,5 @@
 /* 내 질문(W2)과 질문 상세(W12). 기준은 DESIGN.md list-row question · question-stacked · attempt, chip, empty-state.
-   목록 머리·행 공통 모양과 점수·숙련도는 history.module.css */
+   목록 머리·행 공통 모양과 점수·숙련도는 components/Marks.module.css */
 
 /* 모바일·태블릿은 제목이 AppHeader의 h1이라 이 h1은 PC에서만 보인다 */
 .pageTitle {

@@ -1,15 +1,11 @@
 import "server-only";
-import { generateProjectQuestions, GradingError } from "@/lib/ai";
-import {
-  errorResponse,
-  INTERNAL_MESSAGE,
-  type ErrorCode,
-} from "@/lib/api-error";
+import { generateProjectQuestions, GradingError } from "@/lib/server/ai";
+import { mapDbError, type ErrorCode } from "@/lib/server/api-error";
 import type { Json } from "@/lib/database.types";
-import { toProjectQuestions } from "@/lib/project-questions";
+import { toProjectQuestions } from "@/lib/question-gen";
 import { MAX_PROJECTS } from "@/lib/questions";
 import type { createAdminClient } from "@/lib/supabase/admin";
-import { LIMIT_MESSAGE, recordUsage } from "@/lib/usage";
+import { LIMIT_MESSAGE, recordUsage } from "@/lib/server/usage";
 
 type Admin = ReturnType<typeof createAdminClient>;
 
@@ -50,7 +46,7 @@ export async function generateAndSave(
   if (error) console.error("project questions save failed", project.id, error);
 }
 
-// DB 함수가 던진 에러 코드 → 메시지. HTTP 상태는 lib/api-error의 목록이 정한다(08 설계 "에러 형식")
+// DB 함수가 던진 에러 코드 → 메시지. HTTP 상태는 lib/server/api-error의 목록이 정한다(08 설계 "에러 형식")
 const MESSAGES: Partial<Record<ErrorCode, string>> = {
   NOT_FOUND: "프로젝트를 찾을 수 없어요.",
   NOT_OWNER: "내 프로젝트가 아니에요.",
@@ -62,10 +58,5 @@ const MESSAGES: Partial<Record<ErrorCode, string>> = {
   BUDGET_EXCEEDED: LIMIT_MESSAGE,
 };
 
-export function projectErrorResponse(e: unknown) {
-  const code = (e as { message?: string } | null)?.message as ErrorCode;
-  const message = MESSAGES[code];
-  if (message) return errorResponse(code, message);
-  console.error("project write failed", e);
-  return errorResponse("INTERNAL", INTERNAL_MESSAGE);
-}
+export const projectErrorResponse = (e: unknown) =>
+  mapDbError(e, MESSAGES, "project write failed");

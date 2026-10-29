@@ -31,7 +31,7 @@ import { FEEDBACK_CATEGORIES } from "@/lib/feedback";
 import { FIELDS } from "@/lib/profile";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { budgetUsd, loadQuota } from "@/lib/usage";
+import { budgetUsd, loadQuota } from "@/lib/server/usage";
 import s from "./admin.module.css";
 import { countFeedback, FeedbackList, Table } from "./Table";
 

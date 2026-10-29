@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { projectErrorResponse } from "@/lib/projects";
+import { projectErrorResponse } from "@/lib/server/projects";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 // 프로젝트 삭제(08 설계 4장). 그 질문·기록·복습 일정이 함께 지워진다.
 // 오늘의 질문으로 나온 프로젝트면 409 PROJECT_IN_TODAY_SESSION

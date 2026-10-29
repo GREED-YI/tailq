@@ -1,7 +1,7 @@
 // WCAG 대비 계산. 반투명 유리는 배경 위에 겹친 색으로 바꿔서 잰다.
 type RGBA = [number, number, number, number];
 
-export function parseColor(c: string): RGBA {
+function parseColor(c: string): RGBA {
   if (c.startsWith("#")) {
     const n = parseInt(c.slice(1), 16);
     return [(n >> 16) & 255, (n >> 8) & 255, n & 255, 1];

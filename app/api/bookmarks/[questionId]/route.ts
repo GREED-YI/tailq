@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { dbErrorResponse } from "@/lib/turn";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { dbErrorResponse } from "@/lib/server/turn";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 // 북마크 저장(PUT)·해제(DELETE). 여러 번 불러도 결과가 같다(08 설계 "멱등성")
 async function setBookmark(

@@ -1,11 +1,11 @@
 import { after } from "next/server";
 import { z } from "zod";
 import { CONTENT_MIN, NAME_MAX, NOTE_CONTENT_MAX } from "@/lib/questions";
-import { generateAndSaveNote, noteErrorResponse } from "@/lib/notes";
+import { generateAndSaveNote, noteErrorResponse } from "@/lib/server/notes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { budgetUsd } from "@/lib/usage";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { budgetUsd } from "@/lib/server/usage";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 // 질문 5개 생성은 30~60초 넘게 걸릴 수 있어 after()도 이 시간 안에서 끝낸다(08 설계 "실행 환경")
 export const maxDuration = 300;

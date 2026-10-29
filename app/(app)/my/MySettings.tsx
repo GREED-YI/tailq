@@ -14,7 +14,7 @@ import {
   SUBSCRIBE_ERRORS,
   subscribePush,
   unsubscribePush,
-} from "@/lib/push-client";
+} from "@/lib/client/push-client";
 import { THEME_STORAGE_KEY, type ThemeName } from "@/lib/theme";
 import p from "../../my/my.module.css";
 import s from "./my.module.css";

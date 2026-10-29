@@ -2,7 +2,7 @@ import s from "./interview.module.css";
 import { scoreVerdict, VERDICTS } from "./verdict";
 import { VerdictMark } from "./VerdictMark";
 
-export type TurnRow = {
+type TurnRow = {
   idx: number;
   status: string;
   score: number | null;

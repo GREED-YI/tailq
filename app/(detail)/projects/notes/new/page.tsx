@@ -6,7 +6,7 @@ import { limitNotice } from "@/components/LimitNotice";
 import { LoadingStatus } from "@/components/LoadingStatus";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { loadQuota } from "@/lib/usage";
+import { loadQuota } from "@/lib/server/usage";
 import { ProjectForm } from "../../new/ProjectForm";
 import s from "@/app/(app)/projects/projects.module.css";
 

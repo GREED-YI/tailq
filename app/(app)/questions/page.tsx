@@ -15,8 +15,8 @@ import {
   type QuestionItem,
 } from "@/lib/review";
 import { createClient } from "@/lib/supabase/server";
-import { Dots, Score } from "../history/marks";
-import h from "../history/history.module.css";
+import { Dots, Score } from "@/components/Marks";
+import h from "@/components/Marks.module.css";
 import { QuestionFilters } from "./QuestionFilters";
 import s from "./questions.module.css";
 

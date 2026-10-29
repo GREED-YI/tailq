@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { noteErrorResponse } from "@/lib/notes";
+import { noteErrorResponse } from "@/lib/server/notes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 // 학습 자료 삭제(08 설계 4장, #141). 그 질문·기록·복습 일정이 함께 지워진다.
 // 오늘의 질문으로 나온 학습 자료면 409 NOTE_IN_TODAY_SESSION

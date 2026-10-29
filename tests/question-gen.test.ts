@@ -10,7 +10,7 @@ import {
   projectUserMessage,
   toProjectQuestions,
   type ProjectQuestionsOutput,
-} from "@/lib/project-questions";
+} from "@/lib/question-gen";
 
 const doc = readFileSync("docs/09-grading.md", "utf8").replace(/\r\n/g, "\n");
 const block = (heading: string) =>

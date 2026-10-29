@@ -3,10 +3,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Icon } from "@/components/icons";
-import { loadProjectSession, sourceHref, startDailySession } from "@/lib/daily";
+import {
+  loadProjectSession,
+  sourceHref,
+  startDailySession,
+} from "@/lib/server/daily";
 import { kstDay } from "@/lib/daily-pick";
 import { daysUntil, dueLabel } from "@/lib/review";
-import { loadStudy } from "@/lib/study";
+import { loadStudy } from "@/lib/server/study";
 import { createClient } from "@/lib/supabase/server";
 import s from "../interview.module.css";
 import { ScoreBar } from "../ScoreRing";

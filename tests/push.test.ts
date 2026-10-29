@@ -12,7 +12,7 @@ const {
   sendDailyPushes,
   PICK_LIMIT,
   PUSH_BATCH,
-} = await import("@/lib/push");
+} = await import("@/lib/server/push");
 
 describe("알림 문구", () => {
   it("복습일이 된 질문이 있으면 복습 문구, 없으면 오늘의 질문 문구", () => {

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { limitNotice } from "@/components/LimitNotice";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { loadQuota } from "@/lib/usage";
+import { loadQuota } from "@/lib/server/usage";
 import { DetailLoading, toQuestionRows } from "../../[id]/detail";
 import { ProjectView } from "../../[id]/ProjectView";
 import s from "@/app/(app)/projects/projects.module.css";

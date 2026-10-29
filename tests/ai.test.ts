@@ -11,7 +11,7 @@ import {
 import {
   MOCK_NOTE_QUESTIONS,
   MOCK_PROJECT_QUESTIONS,
-} from "@/lib/project-questions";
+} from "@/lib/question-gen";
 
 vi.mock("server-only", () => ({}));
 const {
@@ -21,8 +21,8 @@ const {
   generateNoteQuestions,
   generateProjectQuestions,
   GradingError,
-} = await import("@/lib/ai");
-type AiUsage = import("@/lib/ai").AiUsage;
+} = await import("@/lib/server/ai");
+type AiUsage = import("@/lib/server/ai").AiUsage;
 
 const input: GradeInput = {
   question: "N+1 문제란?",

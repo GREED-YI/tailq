@@ -61,3 +61,17 @@ export function withApiErrors<A extends unknown[]>(
     }
   };
 }
+
+// DB 함수가 던진 에러 코드(e.message) → 도메인별 메시지로 응답한다. 목록에 없으면 로그를 남기고 500.
+// HTTP 상태는 위 ERROR_STATUS가 정한다. 메시지 표는 도메인(turn·projects·notes)이 갖는다.
+export function mapDbError(
+  e: unknown,
+  messages: Partial<Record<ErrorCode, string>>,
+  logLabel: string,
+) {
+  const code = (e as { message?: string } | null)?.message as ErrorCode;
+  const message = messages[code];
+  if (message) return errorResponse(code, message);
+  console.error(logLabel, e);
+  return errorResponse("INTERNAL", INTERNAL_MESSAGE);
+}

@@ -1,6 +1,6 @@
 import "server-only";
 import { cookies } from "next/headers";
-import { QUESTION_COLUMNS, toSessionQuestion } from "@/lib/daily";
+import { QUESTION_COLUMNS, toSessionQuestion } from "@/lib/server/daily";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { TRIAL_COOKIE } from "@/lib/trial";
 

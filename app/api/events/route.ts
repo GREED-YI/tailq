@@ -9,8 +9,8 @@ import {
   parseAnonId,
 } from "@/lib/events";
 import { createClient } from "@/lib/supabase/server";
-import { record } from "@/lib/track";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { record } from "@/lib/server/track";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 const Body = z.strictObject({ name: z.enum(CLIENT_EVENTS) });
 

@@ -1,7 +1,7 @@
 import { after, NextResponse } from "next/server";
-import { isCronAuthorized, sendDailyPushes } from "@/lib/push";
+import { isCronAuthorized, sendDailyPushes } from "@/lib/server/push";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 // 발송은 after()에서 하므로 응답 뒤에도 이 시간까지 돈다(08 설계 "실행 환경")
 export const maxDuration = 60;

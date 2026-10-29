@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { track } from "@/lib/track";
+import { track } from "@/lib/server/track";
 import {
   clientIp,
   hashIp,
@@ -10,8 +10,8 @@ import {
   TRIAL_FIELDS,
   trialCookie,
 } from "@/lib/trial";
-import { budgetUsd, LIMIT_MESSAGE } from "@/lib/usage";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { budgetUsd, LIMIT_MESSAGE } from "@/lib/server/usage";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 const Body = z.object({ field: z.enum(TRIAL_FIELDS) });
 
