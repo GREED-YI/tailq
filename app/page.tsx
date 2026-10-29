@@ -253,10 +253,10 @@ export default function Landing() {
           </div>
           <div className={s.reviewShots}>
             <div className={`${s.crop} ${s.reveal}`}>
-              <Shot id="k04-qnote" w={366} h={346} alt={ALT.qnote} />
+              <Shot id="k04-qnote" w={366} h={334} alt={ALT.qnote} />
             </div>
             <div className={`${s.crop} ${s.reveal} ${s.history}`}>
-              <Shot id="k05-history" w={808} h={418} alt={ALT.history} />
+              <Shot id="k05-history" w={832} h={418} alt={ALT.history} />
             </div>
           </div>
         </section>
@@ -342,7 +342,7 @@ export default function Landing() {
               <Shot id="k08m-note" w={390} h={612} alt={ALT.note} />
             </div>
             <div className={`${s.crop} ${s.reveal} ${s.questions}`}>
-              <Shot id="k09-questions" w={390} h={636} alt={ALT.questions} />
+              <Shot id="k09-questions" w={390} h={614} alt={ALT.questions} />
             </div>
           </div>
         </section>

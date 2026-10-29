@@ -399,11 +399,10 @@
   background: linear-gradient(to bottom, var(--metal-lo), var(--metal-mid));
   transform: translateX(-50%);
 }
-/* §6 녹화 칸의 1px 선 상자(로컬 확장: radius.panel). 겹치는 앞 크롭(.questions)도 같은 상자를 쓴다 */
+/* §6 녹화 칸의 1px line 상자(모서리 없음). 겹치는 앞 크롭(.questions)도 같은 상자를 쓴다 */
 .panel {
   overflow: hidden;
-  border: 1px solid var(--line-strong);
-  border-radius: var(--radius-panel);
+  border: 1px solid var(--line);
   background: var(--canvas);
 }
 .panel img {
@@ -580,23 +579,17 @@
   width: 100%;
   height: auto;
 }
-/* 폭에 따라 다른 크롭을 고른다. 숨은 쪽은 lazy라 받지 않는다 */
+/* 폭에 따라 다른 크롭을 고른다. 숨은 쪽은 lazy라 받지 않는다(mdUp·mdDown 경계는 768) */
 .wideOnly,
 .mdUp {
   display: none;
 }
 @media (min-width: 768px) {
-  .wideOnly {
-    display: block;
-  }
-  .phoneOnly {
-    display: none;
-  }
-}
-@media (min-width: 1024px) {
+  .wideOnly,
   .mdUp {
     display: block;
   }
+  .phoneOnly,
   .mdDown {
     display: none;
   }
@@ -791,7 +784,7 @@
     }
     .peakFrame {
       margin-top: 32px;
-      transform-origin: top center;
+      transform-origin: top left;
       animation: grow linear both;
       animation-timeline: --peak;
       animation-range: contain 56% contain 66%;
@@ -800,7 +793,7 @@
 }
 
 /* ---------- §4 Q노트: 글 위, 크롭 아래 ---------- */
-/* 오늘 다시(K04, 휴대폰 크롭 세로 열) 왼쪽 + 날짜별 기록(K05) 오른쪽을 60px 내려 어긋나게. 1024 미만은 K04만 */
+/* 오늘 다시(K04, 휴대폰 크롭 세로 열) 왼쪽 + 날짜별 기록(K05) 오른쪽을 56px 내려 어긋나게. 1024 미만은 K04만 */
 .review {
   display: flex;
   flex-direction: column;
@@ -821,20 +814,20 @@
 @media (min-width: 1024px) {
   .history {
     display: block;
-    width: min(808px, 100%);
+    width: min(832px, 100%);
   }
 }
 @media (min-width: 1280px) {
   .reviewShots {
     display: grid;
-    grid-template-columns: 366fr 808fr;
+    grid-template-columns: 366fr 832fr;
     align-items: start;
   }
   .reviewShots > * {
     width: auto;
   }
   .history {
-    margin-top: 60px;
+    margin-top: 56px;
     width: auto;
   }
 }
@@ -846,17 +839,17 @@
 }
 
 /* ---------- §5 기록: 위에 글과 오늘의 결과 3칸, 아래에 리포트(꼬리잇기·달력)를 넓게 ---------- */
-/* 1024 미만 리포트는 휴대폰 크롭(K06m). 1280 이상: 오늘의 결과는 글 오른쪽 아래 끝, 리포트는 레인 오른쪽 끝에 맞춘다 */
+/* 768 미만 리포트는 휴대폰 크롭(K06m), 768부터 데스크톱 크롭(K06)을 레인 폭으로. 1280 이상: 오늘의 결과는 글 오른쪽 아래 끝, 리포트는 레인 오른쪽 끝에 맞춘다 */
 .record {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
 }
 .today,
 .report {
   width: min(390px, 100%);
 }
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .report {
     width: min(1008px, 100%);
   }
@@ -866,7 +859,7 @@
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     column-gap: 40px;
-    row-gap: 40px;
+    row-gap: 32px;
   }
   .recordCopy {
     grid-column: 1 / span 5;
@@ -883,8 +876,9 @@
 }
 
 /* ---------- §6 학습 자료: 녹화 위에 질문 5개를 겹친다 ---------- */
-/* 1024 이상: 등록 화면 녹화(V02, 1.0배) 왼쪽 + 질문 5개(K09) 오른쪽 아래가 녹화 오른쪽 끝을 덮는다(페이지에서 하나뿐인 겹침).
-   동작 줄이기는 녹화 대신 같은 자리의 포스터. 1024 미만: 녹화 없이 등록 화면(K08m)과 질문 5개 정지 크롭 */
+/* 1280 이상: 등록 화면 녹화(V02, 1.0배) 왼쪽 + 질문 5개(K09) 오른쪽 아래가 녹화 오른쪽 끝을 덮는다(페이지에서 하나뿐인 겹침).
+   동작 줄이기는 녹화 대신 같은 자리의 포스터. 1280 미만: 녹화 없이 등록 화면(K08m)과 질문 5개 정지 크롭을 1.0배로,
+   둘이 나란히 들어가는 폭(레인 804 이상)에서만 2열 */
 .maker {
   display: flex;
   flex-direction: column;
@@ -895,6 +889,7 @@
 }
 .makerStage {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 390px), 390px));
   gap: 24px;
   justify-items: start;
 }
@@ -904,12 +899,7 @@
 .recording {
   display: none;
 }
-@media (min-width: 768px) {
-  .makerStage {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-@media (min-width: 1024px) {
+@media (min-width: 1280px) {
   .recording {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
@@ -922,18 +912,11 @@
   .noteStill {
     display: none;
   }
+  /* 질문 5개가 녹화 오른쪽 빈 여백(입력칸 오른쪽 끝 바깥)만 덮고 레인 밖으로 20px 나간다.
+     글자 수 줄·입력칸 테두리는 가리지 않는다 */
   .makerStage {
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
-  }
-  .makerStage > .questions {
-    justify-self: end;
-  }
-}
-/* 1280 이상: 질문 5개가 녹화 오른쪽 빈 여백(입력칸 오른쪽 끝 바깥)만 덮고 레인 밖으로 20px 나간다.
-   글자 수 줄·입력칸 테두리는 가리지 않는다 */
-@media (min-width: 1280px) {
-  .makerStage {
     gap: 0;
   }
   .makerStage > .questions {
@@ -942,8 +925,7 @@
     margin: 300px 0 0 830px;
     width: 390px;
     overflow: hidden;
-    border: 1px solid var(--line-strong);
-    border-radius: var(--radius-panel);
+    border: 1px solid var(--line);
     background: var(--canvas);
   }
 }
@@ -985,22 +967,59 @@
     color: var(--text);
   }
 }
-@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 1280px) and (prefers-reduced-motion: no-preference) {
   .pause {
     display: inline-flex;
   }
 }
 
-/* 768 미만: 휴대폰 크롭은 앱의 좌우 여백 20px을 그대로 품고 있어서, 레인 여백만큼 바깥으로 내어
-   크롭 안 글이 섹션 글과 같은 세로선에 서게 한다(오늘 다시 크롭은 여백을 덜 잘라 제외) */
+/* 크롭 안 글이 섹션 글과 같은 세로선에 서게 한다(레인 왼쪽에 놓인 크롭만).
+   휴대폰 크롭(K01m·K03m·K07·K06m·K08m·K09)은 앱의 좌우 여백 20px을 그대로 품고 있어서 20px 바깥으로 낸다
+   (768 미만은 화면 끝까지 닿는다) */
 @media (max-width: 767px) {
   .gradeShot,
-  .peakVerdictM,
+  .report {
+    width: min(390px, calc(100% + 2 * var(--g)));
+    margin-left: -20px;
+  }
+}
+@media (max-width: 1023px) {
+  .peakVerdictM {
+    width: min(390px, calc(100% + 2 * var(--g)));
+    margin-left: -20px;
+  }
+}
+@media (max-width: 1279px) {
   .today,
-  .report,
   .makerStage > .crop {
     width: min(390px, calc(100% + 2 * var(--g)));
-    margin-left: calc(-1 * var(--g));
+    margin-left: -20px;
+  }
+}
+/* 데스크톱 크롭과 오늘 다시(K04)는 안쪽 여백이 크롭마다 달라(원래 폭 기준 K01 24 · K02 16 · K03 8 · K04 8 · K05 16 · K06 16)
+   그만큼 왼쪽으로 옮긴다. translate %는 자기 폭 기준이라 크롭이 줄어도 맞는다 */
+.reviewShots > :first-child {
+  translate: calc(-100% * 8 / 366);
+}
+@media (min-width: 768px) and (max-width: 1279px) {
+  .gradeShot {
+    translate: calc(-100% * 24 / 834);
+  }
+  .report {
+    translate: calc(-100% * 16 / 1008);
+  }
+}
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .peakVerdict {
+    translate: calc(-100% * 8 / 804);
+  }
+  .history {
+    translate: calc(-100% * 16 / 832);
+  }
+}
+@media (min-width: 1280px) {
+  .peakFlow {
+    translate: calc(-100% * 16 / 412);
   }
 }
 
