@@ -93,11 +93,11 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
     <div className={s.tryGrid}>
       <div className={s.tryCopy}>
         <h2 id="try-title" className={s.h2}>
-          가입 전에 풀어 보는 한 문제
+          가입 전 면접 체험
         </h2>
         <p className={s.lead}>
-          원하는 분야를 고르면 채점부터 꼬리질문 1개까지 똑같이 체험해 볼 수
-          있어요. 이어서 바로 가입하면 체험 기록이 바로 저장돼요.
+          원하는 분야를 고르면 채점부터 꼬리질문 1개까지 체험해 볼 수 있어요.
+          이어서 바로 가입하면 체험 기록이 바로 저장돼요.
         </p>
         <div
           className={s.fields}
