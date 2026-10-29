@@ -24,7 +24,7 @@ export const supabase = localSupabase();
 
 // 데모 쿠키 로그인: 서비스 키로 매직 링크를 만들어 바로 세션으로 바꾸고, @supabase/ssr과 같은 모양
 // (sb-<host>-auth-token=base64-…, 3180자마다 .0 .1 조각)의 쿠키로 넣는다.
-// 처음 쓰는 이메일이면 계정을 만들고 온보딩을 마친 상태로 둔다
+// 처음 쓰는 이메일이면 계정을 만들고 온보딩을 마친 상태로 둔다. 테스트가 데이터를 만들고 RLS를 볼 수 있게 세션을 돌려준다
 export async function login(context: BrowserContext, email: string) {
   const { url, anonKey, serviceKey } = supabase!;
   const options = { auth: { persistSession: false } };
@@ -73,4 +73,5 @@ export async function login(context: BrowserContext, email: string) {
       url: "http://localhost:3000",
     })),
   );
+  return data.session;
 }

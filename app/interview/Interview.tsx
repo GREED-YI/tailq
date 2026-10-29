@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { Icon } from "@/components/icons";
+import { Score } from "@/components/Marks";
+import { scoreChange, type Previous } from "@/lib/previous";
 import type { SessionQuestion } from "@/lib/server/daily";
 import type { TurnResult } from "@/lib/server/turn";
 import s from "./interview.module.css";
@@ -53,6 +55,7 @@ export function Interview({
   initialStatus,
   initialAnswer,
   initialResult,
+  previous = null,
   trial = false,
 }: {
   initialTurn: Turn;
@@ -66,6 +69,8 @@ export function Interview({
   initialStatus: InterviewStatus;
   initialAnswer: string;
   initialResult: TurnResult | null;
+  // 복습이면 같은 질문의 지난번 본 질문 기록(#131). 오늘의 질문에만 있다
+  previous?: Previous | null;
   // 로그인 없는 체험: 꼬리질문 1개까지, 북마크·평가 없음(04 기능 명세 10번)
   trial?: boolean;
 }) {
@@ -347,6 +352,11 @@ export function Interview({
             </h1>
           </div>
 
+          {/* 지난번 답은 늘 접힌 채 시작한다(베끼기 방지). 본 질문 답변 단계에서만, 결과가 나오면 점수 변화 줄이 맡는다 */}
+          {previous && turn.idx === 0 && !showResult && (
+            <PreviousAnswer previous={previous} />
+          )}
+
           {phase === "failed" && (
             <div className={s.fail} role="alert">
               <strong>채점이 늦어지고 있어요</strong>
@@ -363,6 +373,7 @@ export function Interview({
               trial={trial}
               questionId={question.id}
               followUp={turn.idx > 0}
+              previous={previous}
               resultHref={resultHref}
               result={phase === "result" ? result : null}
               streamed={streamed}
@@ -539,6 +550,7 @@ function ResultView({
   trial,
   questionId,
   followUp,
+  previous,
   resultHref,
   result,
   streamed,
@@ -548,6 +560,7 @@ function ResultView({
   trial: boolean;
   questionId: number;
   followUp: boolean;
+  previous: Previous | null;
   resultHref: string;
   result: TurnResult | null;
   streamed: string;
@@ -582,6 +595,7 @@ function ResultView({
             label="채점하고 있어요"
             aside={<span className={s.pending}>채점하고 있어요</span>}
           />
+          {previous && <ScoreChange prev={previous.score} />}
           <p className={s.streaming}>{streamed}</p>
         </section>
       </div>
@@ -610,6 +624,9 @@ function ResultView({
             />
           }
         />
+        {previous && (
+          <ScoreChange prev={previous.score} today={score ?? null} />
+        )}
         {!unknown && result.feedback?.summary && (
           <p className={s.summary}>{result.feedback.summary}</p>
         )}
@@ -694,6 +711,92 @@ function ResultView({
       />
       {!trial && <ReportLink questionId={questionId} />}
     </div>
+  );
+}
+
+// 지난번 답 보기(#131): 결과 화면의 "모범 답안과 참고 자료"와 같은 펼침 줄. 펼치면 답 전문과 한 줄 평만 보인다.
+// 보완할 개념은 정답 힌트라 넣지 않는다. 날짜는 보이는 숫자 대신 "10월 22일"로 읽힌다
+function PreviousAnswer({ previous }: { previous: Previous }) {
+  const [, m, d] = previous.day.split("-").map(Number);
+  return (
+    <details className={s.more}>
+      <summary className={s.prevSummary}>
+        지난번 답 보기
+        <span className={s.moreMeta}>
+          <span className={`mono ${s.moreDate}`} aria-hidden="true">
+            {previous.day.replaceAll("-", ".")}
+          </span>
+          <span className="sr-only">
+            , {m}월 {d}일,{" "}
+          </span>
+          <PastScore value={previous.score} />
+          <Icon name="chevronDown" size={18} />
+        </span>
+      </summary>
+      <div className={s.moreBody}>
+        {previous.score === null ? (
+          <p className={s.prevNote}>지난번엔 모르겠어요를 골랐어요.</p>
+        ) : (
+          <>
+            <div className={s.block}>
+              <span className={s.label}>답변</span>
+              <p className={`${s.well} ${s.prevAnswer}`}>{previous.answer}</p>
+            </div>
+            {previous.summary && (
+              <div className={s.block}>
+                <span className={s.label}>한 줄 평</span>
+                <p className={s.prevNote}>{previous.summary}</p>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </details>
+  );
+}
+
+// 지난번·오늘 점수(DESIGN.md score inline). 모르겠어요는 0점이 아니라 빈 원과 "모르겠어요"
+function PastScore({ value }: { value: number | null }) {
+  if (value === null)
+    return <VerdictMark verdict="unknown" className={s.pastUnknown} />;
+  return (
+    <>
+      <Score value={value} />
+      <span className="sr-only">점</span>
+    </>
+  );
+}
+
+// 본 질문 채점 결과의 점수 변화 줄(#131): "지난번 62 → 오늘 74 +12". 움직이지 않는다.
+// today가 undefined면 채점 중이라 오늘 자리에 ··를 둔다. 보이는 줄은 화면 읽기에서 빼고 문장 하나로 읽힌다
+function ScoreChange({
+  prev,
+  today,
+}: {
+  prev: number | null;
+  today?: number | null;
+}) {
+  const c = scoreChange(prev, today);
+  return (
+    <>
+      <p className={s.change} aria-hidden="true">
+        <span>지난번</span>
+        <PastScore value={prev} />
+        <span>→</span>
+        <span>오늘</span>
+        {today === undefined ? (
+          <span className={`mono ${s.changeWait}`}>··</span>
+        ) : (
+          <PastScore value={today} />
+        )}
+        {c.delta && (
+          <b className={`mono ${s.changeDelta}`} data-tone={c.tone}>
+            {c.delta}
+          </b>
+        )}
+      </p>
+      <p className="sr-only">{c.sr}</p>
+    </>
   );
 }
 
