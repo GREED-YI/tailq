@@ -21,7 +21,7 @@ export type PickInput = {
   }[];
 };
 
-export type PickResult = { pick: Pick; questionId: number } | { pick: null };
+type PickResult = { pick: Pick; questionId: number } | { pick: null };
 
 // 한국은 서머타임이 없어 UTC+9로 고정이다
 export function kstDay(date: Date): string {

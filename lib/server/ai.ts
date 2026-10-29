@@ -30,10 +30,10 @@ import {
 
 // Claude API 호출은 이 모듈에만 둔다(08 설계 6장 "AI 경계"). 서버에서만 import한다.
 // 모델 ID는 docs/09 5장. 예산 80%를 넘은 뒤 시작한 세션은 본 질문도 꼬리질문 모델(Haiku)로 채점한다.
-export const GRADE_MODEL = "claude-sonnet-5-5";
-export const FOLLOW_UP_MODEL = "claude-haiku-5-5";
+const GRADE_MODEL = "claude-sonnet-5-5";
+const FOLLOW_UP_MODEL = "claude-haiku-5-5";
 // README에 없는 사실을 지어내지 않는 게 중요해서 Sonnet(docs/09 5장)
-export const PROJECT_MODEL = "claude-sonnet-5-5";
+const PROJECT_MODEL = "claude-sonnet-5-5";
 
 // 서버의 Claude 호출 타임아웃(08 설계 "시간 기준은 셋이다")
 const TIMEOUT_MS = 15_000;
@@ -97,7 +97,7 @@ export type AiUsage = {
   cache_write_tokens: number | null;
   cost_usd: number;
 };
-export type OnUsage = (usage: AiUsage) => void | Promise<void>;
+type OnUsage = (usage: AiUsage) => void | Promise<void>;
 
 export class GradingError extends Error {
   constructor(readonly reason: "timeout" | "refusal" | "schema_invalid") {

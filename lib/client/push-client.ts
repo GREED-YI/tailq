@@ -1,8 +1,7 @@
 // 브라우저 쪽 웹 푸시 구독(#37). 온보딩 ③(S08), MY 알림 창, 홈 알림 안내(S32)가 같이 쓴다.
 // VAPID 공개 키는 서버 컴포넌트가 VAPID_PUBLIC_KEY를 읽어 넘긴다(브라우저 환경변수를 늘리지 않는다).
 
-export type SubscribeResult =
-  "ok" | "install" | "denied" | "unsupported" | "failed";
+type SubscribeResult = "ok" | "install" | "denied" | "unsupported" | "failed";
 
 export const SUBSCRIBE_ERRORS: Record<
   Exclude<SubscribeResult, "ok">,
@@ -24,7 +23,7 @@ export const pushSupported = () =>
 
 // 아이폰·아이패드는 홈 화면에 추가한 앱에서만 웹 푸시가 된다(iOS 16.4 이상, 04 기능 명세 7장).
 // 아이패드는 데스크톱 Safari처럼 Macintosh로 보이므로 터치 지원으로 가린다
-export function needsInstall() {
+function needsInstall() {
   const ios =
     /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);

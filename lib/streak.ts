@@ -62,7 +62,7 @@ export function computeStreak(studied: string[], today: string): Streak {
 export const ticketsLeft = (restDays: string[], today: string) =>
   restDays.some((d) => weekStart(d) === weekStart(today)) ? 0 : 1;
 
-export const GRASS_WEEKS = 52;
+const GRASS_WEEKS = 52;
 
 // 잔디 칸 단계 0~4(docs/07 "학습 잔디", 리포트에서는 "꼬리잇기 달력"). 0은 학습하지 않은 날.
 // 점수 구간은 본 질문 점수 색(40·70, docs/09)에 90점 이상을 더했다. 모르겠어요(0점)와

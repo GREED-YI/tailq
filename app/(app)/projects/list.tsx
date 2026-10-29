@@ -17,7 +17,7 @@ import { RefreshWhileGenerating } from "./RefreshWhileGenerating";
 
 // Q메이커의 두 구획(프로젝트 /projects, 학습 자료 /projects/notes, #141)이 같이 쓰는 목록.
 // 모양은 같고 글·주소·한도 개수만 다르다. 주 버튼은 구획마다 그 구획의 등록 하나다
-export type Kind = "project" | "note";
+type Kind = "project" | "note";
 
 const COPY = {
   project: {

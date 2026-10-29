@@ -37,7 +37,7 @@ const ADMIN_TAB = {
   where: "wide",
 } as const;
 
-export type Viewer = {
+type Viewer = {
   admin?: boolean;
   // 꼬리잇기 일수. 못 읽으면 비운다
   streak?: number;

@@ -1,6 +1,6 @@
 // 꼬리질문 판정 문구·색·모양(docs/07 "면접", docs/09 "꼬리질문 채점", DESIGN.md verdict-mark).
 // 색만으로 말하지 않도록 모양을 함께 쓴다: 채운 원·반쪽 원·네모·빈 원. 면접 화면·오늘의 결과·기록이 같이 쓴다
-export type Shape = "fill" | "half" | "square" | "empty";
+type Shape = "fill" | "half" | "square" | "empty";
 
 export const VERDICTS: Record<
   string,

@@ -17,7 +17,7 @@ export function TailIcon({ size = 16 }: { size?: number }) {
 }
 
 // "꼬리잇기 12일째"(docs/07 "꼬리잇기"). 숫자는 Geist Mono
-export function StreakDays({ days }: { days: number }) {
+function StreakDays({ days }: { days: number }) {
   return (
     <>
       <span className={`mono ${s.days}`}>{days}</span>

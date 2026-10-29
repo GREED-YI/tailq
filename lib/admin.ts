@@ -12,8 +12,8 @@ export const isAdmin = (userId: string | undefined, ids = "") =>
     .includes(userId);
 
 // 북극성·채점 품질은 최근 8주, 성공 지표·가입 흐름은 최근 4주(01 "출시 후 4주 동안 본다"), 고장 신호는 최근 7일
-export const WEEKS = 8;
-export const GOAL_WEEKS = 4;
+const WEEKS = 8;
+const GOAL_WEEKS = 4;
 // 채점 실패율이 이 %를 넘으면 확인할 것에 올린다
 export const FAIL_LIMIT = 5;
 
@@ -198,7 +198,7 @@ export function funnelSteps(
   });
 }
 
-export type Alert = { label: string; text: string; href: string };
+type Alert = { label: string; text: string; href: string };
 
 // 확인할 것: 고장 신호만. 순서는 예산 멈춤 → 채점 실패 → 예산 80% → 버그 → 신고
 export function alerts(
