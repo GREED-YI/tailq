@@ -411,6 +411,13 @@ a.tile:active {
   position: absolute;
   inset: -10px -3px;
 }
+/* 1024~1279는 학습 현황 4칸이라 칸이 좁다(약 32px). 칸 모양은 그대로 두고 옆 칸과 겹치지 않게 틈 4px의 절반까지만 넓힌다
+   (44px에 못 미친다. DESIGN 예외) */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .day > span::after {
+    inset: -10px -2px;
+  }
+}
 .day[data-now] {
   font-weight: 700;
   color: var(--accent);
@@ -442,14 +449,5 @@ a.tile:active {
   }
   .reviews {
     grid-column: 1 / -1;
-  }
-}
-/* 1024~1279는 4칸이면 이번 주 칸이 약 32px라 누르는 영역이 44px에 못 미친다. 7칸 · 5칸으로 나눠 칸을 넓힌다 */
-@media (min-width: 1024px) and (max-width: 1279px) {
-  .today {
-    grid-column: span 7;
-  }
-  .stats {
-    grid-column: span 5;
   }
 }
