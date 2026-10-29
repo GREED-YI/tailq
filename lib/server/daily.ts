@@ -69,7 +69,7 @@ export async function startDailySession(
     // ponytail: 지난 세션을 전부 읽는다(사용자당 하루 1개라 1년에 366개). 느려지면 최근 기간만 읽는다
     db
       .from("sessions")
-      .select("question_id, day, questions(topic_id), turns(answered_at)")
+      .select("question_id, day, pick, questions(topic_id), turns(answered_at)")
       .eq("user_id", userId)
       .eq("turns.idx", 0)
       .throwOnError(),
@@ -103,6 +103,7 @@ export async function startDailySession(
       topicId: s.questions?.topic_id ?? null,
       day: s.day,
       answered: s.turns.some((t) => t.answered_at !== null),
+      pick: s.pick as Pick | null,
     })),
   });
   if (result.pick === null) return null;

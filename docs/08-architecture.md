@@ -377,7 +377,7 @@ or exists (select 1 from study_notes n where n.id = questions.note_id and n.user
 
 | 함수 | 하는 일 |
 |---|---|
-| `start_daily_session(user_id, question_id, pick)` | 사용자 잠금 → 전날 열린 daily 세션 정리(`expired` 또는 `done` + `skipped`) → 오늘 세션이 있으면 반환, 없으면 서버가 고른 질문으로 세션·턴 0 생성. 고르기(복습 → 새 질문 → 앞당기기)는 서버의 순수 함수(`lib/daily-pick.ts`)가 한다. 처음엔 함수 안에서 골랐으나, 주제 고르게 돌리기 같은 규칙을 단위 테스트로 지키기 쉽게 고르기만 서버로 옮겼다. 동시에 와도 잠금과 유일 인덱스로 먼저 만든 세션이 돌아온다 (2026-10-26, #30) |
+| `start_daily_session(user_id, question_id, pick)` | 사용자 잠금 → 전날 열린 daily 세션 정리(`expired` 또는 `done` + `skipped`) → 오늘 세션이 있으면 반환, 없으면 서버가 고른 질문으로 세션·턴 0 생성. 고르기(복습 → 새 질문 → 앞당기기)는 서버의 순수 함수(`lib/daily-pick.ts`)가 한다. 처음엔 함수 안에서 골랐으나, 주제 고르게 돌리기 같은 규칙을 단위 테스트로 지키기 쉽게 고르기만 서버로 옮겼다. 동시에 와도 잠금과 유일 인덱스로 먼저 만든 세션이 돌아온다 (2026-10-26, #30). 어제 낸 질문 빼기와 복습 이틀 뒤 새 질문 먼저(04 3장)를 위해 서버가 지난 세션을 읽을 때 `pick`도 같이 읽는다 (2026-10-29, #129) |
 | `start_project_session(user_id, question_id, budget_usd)` | 주인 확인(내 프로젝트 또는 내 학습 자료의 질문, #141), 같은 질문의 열린 세션이 있으면 그것을 돌려준다(이어하기, 한도를 보지 않는다), 없으면 사용자 잠금 안에서 월 예산(`BUDGET_EXCEEDED`)·하루 3세션(`LIMIT_EXCEEDED`) 확인, 세션(`grade_model`)·턴 0 생성과 본 질문 채점 몫 예약 |
 | `ai_quota(user_id, budget_usd)` | `{ budget: ok·downgrade·exceeded, spent_usd, sessions_left, gens_left }`. 시작 함수와 화면(시작 버튼 대신 안내)이 같은 기준을 쓴다. 예산은 서버 환경변수라 인자로 받는다 (#43) |
 | `record_ai_usage(user_id, purpose, ref_id, usage)` · `release_ai_usage(ref_id)` | AI 호출 한 번 기록(같은 `ref_id`·`purpose`의 `reserved` 행이 있으면 그 행을 `used`·`failed`로) · 쓰지 않은 몫 돌려주기 (#43) |

@@ -237,3 +237,150 @@ describe("범위 소진", () => {
     expect(pickDailyQuestion(input({ topics: [] }))).toEqual({ pick: null });
   });
 });
+
+describe("같은 질문·복습 이어짐 막기", () => {
+  // n일 전 오늘의 질문 세션(오늘은 2026-10-26)
+  const daily = (
+    n: number,
+    pick: "review" | "new" | "advance",
+    questionId: number,
+  ) => ({
+    questionId,
+    topicId: bank.find((q) => q.id === questionId)!.topicId,
+    day: `2026-10-${26 - n}`,
+    answered: true,
+    pick,
+  });
+
+  it("처음 쓰는 날(지난 세션 없음)은 지금처럼 복습을 먼저 낸다", () => {
+    const r = pickDailyQuestion(
+      input({ reviews: [{ questionId: 2, dueDay: "2026-10-26" }] }),
+    );
+    expect(r).toEqual({ pick: "review", questionId: 2 });
+  });
+
+  it("어제 낸 질문이 다시 복습일이어도 오늘은 다른 복습을 낸다", () => {
+    const r = pickDailyQuestion(
+      input({
+        reviews: [
+          { questionId: 2, dueDay: "2026-10-26" },
+          { questionId: 5, dueDay: "2026-10-26" },
+        ],
+        sessions: [daily(1, "review", 2)],
+      }),
+    );
+    expect(r).toEqual({ pick: "review", questionId: 5 });
+  });
+
+  it("어제 낸 질문만 복습일이면 새 질문을 낸다", () => {
+    const r = pickDailyQuestion(
+      input({
+        reviews: [{ questionId: 2, dueDay: "2026-10-25" }],
+        sessions: [daily(1, "review", 2)],
+      }),
+    );
+    expect(r.pick).toBe("new");
+  });
+
+  it("어제 놓친 새 질문을 오늘 새 질문으로 다시 내지 않는다", () => {
+    const r = pickDailyQuestion(
+      input({
+        topics: ["jpa"],
+        levels: ["basic"],
+        bank: [...bank, { id: 7, topicId: "jpa", level: "basic" }],
+        sessions: [{ ...daily(1, "new", 1), answered: false }],
+      }),
+    );
+    expect(r).toEqual({ pick: "new", questionId: 7 });
+  });
+
+  it("복습이 하루만이었으면 오늘도 복습을 낸다", () => {
+    const r = pickDailyQuestion(
+      input({
+        reviews: [{ questionId: 5, dueDay: "2026-10-26" }],
+        sessions: [daily(2, "new", 1), daily(1, "review", 2)],
+      }),
+    );
+    expect(r).toEqual({ pick: "review", questionId: 5 });
+  });
+
+  it("복습이 이틀 이어졌으면 밀린 복습이 있어도 새 질문을 먼저 낸다", () => {
+    const r = pickDailyQuestion(
+      input({
+        reviews: [{ questionId: 5, dueDay: "2026-10-20" }],
+        sessions: [daily(2, "review", 1), daily(1, "review", 2)],
+      }),
+    );
+    expect(r.pick).toBe("new");
+  });
+
+  it("새 질문을 낸 다음 날은 넘어간 복습이 다시 나온다", () => {
+    const r = pickDailyQuestion(
+      input({
+        reviews: [{ questionId: 5, dueDay: "2026-10-20" }],
+        sessions: [
+          daily(3, "review", 1),
+          daily(2, "review", 2),
+          daily(1, "new", 3),
+        ],
+      }),
+    );
+    expect(r).toEqual({ pick: "review", questionId: 5 });
+  });
+
+  it("하루 비어 이어지지 않았으면 복습 이틀로 세지 않는다", () => {
+    const r = pickDailyQuestion(
+      input({
+        reviews: [{ questionId: 5, dueDay: "2026-10-20" }],
+        sessions: [daily(3, "review", 1), daily(1, "review", 2)],
+      }),
+    );
+    expect(r).toEqual({ pick: "review", questionId: 5 });
+  });
+
+  it("복습이 이틀 이어졌어도 낼 새 질문이 없으면 복습을 낸다", () => {
+    const r = pickDailyQuestion(
+      input({
+        topics: ["jpa"],
+        reviews: [{ questionId: 5, dueDay: "2026-10-20" }],
+        sessions: [daily(2, "review", 1), daily(1, "review", 2)],
+      }),
+    );
+    expect(r).toEqual({ pick: "review", questionId: 5 });
+  });
+
+  it("복습만 남았고 어제 낸 질문이 복습일이면 다른 복습을 앞당긴다", () => {
+    const r = pickDailyQuestion(
+      input({
+        topics: ["jpa"],
+        reviews: [
+          { questionId: 1, dueDay: "2026-10-26" },
+          { questionId: 2, dueDay: "2026-11-10" },
+        ],
+        sessions: [daily(1, "review", 1)],
+      }),
+    );
+    expect(r).toEqual({ pick: "advance", questionId: 2 });
+  });
+
+  it("낼 질문이 어제 낸 질문밖에 없으면 아무것도 안 내는 대신 다시 낸다", () => {
+    const r = pickDailyQuestion(
+      input({
+        topics: ["jpa"],
+        sessions: [daily(2, "new", 2), daily(1, "review", 1)],
+        reviews: [{ questionId: 1, dueDay: "2026-10-26" }],
+      }),
+    );
+    expect(r).toEqual({ pick: "review", questionId: 1 });
+  });
+
+  it("프로젝트 질문 세션(pick 없음)은 어제 낸 질문으로 보지 않는다", () => {
+    const r = pickDailyQuestion(
+      input({
+        reviews: [{ questionId: 2, dueDay: "2026-10-26" }],
+        sessions: [{ ...daily(1, "review", 2), pick: null }],
+      }),
+    );
+    expect(r).toEqual({ pick: "review", questionId: 2 });
+  });
+});

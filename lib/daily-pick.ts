@@ -12,12 +12,13 @@ export type PickInput = {
   bank: { id: number; topicId: string; level: string }[];
   // 복습 중인 질문(익힌 질문·숨긴 질문 제외)
   reviews: { questionId: number; dueDay: string }[];
-  // 지난 세션. answered는 본 질문을 제출했는지
+  // 지난 세션. answered는 본 질문을 제출했는지, pick은 오늘의 질문 세션만 있다(프로젝트 질문 세션은 없음)
   sessions: {
     questionId: number;
     topicId: string | null;
     day: string;
     answered: boolean;
+    pick?: Pick | null;
   }[];
 };
 
@@ -33,13 +34,36 @@ export function kstDay(date: Date): string {
 const byDue = (a: PickInput["reviews"][0], b: PickInput["reviews"][0]) =>
   a.dueDay.localeCompare(b.dueDay) || a.questionId - b.questionId;
 
+const dayBefore = (day: string, n: number) =>
+  new Date(Date.parse(day) - n * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+
 export function pickDailyQuestion(input: PickInput): PickResult {
+  const daily = (n: number) =>
+    input.sessions.find((s) => s.pick && s.day === dayBefore(input.today, n));
+  const yesterday = daily(1);
+  // 복습이 이틀 이어졌으면 오늘은 새 질문을 먼저 낸다. 밀린 복습은 다음 날로 넘어간다
+  const newFirst = yesterday?.pick === "review" && daily(2)?.pick === "review";
+
+  // 어제 낸 질문은 오늘 다시 내지 않는다. 그 질문밖에 없을 때만 아무것도 안 내는 대신 다시 낸다
+  const result = pickFrom(input, newFirst, yesterday?.questionId);
+  return result.pick === null && yesterday ? pickFrom(input, newFirst) : result;
+}
+
+function pickFrom(
+  input: PickInput,
+  newFirst: boolean,
+  skip?: number,
+): PickResult {
   const { today } = input;
-  const reviews = [...input.reviews].sort(byDue);
+  const reviews = input.reviews
+    .filter((r) => r.questionId !== skip)
+    .sort(byDue);
 
   // 1. 복습일이 된 질문 중 가장 오래 밀린 것. 며칠 놓쳐도 사라지지 않는다
   const due = reviews.find((r) => r.dueDay <= today);
-  if (due) return { pick: "review", questionId: due.questionId };
+  if (due && !newFirst) return { pick: "review", questionId: due.questionId };
 
   // 2. 범위 안의 아직 안 푼 새 질문. 가장 오래전에 나온 주제(안 나온 주제가 먼저)에서 고른다.
   //    본 질문을 내지 않고 놓친 질문은 푼 것이 아니라 나중에 새 질문으로 다시 나올 수 있다
@@ -52,7 +76,8 @@ export function pickDailyQuestion(input: PickInput): PickResult {
       (q) =>
         input.topics.includes(q.topicId) &&
         (input.levels.length === 0 || input.levels.includes(q.level)) &&
-        !solved.has(q.id),
+        !solved.has(q.id) &&
+        q.id !== skip,
     )
     .sort((a, b) => a.id - b.id);
 
@@ -71,6 +96,9 @@ export function pickDailyQuestion(input: PickInput): PickResult {
     const q = candidates.find((c) => c.topicId === topic)!;
     return { pick: "new", questionId: q.id };
   }
+
+  // 새 질문을 먼저 내려 했는데 없으면 지금처럼 복습을 낸다
+  if (due) return { pick: "review", questionId: due.questionId };
 
   // 3. 범위 소진: 가장 가까운 복습 예정 질문을 앞당긴다(화면은 범위를 넓히자고 안내한다)
   const next = reviews.find((r) => r.dueDay > today);
