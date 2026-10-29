@@ -279,7 +279,6 @@ export function ThemeRow() {
           role="radiogroup"
           aria-labelledby="theme-mode-label"
           className={s.choicesCol}
-          style={{ marginTop: 10 }}
         >
           {THEMES.map((t) => (
             <button

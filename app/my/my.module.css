@@ -19,6 +19,23 @@
   position: absolute;
   right: 0;
 }
+/* PC는 (detail) 하위 화면(Q메이커 등록·질문 상세)과 같은 머리: 뒤로 + 왼쪽 화면 제목(DESIGN title 26px).
+   Flow .top과 구체성이 같으면 순서에 따라 지므로 header.top으로 쓴다. 모바일·태블릿은 가운데 16px 그대로 */
+@media (min-width: 1024px) {
+  header.top {
+    justify-content: flex-start;
+    gap: 12px;
+  }
+  .top .back {
+    position: static;
+    margin-left: -10px;
+  }
+  .top h1 {
+    font-size: 26px;
+    line-height: 1.35;
+    letter-spacing: -0.02em;
+  }
+}
 
 /* 칸 이름은 칸 밖 위, 도움말은 칸 밖 아래 */
 .label {

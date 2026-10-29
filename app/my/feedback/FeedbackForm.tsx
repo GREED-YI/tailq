@@ -63,8 +63,8 @@ export function FeedbackForm({
   if (sent)
     return (
       <>
-        <header className={f.top}>
-          <BackButton className={f.back} />
+        <header className={`${f.top} ${s.top}`}>
+          <BackButton className={`${f.back} ${s.back}`} />
         </header>
         <h1 className={f.title}>보내 주셔서 고마워요</h1>
         <p className={f.sub}>
@@ -89,8 +89,8 @@ export function FeedbackForm({
 
   return (
     <>
-      <header className={f.top}>
-        <BackButton className={f.back} />
+      <header className={`${f.top} ${s.top}`}>
+        <BackButton className={`${f.back} ${s.back}`} />
         <h1 className={f.topTitle}>피드백 보내기</h1>
       </header>
 
@@ -141,7 +141,7 @@ export function FeedbackForm({
           운영자만 읽어요. 따로 답장은 드리지 못해요.
         </span>
         <span className="mono" aria-live="polite">
-          {length} / {FEEDBACK_MAX}
+          {length.toLocaleString()} / {FEEDBACK_MAX.toLocaleString()}
         </span>
       </p>
       {error && (
