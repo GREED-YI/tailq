@@ -10,7 +10,7 @@ Next.js (TypeScript) · Supabase · Claude API · Vercel
 
 ## 개발
 
-필요한 것: Node.js 24, Docker (로컬 Supabase)
+필요한 것: Node.js 24.22.1 이상 25 미만(`.nvmrc`, `package.json`의 `engines`), Docker (로컬 Supabase)
 
 ```bash
 npm install

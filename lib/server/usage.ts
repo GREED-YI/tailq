@@ -17,11 +17,16 @@ export function budgetUsd() {
 // 시작 버튼 대신 보여주는 문구(04 기능 명세 12장). 개인 한도와 월 예산이 같은 문구를 쓴다
 export const LIMIT_MESSAGE = "오늘은 사용 한도를 모두 썼어요. 내일 다시 만나요";
 
+// 실패한 질문 다시 만들기(프로젝트·학습 자료 합쳐)의 하루 한도(restart_*_generation, docs/10 "남용 제한")
+export const REGEN_LIMIT_MESSAGE =
+  "오늘 다시 만들기는 3번까지예요. 내일 다시 만들 수 있어요";
+
 export type Quota = {
   budget: "ok" | "downgrade" | "exceeded";
   spentUsd: number;
   sessionsLeft: number;
   gensLeft: number;
+  regensLeft: number;
 };
 
 // 남은 한도. 화면이 시작하기 전에 안내를 보일지 정하는 데 쓴다(실제로 막는 것은 시작 함수다)
@@ -34,14 +39,24 @@ export async function loadQuota(db: Admin, userId: string | null) {
     spent_usd: number;
     sessions_left: number;
     gens_left: number;
+    regens_left: number;
   };
   return {
     budget: q.budget,
     spentUsd: Number(q.spent_usd),
     sessionsLeft: q.sessions_left,
     gensLeft: q.gens_left,
+    regensLeft: q.regens_left,
   } satisfies Quota;
 }
+
+// 월 예산이나 하루 다시 만들기 한도에 닿았으면 다시 만들기 버튼 대신 보여줄 문구, 아니면 null
+export const retryBlocked = (q: Quota) =>
+  q.budget === "exceeded"
+    ? LIMIT_MESSAGE
+    : q.regensLeft <= 0
+      ? REGEN_LIMIT_MESSAGE
+      : null;
 
 // AI 호출 한 번을 ai_usage에 남긴다. 잡아 둔 몫(reserved)이 있으면 그 행을 바꾼다.
 // 기록이 실패해도 사용자 요청은 실패시키지 않는다

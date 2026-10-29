@@ -20,9 +20,6 @@ export type QuestionRow = {
   open: boolean;
 };
 
-// 월 예산에 닿으면 다시 만들기 대신 보여준다(04 기능 명세 12장. 서버 전용 모듈이라 문구만 둔다)
-const LIMIT_MESSAGE = "오늘은 사용 한도를 모두 썼어요. 내일 다시 만나요";
-
 // 생성 상태를 다시 읽는 간격(08 설계 "내 프로젝트 질문 생성": 2초마다)
 const POLL_MS = 2000;
 
@@ -54,7 +51,7 @@ export function ProjectView({
   questions,
   notice,
   sessionsLeft,
-  canRetry,
+  retryBlocked,
 }: {
   kind?: keyof typeof COPY;
   id: string;
@@ -65,7 +62,8 @@ export function ProjectView({
   notice: Notice | null;
   // 오늘 남은 면접 연습 횟수. 월 예산이 다 찼으면 null(숨긴다)
   sessionsLeft: number | null;
-  canRetry: boolean;
+  // 월 예산이나 하루 다시 만들기 한도에 닿았으면 다시 만들기 대신 보여줄 문구(04 기능 명세 12장)
+  retryBlocked: string | null;
 }) {
   const c = COPY[kind];
   const router = useRouter();
@@ -245,7 +243,7 @@ export function ProjectView({
           ) : (
             <>
               <strong>질문을 만들지 못했어요</strong>
-              {canRetry ? (
+              {!retryBlocked ? (
                 <>
                   <p>
                     {c.source}는 그대로 남아 있어요.
@@ -263,7 +261,7 @@ export function ProjectView({
                   </button>
                 </>
               ) : (
-                <p>{LIMIT_MESSAGE}</p>
+                <p>{retryBlocked}</p>
               )}
             </>
           )}
