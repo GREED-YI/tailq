@@ -50,9 +50,10 @@
   position: sticky;
   top: 0;
   z-index: 10;
-  height: var(--hh);
+  min-height: var(--hh);
   padding: 0 max(var(--g), calc((100% - 1200px) / 2));
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
@@ -84,6 +85,12 @@
 @media (max-width: 359px) {
   .start {
     display: none;
+  }
+}
+/* 확대해서 아주 좁아지면(375의 200% = 188) 헤더가 두 줄로 바뀌므로 위에 붙이지 않는다(화면을 가리지 않게) */
+@media (max-width: 299px) {
+  .header {
+    position: relative;
   }
 }
 
@@ -424,6 +431,14 @@
   color: var(--text-sub);
   text-wrap: pretty;
 }
+/* 주 버튼 두 개(첫 화면 CTA, 체험 시작)는 높이를 고정하지 않는다(.btn 52px). 확대해서 글이 여러 줄이 되면 버튼이 같이 커진다 */
+.cta,
+.tryBtn {
+  height: auto;
+  min-height: 52px;
+  padding-block: 12px;
+  text-align: center;
+}
 .cta {
   margin-top: 32px;
   width: 100%;
@@ -463,7 +478,7 @@
   }
   .cta {
     width: auto;
-    padding: 0 32px;
+    padding-inline: 32px;
   }
   .heroStage {
     margin-top: 56px;
@@ -1027,10 +1042,11 @@
 .tryGrid > * {
   min-width: 0;
 }
+/* 좁으면(확대 포함) 칸 수를 줄여 줄을 바꾼다. 104px는 '프론트엔드' 칩이 한 줄로 들어가는 폭 */
 .fields {
   margin-top: 24px;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 104px), 1fr));
   gap: 8px;
 }
 .tryStart {
