@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { InstallButton } from "@/components/InstallButton";
 import { HOME_GUIDE_KEY } from "@/lib/home";
 import s from "./home.module.css";
 
@@ -61,13 +62,17 @@ export function HomeGuide() {
           </p>
         </li>
       </ol>
-      <button
-        type="button"
-        className="press btn btn-md btn-secondary"
-        onClick={close}
-      >
-        알겠어요
-      </button>
+      {/* 앱 설치(#150)는 "알겠어요" 옆 같은 줄이라 늦게 나타나도 카드 높이가 변하지 않는다 */}
+      <div className={s.guideActions}>
+        <button
+          type="button"
+          className="press btn btn-md btn-secondary"
+          onClick={close}
+        >
+          알겠어요
+        </button>
+        <InstallButton variant="ghost" />
+      </div>
     </div>
   );
 }

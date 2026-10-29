@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense, type ReactNode } from "react";
 import { Avatar } from "@/components/Avatar";
 import { Icon } from "@/components/icons";
+import { InstallButton } from "@/components/InstallButton";
 import { FEEDBACK_URL } from "@/lib/links";
 import { FIELDS, LEVELS, providerName } from "@/lib/profile";
 import { ticketsLeft } from "@/lib/streak";
@@ -106,6 +107,8 @@ async function My() {
           subscriptions={subs.data ?? []}
         />
         <ThemeRow />
+        {/* 맨 끝 줄이라 늦게 나타나도 위 줄은 밀리지 않는다 */}
+        <InstallButton variant="row" />
       </Group>
 
       <Group title="정보">

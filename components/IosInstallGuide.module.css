@@ -1,0 +1,54 @@
+/* 아이폰·아이패드 홈 화면 추가 안내(#150). 창은 MY 확인 창(my.module.css .dialog)을 같이 쓰고,
+   단계 목록은 홈 안내 카드와 같은 번호 규칙(번호 13 mono muted, 글 15 text-sub, 핵심 낱말 700 text).
+   그림은 iOS 공유 화면을 사진 없이 1px mark-empty 테두리 상자로 흉내 낸 정지 그림이다 */
+.steps {
+  margin-block: 16px 8px;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.steps > li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 12px;
+}
+.steps > li > :global(.mono) {
+  font-size: 13px;
+  line-height: 24px;
+  color: var(--text-muted);
+}
+.steps p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-sub);
+}
+.steps b {
+  font-weight: 700;
+  color: var(--text);
+}
+.steps p.hint {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+.figure {
+  grid-column: 2;
+  justify-self: start;
+  margin-top: 8px;
+  height: 44px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--mark-empty);
+  border-radius: var(--radius-control);
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+}
+.square {
+  width: 44px;
+  padding: 0;
+  justify-content: center;
+}

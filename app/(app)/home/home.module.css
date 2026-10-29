@@ -76,6 +76,12 @@
   font-weight: 700;
   color: var(--text);
 }
+/* "알겠어요"와 앱 설치(ghost, #150) 한 줄. 좁으면 줄을 바꾼다 */
+.guideActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .tagRow {
   display: flex;
   align-items: center;
