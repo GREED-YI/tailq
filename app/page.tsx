@@ -126,8 +126,8 @@ export default function Landing() {
               하루 한 문제, AI가 채점하고 되묻는 개발자 기술 면접 연습
             </h1>
             <p className={s.heroSub}>
-              답변을 쓰면 AI가 점수를 매기고, 내 답변에 맞춰 꼬리질문을 이어
-              가요. 70점 미만이면 다음 날 다시 물어요.
+              답변을 적으면 점수가 나오고, 작성한 내용에서 꼬리질문이 이어져요.
+              70점 미만은 다음 날 다시 출제돼요.
             </p>
             <a href="#try" className={`btn btn-primary press ${s.cta}`}>
               로그인 없이 한 문제 풀어보기
@@ -152,11 +152,11 @@ export default function Landing() {
         >
           <div className={`${s.gradeCopy} ${s.reveal}`}>
             <h2 id="grade-title" className={s.h2}>
-              잘한 점부터 알려 주는 채점
+              잘한 점과 보완할 점을 짚어주는 채점
             </h2>
             <p className={s.lead}>
-              점수 아래에 잘한 점과 보완할 개념을 차례로 짚어요. 모르는 질문은
-              &lsquo;모르겠어요&rsquo;를 누르면 모범 답안을 보여 줘요.
+              점수와 함께 잘한 점과 보완할 점을 정리해 줘요. 모르는 질문은
+              &lsquo;모르겠어요&rsquo;를 눌러 모범 답안을 볼 수 있어요.
             </p>
           </div>
           <div className={`${s.crop} ${s.reveal} ${s.gradeShot}`}>
@@ -186,12 +186,12 @@ export default function Landing() {
                   내 답변에서 이어지는 꼬리질문
                 </h2>
                 <p className={s.lead}>
-                  AI가 내 답변을 읽고 다음 질문을 만들어요. 실제 면접처럼
-                  답변에서 빠진 부분을 이어서 물어요.
+                  입력한 답변을 바탕으로 다음 질문이 이어져요. 면접관처럼 부족한
+                  개념을 파악해 다시 물어봐요.
                 </p>
               </div>
               <p className={s.hold}>
-                본 질문은 점수로, 꼬리질문은 판정으로 남아요.
+                본 질문은 점수로 기록되고, 꼬리질문은 판정 결과로 관리돼요.
               </p>
             </div>
             <div className={`${s.wrap} ${s.peakFrame}`}>
@@ -246,9 +246,9 @@ export default function Landing() {
               점수에 맞춰 돌아오는 복습
             </h2>
             <p className={s.lead}>
-              70점 미만이면 다음 날 다시 묻고, 70점 이상이면 3일, 7일, 14일,
-              30일로 간격을 늘려요. 푼 질문은 Q노트에 모이고, 열면 날짜별 기록이
-              보여요.
+              70점 미만은 다음 날 바로 복습하고, 복습 질문이 70점 이상이 되면
+              3일, 7일, 14일, 30일 뒤에 다시 나와요. 지난 기록은 Q노트에
+              날짜별로 정리돼요.
             </p>
           </div>
           <div className={s.reviewShots}>
@@ -268,11 +268,11 @@ export default function Landing() {
         >
           <div className={`${s.recordCopy} ${s.reveal}`}>
             <h2 id="record-title" className={s.h2}>
-              숫자로 남는 꼬리잇기와 약한 주제
+              한눈에 파악하는 학습 연속성과 취약 주제
             </h2>
             <p className={s.lead}>
-              하루도 빠지지 않고 이어서 푼 날이 꼬리잇기로 쌓여요. 리포트에서
-              달력과 주제별 평균 점수로 약한 곳을 찾아요.
+              매일 연속으로 푸면 꼬리잇기 기록이 쌓여요. 리포트 달력과 주제별
+              평균 점수로 부족한 분야를 한눈에 파악할 수 있어요.
             </p>
           </div>
           <div className={`${s.crop} ${s.reveal} ${s.today}`}>
@@ -296,16 +296,15 @@ export default function Landing() {
         >
           <div className={`${s.makerCopy} ${s.reveal}`}>
             <h2 id="maker-title" className={s.h2}>
-              내 학습 자료로 만드는 질문 5개
+              내 문서로 만드는 맞춤 질문 5개
             </h2>
             <p className={s.lead}>
-              Q메이커에 PDF·Word·한글 파일을 올리면 내용이 마크다운으로 바뀌어
-              입력칸에 채워져요. 파일은 서버로 보내지 않고, 그 글로 질문 5개를
-              만들어요.
+              Q메이커에 PDF·Word·한글 파일을 올리면 마크다운으로 자동 변환해
+              줘요. 파일은 서버로 전송되지 않으며, 해당 문서로 질문 5개를 추출해
+              내요.
             </p>
             <p className={`${s.caption} ${s.makerNote}`}>
-              파일 50MB까지 · 학습 자료 3개까지 · 내 프로젝트 README도 같은
-              자리에서
+              파일 최대 50MB · 학습 자료 최대 3개 · 프로젝트 README 파일 지원
             </p>
             {/* 녹화를 멈추는 스위치(녹화가 없는 좁은 화면·동작 줄이기에서는 숨긴다) */}
             <label className={`press ${s.pause}`}>
@@ -335,8 +334,8 @@ export default function Landing() {
                 </video>
               ))}
               <p className="sr-only">
-                PDF 파일을 불러오면 브라우저가 마크다운으로 바꿔 입력칸에 채우고
-                몇 자를 넣었는지 알려 줘요.
+                PDF 파일을 드래그해 올리면 브라우저가 즉시 마크다운으로 변환해
+                입력창을 채우고 변환된 글자 수를 표시해요.
               </p>
             </div>
             <div className={`${s.crop} ${s.reveal} ${s.noteStill}`}>
