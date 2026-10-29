@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { Icon } from "@/components/icons";
-import type { SessionQuestion } from "@/lib/daily";
+import type { SessionQuestion } from "@/lib/server/daily";
 import type { TurnResult } from "@/lib/server/turn";
 import s from "./interview.module.css";
 import { ScoreRing } from "./ScoreRing";

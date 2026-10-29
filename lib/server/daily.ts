@@ -1,3 +1,4 @@
+import "server-only";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { kstDay, pickDailyQuestion, type Pick } from "@/lib/daily-pick";

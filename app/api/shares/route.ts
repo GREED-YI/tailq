@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { loadStudy } from "@/lib/study";
+import { loadStudy } from "@/lib/server/study";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { track } from "@/lib/server/track";

@@ -10,7 +10,7 @@ import {
   weekStart,
   type GrassCell,
 } from "@/lib/streak";
-import { loadStudy } from "@/lib/study";
+import { loadStudy } from "@/lib/server/study";
 import { createClient } from "@/lib/supabase/server";
 import { weaknessReport, type TopicScore } from "@/lib/weakness";
 import { GrassTip } from "@/components/GrassTip";

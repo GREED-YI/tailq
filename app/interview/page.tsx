@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { loadProjectSession, sourceHref, startDailySession } from "@/lib/daily";
+import {
+  loadProjectSession,
+  sourceHref,
+  startDailySession,
+} from "@/lib/server/daily";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { turnResult } from "@/lib/server/turn";

@@ -1,5 +1,5 @@
 import { isAdmin } from "@/lib/admin";
-import { loadStudy } from "@/lib/study";
+import { loadStudy } from "@/lib/server/study";
 import { createClient } from "@/lib/supabase/server";
 import { AppNav } from "./AppNav";
 

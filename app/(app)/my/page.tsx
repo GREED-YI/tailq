@@ -6,7 +6,7 @@ import { Icon } from "@/components/icons";
 import { FEEDBACK_URL } from "@/lib/links";
 import { FIELDS, LEVELS, providerName } from "@/lib/profile";
 import { ticketsLeft } from "@/lib/streak";
-import { loadStudy } from "@/lib/study";
+import { loadStudy } from "@/lib/server/study";
 import { createClient } from "@/lib/supabase/server";
 import { LogoutButton, NotifyRow, ThemeRow } from "./MySettings";
 import s from "./my.module.css";
