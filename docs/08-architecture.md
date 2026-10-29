@@ -336,7 +336,7 @@ or exists (select 1 from study_notes n where n.id = questions.note_id and n.user
 
 | 테이블 | 주요 열 | 메모 |
 |---|---|---|
-| `profiles` | `id`(= `auth.users.id`), `nickname`(2~12자), `avatar`(소셜 사진 URL 또는 기본 아바타 키), `topics`(text[]), `levels`(text[]), `notify_on`, `notify_hour`(0~23, 기본 8), `last_notified_day`(중복 발송 방지), `theme`(system·light·dark), `agreed_at`, `onboarded_at`, `created_at` | 연습 범위는 배열 열로 충분하다. 행은 `auth.users`에 사용자가 생길 때 트리거(`handle_new_user`, `security definer`)가 만든다. 첫 로그인 판단은 `onboarded_at is null` |
+| `profiles` | `id`(= `auth.users.id`), `nickname`(2~12자), `avatar`(소셜 사진 URL 또는 기본 아바타 키), `topics`(text[]), `levels`(text[]), `notify_on`, `notify_hour`(0~23, 기본 8), `last_notified_day`(중복 발송 방지), `share_nickname`(공유 카드 닉네임 공개), `agreed_at`, `onboarded_at`, `created_at` | 연습 범위는 배열 열로 충분하다. 행은 `auth.users`에 사용자가 생길 때 트리거(`handle_new_user`, `security definer`)가 만든다. 첫 로그인 판단은 `onboarded_at is null`. 처음엔 화면 테마를 `theme`(system·light·dark) 열에도 두었으나, 테마는 기기 `localStorage`(`lib/theme.ts`)에 두고 앱이 이 열을 읽지도 쓰지도 않아 지웠다 (2026-10-29, #132) |
 | `push_subscriptions` | `id`, `user_id`, `endpoint`(유일), `p256dh`, `auth_key`, `created_at` | 기기마다 하나. 처음엔 `auth`였으나 Supabase 스키마 이름과 겹쳐 바꿨다 (2026-10-25) |
 
 ### 학습
@@ -414,7 +414,7 @@ or exists (select 1 from study_notes n where n.id = questions.note_id and n.user
 | 메서드 · 경로 | 하는 일 | 로그인 |
 |---|---|---|
 | `GET /auth/callback?next=` | 소셜 로그인 돌아오는 곳(Supabase 규칙). 체험 이어받기, 첫 로그인이면 온보딩으로, `next`가 있으면 그곳으로(탈퇴 재인증) | - |
-| `PATCH /api/me` | 내 프로필·설정 바꾸기(닉네임, 아바타, 연습 범위, 알림 켜기·시각, 테마, 온보딩 동의) | ○ |
+| `PATCH /api/me` | 내 프로필·설정 바꾸기(닉네임, 아바타, 공유 닉네임 공개, 연습 범위, 알림 켜기·시각, 온보딩 동의). 테마는 서버에 보내지 않고 기기에 둔다 | ○ |
 | `DELETE /api/me` | 탈퇴 | ○ |
 | `POST /api/sessions` | 프로젝트·학습 자료 질문 세션 만들기 `{ kind: "project", questionId }`(한도 예약, 그 질문의 열린 세션이 있으면 그것을 돌려줌). 처음엔 `{ kind: "daily" }`로 오늘의 세션도 만들었으나, 홈·면접 화면이 서버에서 `startDailySession`을 바로 불러 화면이 쓰지 않아 지웠다 (2026-10-29, #132) | ○ |
 | `PUT /api/turns/{id}/answer` | 답변 저장 → 채점 + 다음 꼬리질문(SSE). `{ text }` 또는 `{ dontKnow: true }`(AI를 부르지 않음, JSON 응답). 실패한 턴에 같은 요청을 다시 보내면 다시 채점이다. 체험 턴도 같은 주소(쿠키 토큰으로 소유 확인) | ○ 또는 체험 쿠키 |

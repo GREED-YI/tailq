@@ -192,7 +192,6 @@ export type Database = {
           notify_on: boolean;
           onboarded_at: string | null;
           share_nickname: boolean;
-          theme: string;
           topics: string[];
         };
         ComputedFields: never;
@@ -208,7 +207,6 @@ export type Database = {
           notify_on?: boolean;
           onboarded_at?: string | null;
           share_nickname?: boolean;
-          theme?: string;
           topics?: string[];
         };
         Update: {
@@ -223,7 +221,6 @@ export type Database = {
           notify_on?: boolean;
           onboarded_at?: string | null;
           share_nickname?: boolean;
-          theme?: string;
           topics?: string[];
         };
         Relationships: [];
