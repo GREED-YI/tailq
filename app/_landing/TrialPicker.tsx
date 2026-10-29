@@ -40,7 +40,6 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
   const startRef = useRef<HTMLButtonElement>(null);
   useCloseOnLeave(limitRef);
   const label = FIELDS.find((f) => f.id === field)!.label;
-  const q = questions?.[field];
 
   async function start() {
     setPending(true);
@@ -122,13 +121,28 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
         </div>
       </div>
       <div className={s.tryStart}>
-        {q && (
-          <div key={field} className={`fade ${s.tryQ}`}>
-            <span className={s.tryTag}>
-              <span className="tag tag-neutral">체험 질문</span>
-              <span className="mono">{q.tag}</span>
-            </span>
-            <p>{q.prompt}</p>
+        {questions && (
+          // 분야를 바꾸면 바뀐 질문을 읽어 준다. 알림은 늘 남아 있는 이 감싸개에 건다(새로 그려지는 칸에 걸면 알리지 않는다).
+          // 세 질문을 같은 칸에 겹쳐 두고 고른 것만 보인다(나머지는 visibility로 숨겨 높이만 잡는다)
+          <div className={s.tryQs} aria-live="polite">
+            {FIELDS.map(({ id }) => {
+              const q = questions[id];
+              if (!q) return null;
+              const on = id === field;
+              return (
+                <div
+                  key={on ? `on-${id}` : id}
+                  className={on ? `fade ${s.tryQ}` : s.tryQ}
+                  data-off={on ? undefined : ""}
+                >
+                  <span className={s.tryTag}>
+                    <span className="tag tag-neutral">체험 질문</span>
+                    <span className="mono">{q.tag}</span>
+                  </span>
+                  <p>{q.prompt}</p>
+                </div>
+              );
+            })}
           </div>
         )}
         <button
