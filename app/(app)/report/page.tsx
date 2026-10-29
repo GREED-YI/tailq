@@ -256,7 +256,7 @@ function MonthLabels({
   );
 }
 
-// 주제 이름 · 평균 점수와 20칸 막대 · 지난주 대비 변화(S21). 오르면 text, 내리면 text-sub(방향은 ▲▼가 알린다).
+// 주제 이름 · 평균 점수와 20칸 막대 · 지난주 대비 변화(S21). 오르면 text, 내리면 danger(색과 ▲▼를 같이 쓴다).
 // 변화가 없거나 지난주 기록이 없으면 오른쪽 칸을 그리지 않는다(R13)
 function TopicRow({ t }: { t: TopicScore }) {
   return (
