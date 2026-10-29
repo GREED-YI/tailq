@@ -1054,9 +1054,19 @@
   flex-direction: column;
   gap: 12px;
 }
+/* 세 분야 질문을 같은 칸에 겹쳐 두고 고른 것만 보인다. 칸 높이가 가장 긴 질문에 맞춰져 분야를 바꿔도 아래 버튼이 밀리지 않는다 */
+.tryQs {
+  display: grid;
+  margin-bottom: 8px;
+}
+.tryQs > * {
+  grid-area: 1 / 1;
+}
+.tryQ[data-off] {
+  visibility: hidden;
+}
 .tryQ {
   padding-top: 16px;
-  margin-bottom: 8px;
   border-top: 2px solid var(--text);
   display: flex;
   flex-direction: column;
@@ -1070,6 +1080,8 @@
 }
 .tryTag > :global(.mono) {
   font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
   color: var(--text-muted);
 }
 .tryQ p {
@@ -1096,18 +1108,36 @@
     min-width: 104px;
   }
 }
+/* PC: 글과 칩은 왼쪽 5칸, 질문·버튼은 오른쪽 7칸. 칩 줄과 시작 버튼은 같은 행에 두고 아래 끝을 맞춘다
+   (두 묶음을 display: contents로 풀어 한 grid에 놓는다. DOM·초점 순서는 그대로) */
 @media (min-width: 1024px) {
   .tryGrid {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     column-gap: 40px;
+    row-gap: 0;
     align-items: start;
   }
-  .tryCopy {
+  .tryCopy,
+  .tryStart {
+    display: contents;
+  }
+  .tryCopy > * {
     grid-column: 1 / span 5;
   }
-  .tryStart {
+  .tryStart > * {
     grid-column: 6 / span 7;
+  }
+  .tryQs {
+    grid-row: 1 / span 2;
+  }
+  .fields,
+  .tryBtn {
+    grid-row: 3;
+    align-self: end;
+  }
+  .tryStart > :not(.tryQs, .tryBtn) {
+    margin-top: 12px;
   }
   .tryQ p {
     font-size: 20px;
