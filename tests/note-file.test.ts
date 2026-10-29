@@ -7,7 +7,7 @@ import {
   NOTE_FILE_MESSAGES as M,
   NOTE_FILE_TEXT_CAP,
   fileToText,
-} from "@/lib/note-file";
+} from "@/lib/client/note-file";
 import { NOTE_FILE_ACCEPT } from "@/lib/questions";
 
 // 픽스처 파일은 저장소에 두지 않고 형식마다 가장 작은 모양을 여기서 만든다

@@ -78,7 +78,7 @@ export const NOTE_CONTENT_MAX = 30_000;
 // 실제 한도는 DB 함수 ai_quota(supabase/migrations/20261028090000_usage_cap.sql)가 정하므로 값을 바꾸면 그 SQL도 같이 고친다
 export const DAILY_GENS = 1;
 export const DAILY_SESSIONS = 3;
-// 학습 자료 파일 고르기 창에 보일 형식(#144, 변환은 lib/note-file). 옛 형식(.doc·.ppt·.xls)도 넣어야 골랐을 때 새 형식으로 저장하라는 안내를 볼 수 있다
+// 학습 자료 파일 고르기 창에 보일 형식(#144, 변환은 lib/client/note-file). 옛 형식(.doc·.ppt·.xls)도 넣어야 골랐을 때 새 형식으로 저장하라는 안내를 볼 수 있다
 export const NOTE_FILE_ACCEPT = [
   ".pdf",
   ".docx",

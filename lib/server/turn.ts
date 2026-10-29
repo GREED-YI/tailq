@@ -3,7 +3,7 @@ import {
   errorResponse,
   INTERNAL_MESSAGE,
   type ErrorCode,
-} from "@/lib/api-error";
+} from "@/lib/server/api-error";
 import type { createAdminClient } from "@/lib/supabase/admin";
 
 type Admin = ReturnType<typeof createAdminClient>;

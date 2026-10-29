@@ -1,10 +1,10 @@
 import { after } from "next/server";
 import { z } from "zod";
-import { generateAndSaveNote, noteErrorResponse } from "@/lib/notes";
+import { generateAndSaveNote, noteErrorResponse } from "@/lib/server/notes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { budgetUsd } from "@/lib/usage";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { budgetUsd } from "@/lib/server/usage";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 export const maxDuration = 300;
 

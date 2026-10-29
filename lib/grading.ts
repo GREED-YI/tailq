@@ -78,7 +78,7 @@ export const GradeOutput = z.object({
 });
 export type GradeOutput = z.infer<typeof GradeOutput>;
 
-// AI_MOCK=1일 때 돌려주는 픽스처. 스키마를 통과하는 모양이다(lib/ai.ts, 테스트의 MSW 응답도 이것을 쓴다)
+// AI_MOCK=1일 때 돌려주는 픽스처. 스키마를 통과하는 모양이다(lib/server/ai.ts, 테스트의 MSW 응답도 이것을 쓴다)
 export const MOCK_GRADE: GradeOutput = {
   criteria: { concept: 30, reason: 20, application: 12, delivery: 12 },
   score: 74,

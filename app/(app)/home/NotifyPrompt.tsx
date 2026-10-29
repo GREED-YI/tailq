@@ -6,7 +6,7 @@ import {
   pushSupported,
   SUBSCRIBE_ERRORS,
   subscribePush,
-} from "@/lib/push-client";
+} from "@/lib/client/push-client";
 import { hourLabel } from "@/lib/profile";
 import s from "../my/my.module.css";
 import { openModal, useCloseOnLeave } from "@/lib/dialog";

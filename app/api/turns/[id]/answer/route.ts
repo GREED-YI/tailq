@@ -1,7 +1,12 @@
 import { cookies } from "next/headers";
 import { after } from "next/server";
 import { z } from "zod";
-import { grade, gradeFollowUp, GradingError, type AiUsage } from "@/lib/ai";
+import {
+  grade,
+  gradeFollowUp,
+  GradingError,
+  type AiUsage,
+} from "@/lib/server/ai";
 import {
   toFollowUpGrading,
   toGrading,
@@ -10,11 +15,15 @@ import {
 } from "@/lib/grading";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { track } from "@/lib/track";
+import { track } from "@/lib/server/track";
 import { TRIAL_COOKIE } from "@/lib/trial";
-import { recordUsage } from "@/lib/usage";
-import { dbErrorResponse, turnResult, type TurnResult } from "@/lib/turn";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { recordUsage } from "@/lib/server/usage";
+import {
+  dbErrorResponse,
+  turnResult,
+  type TurnResult,
+} from "@/lib/server/turn";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 // 채점(최대 15초)과 결과 저장(after)까지 끊기지 않게(08 설계 "실행 환경")
 export const maxDuration = 60;

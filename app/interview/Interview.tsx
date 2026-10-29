@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { Icon } from "@/components/icons";
 import type { SessionQuestion } from "@/lib/daily";
-import type { TurnResult } from "@/lib/turn";
+import type { TurnResult } from "@/lib/server/turn";
 import s from "./interview.module.css";
 import { ScoreRing } from "./ScoreRing";
 import type { Step } from "./steps";

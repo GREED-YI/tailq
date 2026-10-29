@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { FEEDBACK_DAILY, FeedbackBody, FeedbackCategory } from "@/lib/feedback";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 // 피드백 보내기(04 기능 명세 12장) { body, category? }. 로그인을 확인한 뒤 서버 전용 권한으로 그 사용자 행만 넣는다
 export const POST = withApiErrors(async function POST(request: Request) {

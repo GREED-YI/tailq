@@ -1,5 +1,5 @@
 import "server-only";
-import type { AiUsage } from "@/lib/ai";
+import type { AiUsage } from "@/lib/server/ai";
 import type { createAdminClient } from "@/lib/supabase/admin";
 
 type Admin = ReturnType<typeof createAdminClient>;

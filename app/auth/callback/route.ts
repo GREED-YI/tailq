@@ -3,7 +3,7 @@ import { after, NextResponse } from "next/server";
 import { safeNextPath } from "@/lib/safe-next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { readAnonId, record } from "@/lib/track";
+import { readAnonId, record } from "@/lib/server/track";
 import { TRIAL_COOKIE } from "@/lib/trial";
 
 // 소셜 로그인에서 돌아오는 곳. 받은 코드를 세션으로 바꾸고 next로 보낸다.

@@ -5,7 +5,7 @@ import { ANON_COOKIE } from "@/lib/events";
 import { MeUpdate, socialPhoto, toProfileUpdate } from "@/lib/profile";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 // 내 프로필·설정 바꾸기(08 설계 4장). 로그인한 사용자를 확인한 뒤 서버 전용 권한으로 자기 행만 쓴다.
 export const PATCH = withApiErrors(async function PATCH(request: Request) {

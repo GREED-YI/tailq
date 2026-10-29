@@ -9,7 +9,7 @@ import { LEVELS } from "@/lib/profile";
 import { tagLine } from "@/lib/questions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { turnResult, type TurnResult } from "@/lib/turn";
+import { turnResult, type TurnResult } from "@/lib/server/turn";
 import { ScoreRing } from "@/app/interview/ScoreRing";
 import { VerdictMark } from "@/app/interview/VerdictMark";
 import { scoreVerdict, VERDICTS } from "@/app/interview/verdict";

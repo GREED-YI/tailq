@@ -1,15 +1,15 @@
 import "server-only";
-import { generateProjectQuestions, GradingError } from "@/lib/ai";
+import { generateProjectQuestions, GradingError } from "@/lib/server/ai";
 import {
   errorResponse,
   INTERNAL_MESSAGE,
   type ErrorCode,
-} from "@/lib/api-error";
+} from "@/lib/server/api-error";
 import type { Json } from "@/lib/database.types";
 import { toProjectQuestions } from "@/lib/project-questions";
 import { MAX_PROJECTS } from "@/lib/questions";
 import type { createAdminClient } from "@/lib/supabase/admin";
-import { LIMIT_MESSAGE, recordUsage } from "@/lib/usage";
+import { LIMIT_MESSAGE, recordUsage } from "@/lib/server/usage";
 
 type Admin = ReturnType<typeof createAdminClient>;
 

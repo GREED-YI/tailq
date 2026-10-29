@@ -78,7 +78,7 @@ export type ProjectQuestion = NonNullable<
   ReturnType<typeof toProjectQuestions>
 >[number];
 
-// AI_MOCK=1일 때 돌려주는 픽스처(lib/ai.ts, 테스트의 MSW 응답도 이것을 쓴다)
+// AI_MOCK=1일 때 돌려주는 픽스처(lib/server/ai.ts, 테스트의 MSW 응답도 이것을 쓴다)
 export const MOCK_PROJECT_QUESTIONS: ProjectQuestionsOutput = {
   questions: (
     [

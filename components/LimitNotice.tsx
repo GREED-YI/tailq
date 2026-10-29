@@ -1,4 +1,4 @@
-import type { Quota } from "@/lib/usage";
+import type { Quota } from "@/lib/server/usage";
 import s from "./LimitNotice.module.css";
 
 export type Notice = { title: string; lines: string[] };

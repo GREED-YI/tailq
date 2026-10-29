@@ -21,8 +21,8 @@ const {
   generateNoteQuestions,
   generateProjectQuestions,
   GradingError,
-} = await import("@/lib/ai");
-type AiUsage = import("@/lib/ai").AiUsage;
+} = await import("@/lib/server/ai");
+type AiUsage = import("@/lib/server/ai").AiUsage;
 
 const input: GradeInput = {
   question: "N+1 문제란?",

@@ -1,19 +1,19 @@
 import "server-only";
-import { generateNoteQuestions, GradingError } from "@/lib/ai";
+import { generateNoteQuestions, GradingError } from "@/lib/server/ai";
 import {
   errorResponse,
   INTERNAL_MESSAGE,
   type ErrorCode,
-} from "@/lib/api-error";
+} from "@/lib/server/api-error";
 import type { Json } from "@/lib/database.types";
 import { toProjectQuestions } from "@/lib/project-questions";
 import { MAX_NOTES } from "@/lib/questions";
 import type { createAdminClient } from "@/lib/supabase/admin";
-import { LIMIT_MESSAGE, recordUsage } from "@/lib/usage";
+import { LIMIT_MESSAGE, recordUsage } from "@/lib/server/usage";
 
 type Admin = ReturnType<typeof createAdminClient>;
 
-// 학습 자료 질문 5개를 만들어 저장한다(08 설계 "학습 자료 질문 생성", lib/projects.ts의 generateAndSave와 같은 흐름).
+// 학습 자료 질문 5개를 만들어 저장한다(08 설계 "학습 자료 질문 생성", lib/server/projects.ts의 generateAndSave와 같은 흐름).
 // 실패해도 던지지 않고 failed + 에러 코드로 남긴다. 그사이 학습 자료가 지워졌으면 저장이 NOT_FOUND로 끝난다.
 export async function generateAndSaveNote(
   db: Admin,

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
 const { ApiError, errorResponse, withApiErrors } =
-  await import("@/lib/api-error");
+  await import("@/lib/server/api-error");
 
 const body = (res: Response) => res.json();
 

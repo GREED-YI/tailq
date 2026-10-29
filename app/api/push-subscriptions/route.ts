@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { isPushEndpoint } from "@/lib/push";
+import { isPushEndpoint } from "@/lib/server/push";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { errorResponse, withApiErrors } from "@/lib/api-error";
+import { errorResponse, withApiErrors } from "@/lib/server/api-error";
 
 // 브라우저 PushSubscription.toJSON() 모양. 길이는 DB 제약과 같다. 주소는 알려진 푸시 서비스만
 const Body = z.object({

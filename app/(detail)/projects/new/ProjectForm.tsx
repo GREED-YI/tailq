@@ -168,7 +168,7 @@ export function ProjectForm({
     setFileNote(null);
     setFileName(file.name);
     try {
-      const { fileToText } = await import("@/lib/note-file");
+      const { fileToText } = await import("@/lib/client/note-file");
       const { text, truncated } = await fileToText(file);
       setContent(text);
       setFileNote({ n: text.trim().length, replaced, truncated });

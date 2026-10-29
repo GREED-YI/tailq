@@ -11,7 +11,7 @@ import {
 } from "@/lib/questions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { loadQuota } from "@/lib/usage";
+import { loadQuota } from "@/lib/server/usage";
 import s from "./projects.module.css";
 import { RefreshWhileGenerating } from "./RefreshWhileGenerating";
 
