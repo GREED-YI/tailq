@@ -16,6 +16,8 @@ export type EventProps = {
   rating: { turn_id: string; rating: 1 | -1 };
   share: { session_id: string };
   notification_click: Record<string, never>;
+  install_click: Record<string, never>;
+  app_installed: Record<string, never>;
 };
 export type EventName = keyof EventProps;
 
@@ -30,6 +32,8 @@ export const EVENT_NAMES = [
   "rating",
   "share",
   "notification_click",
+  "install_click",
+  "app_installed",
 ] as const satisfies readonly EventName[];
 
 // 브라우저를 구분하는 무작위 값(개인정보처리방침 "이용 기록"). 첫 방문 신호를 보낼지 브라우저가 알아야 해서
@@ -46,6 +50,8 @@ export const parseAnonId = (value: string | undefined) =>
 export const CLIENT_EVENTS = [
   "first_visit",
   "notification_click",
+  "install_click",
+  "app_installed",
 ] as const satisfies readonly EventName[];
 
 // 첫 방문은 이 브라우저에 무작위 값을 처음 줄 때, 로그인하지 않은 사람만 센다

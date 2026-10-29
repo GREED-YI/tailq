@@ -3,9 +3,10 @@ import { describe, expect, it } from "vitest";
 import { countsAsEvent, EVENT_NAMES, parseAnonId } from "@/lib/events";
 
 describe("지표 이벤트 이름", () => {
+  // 허용 목록을 마지막으로 바꾼 마이그레이션(#150 설치 버튼)과 비교한다
   it("마이그레이션의 허용 목록과 같다", () => {
     const sql = readFileSync(
-      "supabase/migrations/20261027200000_events.sql",
+      "supabase/migrations/20261029170000_events_install.sql",
       "utf8",
     );
     const list = sql.match(/check \(name in \(([^)]*)\)\)/)?.[1] ?? "";
@@ -33,8 +34,14 @@ describe("첫 방문", () => {
     expect(countsAsEvent("first_visit", false, "user-1")).toBe(false);
   });
 
-  it("알림 클릭은 언제나 센다", () => {
-    expect(countsAsEvent("notification_click", true, "user-1")).toBe(true);
-    expect(countsAsEvent("notification_click", false, null)).toBe(true);
+  it("알림 클릭·설치 버튼·설치 완료는 언제나 센다", () => {
+    for (const name of [
+      "notification_click",
+      "install_click",
+      "app_installed",
+    ] as const) {
+      expect(countsAsEvent(name, true, "user-1")).toBe(true);
+      expect(countsAsEvent(name, false, null)).toBe(true);
+    }
   });
 });
