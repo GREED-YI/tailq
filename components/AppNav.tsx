@@ -2,6 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+// 설치 이벤트(beforeinstallprompt)는 페이지당 한 번 일찍 온다. 앱 뼈대에 늘 있는 메뉴에서 모듈을 불러와
+// 어느 화면으로 들어와도 받아 두고, 나중에 MY·홈의 설치 버튼이 쓴다. 랜딩은 브라우저 기본 설치 안내를 그대로 둔다
+import "@/lib/client/install";
 import { Avatar } from "./Avatar";
 import { Icon, type IconName } from "./icons";
 import { Logo } from "./Logo";
