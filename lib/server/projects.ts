@@ -5,7 +5,11 @@ import type { Json } from "@/lib/database.types";
 import { toProjectQuestions } from "@/lib/question-gen";
 import { MAX_PROJECTS } from "@/lib/questions";
 import type { createAdminClient } from "@/lib/supabase/admin";
-import { LIMIT_MESSAGE, recordUsage } from "@/lib/server/usage";
+import {
+  LIMIT_MESSAGE,
+  recordUsage,
+  REGEN_LIMIT_MESSAGE,
+} from "@/lib/server/usage";
 
 type Admin = ReturnType<typeof createAdminClient>;
 
@@ -18,7 +22,7 @@ export async function generateAndSave(
   let questions = null;
   let code = "schema_invalid";
   try {
-    // 등록할 때 잡아 둔 몫을 첫 생성이 쓰고, 다시 생성은 새 행으로 남는다
+    // 등록·다시 생성할 때 잡아 둔 몫(reserved)을 이 생성 호출의 기록이 쓴다
     questions = toProjectQuestions(
       await generateProjectQuestions(
         { name: project.name, content: project.content },
@@ -56,6 +60,7 @@ const MESSAGES: Partial<Record<ErrorCode, string>> = {
     "오늘의 질문으로 나온 프로젝트는 내일 지울 수 있어요",
   LIMIT_EXCEEDED: LIMIT_MESSAGE,
   BUDGET_EXCEEDED: LIMIT_MESSAGE,
+  REGEN_LIMIT: REGEN_LIMIT_MESSAGE,
 };
 
 export const projectErrorResponse = (e: unknown) =>

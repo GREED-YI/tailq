@@ -14,7 +14,13 @@ export const QuestionFile = z.object({
   }),
   model_answer: z.string().min(20).max(2000),
   links: z
-    .array(z.object({ title: z.string().min(1), url: z.url() }))
+    // 화면에 링크로 그리므로 http(s)만 받는다(javascript: 같은 주소가 섞이지 않게)
+    .array(
+      z.object({
+        title: z.string().min(1),
+        url: z.url({ protocol: /^https?$/ }),
+      }),
+    )
     .min(1)
     .max(3),
 });

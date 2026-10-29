@@ -10,7 +10,7 @@ Next.js (TypeScript) · Supabase · Claude API · Vercel
 
 ## 개발
 
-필요한 것: Node.js 24, Docker (로컬 Supabase)
+필요한 것: Node.js 24.22.1 이상 25 미만(`.nvmrc`, `package.json`의 `engines`), Docker (로컬 Supabase)
 
 ```bash
 npm install
@@ -35,6 +35,10 @@ PR마다 CodeRabbit이 한국어로 코드 리뷰를 단다(`.coderabbit.yaml`).
 PR마다 GitHub Actions가 `verify`(린트·포맷·타입·단위 테스트·커버리지·빌드), `db`(마이그레이션·RLS 테스트·DB 타입 일치), `e2e`(Playwright)를 돌린다. 셋 다 통과해야 main에 합칠 수 있다.
 
 새 마이그레이션은 `npx supabase migration new <이름>`으로 만든다. DB 구조는 대시보드에서 손으로 바꾸지 않는다.
+
+## 배포
+
+main에 합치면 Vercel이 화면·API를, `DB 배포` 워크플로(`.github/workflows/db-deploy.yml`)가 마이그레이션을 운영에 반영한다. 처음 설정(Supabase·Vercel·소셜 로그인·환경변수)과 되돌리는 법은 [docs/11-deploy.md](docs/11-deploy.md).
 
 ## 디렉터리 구조
 
