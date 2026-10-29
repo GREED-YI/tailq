@@ -1,3 +1,5 @@
+import { isIos, isStandalone } from "./install";
+
 // 브라우저 쪽 웹 푸시 구독(#37). 온보딩 ③(S08), MY 알림 창, 홈 알림 안내(S32)가 같이 쓴다.
 // VAPID 공개 키는 서버 컴포넌트가 VAPID_PUBLIC_KEY를 읽어 넘긴다(브라우저 환경변수를 늘리지 않는다).
 
@@ -8,7 +10,7 @@ export const SUBSCRIBE_ERRORS: Record<
   string
 > = {
   install:
-    "아이폰은 Safari 공유 버튼 → '홈 화면에 추가'를 누른 뒤, 홈 화면의 TailQ에서 알림을 켜 주세요. iOS 16.4 이상에서 쓸 수 있어요.",
+    "아이폰은 홈 화면에 추가한 앱에서만 알림을 받을 수 있어요. 추가한 뒤 홈 화면의 TailQ에서 알림을 켜 주세요.",
   denied:
     "브라우저에서 알림이 차단돼 있어요. 주소창 왼쪽 아이콘을 눌러 알림을 허용해 주세요.",
   unsupported:
@@ -22,13 +24,8 @@ export const pushSupported = () =>
   "Notification" in window;
 
 // 아이폰·아이패드는 홈 화면에 추가한 앱에서만 웹 푸시가 된다(iOS 16.4 이상, 04 기능 명세 7장).
-// 아이패드는 데스크톱 Safari처럼 Macintosh로 보이므로 터치 지원으로 가린다
-function needsInstall() {
-  const ios =
-    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-    (/Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1);
-  return ios && !matchMedia("(display-mode: standalone)").matches;
-}
+// 판정은 설치 버튼과 같은 곳(install.ts)에서 가져온다
+const needsInstall = () => isIos() && !isStandalone();
 
 function base64UrlToBytes(base64: string) {
   const b64 = (base64 + "=".repeat((4 - (base64.length % 4)) % 4))
