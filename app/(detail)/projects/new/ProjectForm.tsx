@@ -45,6 +45,70 @@ const COPY = {
   },
 };
 
+// 파일 자리(file-drop) 안의 그림과 글. 불러오는 동안의 자리(notes/new Loading)도 같은 것을 그려서
+// 폭·기기·줄바꿈과 상관없이 높이가 같다. 그 자리에는 화면 읽기가 가리킬 id가 없다(ids 없이)
+export function FileDropBody({
+  dragging = false,
+  reading = false,
+  ids = true,
+}: {
+  dragging?: boolean;
+  reading?: boolean;
+  ids?: boolean;
+}) {
+  return (
+    <>
+      {/* 형식 라벨 → MD 그림(정지). 같은 내용을 형식 줄 글이 말해 화면 읽기에서 뺀다 */}
+      <span className={s.fileFormats} aria-hidden="true">
+        {["PDF", "DOCX", "PPTX", "HWP", "XLSX", "HTML"].map((f) => (
+          <span key={f} className={s.format}>
+            {f}
+          </span>
+        ))}
+        <Icon name="arrowRight" size={16} />
+        <span className={s.format} data-md>
+          MD
+        </span>
+      </span>
+      <span className={s.fileCopy}>
+        <strong className={s.fileLead}>
+          {dragging
+            ? "여기에 놓으면 불러와요"
+            : "파일을 올리면 내용이 아래 칸에 자동으로 채워져요"}
+        </strong>
+        {/* 주어가 서비스라는 게 드러나게 '자동 변환돼요'(사용자가 바꾸라는 말로 읽히지 않게) */}
+        <span className={s.fileDesc}>
+          PDF·Word·한글 등은 마크다운으로 자동 변환돼요. 채워진 글은 고쳐서
+          등록하면 돼요.
+        </span>
+        <span className={s.fileAct}>
+          {/* 버튼 모양만(진짜 버튼이 아니다). 읽는 중 진행 표시는 .btn[aria-busy] 전역 규칙 */}
+          <span
+            className="btn btn-md btn-secondary"
+            aria-busy={reading || undefined}
+          >
+            <span>파일 불러오기</span>
+          </span>
+          <span
+            id={ids ? "project-file-hint" : undefined}
+            className={s.fileNote}
+          >
+            PDF · Word · PowerPoint · Excel · 한글 · EPUB · HTML · TXT · MD ·
+            CSV · JSON · 50MB까지
+          </span>
+        </span>
+        <span
+          id={ids ? "project-file-privacy" : undefined}
+          className={s.fileNote}
+        >
+          파일은 서버로 보내지 않고 저장하지도 않아요. 등록하면 입력칸의 글만
+          보내요.
+        </span>
+      </span>
+    </>
+  );
+}
+
 // 이름과 README(학습 자료)를 받아 등록하고, 질문을 만드는 동안 보여줄 질문 목록 화면으로 간다.
 // notice가 있으면(오늘 등록 한도·월 예산 소진) 입력칸 대신 안내만 보여준다
 export function ProjectForm({
@@ -265,47 +329,10 @@ export function ProjectForm({
                     setDragging(null);
                 }}
               >
-                {/* 형식 라벨 → MD 그림(정지). 같은 내용을 형식 줄 글이 말해 화면 읽기에서 뺀다 */}
-                <span className={s.fileFormats} aria-hidden="true">
-                  {["PDF", "DOCX", "PPTX", "HWP", "XLSX", "HTML"].map((f) => (
-                    <span key={f} className={s.format}>
-                      {f}
-                    </span>
-                  ))}
-                  <Icon name="arrowRight" size={16} />
-                  <span className={s.format} data-md>
-                    MD
-                  </span>
-                </span>
-                <span className={s.fileCopy}>
-                  <strong className={s.fileLead}>
-                    {dragging === "zone"
-                      ? "여기에 놓으면 불러와요"
-                      : "파일을 올리면 내용이 아래 칸에 자동으로 채워져요"}
-                  </strong>
-                  {/* 주어가 서비스라는 게 드러나게 '자동 변환돼요'(사용자가 바꾸라는 말로 읽히지 않게) */}
-                  <span className={s.fileDesc}>
-                    PDF·Word·한글 등은 마크다운으로 자동 변환돼요. 채워진 글은
-                    고쳐서 등록하면 돼요.
-                  </span>
-                  <span className={s.fileAct}>
-                    {/* 버튼 모양만(진짜 버튼이 아니다). 읽는 중 진행 표시는 .btn[aria-busy] 전역 규칙 */}
-                    <span
-                      className="btn btn-md btn-secondary"
-                      aria-busy={reading || undefined}
-                    >
-                      <span>파일 불러오기</span>
-                    </span>
-                    <span id="project-file-hint" className={s.fileNote}>
-                      PDF · Word · PowerPoint · Excel · 한글 · EPUB · HTML · TXT
-                      · MD · CSV · JSON · 50MB까지
-                    </span>
-                  </span>
-                  <span id="project-file-privacy" className={s.fileNote}>
-                    파일은 서버로 보내지 않고 저장하지도 않아요. 등록하면
-                    입력칸의 글만 보내요.
-                  </span>
-                </span>
+                <FileDropBody
+                  dragging={dragging === "zone"}
+                  reading={reading}
+                />
               </label>
               {/* 비어 있어도 늘 두는 알림 칸(나중에 붙인 live 영역은 첫 알림을 놓칠 수 있다) */}
               <p

@@ -628,37 +628,16 @@
   margin-top: 24px;
   height: calc(20px + 8px + 240px);
 }
-/* 학습 자료 파일 자리(file-drop) 높이만큼의 자리. 실제 높이를 재서 맞췄다(글 줄바꿈 따라 바뀐다).
-   마우스 기기 점선 자리: 모바일 폭 한 단 321(368~439), 2단 193(768~773)·172(774~1023)·180(1024~). 터치 기기 작은 모양 175, 넓으면 111 */
+/* 학습 자료 파일 자리: 실제 file-drop 마크업(FileDropBody)을 그대로 그리고 skeleton 색으로 덮는다.
+   높이를 숫자로 맞추지 않아서 폭·기기·줄바꿈이 달라도 실제 자리와 같다 */
 .fileSkeleton {
-  margin-top: 24px;
-  height: 321px;
+  border-color: transparent;
+  border-radius: var(--radius-control);
+  background: var(--line);
+  cursor: default;
 }
-@media (min-width: 768px) {
-  .fileSkeleton {
-    height: 193px;
-  }
-}
-@media (min-width: 774px) {
-  .fileSkeleton {
-    height: 172px;
-  }
-}
-@media (min-width: 1024px) {
-  .fileSkeleton {
-    height: 180px;
-  }
-}
-@media (hover: none), (pointer: coarse) {
-  .fileSkeleton {
-    height: 175px;
-  }
-}
-@media (min-width: 768px) and (hover: none),
-  (min-width: 768px) and (pointer: coarse) {
-  .fileSkeleton {
-    height: 111px;
-  }
+.fileSkeleton > * {
+  visibility: hidden;
 }
 @media (min-width: 1024px) {
   .fieldSkeleton:first-child {

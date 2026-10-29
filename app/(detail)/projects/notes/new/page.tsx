@@ -7,7 +7,7 @@ import { LoadingStatus } from "@/components/LoadingStatus";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { loadQuota } from "@/lib/server/usage";
-import { ProjectForm } from "../../new/ProjectForm";
+import { FileDropBody, ProjectForm } from "../../new/ProjectForm";
 import s from "@/app/(app)/projects/projects.module.css";
 
 export const metadata: Metadata = { title: "학습 자료 등록 · TailQ" };
@@ -42,7 +42,10 @@ function Loading() {
       <LoadingStatus />
       <div className={s.form} aria-busy="true" aria-hidden="true">
         <span className={`skeleton ${s.fieldSkeleton}`} />
-        <span className={`skeleton ${s.fileSkeleton}`} />
+        {/* 파일 자리는 실제 자리와 같은 마크업을 회색으로 칠해 그린다(높이가 저절로 같다) */}
+        <div className={`${s.fileDrop} ${s.fileSkeleton}`} inert>
+          <FileDropBody ids={false} />
+        </div>
         <span className={`skeleton ${s.fieldSkeleton}`} data-kind="textarea" />
       </div>
     </>
