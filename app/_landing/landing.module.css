@@ -587,19 +587,29 @@
   width: 100%;
   height: auto;
 }
-/* 폭에 따라 다른 크롭을 고른다. 숨은 쪽은 lazy라 받지 않는다(mdUp·mdDown 경계는 768) */
+/* 폭에 따라 다른 크롭을 고른다. 숨은 쪽은 lazy라 받지 않는다.
+   phoneOnly 768 미만 · wideOnly 768 이상 · tabOnly 768~1023 · mdUp 1024 이상 */
 .wideOnly,
+.tabOnly,
 .mdUp {
   display: none;
 }
 @media (min-width: 768px) {
-  .wideOnly,
-  .mdUp {
+  .wideOnly {
     display: block;
   }
-  .phoneOnly,
-  .mdDown {
+  .phoneOnly {
     display: none;
+  }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .tabOnly {
+    display: block;
+  }
+}
+@media (min-width: 1024px) {
+  .mdUp {
+    display: block;
   }
 }
 /* 들어올 때 한 번: 섹션 글이 먼저, 크롭이 150ms 뒤에(둘째 크롭은 300ms) 아래에서 올라온다(LandingMotion의 data-seen).
@@ -847,7 +857,8 @@
 }
 
 /* ---------- §5 기록: 위에 글과 오늘의 결과 3칸, 아래에 리포트(꼬리잇기·달력)를 넓게 ---------- */
-/* 768 미만 리포트는 휴대폰 크롭(K06m), 768부터 데스크톱 크롭(K06)을 레인 폭으로. 1280 이상: 오늘의 결과는 글 오른쪽 아래 끝, 리포트는 레인 오른쪽 끝에 맞춘다 */
+/* 리포트: 768 미만 휴대폰 크롭(K06m), 768~1023 꼬리잇기 칸과 달력 앞부분만 자른 크롭(K06t, 720 폭 1.0배 가까이),
+   1024 이상 데스크톱 크롭(K06). 1280 이상: 오늘의 결과는 글 오른쪽 아래 끝, 리포트는 레인 오른쪽 끝에 맞춘다 */
 .record {
   display: flex;
   flex-direction: column;
@@ -857,7 +868,13 @@
 .report {
   width: min(390px, 100%);
 }
+/* K06t는 왼쪽 안쪽 여백 16px만큼 왼쪽으로 옮기므로(아래 translate) 그만큼 넓혀 768에서 1.0배로 */
 @media (min-width: 768px) {
+  .report {
+    width: min(720px, calc(100% + 16px));
+  }
+}
+@media (min-width: 1024px) {
   .report {
     width: min(1008px, 100%);
   }
@@ -1036,11 +1053,16 @@
   .gradeShot {
     translate: calc(-100% * 24 / 834);
   }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
   .report {
-    translate: calc(-100% * 16 / 1008);
+    translate: calc(-100% * 16 / 720);
   }
 }
 @media (min-width: 1024px) and (max-width: 1279px) {
+  .report {
+    translate: calc(-100% * 16 / 1008);
+  }
   .peakVerdict {
     translate: calc(-100% * 8 / 804);
   }
