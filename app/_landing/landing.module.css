@@ -903,11 +903,11 @@
 /* ---------- §6 학습 자료: 녹화 위에 질문 5개를 겹친다 ---------- */
 /* 질문 5개(K09)가 등록 화면의 '학습 자료 내용' 입력칸 오른쪽을 덮어, 입력한 글에서 질문이 나온 것처럼 보이게 한다
    (페이지에서 하나뿐인 겹침, 1px line 상자). 파일 영역과 'pdf · N자 넣었어요' 줄은 가리지 않는다.
-   1082 이상: 등록 화면 녹화(V02) + K09 묶음을 1082 폭 기준으로 놓고 레인이 좁으면 비율로 줄인다
-     (1082에서 0.923배. 캡처 속 13px 글자가 12px 아래로 줄지 않는 폭부터 녹화를 쓴다).
+   1085 이상: 등록 화면 녹화(V02) + K09 묶음을 1082 폭 기준으로 놓고 레인이 좁으면 비율로 줄인다
+     (K09는 상자 1px 테두리 안이라 이미지가 상자보다 2px 좁다. 1085에서 0.924배로, 캡처 속 13px 글자가 12px 아래로 줄지 않는 폭부터 녹화를 쓴다).
      K09는 녹화 오른쪽 끝에서 자기 폭의 40%(156px)를 덮고, 위 끝은 입력칸 위 테두리(375px)에 맞춘다.
      동작 줄이기는 녹화 대신 같은 자리의 포스터.
-   768~1081: 녹화 없이 등록 화면(K08m) 위에 K09가 자기 폭의 40%를 덮는 624 폭 묶음을 레인 가운데에 둔다
+   768~1084: 녹화 없이 등록 화면(K08m) 위에 K09가 자기 폭의 40%를 덮는 624 폭 묶음을 레인 가운데에 둔다
      (이 구간만 크롭 안 글의 세로선 맞춤보다 겹침을 앞세운다). 위 끝은 입력칸 위 테두리(336px).
    768 미만: K08m과 K09를 차례로 */
 .maker {
@@ -947,7 +947,7 @@
     background: var(--canvas);
   }
 }
-@media (min-width: 1082px) {
+@media (min-width: 1085px) {
   .makerStage {
     width: min(1082px, 100%);
   }
@@ -1006,7 +1006,7 @@
     color: var(--text);
   }
 }
-@media (min-width: 1082px) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 1085px) and (prefers-reduced-motion: no-preference) {
   .pause {
     display: inline-flex;
   }
@@ -1040,7 +1040,7 @@
     margin-left: -20px;
   }
 }
-@media (min-width: 768px) and (max-width: 1081px) {
+@media (min-width: 768px) and (max-width: 1084px) {
   .makerStage {
     width: 624px;
     align-self: center;
