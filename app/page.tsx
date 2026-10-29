@@ -81,6 +81,10 @@ const PEAK = [
 const darkFirst = `try{if(!localStorage.getItem("${THEME_STORAGE_KEY}"))document.documentElement.dataset.theme="dark"}catch(e){document.documentElement.dataset.theme="dark"}`;
 // 꼬리질문 섹션(§3)만 반대 테마로 뒤집는다. 첫 그림 전에 걸고, 토글은 LandingMotion이 따라간다
 const invertPeak = `(function(){var e=document.getElementById("peak");if(e)e.dataset.theme=document.documentElement.dataset.theme==="light"?"dark":"light"})()`;
+// 첫 화면 기기 등장(CSS)은 보이는 캡처가 decode될 때까지 멈춰 두되 600ms 넘게 기다리지 않는다(data-wait).
+// 그때까지 안 온 캡처는 data-late에 back·front로 적어 화면만 비워 두고, 오면 지워서 켠다.
+// 표시는 섹션에만 건다(React가 그리는 img에 속성을 붙이면 하이드레이션이 어긋난다). JS가 없으면 바로 재생한다
+const heroGate = `(function(){var h=document.getElementById("hero");if(!h)return;var im=[].filter.call(h.querySelectorAll("img"),function(i){return i.getClientRects().length});if(!im.length)return;h.dataset.wait="";var late=[],go=function(){if(!("wait" in h.dataset))return;delete h.dataset.wait;im.forEach(function(i){if(i.complete)return;var k=i.closest(".${s.heroBack}")?"back":"front";late.push(k);i.addEventListener("load",function(){late.splice(late.indexOf(k),1);h.dataset.late=late.join(" ")},{once:true})});h.dataset.late=late.join(" ")};setTimeout(go,600);Promise.all(im.map(function(i){return i.decode().catch(function(){})})).then(go)})()`;
 
 // 랜딩(docs/04 10번): 한 사람의 하루에서 되묻는 순간만 실제 화면 크롭으로 꺼내 보인다.
 // 첫 화면(기기 틀, 페이지에서 한 번) → 채점 → 꼬리질문(정점, 반대 테마) → Q노트 → 기록 → 학습 자료(실제 녹화) → 체험 → 푸터.
@@ -111,7 +115,12 @@ export default function Landing() {
 
       <main>
         {/* §1 첫 화면: 데스크톱 홈 뒤, 채점 결과 휴대폰 앞(기기 틀은 여기에만) */}
-        <section className={s.hero} aria-labelledby="hero-title">
+        <section
+          id="hero"
+          className={s.hero}
+          aria-labelledby="hero-title"
+          suppressHydrationWarning
+        >
           <div className={s.heroCopy}>
             <h1 id="hero-title" className={s.h1}>
               하루 한 문제, AI가 채점하고 되묻는 개발자 기술 면접 연습
@@ -134,13 +143,14 @@ export default function Landing() {
             </Phone>
           </div>
         </section>
+        <script dangerouslySetInnerHTML={{ __html: heroGate }} />
 
         {/* §2 채점: 글 왼쪽, 점수 묶음 크롭 하나 오른쪽(PC는 1.1배로 화면 오른쪽 끝까지) */}
         <section
           className={`${s.wrap} ${s.sec} ${s.grade}`}
           aria-labelledby="grade-title"
         >
-          <div className={s.gradeCopy}>
+          <div className={`${s.gradeCopy} ${s.reveal}`}>
             <h2 id="grade-title" className={s.h2}>
               100점 만점 채점, 잘한 점부터
             </h2>
@@ -231,7 +241,7 @@ export default function Landing() {
           className={`${s.wrap} ${s.sec} ${s.review}`}
           aria-labelledby="review-title"
         >
-          <div>
+          <div className={s.reveal}>
             <h2 id="review-title" className={s.h2}>
               점수에 맞춰 돌아오는 복습, Q노트
             </h2>
@@ -255,7 +265,7 @@ export default function Landing() {
           className={`${s.wrap} ${s.sec} ${s.record}`}
           aria-labelledby="record-title"
         >
-          <div className={s.recordCopy}>
+          <div className={`${s.recordCopy} ${s.reveal}`}>
             <h2 id="record-title" className={s.h2}>
               숫자로 남는 꼬리잇기와 약한 주제
             </h2>
@@ -264,7 +274,7 @@ export default function Landing() {
               달력과 주제별 평균 점수로 약한 곳을 찾아요.
             </p>
           </div>
-          <div className={`${s.crop} ${s.today}`}>
+          <div className={`${s.crop} ${s.reveal} ${s.today}`}>
             <Shot id="k07-today" w={390} h={138} alt={ALT.today} />
           </div>
           <div className={`${s.crop} ${s.reveal} ${s.report}`}>
@@ -283,7 +293,7 @@ export default function Landing() {
           className={`${s.wrap} ${s.sec} ${s.maker}`}
           aria-labelledby="maker-title"
         >
-          <div className={s.makerCopy}>
+          <div className={`${s.makerCopy} ${s.reveal}`}>
             <h2 id="maker-title" className={s.h2}>
               학습 자료 파일을 올리면 질문 5개
             </h2>
@@ -303,7 +313,7 @@ export default function Landing() {
             </label>
           </div>
           <div className={s.makerStage}>
-            <div className={`${s.panel} ${s.recording}`}>
+            <div className={`${s.panel} ${s.reveal} ${s.recording}`}>
               {/* 포스터 자리: 녹화 마지막 장면. 재생 전·JS 없음·동작 줄이기에는 이 그림이 보이고, 재생하면 녹화가 덮는다.
                   poster 속성은 숨은 테마에서도 받아 와서 쓰지 않는다 */}
               <Shot id="v02-poster" w={848} h={724} alt="" />
@@ -328,7 +338,7 @@ export default function Landing() {
                 몇 자를 넣었는지 알려 줘요.
               </p>
             </div>
-            <div className={`${s.crop} ${s.noteStill}`}>
+            <div className={`${s.crop} ${s.reveal} ${s.noteStill}`}>
               <Shot id="k08m-note" w={390} h={612} alt={ALT.note} />
             </div>
             <div className={`${s.crop} ${s.reveal} ${s.questions}`}>

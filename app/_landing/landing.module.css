@@ -2,8 +2,9 @@
    기기 틀은 첫 화면에만 쓴다(틀 기하·금속 그라데이션·그림자는 랜딩 로컬 확장). 나머지는 실제 캡처에서 블록 하나만 자른 크롭을
    틀 없이 바탕 위에 바로 놓고, 섹션마다 놓는 법을 바꾼다.
    간격: 섹션 안 32 · 섹션 위아래 80(모바일 56) · 정점 직전 빈 바탕 30svh 한 곳.
-   모션(transform·opacity만): 120ms(hover) · 200ms(전환) · 300ms(등장, 랜딩 로컬 확장) · 곡선 하나(--ease) · 정점 스크롤 연동 · §6 녹화 9초 반복
-   들어올 때 한 번(LandingMotion의 data-seen): 크롭이 아래에서 올라온다(stepIn) */
+   모션(transform·opacity만): 120ms(hover) · 200ms(전환) · 700ms(섹션 등장)·900ms(첫 화면 등장, 랜딩 로컬 확장) · 곡선 하나(--ease)
+   · 정점 스크롤 연동 · §6 녹화 9초 반복
+   들어올 때 한 번(LandingMotion의 data-seen): 섹션 글이 먼저, 크롭이 조금 늦게 아래에서 올라온다(stepIn) */
 
 .root {
   --g: 20px;
@@ -521,10 +522,32 @@
     width: clamp(280px, 27vw, 412px);
   }
 }
-/* 로드 직후 한 번: 앞 휴대폰만 아래에서 올라온다. 글·버튼·뒤 화면은 그대로 */
+/* 로드 직후 한 번: 노트북(24px)이 먼저, 휴대폰(64px, 768 미만은 휴대폰만 40px)이 200ms 뒤에 900ms 동안 천천히 올라온다.
+   글·버튼은 그대로(읽을 글이자 LCP 후보). 캡처 decode까지 멈춰 있다가(page.tsx heroGate, 최대 600ms) 시작하고,
+   그때까지 안 온 캡처는 빈 화면으로 들어왔다가 오면 200ms에 켜진다 */
 @media (prefers-reduced-motion: no-preference) {
+  .heroBack,
   .heroFront {
-    animation: stepIn 300ms var(--ease) both;
+    animation: stepIn 900ms var(--ease) both;
+  }
+  .heroFront {
+    --rise: 40px;
+  }
+  .hero[data-wait] :is(.heroBack, .heroFront) {
+    animation-play-state: paused;
+  }
+  .hero .shots img {
+    transition: opacity var(--dur-base) var(--ease);
+  }
+  .hero[data-late~="back"] .heroBack img,
+  .hero[data-late~="front"] .heroFront img {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: no-preference) and (min-width: 768px) {
+  .heroFront {
+    --rise: 64px;
+    animation-delay: 200ms;
   }
 }
 
@@ -563,13 +586,22 @@
     display: none;
   }
 }
-/* 들어올 때 한 번: 크롭이 아래에서 올라온다(LandingMotion의 data-seen). data-io가 없으면(JS 전·실패) 완성 상태 그대로 */
+/* 들어올 때 한 번: 섹션 글이 먼저, 크롭이 150ms 뒤에(둘째 크롭은 300ms) 아래에서 올라온다(LandingMotion의 data-seen).
+   700ms · 24px(768 미만 16px). data-io가 없으면(JS 전·실패) 완성 상태 그대로 */
 @media (prefers-reduced-motion: no-preference) {
   .root[data-io] .reveal {
-    animation: stepIn 300ms var(--ease) both paused;
+    animation: stepIn 700ms var(--ease) both paused;
+  }
+  .root[data-io] :is(.crop, .panel).reveal {
+    animation-delay: 150ms;
   }
   .root[data-io] .reveal[data-seen] {
     animation-play-state: running;
+  }
+}
+@media (prefers-reduced-motion: no-preference) and (max-width: 767px) {
+  .reveal {
+    --rise: 16px;
   }
 }
 
@@ -791,9 +823,10 @@
     width: auto;
   }
 }
+/* 섹션의 둘째 크롭(날짜별 기록 · 리포트 · 질문 5개)은 첫째 크롭보다 150ms 늦게 */
 @media (prefers-reduced-motion: no-preference) {
-  .root[data-io] .history {
-    animation-delay: 60ms;
+  .root[data-io] :is(.history, .report, .questions).crop {
+    animation-delay: 300ms;
   }
 }
 
@@ -956,10 +989,14 @@
   }
 }
 
+/* 투명도는 60%에서 다 차고, 위치는 끝까지 천천히 내려앉는다. 거리는 --rise(기본 24px) */
 @keyframes stepIn {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(var(--rise, 24px));
+  }
+  60% {
+    opacity: 1;
   }
 }
 @keyframes appear {
