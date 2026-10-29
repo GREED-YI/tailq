@@ -38,6 +38,8 @@ flowchart LR
 | 스트리밍 중단 | Claude 호출에 브라우저의 `request.signal`을 넘기지 않는다 | 사용자가 떠나도 채점을 끝까지 받아 저장해야 한다 |
 | 환경변수 | `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `VAPID_PUBLIC_KEY`·`VAPID_PRIVATE_KEY`·`VAPID_SUBJECT`, `CRON_SECRET`, `TRIAL_IP_HMAC_SECRET`, `AI_MONTHLY_BUDGET_USD`, `KRW_PER_USD`, `AI_MOCK`, `ADMIN_USER_IDS`(운영 대시보드에 들어갈 사용자 id, 쉼표로 구분) | 목록만 여기 두고 값·발급 방법은 #11. `NEXT_PUBLIC_` 둘만 브라우저에 간다 |
 
+리전과 Fluid compute는 저장소의 `vercel.json`에 적어 대시보드 설정에 기대지 않는다. 운영 배포 절차(운영 환경변수 값, 마이그레이션 자동 반영, Supabase 깨우기, 되돌리기)는 [11 배포](11-deploy.md)에 둔다 (2026-10-29, #14).
+
 ### 데이터 읽고 쓰는 길
 
 브라우저에는 Supabase 공개 키와 로그인 토큰이 있으므로, 사용자 권한으로 할 수 있는 일은 브라우저에서도 직접 할 수 있다. 그래서 읽기와 쓰기를 나눈다.
@@ -153,7 +155,7 @@ sequenceDiagram
 5. `web-push`(VAPID)로 20개씩 `Promise.allSettled`로 보낸다. 410·404 응답이 오면 구독을 지운다. 다른 실패는 다시 보내지 않는다(그날은 보낸 것으로 친다). TTL은 4시간이다.
 6. 비밀 헤더는 `Authorization: Bearer <CRON_SECRET>`이다. vault에는 `cron_secret`(`CRON_SECRET`과 같은 값)과 `push_cron_url`(배포 주소의 `/api/cron/push`)을 둔다. 주소도 vault에 두어 로컬·운영 마이그레이션이 같다. 알림을 누르면 홈(`/home`)이 열리고 서비스 워커(`public/sw.js`)가 `notification_click` 이벤트를 보낸다. 문구는 잠금 화면에 보이므로 닉네임 같은 개인 내용을 넣지 않는다. 처음엔 온보딩 미리보기에 닉네임이 있었으나 실제 알림과 같게 뺐다 (2026-10-27, #37).
 
-Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로 고르는 알림 시각"을 맞출 수 없다. 이 호출은 매시 Supabase REST API를 1번 이상 치므로 무료 Supabase가 일주일 쉬면 멈추는 문제(#20)도 함께 막는다. **확인 필요**: Supabase의 정지 판단은 API 게이트웨이 요청 기준이라 `pg_cron`이 DB 안에서 도는 것만으로는 안 된다. 대상이 0명인 시각에도 핸들러가 조회 1번은 하도록 만든다.
+Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로 고르는 알림 시각"을 맞출 수 없다. 이 호출은 매시 Supabase REST API를 1번 이상 치므로 무료 Supabase가 일주일 쉬면 멈추는 문제(#20)도 함께 막는다. **확인 필요**: Supabase의 정지 판단은 API 게이트웨이 요청 기준이라 `pg_cron`이 DB 안에서 도는 것만으로는 안 된다. 대상이 0명인 시각에도 핸들러가 조회 1번은 하도록 만든다. 기준이 공개돼 있지 않아 주 3회 따로 조회하는 워크플로(`.github/workflows/keepalive.yml`)도 임시로 둔다([11 배포](11-deploy.md), #20).
 
 ### 체험과 이어받기
 
@@ -524,7 +526,7 @@ CI는 샘플 질문만으로 돈다. 비공개 저장소는 콘텐츠 작업(#9 
 | `tests/` | Vitest 단위·API 테스트. `tests/mocks/`에 MSW 핸들러(Claude API 가짜 응답) |
 | `e2e/` | Playwright E2E |
 
-- **마이그레이션**: Supabase CLI(`supabase/migrations/<timestamp>_<이름>.sql`). 로컬은 `supabase start`(Docker) + `supabase db reset`, 운영은 `supabase db push`. 테이블·정책·함수·권한·`pg_cron` 등록이 전부 마이그레이션에 있어야 한다(대시보드에서 손으로 바꾸지 않는다).
+- **마이그레이션**: Supabase CLI(`supabase/migrations/<timestamp>_<이름>.sql`). 로컬은 `supabase start`(Docker) + `supabase db reset`, 운영은 main에 합칠 때 `.github/workflows/db-deploy.yml`이 `supabase db push`로 반영한다([11 배포](11-deploy.md)). 테이블·정책·함수·권한·`pg_cron` 등록이 전부 마이그레이션에 있어야 한다(대시보드에서 손으로 바꾸지 않는다).
 - **타입**: `supabase gen types typescript`로 만든 타입을 저장소에 둔다. 마이그레이션이 바뀌면 다시 만든다(#11).
 - **DB 함수 테스트**: CI에서 `supabase start`를 띄우고(1~2분) 함수를 직접 부른다. 꼭 있어야 하는 것: 하루 1세션(동시 호출 2개 → 세션 1개), 전날 세션 정리(`expired`·`done`+`skipped`), 질문 고르기 순서(복습 → 새 질문 → 앞당기기), `submit_answer` 전이(graded면 거부, 멈춘 grading은 통과, 횟수 제한), 복습 칸 이동, 체험 IP 20번, 프로젝트 삭제 거부. **권한 검사** 1개: `information_schema.routine_privileges`에서 `grantee in ('anon','authenticated')`인 `public` 함수가 0건.
 - **AI 경계**: 모델 호출은 `lib/server/ai.ts` 한 모듈(`grade`, `gradeFollowUp`, `generateProjectQuestions`)에만 있다. 출력은 zod 스키마로 검증하고, 같은 스키마를 통과하는 픽스처를 `AI_MOCK=1`일 때 돌려준다. CI와 테스트는 항상 mock이라 요금이 나가지 않는다. 스트리밍 mock은 픽스처를 글자 단위로 잘라 흘린다.
