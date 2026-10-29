@@ -63,8 +63,11 @@ const vars = (t: Record<string, string>) =>
 // 운영 색이 그대로였다(cacheComponents). 숨겨진 운영 화면은 빼고 센다
 const ADMIN_SHOWN =
   ':has([data-admin]:not([style*="display: none"],[style*="display: none"] *))';
+// 같은 다크 값을 prefers-color-scheme 규칙으로도 둔다. 삼성 인터넷 다크 모드는 meta color-scheme만으로는 멈추지 않고,
+// CSS에 이 규칙이 있어야 사이트가 다크를 지원한다고 보고 화면을 강제로 어둡게 칠하지 않는다(#171)
 export const themeCss =
   `:root,[data-theme="dark"]{${vars(TOKENS.dark)}color-scheme:dark}` +
+  `@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${vars(TOKENS.dark)}color-scheme:dark}}` +
   `[data-theme="light"]{${vars(TOKENS.light)}color-scheme:light}` +
   `:root:not([data-theme="light"])${ADMIN_SHOWN}{${vars(ADMIN_TOKENS.dark)}}` +
   `[data-theme="light"]${ADMIN_SHOWN}{${vars(ADMIN_TOKENS.light)}}`;
