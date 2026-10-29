@@ -31,6 +31,12 @@ describe("질문 콘텐츠 형식", () => {
       }).success,
     ).toBe(false);
     expect(QuestionFile.safeParse({ ...base, links: [] }).success).toBe(false);
+    expect(
+      QuestionFile.safeParse({
+        ...base,
+        links: [{ title: "링크", url: "javascript:alert(1)" }],
+      }).success,
+    ).toBe(false);
   });
 
   it("is_hidden을 적지 않으면 숨기지 않는다", () => {

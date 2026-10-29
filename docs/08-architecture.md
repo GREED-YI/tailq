@@ -171,9 +171,9 @@ Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로
 - 이번 달(KST) 합계가 월 예산(`AI_MONTHLY_BUDGET_USD`, $20)에 닿으면 새로 시작하는 AI 기능을 모두 막는다. 이미 시작한 세션은 끝까지 한다. 처음엔 `AI_MONTHLY_BUDGET_KRW`(1만 원)였으나, 비용을 달러로 저장하므로 예산도 달러로 두어 환율 없이 비교하고, 금액을 $20으로 올렸다 (2026-10-26).
 - 합계가 예산의 80%를 넘으면 **세션을 시작할 때** 본 질문 채점 모델을 Haiku로 정해 세션에 저장한다(세션 중간에 모델이 바뀌지 않는다). 기본은 본 질문 Sonnet, 꼬리질문 Haiku다([09 채점](09-grading.md) 5장).
 - 숫자는 [09 채점](09-grading.md) 5장 "하루 한도와 다시 채점"을 따른다: 프로젝트 질문 생성 하루 1회, 프로젝트 질문 연습 하루 3세션, 다시 채점 세션당 3번(오늘의 질문은 하루 1세션이라 하루 3번). 처음엔 "#10에서 정한다"였다.
-- **예약 단위는 "몫"(호출 1번)이다 (2026-10-27, #43).** 처음엔 세션에 필요한 토큰·비용을 통째로 예약하는 것으로 읽혔으나, 개인 한도가 횟수(세션 수·생성 수)라서 세션당 한 행이면 충분하다. 프로젝트 세션을 열면 본 질문 채점 몫 한 행(`purpose = grade`, `quota = project_session`), 프로젝트를 등록하면 생성 몫 한 행(`quota = project_gen`)을 `reserved`로 넣고, 그 몫의 첫 호출이 같은 행을 `used`·`failed`로 바꾼다(`record_ai_usage`). 꼬리질문·다시 채점·다시 생성은 몫 없이 새 행으로 남는다. 하루 한도는 그날 `quota`가 있고 `released`가 아닌 행 수로 센다. 시작한 세션 안의 호출은 한도를 다시 보지 않으므로 중간에 끊기지 않는다.
+- **예약 단위는 "몫"(호출 1번)이다 (2026-10-27, #43).** 처음엔 세션에 필요한 토큰·비용을 통째로 예약하는 것으로 읽혔으나, 개인 한도가 횟수(세션 수·생성 수)라서 세션당 한 행이면 충분하다. 프로젝트 세션을 열면 본 질문 채점 몫 한 행(`purpose = grade`, `quota = project_session`), 프로젝트를 등록하면 생성 몫 한 행(`quota = project_gen`)을 `reserved`로 넣고, 그 몫의 첫 호출이 같은 행을 `used`·`failed`로 바꾼다(`record_ai_usage`). 꼬리질문·다시 채점은 몫 없이 새 행으로 남는다. 다시 생성은 처음엔 몫 없이 새 행이었으나, 하루 한도를 두면서 생성 몫 한 행(`quota = project_regen`)을 예약한다(2026-10-28, #99). 하루 한도는 그날 `quota`가 있고 `released`가 아닌 행 수로 센다. 시작한 세션 안의 호출은 한도를 다시 보지 않으므로 중간에 끊기지 않는다.
 - 본 질문을 "모르겠어요"로 끝내 AI를 쓰지 않은 세션은 몫을 `released`로 돌려준다(`release_ai_usage`). 실패한 채점은 몫을 쓴 것으로 본다.
-- 월 예산은 **실제 비용만** 더한다(예상 비용을 예약하지 않는다). 동시에 시작한 세션 몇 개만큼(세션당 약 $0.01) 넘을 수 있지만, 이미 시작한 세션을 끝까지 하는 브레이크라 어차피 조금 넘는다. 프로젝트 다시 생성은 하루 한도를 다시 보지 않지만 새 AI 호출이라 월 예산은 본다.
+- 월 예산은 **실제 비용만** 더한다(예상 비용을 예약하지 않는다). 동시에 시작한 세션 몇 개만큼(세션당 약 $0.01) 넘을 수 있지만, 이미 시작한 세션을 끝까지 하는 브레이크라 어차피 조금 넘는다. 프로젝트 다시 생성은 월 예산과 하루 3번을 본다. 처음엔 월 예산만 봤으나, 생성이 거듭 실패하면 한 사람이 월 예산을 빨리 써서 그 달 모든 사용자의 AI가 멈출 수 있어 하루 3번을 더했다(2026-10-28, #99, [10 보안 점검](10-security.md)).
 - 환경변수 `AI_MONTHLY_BUDGET_USD`가 비어 있으면 $20으로 본다(예산 없이 도는 것보다 막히는 쪽이 안전하다).
 
 ### 내 프로젝트 질문 생성
@@ -183,7 +183,7 @@ Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로
 1. `POST /api/projects` → `create_project`: 3개 제한·한도 확인·예약 후 `projects`를 `status = 'generating'`으로 저장하고 **바로 응답**한다.
 2. 생성은 `after()`에서 한다(이 라우트와 다시 생성 라우트는 `maxDuration = 300`, 1장 "실행 환경"). 끝나면 `save_project_questions`가 `questions`(`project_id`, `topic_id`·`level` 없음) 5개와 `question_keys`(`rubric`, `model_answer`, `links`는 null) 5개를 한 트랜잭션으로 넣고 `status = 'ready'`. 실패하면 `status = 'failed'`, `error_code`.
 3. 화면은 `projects` 행을 2초마다 읽어(RLS 읽기 정책 안에서) 상태를 본다. Supabase Realtime으로 바꿔도 되지만 처음엔 폴링으로 충분하다. 처음엔 브라우저 supabase-js로 읽기로 했으나, 질문 목록 화면이 이미 서버 컴포넌트로 같은 행을 읽으므로 `router.refresh()`로 다시 그리게 했다. 브라우저용 Supabase 클라이언트를 따로 두지 않아도 된다 (2026-10-27, #39).
-4. 다시 생성은 `POST /api/projects/{id}/generations`. `failed`일 때만 받고 한도는 다시 예약하지 않는다(처음 예약한 몫을 쓴다).
+4. 다시 생성은 `POST /api/projects/{id}/generations`. `failed`일 때만 받고, 월 예산과 하루 3번(`REGEN_LIMIT`, 429)을 본 뒤 몫을 예약한다. 처음엔 한도를 다시 보지 않았다(위 "하루 사용 한도와 월 예산").
 5. 프로젝트 질문에는 참고 자료 링크를 넣지 않는다. 모델이 만든 URL은 없는 주소일 수 있다.
 
 ### 학습 자료 질문 생성
@@ -192,7 +192,7 @@ Vercel 무료 플랜의 크론은 하루 한 번만 돌아서 "1시간 단위로
 
 1. `POST /api/notes` → `create_note`: 3개 제한(`NOTE_LIMIT`)·월 예산·하루 1회 확인과 생성 몫 예약 후 `study_notes`를 `generating`으로 저장하고 바로 응답한다. 생성 몫은 `purpose = note_gen`, `quota = project_gen`이라 **하루 1회를 프로젝트와 함께 센다**. 그래서 `create_project`와 같은 사용자 잠금(`project:`)을 잡는다.
 2. 생성은 `after()`에서 `generateNoteQuestions`(프로젝트와 같은 Sonnet 5.5, 학습 자료 프롬프트, [09 채점](09-grading.md) 4장) → 프로젝트와 같은 검증(`toProjectQuestions`) → `save_note_questions`가 `questions`(`note_id`, `topic_id`·`level` 없음)와 `question_keys`(링크 없음)를 넣고 `ready`. 실패하면 `failed` + `error_code`.
-3. 화면은 `study_notes` 행을 2초마다 다시 읽는다(프로젝트와 같은 `router.refresh()`). 다시 생성은 `POST /api/notes/{id}/generations`(`failed`일 때만, 한도는 다시 예약하지 않고 월 예산만 본다).
+3. 화면은 `study_notes` 행을 2초마다 다시 읽는다(프로젝트와 같은 `router.refresh()`). 다시 생성은 `POST /api/notes/{id}/generations`(`failed`일 때만). 처음엔 한도를 다시 예약하지 않고 월 예산만 봤으나, 프로젝트 다시 생성과 같은 이유로 월 예산과 하루 3번(프로젝트와 합쳐, `REGEN_LIMIT`)을 본다(2026-10-29, #99).
 4. **연습 세션은 프로젝트 질문 세션과 같다.** `start_project_session`이 "내 프로젝트의 질문 또는 내 학습 자료의 질문"이면 세션을 연다(주인 확인만 넓혔다). 세션 종류도 `kind = 'project'`로 두어 하루 3세션 한도, 이어하기(`?session=`), 채점·꼬리질문·복습이 그대로 돈다. 따로 `note` 종류를 두면 세션 종류를 보는 곳(이어하기, 지표, 한도)을 모두 고쳐야 하는데 동작이 같아 나누지 않았다. 질문이 어느 쪽인지는 `questions.project_id`·`note_id`로 안다(돌아갈 화면, 채점 `<topic>`, 화면 라벨).
 5. 본 질문 채점의 `<topic>`은 `내 학습 자료 / {제목}`이다([09 채점](09-grading.md) "채점 사용자 메시지").
 6. 처음엔 `projects`에 종류 컬럼을 두는 안을 봤으나 프로젝트와 학습 자료는 다른 것이라 테이블을 나눴다 (2026-10-28, #141).
@@ -389,9 +389,9 @@ or exists (select 1 from study_notes n where n.id = questions.note_id and n.user
 | `set_bookmark(user_id, question_id, on)` | 북마크 저장·해제(여러 번 불러도 같다). 북마크가 `questions` 읽기 정책을 넓히므로 저장은 내 세션에 나온 질문만 받는다(아니면 아무 번호나 북마크해 질문 은행을 읽을 수 있다). 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-26, #35) |
 | `create_project(user_id, name, content, budget_usd)` | 3개 제한, 월 예산·하루 1회 확인과 생성 몫 예약, `generating`으로 저장 |
 | `save_project_questions(project_id, questions, error_code)` | 질문 5개 + 정답지 저장, `ready`. 실패면 `failed` + `error_code`. `generating`일 때만 저장한다(두 번 저장 방지) |
-| `restart_project_generation(user_id, project_id)` | 다시 생성: 주인 확인, `failed`일 때만 `generating`으로 되돌린다. 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-27, #39) |
+| `restart_project_generation(user_id, project_id)` | 다시 생성: 주인 확인, `failed`일 때만 `generating`으로 되돌린다. 월 예산과 하루 3번을 같은 사용자 잠금 안에서 본다(2026-10-28, #99). 처음엔 목록에 없었으나 "쓰기는 모두 DB 함수를 거친다"에 맞춰 더했다 (2026-10-27, #39) |
 | `delete_project(user_id, project_id)` | 오늘 daily 세션이 이 프로젝트 질문이면 거부, 아니면 삭제(cascade) |
-| `create_note(user_id, title, content, budget_usd)` · `save_note_questions(note_id, questions, error_code)` · `restart_note_generation(user_id, note_id, budget_usd)` · `delete_note(user_id, note_id)` | 학습 자료(#141). 프로젝트의 네 함수와 같다. 다른 점: 3개 제한은 `NOTE_LIMIT`, 생성 몫은 `purpose = note_gen`·`quota = project_gen`(하루 1회를 프로젝트와 함께 센다), 오늘의 질문이면 `NOTE_IN_TODAY_SESSION` |
+| `create_note(user_id, title, content, budget_usd)` · `save_note_questions(note_id, questions, error_code)` · `restart_note_generation(user_id, note_id, budget_usd)` · `delete_note(user_id, note_id)` | 학습 자료(#141). 프로젝트의 네 함수와 같다. 다른 점: 3개 제한은 `NOTE_LIMIT`, 생성 몫은 `purpose = note_gen`·`quota = project_gen`(하루 1회를 프로젝트와 함께 센다), 오늘의 질문이면 `NOTE_IN_TODAY_SESSION`, 다시 생성 몫은 `purpose = note_gen`·`quota = project_regen`(하루 3번을 프로젝트와 함께 센다, 2026-10-29, #99) |
 | `adopt_trial(user_id, trial_token)` | 이어받기(2장) |
 | `record_event(name, user_id, anon_id, props)` | 지표 이벤트 한 줄. 같은 `anon_id`가 24시간에 200건을 넘으면 버린다. 서버는 응답을 보낸 뒤(`after()`) `lib/server/track.ts`의 `track()`으로 부르고, 실패해도 사용자 요청은 실패시키지 않는다 (2026-10-27, #44) |
 | `delete_user_events(user_id)` · `purge_old_events()` | 탈퇴 때 그 사용자와 그 사용자가 쓴 브라우저(`anon_id`)의 이벤트 삭제 · 90일 지난 이벤트 삭제(`pg_cron` 매일 4시 KST) |
@@ -461,6 +461,7 @@ HTTP 상태 코드에 더해 본문은 항상 `{ "error": { "code", "message" } 
 | `NOTE_LIMIT` | 409 | 학습 자료 3개 초과(#141) |
 | `NOTE_IN_TODAY_SESSION` | 409 | 오늘의 질문으로 나온 학습 자료 삭제(#141) |
 | `REGRADE_LIMIT` | 429 | 다시 채점 횟수 초과 |
+| `REGEN_LIMIT` | 429 | 실패한 질문 다시 생성 하루 3번 초과(프로젝트·학습 자료 합쳐, 2026-10-28, #99) |
 | `FEEDBACK_LIMIT` | 429 | 피드백 24시간 5개 초과 |
 | `LIMIT_EXCEEDED` | 429 | 개인 하루 한도 |
 | `BUDGET_EXCEEDED` | 429 | 서비스 월 예산 |

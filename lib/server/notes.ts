@@ -5,7 +5,11 @@ import type { Json } from "@/lib/database.types";
 import { toProjectQuestions } from "@/lib/question-gen";
 import { MAX_NOTES } from "@/lib/questions";
 import type { createAdminClient } from "@/lib/supabase/admin";
-import { LIMIT_MESSAGE, recordUsage } from "@/lib/server/usage";
+import {
+  LIMIT_MESSAGE,
+  recordUsage,
+  REGEN_LIMIT_MESSAGE,
+} from "@/lib/server/usage";
 
 type Admin = ReturnType<typeof createAdminClient>;
 
@@ -50,6 +54,7 @@ const MESSAGES: Partial<Record<ErrorCode, string>> = {
   NOTE_IN_TODAY_SESSION: "오늘의 질문으로 나온 학습 자료는 내일 지울 수 있어요",
   LIMIT_EXCEEDED: LIMIT_MESSAGE,
   BUDGET_EXCEEDED: LIMIT_MESSAGE,
+  REGEN_LIMIT: REGEN_LIMIT_MESSAGE,
 };
 
 export const noteErrorResponse = (e: unknown) =>
