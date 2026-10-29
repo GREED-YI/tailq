@@ -186,8 +186,8 @@ export default function Landing() {
                   내 답변에서 이어지는 꼬리질문
                 </h2>
                 <p className={s.lead}>
-                  AI가 내 답변을 읽고 다음 질문을 만들어요. 외워 둔 답은 두 번째
-                  질문에서 드러나요.
+                  AI가 내 답변을 읽고 다음 질문을 만들어요. 외운 답만으로는 두
+                  번째 질문에 답하기 어려워요.
                 </p>
               </div>
               <p className={s.hold}>
@@ -243,11 +243,12 @@ export default function Landing() {
         >
           <div className={s.reveal}>
             <h2 id="review-title" className={s.h2}>
-              점수에 맞춰 돌아오는 복습, Q노트
+              점수에 맞춰 돌아오는 복습
             </h2>
             <p className={s.lead}>
               70점이 안 되면 다음 날 다시 묻고, 70점 이상이면 3일, 7일, 14일,
-              30일로 간격을 늘려요. 질문을 열면 날짜별 기록이 보여요.
+              30일로 간격을 늘려요. 푼 질문은 Q노트에 모이고, 열면 날짜별 기록이
+              보여요.
             </p>
           </div>
           <div className={s.reviewShots}>
