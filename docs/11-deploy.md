@@ -31,7 +31,7 @@ DB가 따로 반영되지 않으면, 새 코드는 배포됐는데 그 코드가
 2. New project:
    - Name: `tailq` (아무 이름이나 된다)
    - **Region: `Northeast Asia (Seoul)`**. Vercel 함수(`icn1`, 서울)와 같은 곳이어야 DB 왕복이 빠르다(08 "실행 환경"). 리전은 나중에 바꿀 수 없다.
-   - Database password: Generate a password로 만들고 **바로 비밀번호 관리자에 적어 둔다.** 다시 보여주지 않는다(잊으면 Database 설정에서 재설정). 3단계에서 `SUPABASE_DB_PASSWORD`로 쓴다.
+   - Database password: Generate a password로 만들고 **바로 비밀번호 관리자에 적어 둔다.** 다시 보여주지 않는다(잊으면 Database 설정에서 재설정). 2단계에서 DB 접속 주소(`SUPABASE_DB_URL`)를 만들 때 쓴다.
    - **Data API는 켜 두고, "새 표를 Data API에 자동으로 공개"(Automatically expose new tables) 같은 선택지가 보이면 켠 채로 둔다.** 마이그레이션은 로컬과 같은 기본 권한을 전제로 쓰여 있어서(`supabase/config.toml`의 `auto_expose_new_tables` 기본값), 끄면 로그인한 사용자도 표를 읽지 못한다. 막아야 하는 표·함수는 마이그레이션이 직접 권한을 뺀다.
 3. 만들어지기까지 1~2분 걸린다. 끝나면 아래 값을 찾아 둔다.
 
@@ -50,13 +50,12 @@ DB가 따로 반영되지 않으면, 새 코드는 배포됐는데 그 코드가
 
 | 이름 | 값 | 쓰는 곳 |
 |---|---|---|
-| `SUPABASE_ACCESS_TOKEN` | [Account → Access Tokens](https://supabase.com/dashboard/account/tokens)에서 새로 만든 토큰 | DB 배포 |
-| `SUPABASE_PROJECT_REF` | `<ref>` | DB 배포 |
-| `SUPABASE_DB_PASSWORD` | 1단계의 Database password | DB 배포 |
+| `SUPABASE_DB_URL` | 대시보드 위쪽 **Connect** → Connection String → Method **Session pooler**의 URI. `[YOUR-PASSWORD]` 자리를 1단계 Database password로 바꾼 전체 문자열. 비밀번호에 `@` `#` `%` `/` `:` 같은 특수문자가 있으면 퍼센트 인코딩해서 넣는다(CLI 문서: `--db-url`은 percent-encoded여야 한다). Generate a password로 만든 영문·숫자 비밀번호면 그대로 넣으면 된다 | DB 배포 |
+| `SUPABASE_PROJECT_REF` | `<ref>` | DB 배포(접속 주소가 이 프로젝트를 가리키는지 확인) |
 | `SUPABASE_URL` | `https://<ref>.supabase.co` | 깨우기 |
 | `SUPABASE_ANON_KEY` | 공개 키 (Vercel의 `NEXT_PUBLIC_SUPABASE_ANON_KEY`와 같은 값) | 깨우기 |
 
-Access Token은 내 Supabase 계정 전체를 다룰 수 있는 값이라 Secrets 말고 다른 곳에 붙여 넣지 않는다. 깨우기에는 일부러 공개 키를 쓴다(아래 "Supabase 일시정지 방지").
+`SUPABASE_DB_URL`에는 DB 비밀번호가 들어 있어서 Secrets 말고 다른 곳에 붙여 넣지 않는다. 세션 풀러 주소를 쓰는 이유: GitHub Actions 러너는 IPv4만 되는데, 무료 프로젝트의 직접 접속 주소(`db.<ref>.supabase.co`)는 IPv6 전용이다. 깨우기에는 일부러 공개 키를 쓴다(아래 "Supabase 일시정지 방지").
 
 ### 3. DB 만들기 (마이그레이션 → 주제)
 
@@ -73,17 +72,18 @@ A를 고른다. 어차피 2단계 Secrets는 자동 반영에 필요해서 B를 
 B를 쓴다면 저장소 폴더에서 (DB 비밀번호를 물으면 1단계 값):
 
 ```powershell
-npx supabase login
-npx supabase link --project-ref <ref>
-npx supabase db push --include-seed --skip-vault --dry-run   # 적용할 목록만 본다
-npx supabase db push --include-seed --skip-vault
+# 주소에 비밀번호가 들어 있어 명령문에 쓰지 않고 입력받는다(PowerShell 기록에 남지 않게)
+$env:SUPABASE_DB_URL = [Net.NetworkCredential]::new("", (Read-Host "Session pooler URI" -AsSecureString)).Password
+npx supabase db push --db-url $env:SUPABASE_DB_URL --include-seed --skip-vault --dry-run   # 적용할 목록만 본다
+npx supabase db push --db-url $env:SUPABASE_DB_URL --include-seed --skip-vault
+Remove-Item Env:SUPABASE_DB_URL
 ```
 
-`link`는 연결 정보를 `supabase/.temp/`(git 제외)에 남긴다. 로컬 DB용 명령(`npm run db:reset` 등)은 계속 로컬 Docker에만 간다.
+로컬 DB용 명령(`npm run db:reset` 등)은 계속 로컬 Docker에만 간다.
 
 A·B 모두 같은 일을 한다.
 
-- 하는 일: `supabase link` → `supabase db push --dry-run`(적용할 목록을 로그에 남김) → `supabase db push --include-seed`. 마이그레이션이 먼저 들어가고, 그다음 주제 시드가 들어간다
+- 하는 일: `supabase db push --db-url … --dry-run`(적용할 목록을 로그에 남김) → `supabase db push --db-url … --include-seed`. 처음엔 `supabase link`와 계정 토큰을 썼으나, link가 프로젝트 API 키까지 읽는 넓은 권한을 요구해서 DB 접속 주소로 바로 미는 방식으로 바꿨다(2026-10-29). 계정 토큰이 필요 없다. 마이그레이션이 먼저 들어가고, 그다음 주제 시드가 들어간다
 - 평소에는 `supabase/migrations/`나 `supabase/seed.sql`이 바뀐 커밋이 main에 들어올 때만 워크플로가 자동으로 돈다
 - 처음 실행에서는 `supabase/migrations/`의 **모든 파일**이 순서대로 들어간다. 테마 열 삭제(#154, `drop_profiles_theme`), 앱 설치 이벤트(#157, `events_install`), 다시 생성 횟수 제한(#160, `regen_limit`, 그 PR이 합쳐진 뒤) 같은 최근 마이그레이션도 따로 챙길 필요 없이 같이 들어간다.
 - `--include-seed`로 `supabase/seed.sql`(주제 15개)도 들어간다. 내용이 upsert라 여러 번 돌아도 같다.
