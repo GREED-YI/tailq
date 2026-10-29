@@ -122,7 +122,6 @@ async function Detail({ id }: { id: string }) {
       {/* #130 셀프 복습 자리: 상태 줄 바로 아래. 지금은 그리지 않는다 */}
 
       <section className={s.history} aria-labelledby="attempts">
-        {/* #131 지난 답·점수 변화 자리: 기록 목록 바로 위. 지금은 그리지 않는다 */}
         <div className={h.listHead}>
           <h2 id="attempts">기록</h2>
         </div>

@@ -624,6 +624,63 @@
   gap: 20px;
 }
 
+/* 지난번 답 보기(#131): 라벨 · 오른쪽 메타(날짜 · 점수 · 화살표). 좁아서 넘치면 메타가 라벨 아래 줄로 내려간다 */
+.more .prevSummary {
+  flex-wrap: wrap;
+  row-gap: 4px;
+  padding: 8px 0;
+}
+.moreMeta {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.moreDate {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+/* 모르겠어요도 점수 숫자(score inline)와 같은 크기 */
+.pastUnknown {
+  font-size: 15px;
+  font-weight: 600;
+}
+.prevAnswer {
+  white-space: pre-line;
+}
+.prevNote {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-sub);
+}
+
+/* 점수 변화 줄(#131): 점수 막대 바로 아래. 방향은 기호가 전하고 색은 한 단계씩만 낮춘다(오렌지·danger를 쓰지 않는다) */
+.change {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+.changeWait,
+.changeDelta {
+  font-size: 15px;
+  font-weight: 600;
+}
+.changeDelta {
+  margin-left: 4px;
+}
+.changeDelta[data-tone="up"] {
+  color: var(--text);
+}
+.changeDelta[data-tone="down"] {
+  color: var(--text-sub);
+}
+
 /* 채점 평가(이 채점이 도움이 됐나요? + 도움이 됐어요 / 안 됐어요). 주 버튼 바로 위에 붙는다 */
 .rating {
   margin-top: auto;

@@ -9,6 +9,7 @@ import {
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { turnResult } from "@/lib/server/turn";
+import { pickPrevious } from "@/lib/previous";
 import { Interview, type InterviewStatus } from "./Interview";
 import { InterviewSkeleton } from "./Skeleton";
 import { steps } from "./steps";
@@ -55,22 +56,41 @@ async function SessionInterview({ sessionId }: { sessionId?: string }) {
   // 이어하기: 턴마다 저장하므로 가장 마지막 턴(본 질문 또는 꼬리질문)부터 이어간다(08 설계 "이어하기").
   // RLS가 자기 세션의 턴만 보여준다. 멈춘 채점은 effective_status가 failed다
   // 앞 단계들은 왼쪽 "지금까지" 흐름에 쓴다
-  const [{ data: turns }, { data: profile }, { data: bookmark }] =
-    await Promise.all([
-      supabase
-        .from("turn_states")
-        .select(
-          "id, idx, follow_up_prompt, effective_status, answer, grading_attempts, score, verdict",
-        )
-        .eq("session_id", session.id)
-        .order("idx"),
-      supabase.from("profiles").select("nickname").maybeSingle(),
-      supabase
-        .from("bookmarks")
-        .select("question_id")
-        .eq("question_id", session.question.id)
-        .maybeSingle(),
-    ]);
+  const [
+    { data: turns },
+    { data: profile },
+    { data: bookmark },
+    { data: past },
+  ] = await Promise.all([
+    supabase
+      .from("turn_states")
+      .select(
+        "id, idx, follow_up_prompt, effective_status, answer, grading_attempts, score, verdict",
+      )
+      .eq("session_id", session.id)
+      .order("idx"),
+    supabase.from("profiles").select("nickname").maybeSingle(),
+    supabase
+      .from("bookmarks")
+      .select("question_id")
+      .eq("question_id", session.question.id)
+      .maybeSingle(),
+    // 복습이면 같은 질문의 지난 본 질문 기록(#131). 오늘의 질문에만 보인다.
+    // RLS 클라이언트로 읽어 내 세션만 나온다. 관리자 클라이언트를 쓰면 같은 은행 질문에 답한 다른 사람의 답이 섞인다.
+    // 고르는 규칙(오늘 제외·끝난 세션·채점된 본 질문)은 pickPrevious가 한다. 같은 질문을 푼 횟수만큼만 온다
+    sessionId
+      ? { data: null }
+      : supabase
+          .from("sessions")
+          .select(
+            "id, day, status, turns(idx, status, answer, score, verdict, feedback)",
+          )
+          .eq("user_id", userId)
+          .eq("question_id", session.question.id)
+          .eq("turns.idx", 0)
+          .order("day", { ascending: false })
+          .order("created_at", { ascending: false }),
+  ]);
   const turn = turns?.at(-1);
   if (!turn?.id || turn.idx === null) redirect(projectHref || "/home");
 
@@ -100,6 +120,7 @@ async function SessionInterview({ sessionId }: { sessionId?: string }) {
       initialStatus={status}
       initialAnswer={turn.answer ?? ""}
       initialResult={result}
+      previous={past && pickPrevious(past, session.id)}
     />
   );
 }

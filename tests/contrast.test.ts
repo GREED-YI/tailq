@@ -16,6 +16,8 @@ const TEXT_PAIRS: [Key, Key][] = [
   ["text-sub", "canvas"],
   ["text-muted", "canvas"],
   ["text-muted", "surface"],
+  // 채점 결과 묶음 안의 중간 점수·점수가 내린 변화량(#131)
+  ["text-sub", "surface"],
   ["on-primary", "primary"],
   ["accent", "canvas"],
   ["accent", "accent-soft"],
