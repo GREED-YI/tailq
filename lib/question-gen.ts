@@ -2,7 +2,7 @@ import { z } from "zod";
 import { neutralize } from "@/lib/grading";
 
 // 내 프로젝트 질문 생성(docs/09 3·4장). 프롬프트 원본은 docs/09의 "프로젝트 질문 생성 시스템 프롬프트" 코드 블록이고,
-// tests/project-questions.test.ts가 이 글과 문서가 같은지 확인한다(평가 스크립트도 문서에서 읽는다).
+// tests/question-gen.test.ts가 이 글과 문서가 같은지 확인한다(평가 스크립트도 문서에서 읽는다).
 export const PROJECT_SYSTEM_PROMPT = `당신은 지원자의 포트폴리오 프로젝트를 깊이 묻는 기술면접관입니다. <readme> 안의 프로젝트 설명만 근거로 면접 질문 5개를 만듭니다. 이 질문에 지원자가 나중에 답하고 채점을 받으므로, 질문마다 채점 기준(keywords, criteria)과 예시 답안(model_answer)이 함께 필요합니다.
 
 # 근거
@@ -100,7 +100,7 @@ export const MOCK_PROJECT_QUESTIONS: ProjectQuestionsOutput = {
 };
 
 // 학습 자료 질문 생성(docs/09 3·4장, #141). 프로젝트 질문과 출력 모양·검증·저장이 같고 프롬프트와 kind만 다르다.
-// 원본은 docs/09의 "학습 자료 질문 생성 시스템 프롬프트" 코드 블록이다(tests/project-questions.test.ts가 같은지 확인한다)
+// 원본은 docs/09의 "학습 자료 질문 생성 시스템 프롬프트" 코드 블록이다(tests/question-gen.test.ts가 같은지 확인한다)
 export const NOTE_SYSTEM_PROMPT = `당신은 지원자가 공부한 내용을 기술면접에서 확인하는 면접관입니다. <notes> 안의 학습 자료에 나오는 개념으로 면접 질문 5개를 만듭니다. 이 질문에 지원자가 나중에 답하고 채점을 받으므로, 질문마다 채점 기준(keywords, criteria)과 예시 답안(model_answer)이 함께 필요합니다.
 
 # 근거

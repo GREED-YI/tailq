@@ -11,7 +11,7 @@ import {
 import {
   MOCK_NOTE_QUESTIONS,
   MOCK_PROJECT_QUESTIONS,
-} from "@/lib/project-questions";
+} from "@/lib/question-gen";
 
 vi.mock("server-only", () => ({}));
 const {

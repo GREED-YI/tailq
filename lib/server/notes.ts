@@ -1,12 +1,8 @@
 import "server-only";
 import { generateNoteQuestions, GradingError } from "@/lib/server/ai";
-import {
-  errorResponse,
-  INTERNAL_MESSAGE,
-  type ErrorCode,
-} from "@/lib/server/api-error";
+import { mapDbError, type ErrorCode } from "@/lib/server/api-error";
 import type { Json } from "@/lib/database.types";
-import { toProjectQuestions } from "@/lib/project-questions";
+import { toProjectQuestions } from "@/lib/question-gen";
 import { MAX_NOTES } from "@/lib/questions";
 import type { createAdminClient } from "@/lib/supabase/admin";
 import { LIMIT_MESSAGE, recordUsage } from "@/lib/server/usage";
@@ -45,7 +41,7 @@ export async function generateAndSaveNote(
   if (error) console.error("note questions save failed", note.id, error);
 }
 
-// DB 함수가 던진 에러 코드 → 메시지. HTTP 상태는 lib/api-error의 목록이 정한다(08 설계 "에러 형식")
+// DB 함수가 던진 에러 코드 → 메시지. HTTP 상태는 lib/server/api-error의 목록이 정한다(08 설계 "에러 형식")
 const MESSAGES: Partial<Record<ErrorCode, string>> = {
   NOT_FOUND: "학습 자료를 찾을 수 없어요.",
   NOT_OWNER: "내 학습 자료가 아니에요.",
@@ -56,10 +52,5 @@ const MESSAGES: Partial<Record<ErrorCode, string>> = {
   BUDGET_EXCEEDED: LIMIT_MESSAGE,
 };
 
-export function noteErrorResponse(e: unknown) {
-  const code = (e as { message?: string } | null)?.message as ErrorCode;
-  const message = MESSAGES[code];
-  if (message) return errorResponse(code, message);
-  console.error("note write failed", e);
-  return errorResponse("INTERNAL", INTERNAL_MESSAGE);
-}
+export const noteErrorResponse = (e: unknown) =>
+  mapDbError(e, MESSAGES, "note write failed");

@@ -26,7 +26,7 @@ import {
   projectUserMessage,
   type NoteInput,
   type ProjectInput,
-} from "@/lib/project-questions";
+} from "@/lib/question-gen";
 
 // Claude API 호출은 이 모듈에만 둔다(08 설계 6장 "AI 경계"). 서버에서만 import한다.
 // 모델 ID는 docs/09 5장. 예산 80%를 넘은 뒤 시작한 세션은 본 질문도 꼬리질문 모델(Haiku)로 채점한다.

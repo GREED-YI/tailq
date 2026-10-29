@@ -1,9 +1,5 @@
 import "server-only";
-import {
-  errorResponse,
-  INTERNAL_MESSAGE,
-  type ErrorCode,
-} from "@/lib/server/api-error";
+import { mapDbError, type ErrorCode } from "@/lib/server/api-error";
 import type { createAdminClient } from "@/lib/supabase/admin";
 
 type Admin = ReturnType<typeof createAdminClient>;
@@ -99,7 +95,7 @@ export async function turnResult(
   };
 }
 
-// DB 함수가 던진 에러 코드 → 메시지. HTTP 상태는 lib/api-error의 목록이 정한다(08 설계 "에러 형식")
+// DB 함수가 던진 에러 코드 → 메시지. HTTP 상태는 lib/server/api-error의 목록이 정한다(08 설계 "에러 형식")
 const MESSAGES: Partial<Record<ErrorCode, string>> = {
   VALIDATION: "답변은 30자 이상 2,000자 이하로 써 주세요.",
   NOT_FOUND: "질문을 찾을 수 없어요.",
@@ -111,10 +107,5 @@ const MESSAGES: Partial<Record<ErrorCode, string>> = {
   REGRADE_LIMIT: "오늘은 더 다시 채점할 수 없어요.",
 };
 
-export function dbErrorResponse(e: unknown) {
-  const code = (e as { message?: string } | null)?.message as ErrorCode;
-  const message = MESSAGES[code];
-  if (message) return errorResponse(code, message);
-  console.error("turn write failed", e);
-  return errorResponse("INTERNAL", INTERNAL_MESSAGE);
-}
+export const dbErrorResponse = (e: unknown) =>
+  mapDbError(e, MESSAGES, "turn write failed");
