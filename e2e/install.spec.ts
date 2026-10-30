@@ -1,7 +1,7 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 import { login, supabase } from "./login";
 
-// 앱 설치 버튼(#150). 로그인한 화면이라 로컬 Supabase가 있을 때만 돈다
+// 앱 설치 버튼(#150)은 MY에만 있고, 홈 첫 방문 안내는 04줄로 MY를 가리킨다(#167). 로그인한 화면이라 로컬 Supabase가 있을 때만 돈다
 test.skip(!supabase, "로컬 Supabase가 있어야 로그인한 화면을 본다");
 
 const EMAIL = "e2e-install@example.test";
@@ -26,14 +26,19 @@ const firePrompt = (page: Page) =>
   });
 
 // 설치 모듈이 리스너를 건 뒤(hydration 뒤)에 이벤트가 닿을 때까지 다시 보낸다
-async function promptUntilVisible(page: Page, name: RegExp) {
-  const button = page.getByRole("button", { name });
+async function promptUntilVisible(page: Page, target: Locator) {
   await expect(async () => {
     await firePrompt(page);
-    await expect(button).toBeVisible({ timeout: 500 });
+    await expect(target).toBeVisible({ timeout: 500 });
   }).toPass();
-  return button;
+  return target;
 }
+
+const guideOf = (page: Page) =>
+  page.getByRole("note", { name: "TailQ는 이렇게 써요" });
+// 첫 방문 안내 04줄(#167). 설치할 수 없으면 visibility로 숨어 접근성 트리에서도 빠진다
+const installLine = (page: Page) =>
+  guideOf(page).getByText("에서 앱을 설치하면", { exact: false });
 
 const eventSent = (page: Page, name: string) =>
   page.waitForRequest(
@@ -47,7 +52,10 @@ test("크롬은 설치 이벤트가 오면 MY 설정 끝 줄에 버튼이 보이
   page,
 }) => {
   await page.goto("/my");
-  const row = await promptUntilVisible(page, /^앱 설치/);
+  const row = await promptUntilVisible(
+    page,
+    page.getByRole("button", { name: /^앱 설치/ }),
+  );
   // 설정 구획의 맨 끝 줄
   await expect(
     page.getByRole("region", { name: "설정" }).getByRole("listitem").last(),
@@ -66,19 +74,22 @@ test("크롬은 설치 이벤트가 오면 MY 설정 끝 줄에 버튼이 보이
   await expect(row).toHaveCount(0);
 });
 
-test("크롬은 홈 첫 방문 안내의 알겠어요 옆에 앱 설치 버튼이 보인다", async ({
+test("크롬은 설치 이벤트가 오면 홈 첫 방문 안내에 04줄이 보이고, MY 링크로 간다", async ({
   page,
 }) => {
   await page.goto("/home");
-  const guide = page.getByRole("note", { name: "TailQ는 이렇게 써요" });
+  const guide = guideOf(page);
+  await expect(guide).toBeVisible();
+  await expect(installLine(page)).toBeHidden();
   const box = await guide.boundingBox();
-  const button = await promptUntilVisible(page, /^앱 설치$/);
-  await expect(guide.getByRole("button", { name: "앱 설치" })).toBeVisible();
-  // 같은 줄에 들어가 카드 높이가 변하지 않는다
+  await promptUntilVisible(page, installLine(page));
+  // 줄 자리를 미리 잡아 두어 카드 높이가 변하지 않는다
   expect((await guide.boundingBox())?.height).toBe(box?.height);
+  // 홈에는 설치 버튼이 없다
+  await expect(page.getByRole("button", { name: /앱 설치/ })).toHaveCount(0);
 
-  await button.click();
-  expect(await page.evaluate(() => "prompted" in window)).toBe(true);
+  await guide.getByRole("link", { name: "MY" }).click();
+  await expect(page).toHaveURL(/\/my$/);
 });
 
 test.describe("홈 화면 앱으로 열면", () => {
@@ -101,6 +112,16 @@ test.describe("홈 화면 앱으로 열면", () => {
     }
     await expect(page.getByRole("button", { name: /^앱 설치/ })).toHaveCount(0);
   });
+
+  test("설치 이벤트가 와도 홈 첫 방문 안내에 04줄이 없다", async ({ page }) => {
+    await page.goto("/home");
+    await expect(guideOf(page)).toBeVisible();
+    for (let i = 0; i < 5; i++) {
+      await firePrompt(page);
+      await page.waitForTimeout(300);
+    }
+    await expect(installLine(page)).toBeHidden();
+  });
 });
 
 test.describe("아이폰", () => {
@@ -112,13 +133,15 @@ test.describe("아이폰", () => {
     isMobile: true,
   });
 
-  test("누르면 홈 화면에 추가 안내가 열리고 Esc로 닫으면 버튼으로 돌아온다", async ({
+  test("홈 첫 방문 안내에 04줄이 보이고, MY의 앱 설치를 누르면 홈 화면에 추가 안내가 열린다", async ({
     page,
   }) => {
     await page.goto("/home");
-    const button = page
-      .getByRole("note", { name: "TailQ는 이렇게 써요" })
-      .getByRole("button", { name: "앱 설치" });
+    await expect(installLine(page)).toBeVisible();
+    await expect(page.getByRole("button", { name: /앱 설치/ })).toHaveCount(0);
+
+    await page.goto("/my");
+    const button = page.getByRole("button", { name: /^앱 설치/ });
     await expect(button).toHaveAttribute("aria-haspopup", "dialog");
 
     const click = eventSent(page, "install_click");
@@ -132,8 +155,5 @@ test.describe("아이폰", () => {
     await page.keyboard.press("Escape");
     await expect(dialog).toBeHidden();
     await expect(button).toBeFocused();
-
-    await page.goto("/my");
-    await expect(page.getByRole("button", { name: /^앱 설치/ })).toBeVisible();
   });
 });

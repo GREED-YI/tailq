@@ -10,7 +10,7 @@ export const SUBSCRIBE_ERRORS: Record<
   string
 > = {
   install:
-    "아이폰은 홈 화면에 추가한 앱에서만 알림을 받을 수 있어요. 추가한 뒤 홈 화면의 TailQ에서 알림을 켜 주세요.",
+    "아이폰은 홈 화면에 추가한 앱에서만 알림을 받을 수 있어요. MY의 앱 설치에서 추가한 뒤 홈 화면의 TailQ에서 알림을 켜 주세요.",
   denied:
     "브라우저에서 알림이 차단돼 있어요. 주소창 왼쪽 아이콘을 눌러 알림을 허용해 주세요.",
   unsupported:

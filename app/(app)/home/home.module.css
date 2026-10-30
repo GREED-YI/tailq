@@ -76,11 +76,19 @@
   font-weight: 700;
   color: var(--text);
 }
-/* "알겠어요"와 앱 설치(ghost, #150) 한 줄. 좁으면 줄을 바꾼다 */
-.guideActions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.guide a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+/* 04 앱 설치 줄(#167): 설치할 수 있을 때만 보인다. 자리는 늘 잡아 두고, 홈 화면 앱은 처음부터 접는다 */
+.guideInstall:not([data-on]) {
+  visibility: hidden;
+}
+@media (display-mode: standalone) {
+  .guide .guideInstall {
+    display: none;
+  }
 }
 .tagRow {
   display: flex;
@@ -443,8 +451,8 @@ a.tile:active {
     grid-column: span 4;
     grid-template-columns: minmax(0, 1fr);
   }
-  /* 첫 방문 안내가 보이는 동안은 왼쪽 단이 길어지니 타일을 늘리지 않는다(빈 면 방지). 닫으면 다시 늘어난다 */
-  :global(html:not([data-home-guide])) .stats {
+  /* 첫 방문 안내가 보이는 동안은 왼쪽 단이 길어지니 타일을 늘리지 않는다(빈 면 방지). 닫거나 안내가 없는 오늘 완료면 다시 늘어난다 */
+  :global(html:not([data-home-guide])) .home:has(.guide) .stats {
     align-self: start;
   }
   .reviews {

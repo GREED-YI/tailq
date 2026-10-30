@@ -92,7 +92,7 @@ function subscribe(listener: () => void) {
 export const useInstall = () =>
   useSyncExternalStore(subscribe, snapshot, () => "hidden" as const);
 
-// 홈과 MY가 함께 떠 있어도 "설치했어요"는 한 번만 띄운다
+// MY를 다시 열어도 "설치했어요"는 한 번만 띄운다
 export function takeInstalledToast() {
   const pending = toastPending;
   toastPending = false;
