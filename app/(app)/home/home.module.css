@@ -81,15 +81,6 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-/* 04 앱 설치 줄(#167): 설치할 수 있을 때만 보인다. 자리는 늘 잡아 두고, 홈 화면 앱은 처음부터 접는다 */
-.guideInstall:not([data-on]) {
-  visibility: hidden;
-}
-@media (display-mode: standalone) {
-  .guide .guideInstall {
-    display: none;
-  }
-}
 .tagRow {
   display: flex;
   align-items: center;

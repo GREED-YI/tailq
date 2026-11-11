@@ -36,7 +36,7 @@ async function promptUntilVisible(page: Page, target: Locator) {
 
 const guideOf = (page: Page) =>
   page.getByRole("note", { name: "TailQ는 이렇게 써요" });
-// 첫 방문 안내 04줄(#167). 설치할 수 없으면 visibility로 숨어 접근성 트리에서도 빠진다
+// 첫 방문 안내 04줄(#167). 설치할 수 있을 때만 그린다
 const installLine = (page: Page) =>
   guideOf(page).getByText("에서 앱을 설치하면", { exact: false });
 
@@ -74,17 +74,26 @@ test("크롬은 설치 이벤트가 오면 MY 설정 끝 줄에 버튼이 보이
   await expect(row).toHaveCount(0);
 });
 
-test("크롬은 설치 이벤트가 오면 홈 첫 방문 안내에 04줄이 보이고, MY 링크로 간다", async ({
+test("설치 이벤트가 없는 브라우저(미지원)는 홈 첫 방문 안내에 04줄이 없다", async ({
+  page,
+}) => {
+  await page.goto("/home");
+  await expect(guideOf(page)).toBeVisible();
+  // 설치 모듈이 판정을 마칠 때까지 기다린 뒤에도 줄 자리조차 없다
+  await page.waitForLoadState("networkidle");
+  await page.waitForTimeout(500);
+  await expect(installLine(page)).toHaveCount(0);
+  await expect(guideOf(page).getByRole("listitem")).toHaveCount(3);
+});
+
+test("크롬은 설치 이벤트가 오면 홈 첫 방문 안내에 04줄이 들어오고, MY 링크로 간다", async ({
   page,
 }) => {
   await page.goto("/home");
   const guide = guideOf(page);
   await expect(guide).toBeVisible();
-  await expect(installLine(page)).toBeHidden();
-  const box = await guide.boundingBox();
   await promptUntilVisible(page, installLine(page));
-  // 줄 자리를 미리 잡아 두어 카드 높이가 변하지 않는다
-  expect((await guide.boundingBox())?.height).toBe(box?.height);
+  await expect(guide.getByRole("listitem")).toHaveCount(4);
   // 홈에는 설치 버튼이 없다
   await expect(page.getByRole("button", { name: /앱 설치/ })).toHaveCount(0);
 
@@ -120,7 +129,8 @@ test.describe("홈 화면 앱으로 열면", () => {
       await firePrompt(page);
       await page.waitForTimeout(300);
     }
-    await expect(installLine(page)).toBeHidden();
+    await expect(installLine(page)).toHaveCount(0);
+    await expect(guideOf(page).getByRole("listitem")).toHaveCount(3);
   });
 });
 

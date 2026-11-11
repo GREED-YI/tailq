@@ -15,6 +15,7 @@ const kstToday = () =>
   new Date(Date.now() + 9 * 3_600_000).toISOString().slice(0, 10);
 
 let me = "";
+let question = 0;
 
 test.beforeEach(async ({ context }) => {
   me = (await login(context, EMAIL)).user.id;
@@ -23,19 +24,29 @@ test.beforeEach(async ({ context }) => {
 
 test.afterAll(async () => {
   await db().from("sessions").delete().eq("user_id", me);
+  if (question) await db().from("questions").delete().eq("id", question);
 });
 
 test("오늘 완료 홈에는 첫 방문 안내가 없다", async ({ page }) => {
   const admin = db();
-  const { data: q } = await admin
-    .from("questions")
+  // 질문 은행 시드가 없는 DB에서도 돌게 이 테스트 전용 질문을 만들고 끝나면 지운다
+  const { data: topic } = await admin
+    .from("topics")
     .select("id")
-    .is("project_id", null)
-    .is("note_id", null)
-    .eq("is_hidden", false)
     .limit(1)
     .single()
     .throwOnError();
+  const { data: q } = await admin
+    .from("questions")
+    .insert({
+      prompt: "[e2e] 오늘 완료 홈 확인용 질문",
+      topic_id: topic.id,
+      level: "basic",
+    })
+    .select("id")
+    .single()
+    .throwOnError();
+  question = q.id;
   const { data: s } = await admin
     .from("sessions")
     .insert({

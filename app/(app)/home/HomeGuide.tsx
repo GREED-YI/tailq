@@ -63,22 +63,21 @@ export function HomeGuide() {
             질문을 만들어요
           </p>
         </li>
-        {/* 앱 설치 안내(#167). 설치는 MY에서만 한다. 판정은 브라우저에서만 되므로 줄 자리는 늘 잡아 두고
-            설치할 수 없으면 visibility로 숨겨 늦게 나타나도 카드가 밀리지 않는다. 홈 화면 앱은 CSS가 처음부터 접는다 */}
-        <li
-          className={s.guideInstall}
-          data-on={install === "prompt" || install === "ios-guide" || undefined}
-        >
-          <span className="mono" aria-hidden="true">
-            04
-          </span>
-          <p>
-            <Link href="/my">
-              <b>MY</b>
-            </Link>
-            에서 앱을 설치하면 홈 화면에서 바로 열고 알림도 받을 수 있어요
-          </p>
-        </li>
+        {/* 앱 설치 안내(#167). 설치는 MY에서만 한다. 설치할 수 있을 때만 줄을 넣는다.
+            판정은 브라우저에서만 되므로 줄이 들어오면서 "알겠어요"가 한 줄 밀린다(사용자 결정) */}
+        {(install === "prompt" || install === "ios-guide") && (
+          <li>
+            <span className="mono" aria-hidden="true">
+              04
+            </span>
+            <p>
+              <Link href="/my">
+                <b>MY</b>
+              </Link>
+              에서 앱을 설치하면 홈 화면에서 바로 열고 알림도 받을 수 있어요
+            </p>
+          </li>
+        )}
       </ol>
       <button
         type="button"
