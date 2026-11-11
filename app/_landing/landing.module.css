@@ -793,15 +793,10 @@
       animation-range: contain 20% contain 24%;
     }
     .step:nth-child(2) {
-      animation:
-        appear linear both,
-        vanish linear both;
-      /* 빌드가 두 개짜리 shorthand를 longhand로 풀며 길이를 0s로 채운다. 스크롤 길이를 따르게 되돌린다 */
-      animation-duration: auto;
+      /* 나타나기(24~28%)와 사라지기(44~48%)를 키프레임 하나에 담는다 */
+      animation: peakMid linear both;
       animation-timeline: --peak;
-      animation-range:
-        contain 24% contain 28%,
-        contain 44% contain 48%;
+      animation-range: contain 24% contain 48%;
     }
     .step:nth-child(3) {
       animation: appear linear both;
@@ -1105,9 +1100,27 @@
   from {
     opacity: 0;
   }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes vanish {
+  from {
+    opacity: 1;
+  }
   to {
+    opacity: 0;
+  }
+}
+@keyframes peakMid {
+  0% {
+    opacity: 0;
+  }
+  16.67%,
+  83.33% {
+    opacity: 1;
+  }
+  100% {
     opacity: 0;
   }
 }
