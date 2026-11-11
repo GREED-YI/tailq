@@ -740,7 +740,8 @@
 }
 
 /* 스크롤에 묶인 정점: 섹션이 3화면 높이의 트랙이 되고 무대가 헤더 아래에 붙는다.
-   트랙 20~28% · 44~52%에 다음 단계가 같은 자리에 겹쳐 나타나고(opacity, 흐름 열과 판정 블록이 같이),
+   트랙 20~28% · 44~52%에 단계가 같은 자리에서 바뀌고(앞 절반에 앞 단계가 사라지고 뒤 절반에 다음 단계가 나타난다.
+   opacity, 흐름 열과 판정 블록이 같이),
    56~66%에 위 글이 홀드 문장으로 바뀌며 PC는 크롭 묶음이 0.92배에서 1배로 정착한다(채널 2).
    66%에 정착하고 남은 34%(약 1화면)는 멈춘 채 읽힌다 */
 @supports (animation-timeline: view()) {
@@ -785,15 +786,22 @@
     .step:not(:last-child) {
       display: block;
     }
-    .step:not(:first-child) {
-      animation: appear linear both;
+    /* 앞 단계가 전환 구간 앞 절반에 사라지고 다음 단계가 뒤 절반에 나타난다. 둘이 한 번에 비치지 않게 */
+    .step:nth-child(1) {
+      animation: vanish linear both;
       animation-timeline: --peak;
+      animation-range: contain 20% contain 24%;
     }
     .step:nth-child(2) {
-      animation-range: contain 20% contain 28%;
+      /* 나타나기(24~28%)와 사라지기(44~48%)를 키프레임 하나에 담는다 */
+      animation: peakMid linear both;
+      animation-timeline: --peak;
+      animation-range: contain 24% contain 48%;
     }
     .step:nth-child(3) {
-      animation-range: contain 44% contain 52%;
+      animation: appear linear both;
+      animation-timeline: --peak;
+      animation-range: contain 48% contain 52%;
     }
   }
   @media (prefers-reduced-motion: no-preference) and (min-height: 700px) and (min-width: 1024px) {
@@ -1092,9 +1100,27 @@
   from {
     opacity: 0;
   }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes vanish {
+  from {
+    opacity: 1;
+  }
   to {
+    opacity: 0;
+  }
+}
+@keyframes peakMid {
+  0% {
+    opacity: 0;
+  }
+  16.67%,
+  83.33% {
+    opacity: 1;
+  }
+  100% {
     opacity: 0;
   }
 }
