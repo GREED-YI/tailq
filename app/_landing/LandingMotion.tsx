@@ -32,9 +32,7 @@ export function LandingMotion() {
     const focusTry = () =>
       requestAnimationFrame(() =>
         root
-          .querySelector<HTMLElement>(
-            '#try [role="radio"][aria-checked="true"]',
-          )
+          .querySelector<HTMLElement>("#try input:checked")
           ?.focus({ preventScroll: true }),
       );
     const onClick = (e: MouseEvent) => {

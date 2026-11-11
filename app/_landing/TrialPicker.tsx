@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, use, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icons";
 import type { TrialField } from "@/lib/trial";
 import s from "./landing.module.css";
@@ -20,7 +20,11 @@ const FIELDS: { id: TrialField; label: string }[] = [
 
 // 랜딩 맨 아래 체험(docs/04 10번 7). 분야를 고르면 그 분야의 샘플 질문으로 체험을 시작한다.
 // 오늘 체험을 이미 했으면 "체험 횟수 초과" 모달(Figma S33)을 띄운다
-export function TrialPicker({ questions }: { questions: TrialQuestions }) {
+export function TrialPicker({
+  questions,
+}: {
+  questions: Promise<TrialQuestions>;
+}) {
   const router = useRouter();
   const [field, setField] = useState<TrialField>("backend");
   const [pending, setPending] = useState(false);
@@ -40,6 +44,13 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
   const startRef = useRef<HTMLButtonElement>(null);
   useCloseOnLeave(limitRef);
   const label = FIELDS.find((f) => f.id === field)!.label;
+  // JS가 붙기 전에 바뀐 선택(브라우저가 radio를 바꿔 둔다)을 이어받는다
+  const groupRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const v =
+      groupRef.current?.querySelector<HTMLInputElement>("input:checked")?.value;
+    if (v) setField(v as TrialField);
+  }, []);
 
   async function start() {
     setPending(true);
@@ -70,24 +81,6 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
     setPending(false);
   }
 
-  // 화살표 키로 분야를 옮긴다(radiogroup 기본 동작)
-  function onKey(e: React.KeyboardEvent<HTMLDivElement>) {
-    const step =
-      e.key === "ArrowRight" || e.key === "ArrowDown"
-        ? 1
-        : e.key === "ArrowLeft" || e.key === "ArrowUp"
-          ? -1
-          : 0;
-    if (!step) return;
-    e.preventDefault();
-    const i = FIELDS.findIndex((f) => f.id === field);
-    const next = FIELDS[(i + step + FIELDS.length) % FIELDS.length];
-    setField(next.id);
-    e.currentTarget
-      .querySelector<HTMLButtonElement>(`[data-field="${next.id}"]`)
-      ?.focus();
-  }
-
   return (
     <div className={s.tryGrid}>
       <div className={s.tryCopy}>
@@ -98,53 +91,33 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
           원하는 분야를 고르면 채점부터 꼬리질문 1개까지 체험해 볼 수 있어요.
           같은 날 이 브라우저에서 이어서 가입하면 체험 기록이 그대로 저장돼요.
         </p>
+        {/* 로그인 전 랜딩이라 JS가 붙기 전에 누를 수 있어 공용 radio-group(button radio) 대신 네이티브 radio를 쓴다(#182).
+            방향키·Tab 한 번 멈춤도 브라우저가 맡는다 */}
         <div
+          ref={groupRef}
           className={s.fields}
           role="radiogroup"
           aria-label="체험할 분야"
-          onKeyDown={onKey}
         >
           {FIELDS.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              role="radio"
-              data-field={f.id}
-              aria-checked={f.id === field}
-              tabIndex={f.id === field ? 0 : -1}
-              className="chip press"
-              onClick={() => setField(f.id)}
-            >
+            <label key={f.id} className="chip press">
+              <input
+                type="radio"
+                name="trial-field"
+                value={f.id}
+                className="sr-only"
+                defaultChecked={f.id === "backend"}
+                onChange={() => setField(f.id)}
+              />
               {f.label}
-            </button>
+            </label>
           ))}
         </div>
       </div>
       <div className={s.tryStart}>
-        {questions && (
-          // 분야를 바꾸면 바뀐 질문을 읽어 준다. 알림은 늘 남아 있는 이 감싸개에 건다(새로 그려지는 칸에 걸면 알리지 않는다).
-          // 세 질문을 같은 칸에 겹쳐 두고 고른 것만 보인다(나머지는 visibility로 숨겨 높이만 잡는다)
-          <div className={s.tryQs} aria-live="polite">
-            {FIELDS.map(({ id }) => {
-              const q = questions[id];
-              if (!q) return null;
-              const on = id === field;
-              return (
-                <div
-                  key={on ? `on-${id}` : id}
-                  className={on ? `fade ${s.tryQ}` : s.tryQ}
-                  data-off={on ? undefined : ""}
-                >
-                  <span className={s.tryTag}>
-                    <span className="tag tag-neutral">체험 질문</span>
-                    <span className="mono">{q.tag}</span>
-                  </span>
-                  <p>{q.prompt}</p>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        <Suspense>
+          <TrialPreview questions={questions} field={field} />
+        </Suspense>
         <button
           type="button"
           ref={startRef}
@@ -188,6 +161,42 @@ export function TrialPicker({ questions }: { questions: TrialQuestions }) {
           </Link>
         </div>
       </dialog>
+    </div>
+  );
+}
+
+// 분야별 체험 질문 미리보기. 질문은 DB에서 늦게 오므로 이 칸만 기다린다
+function TrialPreview({
+  questions: promise,
+  field,
+}: {
+  questions: Promise<TrialQuestions>;
+  field: TrialField;
+}) {
+  const questions = use(promise);
+  if (!questions) return null;
+  return (
+    // 분야를 바꾸면 바뀐 질문을 읽어 준다. 알림은 늘 남아 있는 이 감싸개에 건다(새로 그려지는 칸에 걸면 알리지 않는다).
+    // 세 질문을 같은 칸에 겹쳐 두고 고른 것만 보인다(나머지는 visibility로 숨겨 높이만 잡는다)
+    <div className={s.tryQs} aria-live="polite">
+      {FIELDS.map(({ id }) => {
+        const q = questions[id];
+        if (!q) return null;
+        const on = id === field;
+        return (
+          <div
+            key={on ? `on-${id}` : id}
+            className={on ? `fade ${s.tryQ}` : s.tryQ}
+            data-off={on ? undefined : ""}
+          >
+            <span className={s.tryTag}>
+              <span className="tag tag-neutral">체험 질문</span>
+              <span className="mono">{q.tag}</span>
+            </span>
+            <p>{q.prompt}</p>
+          </div>
+        );
+      })}
     </div>
   );
 }

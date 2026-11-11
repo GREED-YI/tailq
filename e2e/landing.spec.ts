@@ -214,20 +214,45 @@ test("체험 분야는 하나만 고르고, 시작 버튼이 분야를 따라간
 }) => {
   await page.goto("/");
   const group = page.getByRole("radiogroup", { name: "체험할 분야" });
-  await expect(group.getByRole("radio", { checked: true })).toHaveText(
-    "백엔드",
-  );
-  await group.getByRole("radio", { name: "프론트엔드" }).click();
-  await expect(group.getByRole("radio", { checked: true })).toHaveText(
-    "프론트엔드",
-  );
+  await expect(
+    group.getByRole("radio", { checked: true }),
+  ).toHaveAccessibleName("백엔드");
+  await group.getByText("프론트엔드", { exact: true }).click();
+  await expect(
+    group.getByRole("radio", { checked: true }),
+  ).toHaveAccessibleName("프론트엔드");
   await expect(
     page.getByRole("button", { name: "프론트엔드로 시작하기" }),
   ).toBeVisible();
   await page.keyboard.press("ArrowLeft");
-  await expect(group.getByRole("radio", { checked: true })).toHaveText(
-    "백엔드",
-  );
+  await expect(
+    group.getByRole("radio", { checked: true }),
+  ).toHaveAccessibleName("백엔드");
+});
+
+test("페이지 JS가 붙기 전에 고른 체험 분야도 남는다", async ({ page }) => {
+  // JS를 붙잡아 둔 채 분야를 누르고, 그다음 JS를 붙인다(#182)
+  let release!: () => void;
+  const gate = new Promise<void>((r) => (release = r));
+  await page.route(/\/_next\/static\/.*\.js/, async (route) => {
+    await gate;
+    await route.continue();
+  });
+  await page.goto("/", { waitUntil: "commit" });
+  const group = page.getByRole("radiogroup", { name: "체험할 분야" });
+  await group.getByText("프론트엔드", { exact: true }).click();
+  // 문구가 아직 그대로면 JS가 붙기 전에 누른 것이다
+  await expect(
+    page.getByRole("button", { name: "백엔드로 시작하기" }),
+  ).toBeVisible();
+  release();
+  // 시작 버튼 문구는 JS가 붙어야 바뀐다. 바뀐 뒤에 선택을 본다
+  await expect(
+    page.getByRole("button", { name: "프론트엔드로 시작하기" }),
+  ).toBeVisible();
+  await expect(
+    group.getByRole("radio", { checked: true }),
+  ).toHaveAccessibleName("프론트엔드");
 });
 
 test("체험을 시작하지 않았으면 체험 화면 대신 랜딩의 체험 칸으로 간다", async ({
