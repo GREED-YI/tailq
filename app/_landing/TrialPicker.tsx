@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, use, useEffect, useRef, useState } from "react";
+import { Dialog } from "@/components/Dialog";
+import d from "@/components/Dialog.module.css";
 import { Icon } from "@/components/icons";
 import type { TrialField } from "@/lib/trial";
 import s from "./landing.module.css";
-import { openModal, useCloseOnLeave } from "@/lib/dialog";
+import { openModal } from "@/lib/dialog";
 
 export type TrialQuestions = Partial<
   Record<TrialField, { tag: string; prompt: string }>
@@ -42,7 +44,6 @@ export function TrialPicker({
   const limitRef = useRef<HTMLDialogElement>(null);
   // 처리 중에는 버튼이 비활성이라 초점을 잃는다. 대화상자를 닫으면 시작 버튼으로 초점을 돌린다(DESIGN.md dialog)
   const startRef = useRef<HTMLButtonElement>(null);
-  useCloseOnLeave(limitRef);
   const label = FIELDS.find((f) => f.id === field)!.label;
   // JS가 붙기 전에 바뀐 선택(브라우저가 radio를 바꿔 둔다)을 이어받는다
   const groupRef = useRef<HTMLDivElement>(null);
@@ -140,15 +141,13 @@ export function TrialPicker({
       </div>
 
       {/* 체험 횟수 초과(Figma S33, dialog confirm) */}
-      <dialog
+      <Dialog
         ref={limitRef}
-        className={s.dialog}
-        aria-labelledby="limit-title"
+        title="오늘 체험은 끝났어요"
         onClose={() => startRef.current?.focus()}
       >
-        <h2 id="limit-title">오늘 체험은 끝났어요</h2>
         <p>가입하면 매일 새 질문과 AI 채점을 받을 수 있어요.</p>
-        <div className={s.dialogButtons}>
+        <div className={d.buttons}>
           <button
             type="button"
             className="btn btn-md btn-secondary press"
@@ -160,7 +159,7 @@ export function TrialPicker({
             가입하기
           </Link>
         </div>
-      </dialog>
+      </Dialog>
     </div>
   );
 }

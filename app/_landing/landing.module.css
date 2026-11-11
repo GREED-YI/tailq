@@ -1247,41 +1247,6 @@
   margin-top: 32px;
 }
 
-/* 체험 횟수 초과(dialog confirm) */
-.dialog {
-  margin: auto;
-  width: min(400px, calc(100% - 40px));
-  padding: 24px;
-  border: 0;
-  border-radius: var(--radius-panel);
-  background: var(--canvas);
-  box-shadow:
-    inset 0 0 0 1px var(--line),
-    var(--shadow-overlay);
-  color: var(--text);
-}
-.dialog::backdrop {
-  background: var(--scrim);
-}
-.dialog h2 {
-  font-size: 18px;
-  line-height: 1.4;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.dialog > p {
-  margin-top: 8px;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--text-sub);
-}
-.dialogButtons {
-  margin-top: 24px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
 /* ---------- 푸터(SiteFooter) ---------- */
 /* 모양은 footer.module.css(로그인·약관·공유와 같이 쓴다). 랜딩에서는 선을 화면 끝까지 긋고 글만 읽기 레인에 맞춘다 */
 .root > footer {
