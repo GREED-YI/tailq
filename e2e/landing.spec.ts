@@ -89,6 +89,35 @@ test("꼬리질문 정점은 스크롤에 붙고, 세 단계가 같은 자리에
   await expect(page.locator("#peak img:visible")).toHaveCount(6);
 });
 
+test("정점 단계가 바뀌는 동안 두 단계가 함께 비치지 않는다", async ({
+  page,
+}) => {
+  await page.goto("/");
+  // 트랙을 20px씩 내리며, 묶음마다 비치는(opacity > 0.05) 단계 수의 최댓값을 잰다
+  const most = await page.evaluate(async () => {
+    const peak = document.getElementById("peak")!;
+    const top = peak.getBoundingClientRect().top + scrollY;
+    const groups = [
+      ...peak.querySelectorAll("[class*=peakFlow], [class*=peakVerdict]"),
+    ].filter((e) => getComputedStyle(e).display !== "none");
+    let max = 0;
+    for (let y = top; y < top + peak.offsetHeight - innerHeight; y += 20) {
+      scrollTo(0, y);
+      await new Promise((r) =>
+        requestAnimationFrame(() => requestAnimationFrame(r)),
+      );
+      for (const g of groups) {
+        const lit = [...g.children].filter(
+          (s) => +getComputedStyle(s).opacity > 0.05,
+        ).length;
+        max = Math.max(max, lit);
+      }
+    }
+    return max;
+  });
+  expect(most).toBe(1);
+});
+
 test("동작 줄이기·낮은 창에서는 정점이 붙지 않고 마지막 단계만 보인다", async ({
   browser,
 }) => {
