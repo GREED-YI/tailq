@@ -212,6 +212,10 @@ test("페이지 JS가 붙기 전에 고른 체험 분야도 남는다", async ({
   await page.goto("/", { waitUntil: "commit" });
   const group = page.getByRole("radiogroup", { name: "체험할 분야" });
   await group.getByText("프론트엔드", { exact: true }).click();
+  // 문구가 아직 그대로면 JS가 붙기 전에 누른 것이다
+  await expect(
+    page.getByRole("button", { name: "백엔드로 시작하기" }),
+  ).toBeVisible();
   release();
   // 시작 버튼 문구는 JS가 붙어야 바뀐다. 바뀐 뒤에 선택을 본다
   await expect(
