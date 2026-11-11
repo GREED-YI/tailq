@@ -1,13 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import {
-  useRef,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-  type RefObject,
-} from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
+import { Dialog } from "@/components/Dialog";
+import d from "@/components/Dialog.module.css";
 import { Icon } from "@/components/icons";
 import { hourLabel } from "@/lib/profile";
 import {
@@ -18,32 +14,8 @@ import {
 import { THEME_STORAGE_KEY, type ThemeName } from "@/lib/theme";
 import p from "../../my/my.module.css";
 import s from "./my.module.css";
-import { openModal, useCloseOnLeave } from "@/lib/dialog";
+import { openModal } from "@/lib/dialog";
 import { useRadioGroup } from "@/lib/radio-group";
-
-// 가운데 확인 창(S30 로그아웃 확인 모양). 브라우저 기본 <dialog>라 Esc·바깥 포커스 막기가 된다
-function Dialog({
-  ref,
-  title,
-  children,
-}: {
-  ref: RefObject<HTMLDialogElement | null>;
-  title: string;
-  children: ReactNode;
-}) {
-  return (
-    <dialog
-      ref={ref}
-      className={s.dialog}
-      aria-label={title}
-      // 바깥(어두운 바탕)을 누르면 닫는다
-      onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
-    >
-      <h2>{title}</h2>
-      {children}
-    </dialog>
-  );
-}
 
 // 설정 목록의 한 줄. 누르면 창을 연다
 function SettingRow(props: {
@@ -70,7 +42,6 @@ function SettingRow(props: {
 
 export function LogoutButton() {
   const dialog = useRef<HTMLDialogElement>(null);
-  useCloseOnLeave(dialog);
   return (
     <>
       <button
@@ -80,13 +51,13 @@ export function LogoutButton() {
       >
         로그아웃
       </button>
-      <Dialog ref={dialog} title="로그아웃할까요?">
+      <Dialog ref={dialog} title="로그아웃할까요?" closeOnBackdrop>
         <p>
           같은 방법으로 다시 로그인하면
           <br />
           기록이 그대로 남아 있어요.
         </p>
-        <form action="/auth/logout" method="post" className={s.dialogButtons}>
+        <form action="/auth/logout" method="post" className={d.buttons}>
           <button
             type="button"
             className="btn btn-md btn-secondary press"
@@ -118,7 +89,6 @@ export function NotifyRow({
 }) {
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
-  useCloseOnLeave(dialog);
   const [nextOn, setNextOn] = useState(on);
   const [nextHour, setNextHour] = useState(hour);
   const [error, setError] = useState("");
@@ -165,8 +135,8 @@ export function NotifyRow({
         meta={on ? `켜짐 · ${hourLabel(hour)}` : "꺼짐"}
         onClick={open}
       />
-      <Dialog ref={dialog} title="알림">
-        <div className={s.dialogRow}>
+      <Dialog ref={dialog} title="알림" closeOnBackdrop>
+        <div className={d.row}>
           <span id="notify-label">매일 질문 알림</span>
           <button
             type="button"
@@ -177,10 +147,10 @@ export function NotifyRow({
             onClick={() => setNextOn(!nextOn)}
           />
         </div>
-        <label className={s.dialogRow}>
+        <label className={d.row}>
           <span>알림 시각</span>
           <select
-            className={s.select}
+            className={d.select}
             value={nextHour}
             disabled={!nextOn}
             onChange={(e) => setNextHour(Number(e.target.value))}
@@ -193,11 +163,11 @@ export function NotifyRow({
           </select>
         </label>
         {error && (
-          <p role="alert" className={s.dialogError}>
+          <p role="alert" className={d.error}>
             {error}
           </p>
         )}
-        <div className={s.dialogButtons}>
+        <div className={d.buttons}>
           <button
             type="button"
             className="btn btn-md btn-secondary press"
@@ -264,7 +234,6 @@ function applyTheme(choice: ThemeChoice) {
 // 고르면 바로 바뀌어 보이고, 창은 닫기로 닫는다
 export function ThemeRow() {
   const dialog = useRef<HTMLDialogElement>(null);
-  useCloseOnLeave(dialog);
   const theme = useSyncExternalStore<ThemeChoice>(
     watchTheme,
     readTheme,
@@ -289,7 +258,7 @@ export function ThemeRow() {
             ?.focus();
         }}
       />
-      <Dialog ref={dialog} title="화면 테마">
+      <Dialog ref={dialog} title="화면 테마" closeOnBackdrop>
         <p id="theme-mode-label">모드</p>
         <div
           {...radios.group}
@@ -307,7 +276,7 @@ export function ThemeRow() {
             </button>
           ))}
         </div>
-        <div className={s.dialogButtons} style={{ gridTemplateColumns: "1fr" }}>
+        <div className={d.buttons} style={{ gridTemplateColumns: "1fr" }}>
           <button
             type="button"
             className="btn btn-md btn-secondary press"
