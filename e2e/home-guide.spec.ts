@@ -42,6 +42,8 @@ test("오늘 완료 홈에는 첫 방문 안내가 없다", async ({ page }) => 
       prompt: "[e2e] 오늘 완료 홈 확인용 질문",
       topic_id: topic.id,
       level: "basic",
+      // 다른 사용자의 오늘 질문으로 뽑히지 않게 숨긴다. 세션은 직접 넣으므로 숨겨도 된다
+      is_hidden: true,
     })
     .select("id")
     .single()

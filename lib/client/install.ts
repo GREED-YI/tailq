@@ -21,6 +21,7 @@ export const isStandalone = () =>
 
 // 앱 안 브라우저(카카오톡·네이버·인스타그램·페이스북·라인)는 공유 메뉴에 "홈 화면에 추가"가 없어 안내가 거짓이 된다
 const IN_APP = /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|Line\//;
+export const isInApp = (ua = navigator.userAgent) => IN_APP.test(ua);
 
 export function decideInstall(env: {
   ua: string;
