@@ -8,8 +8,9 @@ import {
   subscribePush,
 } from "@/lib/client/push-client";
 import { hourLabel } from "@/lib/profile";
-import s from "../my/my.module.css";
-import { openModal, useCloseOnLeave } from "@/lib/dialog";
+import { Dialog } from "@/components/Dialog";
+import d from "@/components/Dialog.module.css";
+import { openModal } from "@/lib/dialog";
 
 const LATER_KEY = "tailq-notify-later";
 
@@ -26,7 +27,6 @@ export function NotifyPrompt({
 }) {
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
-  useCloseOnLeave(dialog);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [hour, setHour] = useState(initialHour);
@@ -71,19 +71,17 @@ export function NotifyPrompt({
   }
 
   return (
-    <dialog
+    <Dialog
       ref={dialog}
-      className={s.dialog}
-      aria-labelledby="notify-prompt-title"
+      title="매일 질문을 알림으로 받을까요?"
       // Esc로 닫아도 "나중에"와 같다
       onCancel={close}
     >
-      <h2 id="notify-prompt-title">매일 질문을 알림으로 받을까요?</h2>
       <p>정한 시각에 오늘의 질문을 알려 줄게요. 이미 푼 날은 보내지 않아요.</p>
-      <label className={s.dialogRow}>
+      <label className={d.row}>
         <span>알림 시각</span>
         <select
-          className={s.select}
+          className={d.select}
           value={hour}
           onChange={(e) => setHour(Number(e.target.value))}
         >
@@ -96,11 +94,11 @@ export function NotifyPrompt({
       </label>
       <p>나중에 MY에서 바꿀 수 있어요.</p>
       {error && (
-        <p role="alert" className={s.dialogError}>
+        <p role="alert" className={d.error}>
           {error}
         </p>
       )}
-      <div className={s.dialogButtons}>
+      <div className={d.buttons}>
         <button
           type="button"
           className="btn btn-md btn-secondary press"
@@ -118,6 +116,6 @@ export function NotifyPrompt({
           알림 받기
         </button>
       </div>
-    </dialog>
+    </Dialog>
   );
 }
