@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decideInstall, isIos } from "@/lib/client/install";
+import { decideInstall, isInApp, isIos } from "@/lib/client/install";
 
 const UA = {
   iphone:
@@ -70,5 +70,15 @@ describe("앱 설치 버튼 판정(#150)", () => {
     );
     expect(decide(UA.chrome)).toBe("hidden");
     expect(decide(UA.android, { touchPoints: 5 })).toBe("hidden");
+  });
+});
+
+describe("isInApp", () => {
+  // 아이폰 앱 안 브라우저에서 알림을 켜면 MY 대신 Safari로 안내한다(push-client "in-app")
+  it("앱 안 브라우저만 가린다", () => {
+    expect(isInApp(UA.kakao)).toBe(true);
+    expect(isInApp(UA.instagram)).toBe(true);
+    expect(isInApp(UA.iphone)).toBe(false);
+    expect(isInApp(UA.iphoneChrome)).toBe(false);
   });
 });

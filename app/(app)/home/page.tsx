@@ -174,8 +174,9 @@ async function Home() {
         ) : (
           <Today session={session} state={state} />
         )}
-        {/* 첫 방문 안내는 주 행동 아래(DESIGN.md inline-notice guide). 375×667에서도 주 버튼이 첫 화면에 보인다 */}
-        <HomeGuide />
+        {/* 첫 방문 안내는 주 행동 아래(DESIGN.md inline-notice guide). 375×667에서도 주 버튼이 첫 화면에 보인다.
+            오늘 다 푼 홈은 알림 켜기 창과 겹쳐 그리지 않는다(#167) */}
+        {!done && <HomeGuide />}
         {/* 오늘 질문을 끝냈고 알림이 꺼져 있으면 알림 권한 사전 안내(S32) */}
         {done && profile.data && !profile.data.notify_on && (
           <NotifyPrompt

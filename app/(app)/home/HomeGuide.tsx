@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useRef } from "react";
-import { InstallButton } from "@/components/InstallButton";
+import { useInstall } from "@/lib/client/install";
 import { HOME_GUIDE_KEY } from "@/lib/home";
 import s from "./home.module.css";
 
@@ -11,6 +12,7 @@ import s from "./home.module.css";
 // 닫은 뒤에는 오늘의 질문 버튼으로, 버튼이 없는 예산 소진 날은 보이는 한도 안내 제목으로 포커스를 옮긴다
 export function HomeGuide() {
   const ref = useRef<HTMLDivElement>(null);
+  const install = useInstall();
 
   function close() {
     try {
@@ -61,18 +63,29 @@ export function HomeGuide() {
             질문을 만들어요
           </p>
         </li>
+        {/* 앱 설치 안내(#167). 설치는 MY에서만 한다. 설치할 수 있을 때만 줄을 넣는다.
+            판정은 브라우저에서만 되므로 줄이 들어오면서 "알겠어요"가 한 줄 밀린다(사용자 결정) */}
+        {(install === "prompt" || install === "ios-guide") && (
+          <li>
+            <span className="mono" aria-hidden="true">
+              04
+            </span>
+            <p>
+              <Link href="/my">
+                <b>MY</b>
+              </Link>
+              에서 앱을 설치하면 홈 화면에서 바로 열고 알림도 받을 수 있어요
+            </p>
+          </li>
+        )}
       </ol>
-      {/* 앱 설치(#150)는 "알겠어요" 옆 같은 줄이라 늦게 나타나도 카드 높이가 변하지 않는다 */}
-      <div className={s.guideActions}>
-        <button
-          type="button"
-          className="press btn btn-md btn-secondary"
-          onClick={close}
-        >
-          알겠어요
-        </button>
-        <InstallButton variant="ghost" />
-      </div>
+      <button
+        type="button"
+        className="press btn btn-md btn-secondary"
+        onClick={close}
+      >
+        알겠어요
+      </button>
     </div>
   );
 }

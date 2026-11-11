@@ -108,7 +108,7 @@ async function My() {
         />
         <ThemeRow />
         {/* 맨 끝 줄이라 늦게 나타나도 위 줄은 밀리지 않는다 */}
-        <InstallButton variant="row" />
+        <InstallButton />
       </Group>
 
       <Group title="정보">
