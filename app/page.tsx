@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { Suspense } from "react";
 import { Icon } from "@/components/icons";
 import { Logo } from "@/components/Logo";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -362,9 +361,7 @@ export default function Landing() {
           className={`${s.wrap} ${s.sec} ${s.try}`}
           aria-labelledby="try-title"
         >
-          <Suspense fallback={<TrialPicker questions={null} />}>
-            <TrialSection />
-          </Suspense>
+          <TrialPicker questions={trialQuestions()} />
           <p className={`${s.caption} ${s.topics}`}>
             15개 주제 · {TOPICS.join(" · ")}
           </p>
@@ -377,8 +374,9 @@ export default function Landing() {
 }
 
 // 분야마다 체험에 낼 샘플 질문(trial_field). 공개해도 되는 샘플이라 service_role로 질문 글만 읽는다.
-// DB를 못 읽으면 질문 미리보기 없이 분야 고르기만 보인다
-async function TrialSection() {
+// DB를 못 읽으면 질문 미리보기 없이 분야 고르기만 보인다.
+// 기다리지 않고 넘겨 미리보기만 늦게 채운다(분야 칩은 첫 HTML에 그대로 남아 먼저 누른 선택이 바뀌지 않는다, #182)
+async function trialQuestions(): Promise<TrialQuestions> {
   await connection();
   let questions: TrialQuestions = null;
   try {
@@ -399,5 +397,5 @@ async function TrialSection() {
   } catch (e) {
     console.error("trial questions read failed", e);
   }
-  return <TrialPicker questions={questions} />;
+  return questions;
 }
