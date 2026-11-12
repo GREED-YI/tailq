@@ -116,7 +116,23 @@ export function TrialPicker({
         </div>
       </div>
       <div className={s.tryStart}>
-        <Suspense>
+        <Suspense
+          fallback={
+            // 질문이 오기 전: .tryQ와 같은 선·여백에 태그 한 줄, 질문 두 줄 자리를 잡아 아래 버튼이 거의 밀리지 않게 한다
+            <div className={s.tryQs}>
+              <p role="status" className="sr-only">
+                질문을 불러오는 중이에요
+              </p>
+              <div className={`${s.tryQ} ${s.tryWait}`} aria-hidden="true">
+                <span className="skeleton" />
+                <p>
+                  <span className="skeleton" />
+                  <span className="skeleton" />
+                </p>
+              </div>
+            </div>
+          }
+        >
           <TrialPreview questions={questions} field={field} />
         </Suspense>
         <button

@@ -255,6 +255,38 @@ test("페이지 JS가 붙기 전에 고른 체험 분야도 남는다", async ({
   ).toHaveAccessibleName("프론트엔드");
 });
 
+test("체험 질문이 오기 전에는 같은 자리에 자리 표시가 있고, 다 받으면 사라진다", async ({
+  page,
+}) => {
+  // 질문이 아직 안 온 순간을 만든다: 랜딩 HTML을 자리 표시 뒤 시작 버튼 앞에서 끊어 보내고, 끊긴 화면에 JS가 붙지 않게 막는다
+  await page.route(/\/_next\/static\/.*\.js/, (route) => route.abort());
+  await page.route("/", async (route) => {
+    const html = await (await route.fetch()).text();
+    const cut = html.indexOf("<button", html.indexOf("질문을 불러오는 중"));
+    await route.fulfill({ contentType: "text/html", body: html.slice(0, cut) });
+  });
+  await page.goto("/");
+  const wait = page.locator("[class*=tryWait]");
+  await expect(wait).toBeVisible();
+  await expect(wait).toHaveAttribute("aria-hidden", "true");
+  await expect(page.getByRole("status")).toHaveText("질문을 불러오는 중이에요");
+  // 자리 표시는 .tryQ와 같은 선·여백을 쓴다
+  expect(
+    await wait.evaluate((e) => {
+      const c = getComputedStyle(e);
+      return [c.borderTopWidth, c.paddingTop];
+    }),
+  ).toEqual(["2px", "16px"]);
+  // 끝까지 받으면 자리 표시와 읽기 안내가 없어진다(E2E는 Supabase 없이 돌면 질문 없이 비고, 있으면 질문이 들어온다)
+  await page.unrouteAll();
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: "백엔드로 시작하기" }),
+  ).toBeVisible();
+  await expect(wait).toHaveCount(0);
+  await expect(page.getByText("질문을 불러오는 중이에요")).toHaveCount(0);
+});
+
 test("체험을 시작하지 않았으면 체험 화면 대신 랜딩의 체험 칸으로 간다", async ({
   page,
 }) => {
