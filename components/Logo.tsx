@@ -80,6 +80,8 @@ export function AppMark({ size }: { size: number | string }) {
         height: size,
         borderRadius: "var(--radius-panel)",
         background: "var(--primary)",
+        // 강제 다크(삼성 인터넷)가 바탕색만 바꿔도 안쪽 그림자가 덮는다(#171)
+        boxShadow: "inset 0 0 0 100vmax var(--primary)",
       }}
     >
       <span
