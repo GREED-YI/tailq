@@ -28,7 +28,7 @@ export function MainResult({
       <section
         ref={panelRef}
         tabIndex={panelRef ? -1 : undefined}
-        className={`${s.panel} ${s.mainPanel}`}
+        className={s.panel}
         aria-label="채점 결과"
       >
         {/* 0에서 점수까지 차오르는 것은 ScoreRing이 맡는다 */}

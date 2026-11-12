@@ -467,12 +467,6 @@
   flex-direction: column;
   gap: 16px;
 }
-/* 본 질문 결과 묶음(채점 중 포함)은 768 이상 24. 꼬리질문 결과는 20 그대로 */
-@media (min-width: 768px) {
-  .mainPanel {
-    padding: 24px;
-  }
-}
 .score {
   display: flex;
   flex-direction: column;

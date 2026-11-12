@@ -588,7 +588,7 @@ function ResultView({
         <section
           ref={panelRef}
           tabIndex={-1}
-          className={`${s.panel} ${s.mainPanel}`}
+          className={s.panel}
           aria-label="채점 결과"
         >
           <ScoreRing
