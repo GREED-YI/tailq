@@ -7,7 +7,7 @@ import { scoreVerdict } from "./verdict";
 import { VerdictMark } from "./VerdictMark";
 
 // 본 질문 채점 결과(docs/07): surface 면 하나에 점수 · 막대 · 판정 · 한 줄 평 · 잘한 점 · 보완할 점 · 보완할 개념,
-// 그 아래 접힌 "모범 답안과 참고 자료" 한 줄. 면접 결과와 기록 상세가 같이 써서 두 화면이 어긋나지 않는다(#170).
+// 그 아래 접힌 "모범 답안과 참고 자료" 한 줄. 면접 결과 · 기록 상세 · 체험 결과가 같이 써서 화면끼리 어긋나지 않는다(#170, #189).
 // children은 점수 막대 바로 아래 줄(면접의 점수 변화 줄, #131)
 export function MainResult({
   result,

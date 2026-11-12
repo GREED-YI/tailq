@@ -1,5 +1,5 @@
 /* 체험 결과(Figma S03). 공유 페이지와 같은 결: 머리는 로고만, 본문은 가운데 한 단(PC 560).
-   마무리 문장(가입 권유) · 채점 결과 묶음(surface) · 꼬리잇기 타일 · 가입하고 이어가기 */
+   마무리 문장(가입 권유) · 질문 · 채점 결과 묶음(면접과 같은 MainResult) · 꼬리잇기 타일 · 가입하고 이어가기 */
 .page {
   --gutter: 20px;
   --logo-h: 30px;
@@ -51,15 +51,6 @@
   letter-spacing: -0.025em;
 }
 
-.panel {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-control);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
 .meta {
   min-width: 0;
   display: flex;
@@ -86,29 +77,6 @@
   font-size: 14px;
   color: var(--text-sub);
 }
-.points {
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-.point {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 15px;
-  line-height: 1.6;
-}
-.point > span {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-sub);
-}
-.point > .good {
-  color: var(--text);
-}
-
 /* 꼬리잇기 타일(DESIGN.md stat-tiles 한 칸) */
 .tile {
   background: var(--surface);
@@ -168,14 +136,10 @@
   .main {
     padding-top: 56px;
     padding-bottom: 56px;
-    gap: 24px;
   }
   .title {
     font-size: 34px;
     line-height: 1.35;
-  }
-  .panel {
-    padding: 24px;
   }
   .tile {
     padding: 20px;
