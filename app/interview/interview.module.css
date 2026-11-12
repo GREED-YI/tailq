@@ -581,9 +581,10 @@
   margin-top: 4px;
 }
 .well {
+  /* 모범 답안 속 코드 들여쓰기를 살린다(기록 상세의 이전 .text와 같음) */
   padding-left: 12px;
   border-left: 2px solid var(--line-strong);
-  white-space: pre-line;
+  white-space: pre-wrap;
   font-size: 15px;
   line-height: 1.7;
 }
