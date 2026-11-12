@@ -1191,6 +1191,35 @@
   letter-spacing: -0.01em;
   text-wrap: pretty;
 }
+/* 자리 표시: 태그 줄은 태그(28px) 높이, 질문 줄은 글 한 줄(1lh) 안에 1em 막대를 가운데 둬 두 줄이 붙어 보이지 않게 한다 */
+.tryWait > :global(.skeleton) {
+  width: 40%;
+  height: 28px;
+}
+/* grid라 두 막대의 위아래 여백이 겹치지 않는다 */
+.tryWait p {
+  display: grid;
+}
+.tryWait p > :global(.skeleton) {
+  height: 1em;
+  margin-block: 0.25em;
+}
+.tryWait p > :global(.skeleton) + :global(.skeleton) {
+  width: 60%;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tryWait :global(.skeleton) {
+    animation: tryWait 1s var(--ease) infinite alternate;
+  }
+}
+@keyframes tryWait {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.5;
+  }
+}
 .tryBtn {
   width: 100%;
 }
