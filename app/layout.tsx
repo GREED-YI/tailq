@@ -16,6 +16,8 @@ export const metadata: Metadata = {
     capable: true,
     startupImage: STARTUP,
   },
+  // Next는 capable을 mobile-web-app-capable로만 내보낸다. 아이폰이 시작 화면을 쓰는 옛 이름도 같이 둔다
+  other: { "apple-mobile-web-app-capable": "yes" },
 };
 
 export const viewport: Viewport = {
