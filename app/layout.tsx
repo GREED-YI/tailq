@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { GeistMono } from "geist/font/mono";
 import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 import "./globals.css";
+import { STARTUP } from "@/app/_og/startup";
 import { FirstVisit } from "@/components/FirstVisit";
 import { homeGuideScript } from "@/lib/home";
 import { themeCss, themeScript } from "@/lib/theme";
@@ -10,6 +11,11 @@ export const metadata: Metadata = {
   title: "TailQ",
   description: "매일 기술면접 질문 하나. AI가 채점하고 꼬리질문을 던져요.",
   icons: { apple: "/apple-touch-icon.png" },
+  // 아이폰 홈 화면 앱의 시작 화면. 상태 표시줄은 기본값(default, 메타가 없을 때와 같다)이라 themeColor와 겹치지 않는다
+  appleWebApp: {
+    capable: true,
+    startupImage: STARTUP,
+  },
 };
 
 export const viewport: Viewport = {
