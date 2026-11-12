@@ -563,6 +563,7 @@
 .well {
   padding-left: 12px;
   border-left: 2px solid var(--line-strong);
+  white-space: pre-line;
   font-size: 15px;
   line-height: 1.7;
 }
@@ -645,9 +646,6 @@
 .pastUnknown {
   font-size: 15px;
   font-weight: 600;
-}
-.prevAnswer {
-  white-space: pre-line;
 }
 .prevNote {
   font-size: 15px;

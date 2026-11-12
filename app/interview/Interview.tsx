@@ -740,7 +740,7 @@ function PreviousAnswer({ previous }: { previous: Previous }) {
           <>
             <div className={s.block}>
               <span className={s.label}>답변</span>
-              <p className={`${s.well} ${s.prevAnswer}`}>{previous.answer}</p>
+              <p className={s.well}>{previous.answer}</p>
             </div>
             {previous.summary && (
               <div className={s.block}>
