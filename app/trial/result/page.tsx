@@ -5,10 +5,10 @@ import { Suspense } from "react";
 import { Logo } from "@/components/Logo";
 import { LoadingStatus } from "@/components/LoadingStatus";
 import { loadTrialSession } from "@/lib/server/trial-session";
-import { ScoreRing } from "../../interview/ScoreRing";
+import { turnResult } from "@/lib/server/turn";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { MainResult } from "../../interview/MainResult";
 import { SkeletonLines } from "../../interview/Skeleton";
-import { scoreVerdict } from "../../interview/verdict";
-import { VerdictMark } from "../../interview/VerdictMark";
 import s from "../trial.module.css";
 
 export const metadata: Metadata = { title: "체험 결과 · TailQ" };
@@ -41,20 +41,16 @@ export default function TrialResultPage() {
   );
 }
 
-type Feedback = { good?: string[]; improve?: string[] } | null;
-
 async function TrialResult() {
   const session = await loadTrialSession();
   if (!session) redirect("/#try");
   if (session.status === "open") redirect("/trial");
 
+  // 체험은 본 질문 채점이 끝나야 닫힌다. 쿠키로 이 브라우저의 세션임을 확인했으므로 모범 답안을 꺼낸다
+  // (08 설계 "모범 답안과 기대 답안 보호")
   const [main, followUp] = session.turns;
-  const unknown = main?.verdict === "unknown";
-  // 모르겠어요는 0점으로 기록되지만 점수 대신 –와 빈 막대로 보여준다
-  const score = unknown ? undefined : (main?.score ?? 0);
-  const fb = main?.feedback as Feedback;
-  const good = fb?.good?.[0];
-  const improve = fb?.improve?.[0];
+  if (!main?.id) redirect("/#try");
+  const result = await turnResult(createAdminClient(), main.id);
   const q = session.question;
 
   return (
@@ -67,44 +63,19 @@ async function TrialResult() {
         </h1>
       </div>
 
-      <section className={s.panel} aria-label="채점 결과">
-        <div className={s.meta}>
-          <span className={`mono ${s.tag}`}>
-            {q.label} · {q.topic}
-          </span>
-          <strong className={s.prompt}>{q.prompt}</strong>
-        </div>
-        <ScoreRing
-          shown={score ?? 0}
-          value={score}
-          label={score === undefined ? "점수 없음" : `100점 만점에 ${score}점`}
-          empty="–"
-          aside={
-            <VerdictMark
-              verdict={score === undefined ? "unknown" : scoreVerdict(score)}
-            />
-          }
-        />
+      <div className={s.meta}>
+        <span className={`mono ${s.tag}`}>
+          {q.label} · {q.topic}
+        </span>
+        <strong className={s.prompt}>{q.prompt}</strong>
+      </div>
+
+      {/* 채점 결과 묶음은 면접·기록 상세와 같다(#189). 꼬리질문을 풀었는지는 점수 막대 아래 한 줄로 */}
+      <MainResult result={result}>
         {followUp?.effective_status === "graded" && (
           <span className={s.note}>꼬리질문 1개까지 풀었어요</span>
         )}
-        {(good || improve) && (
-          <div className={s.points}>
-            {good && (
-              <div className={s.point}>
-                <span className={s.good}>잘한 점</span>
-                <p>{good}</p>
-              </div>
-            )}
-            {improve && (
-              <div className={s.point}>
-                <span>보완할 점</span>
-                <p>{improve}</p>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
+      </MainResult>
 
       {/* 요약 타일(DESIGN.md stat-tiles) 한 칸: 꼬리잇기 */}
       <section className={s.tile} aria-label="꼬리잇기">
