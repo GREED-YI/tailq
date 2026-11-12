@@ -467,6 +467,12 @@
   flex-direction: column;
   gap: 16px;
 }
+/* 본 질문 결과 묶음(채점 중 포함)은 768 이상 24. 꼬리질문 결과는 20 그대로 */
+@media (min-width: 768px) {
+  .mainPanel {
+    padding: 24px;
+  }
+}
 .score {
   display: flex;
   flex-direction: column;
@@ -543,6 +549,26 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+/* 본 질문 결과의 구획 이름표(잘한 점 · 보완할 점 · 보완할 개념 · 모범 답안 · 참고 자료) */
+.heading {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-sub);
+}
+/* 잘한 점 · 보완할 점: 위 1px 선 아래, 768 이상 2열 */
+.points {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 768px) {
+  .points {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
 }
 .chips {
   display: flex;
