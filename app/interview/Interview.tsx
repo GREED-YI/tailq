@@ -10,6 +10,7 @@ import { scoreChange, type Previous } from "@/lib/previous";
 import type { SessionQuestion } from "@/lib/server/daily";
 import type { TurnResult } from "@/lib/server/turn";
 import s from "./interview.module.css";
+import { MainResult } from "./MainResult";
 import { ScoreRing } from "./ScoreRing";
 import type { Step } from "./steps";
 import { scoreVerdict, VERDICTS } from "./verdict";
@@ -602,102 +603,16 @@ function ResultView({
     );
   }
   const unknown = result.verdict === "unknown";
-  // 모르겠어요는 0점으로 기록되지만 점수 대신 –와 빈 막대로 보여준다(홈·기록과 같다)
-  const score = unknown ? undefined : (result.score ?? 0);
   return (
     <div className={s.result}>
-      <section
-        ref={panelRef}
-        tabIndex={-1}
-        className={s.panel}
-        aria-label="채점 결과"
-      >
-        {/* 0에서 점수까지 차오르는 것은 ScoreRing이 맡는다 */}
-        <ScoreRing
-          shown={score ?? 0}
-          label={score === undefined ? "점수 없음" : `100점 만점에 ${score}점`}
-          value={score}
-          empty="–"
-          aside={
-            <VerdictMark
-              verdict={score === undefined ? "unknown" : scoreVerdict(score)}
-            />
-          }
-        />
+      <MainResult result={result} panelRef={panelRef}>
         {previous && (
-          <ScoreChange prev={previous.score} today={score ?? null} />
+          <ScoreChange
+            prev={previous.score}
+            today={unknown ? null : (result.score ?? 0)}
+          />
         )}
-        {!unknown && result.feedback?.summary && (
-          <p className={s.summary}>{result.feedback.summary}</p>
-        )}
-      </section>
-
-      {/* 잘한 점을 먼저, 보완할 점을 다음에(DESIGN.md Voice). 펼친 채로 둔다 */}
-      {!unknown && !!result.feedback?.good.length && (
-        <div className={s.block}>
-          <span className={s.label}>잘한 점</span>
-          <ul className={s.list}>
-            {result.feedback.good.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {!unknown && !!result.feedback?.improve.length && (
-        <div className={s.block}>
-          <span className={s.label}>보완할 점</span>
-          <ul className={s.list}>
-            {result.feedback.improve.map((t) => (
-              <li key={t}>{t}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {result.missingKeywords.length > 0 && (
-        <div className={s.block}>
-          <span className={s.label}>보완할 개념</span>
-          <div className={s.chips}>
-            {result.missingKeywords.map((k) => (
-              <span
-                key={k}
-                className={`tag tag-concept ${/[가-힣]/.test(k) ? "" : "mono"}`}
-              >
-                {k}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 모범 답안·참고 자료만 접어 둔다. 모르겠어요는 모범 답안이 전부라 펼친 채로 */}
-      <details className={s.more} open={unknown}>
-        <summary>
-          모범 답안과 참고 자료
-          <Icon name="chevronDown" size={18} />
-        </summary>
-        <div className={s.moreBody}>
-          <div className={s.block}>
-            <span className={s.label}>모범 답안</span>
-            <p className={s.well}>{result.modelAnswer}</p>
-          </div>
-
-          {result.links.length > 0 && (
-            <div className={s.block}>
-              <span className={s.label}>참고 자료</span>
-              <ul className={s.links}>
-                {result.links.map((l) => (
-                  <li key={l.url}>
-                    <a href={l.url} target="_blank" rel="noopener noreferrer">
-                      {l.title}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </div>
-      </details>
+      </MainResult>
 
       {/* 평가는 주 버튼 바로 위. 모르겠어요·체험은 평가가 없고, 체험은 신고도 없다(피드백은 로그인해야 보낸다) */}
       {!unknown && !trial && (
@@ -740,7 +655,7 @@ function PreviousAnswer({ previous }: { previous: Previous }) {
           <>
             <div className={s.block}>
               <span className={s.label}>답변</span>
-              <p className={`${s.well} ${s.prevAnswer}`}>{previous.answer}</p>
+              <p className={s.well}>{previous.answer}</p>
             </div>
             {previous.summary && (
               <div className={s.block}>

@@ -232,126 +232,12 @@ a.rowLink:focus-visible {
   line-height: 1.6;
 }
 
-/* 채점 결과 묶음: surface 면 하나에 점수 · 막대 · 한 줄 평 · 놓친 개념 · 잘한 점과 보완할 점 */
+/* 채점 결과(면접과 같은 MainResult: surface 묶음 + 모범 답안과 참고 자료 펼침 줄) */
 .result {
   margin-top: 24px;
-  padding: 20px;
-  border-radius: var(--radius-control);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--line);
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-@media (min-width: 768px) {
-  .result {
-    padding: 24px;
-  }
-}
-.summary {
-  font-size: 16px;
-  line-height: 1.6;
-}
-.concepts {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.concepts > div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.points {
-  padding-top: 16px;
-  border-top: 1px solid var(--line);
-  display: grid;
-  gap: 16px;
-}
-@media (min-width: 768px) {
-  .points {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 24px;
-  }
-}
-.points h3 {
-  margin-bottom: 8px;
-  font-size: 14px;
-  font-weight: 700;
-}
-.points ul {
-  padding-left: 20px;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--text-sub);
-}
-
-/* 접힌 모범 답안·참고 자료: 1px 선으로 나눈 줄(높이 52), 오른쪽 화살표는 펼치면 뒤집힌다 */
-.folds {
-  margin-top: 24px;
-  border-top: 1px solid var(--line);
-}
-.folds details {
-  border-bottom: 1px solid var(--line);
-}
-.folds summary,
-.step summary {
-  list-style: none;
-  cursor: pointer;
-}
-.folds summary::-webkit-details-marker,
-.step summary::-webkit-details-marker {
-  display: none;
-}
-.folds summary {
-  min-height: 52px;
-  margin: 0 -8px;
-  padding: 0 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 15px;
-  font-weight: 600;
-  transition: background-color var(--dur-fast) var(--ease);
-}
-.folds summary:focus-visible {
-  outline-offset: -2px;
-}
-@media (hover: hover) {
-  .folds summary:hover {
-    background: var(--surface);
-  }
-}
-.folds summary svg,
-.stepMore svg {
-  flex: none;
-  color: var(--text-sub);
-  transition: transform var(--dur-base) var(--ease);
-}
-.folds details[open] summary svg {
-  transform: rotate(180deg);
-}
-.folds details > :not(summary) {
-  margin: 4px 0 16px;
-}
-.links {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  font-size: 15px;
-}
-.links a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-@media (hover: hover) {
-  .links a:hover {
-    color: var(--text);
-  }
+  gap: 20px;
 }
 
 /* 꼬리질문 흐름(thread result): 세로 선과 단계 점, 단계마다 이름 · 판정 · 질문, 누르면 내 답변과 AI 코멘트 */
@@ -375,6 +261,18 @@ a.rowLink:focus-visible {
 /* 모양 점은 왼쪽 단계 점이 맡아 판정에는 글자만 */
 .stepHead .stepVerdict::before {
   display: none;
+}
+.step summary {
+  list-style: none;
+  cursor: pointer;
+}
+.step summary::-webkit-details-marker {
+  display: none;
+}
+.stepMore svg {
+  flex: none;
+  color: var(--text-sub);
+  transition: transform var(--dur-base) var(--ease);
 }
 .step summary,
 .stepStatic {

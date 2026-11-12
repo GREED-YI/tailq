@@ -544,6 +544,26 @@
   flex-direction: column;
   gap: 12px;
 }
+/* 본 질문 결과의 구획 이름표(잘한 점 · 보완할 점 · 보완할 개념 · 모범 답안 · 참고 자료) */
+.heading {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-sub);
+}
+/* 잘한 점 · 보완할 점: 위 1px 선 아래, 768 이상 2열 */
+.points {
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 768px) {
+  .points {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
 .chips {
   display: flex;
   flex-wrap: wrap;
@@ -561,8 +581,10 @@
   margin-top: 4px;
 }
 .well {
+  /* 모범 답안 속 코드 들여쓰기를 살린다(기록 상세의 이전 .text와 같음) */
   padding-left: 12px;
   border-left: 2px solid var(--line-strong);
+  white-space: pre-wrap;
   font-size: 15px;
   line-height: 1.7;
 }
@@ -645,9 +667,6 @@
 .pastUnknown {
   font-size: 15px;
   font-weight: 600;
-}
-.prevAnswer {
-  white-space: pre-line;
 }
 .prevNote {
   font-size: 15px;

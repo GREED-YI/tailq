@@ -10,9 +10,9 @@ import { tagLine } from "@/lib/questions";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { turnResult, type TurnResult } from "@/lib/server/turn";
-import { ScoreRing } from "@/app/interview/ScoreRing";
+import { MainResult } from "@/app/interview/MainResult";
 import { VerdictMark } from "@/app/interview/VerdictMark";
-import { scoreVerdict, VERDICTS } from "@/app/interview/verdict";
+import { VERDICTS } from "@/app/interview/verdict";
 import i from "@/app/interview/interview.module.css";
 import s from "@/components/Marks.module.css";
 
@@ -102,7 +102,7 @@ async function Detail({ id }: { id: string }) {
         <h2>{q.prompt}</h2>
       </div>
 
-      <MainResult answer={main.answer} result={results.get(main.id)!} />
+      <MainAnswer answer={main.answer} result={results.get(main.id)!} />
 
       {session.turns.length > 1 && (
         <section className={s.block} aria-labelledby="follow-ups">
@@ -126,109 +126,29 @@ async function Detail({ id }: { id: string }) {
   );
 }
 
-// 본 질문: 내 답변 · 채점 결과 묶음(점수 · 막대 · 한 줄 평 · 놓친 개념 · 잘한 점과 보완할 점) · 접힌 모범 답안과 참고 자료(S20).
+// 본 질문: 내 답변 · 채점 결과(면접과 같은 MainResult, #170).
 // 구획은 상자 없이 여백과 1px 선으로 나누고, surface 면은 채점 결과 묶음에만 깐다(DESIGN.md)
-function MainResult({
+function MainAnswer({
   answer,
   result,
 }: {
   answer: string | null;
   result: TurnResult;
 }) {
-  const unknown = result.verdict === "unknown";
-  // 모르겠어요는 0점으로 기록되지만 점수 대신 –와 빈 막대로 보여준다
-  const score = unknown ? undefined : (result.score ?? 0);
-  const good = result.feedback?.good ?? [];
-  const improve = result.feedback?.improve ?? [];
   return (
     <>
       <section className={s.block} aria-labelledby="my-answer">
         <h3 id="my-answer" className={s.label}>
           내 답변
         </h3>
-        <p className={s.text}>{unknown ? "모르겠어요" : answer}</p>
+        <p className={s.text}>
+          {result.verdict === "unknown" ? "모르겠어요" : answer}
+        </p>
       </section>
 
-      <section className={s.result} aria-label="채점 결과">
-        {/* 숫자 줄 오른쪽에 점수 구간 판정(모양 점 + 글자), 모르겠어요면 모르겠어요 */}
-        <ScoreRing
-          shown={score ?? 0}
-          value={score}
-          label={score === undefined ? "점수 없음" : `100점 만점에 ${score}점`}
-          empty="–"
-          aside={
-            <VerdictMark
-              verdict={score === undefined ? "unknown" : scoreVerdict(score)}
-            />
-          }
-        />
-        {!unknown && result.feedback?.summary && (
-          <p className={s.summary}>{result.feedback.summary}</p>
-        )}
-        {result.missingKeywords.length > 0 && (
-          <div className={s.concepts}>
-            <h3 className={s.label}>보완할 개념</h3>
-            <div>
-              {result.missingKeywords.map((k) => (
-                <span key={k} className="tag tag-concept">
-                  {k}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-        {(good.length > 0 || improve.length > 0) && (
-          <div className={s.points}>
-            {good.length > 0 && (
-              <div>
-                <h3>잘한 점</h3>
-                <ul>
-                  {good.map((t) => (
-                    <li key={t}>{t}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {improve.length > 0 && (
-              <div>
-                <h3>보완할 점</h3>
-                <ul>
-                  {improve.map((t) => (
-                    <li key={t}>{t}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-      </section>
-
-      <section className={s.folds} aria-label="모범 답안과 참고 자료">
-        <details>
-          <summary>
-            모범 답안
-            <Icon name="chevronDown" size={18} />
-          </summary>
-          <p className={s.text}>{result.modelAnswer}</p>
-        </details>
-        {result.links.length > 0 && (
-          <details>
-            <summary>
-              참고 자료
-              <Icon name="chevronDown" size={18} />
-            </summary>
-            <ul className={s.links}>
-              {result.links.map((l) => (
-                <li key={l.url}>
-                  <a href={l.url} target="_blank" rel="noopener noreferrer">
-                    {l.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
-      </section>
+      <div className={s.result}>
+        <MainResult result={result} />
+      </div>
     </>
   );
 }
