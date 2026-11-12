@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="only light">
+<meta name="robots" content="noindex">
+<title>다크 시험</title>
+<style>
+:root{color-scheme:only light;background:#0E0F0E;color:#EDEEEC;font:16px/1.5 system-ui,sans-serif}
+body{margin:0;padding:20px;max-width:480px}
+h1{font-size:20px;margin:0 0 4px}
+p{margin:0 0 16px;color:#A4A9A5;font-size:14px}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;height:52px;margin:0 0 12px;border:0;border-radius:8px;color:#0E0F0E;font:600 16px system-ui,sans-serif}
+.ref{display:flex;gap:8px;margin:20px 0}
+.ref span{flex:1;height:40px;border:1px solid #3A3E3B;display:flex;align-items:center;justify-content:center;font-size:12px}
+pre{white-space:pre-wrap;font-size:12px;color:#8A8F8B}
+a{color:#FF7A45}
+</style></head><body><h1>C · only light (색은 다크로 직접 칠함)</h1><p>주황으로 보이는 버튼 번호를 알려줘. 원래 색은 모두 같은 주황(#FF5A1F)이야.</p>
+<button class="btn" style="background-color:#FF5A1F">C1 · 배경색</button>
+<button class="btn" style="background-image:linear-gradient(#FF5A1F,#FF5A1F)">C2 · 그라디언트</button>
+<button class="btn" style="background-image:url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%228%22%20height%3D%228%22%3E%3Crect%20width%3D%228%22%20height%3D%228%22%20fill%3D%22%23FF5A1F%22%2F%3E%3C%2Fsvg%3E');background-size:cover">C3 · SVG 그림</button>
+<button class="btn" style="box-shadow:inset 0 0 0 200px #FF5A1F">C4 · 안쪽 그림자</button>
+<div class="ref"><span style="background:#0E0F0E">바탕</span><span style="background:#171918">면</span><span style="background:#EDEEEC;color:#0E0F0E">글자색</span></div><p><a href="index.html">목록으로</a></p><pre id="info"></pre><script>
+var m=function(q){return window.matchMedia?matchMedia(q).matches:"?"};
+document.getElementById("info").textContent=
+"prefers dark: "+m("(prefers-color-scheme: dark)")+"\nprefers light: "+m("(prefers-color-scheme: light)")+"\n"+navigator.userAgent;
+</script></body></html>

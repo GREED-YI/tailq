@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="noindex">
+<title>다크 시험</title>
+<style>
+:root{color-scheme:dark;background:#0E0F0E;color:#EDEEEC;font:16px/1.5 system-ui,sans-serif}
+body{margin:0;padding:20px;max-width:480px}
+h1{font-size:20px;margin:0 0 4px}
+p{margin:0 0 16px;color:#A4A9A5;font-size:14px}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;height:52px;margin:0 0 12px;border:0;border-radius:8px;color:#0E0F0E;font:600 16px system-ui,sans-serif}
+.ref{display:flex;gap:8px;margin:20px 0}
+.ref span{flex:1;height:40px;border:1px solid #3A3E3B;display:flex;align-items:center;justify-content:center;font-size:12px}
+pre{white-space:pre-wrap;font-size:12px;color:#8A8F8B}
+a{color:#FF7A45}
+</style></head><body><h1>다크 모드 시험</h1><p>폰 다크 모드를 켠 채로 세 페이지를 열어 주황으로 보이는 버튼을 골라줘.</p>
+<p><a href="a.html">A · 지금 방식 (dark light)</a></p>
+<p><a href="b.html">B · only dark</a></p>
+<p><a href="c.html">C · only light (색은 다크로 직접 칠함)</a></p><pre id="info"></pre><script>
+var m=function(q){return window.matchMedia?matchMedia(q).matches:"?"};
+document.getElementById("info").textContent=
+"prefers dark: "+m("(prefers-color-scheme: dark)")+"\nprefers light: "+m("(prefers-color-scheme: light)")+"\n"+navigator.userAgent;
+</script></body></html>
